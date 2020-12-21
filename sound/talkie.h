@@ -652,7 +652,11 @@ public:
   bool inited = false;
 };
 
-class Talkie : public AudioStream, CommandParser {
+class Talkie : public AudioStream
+#ifdef ENABLE_DEVELOPER_COMMANDS
+   , CommandParser
+#endif
+{
 public:
   struct Word {
     const uint8_t *ptr;
@@ -665,6 +669,8 @@ public:
   Talkie() {
     for (int i = 0; i < 10; i++) x[i] = 0;
   }
+
+  bool Empty() { return num_words == 0; }
 
   void Say(const uint8_t* addr, uint32_t rate = 25,
 	   const tms5100_coeffs* coeffs = &tms5220_coeff
@@ -750,6 +756,14 @@ public:
     }
     n %= 10;
     if (n) SayDigit(n);
+  }
+
+  void Say2Digits(int number) {
+    int x = 1;
+    while (x < number) x *= 10;
+    x /= 100;
+    if (x > 1) number -= number % x;
+    SayNumber(number);
   }
 
   // The ROMs used with the TI speech were serial, not byte wide.
@@ -941,6 +955,7 @@ public:
   }
   void Stop() override {}
 
+#ifdef ENABLE_DEVELOPER_COMMANDS
   bool Parse(const char *cmd, const char* arg) override {
     uint32_t rate = 0;
     if (!strcmp(cmd, "say") && arg) {
@@ -1016,6 +1031,7 @@ public:
     STDOUT.println("say bof/sd/abort - test error messages");
     STDOUT.println("talkie HEXDATA - play talkie");
   }
+#endif
 
 private:
   const uint8_t * ptrAddr = NULL;

@@ -23,7 +23,11 @@ class PropBase : CommandParser, Looper, protected SaberBase {
 public:
   PropBase() : CommandParser() {}
   BladeStyle* current_style(){
+#if NUM_BLADES == 0
+    return nullptr;
+#else    
     return current_config->blade1->current_style();
+#endif    
   }
 
   bool NeedsPower() {
@@ -350,6 +354,11 @@ public:
     BLADE_ID_CLASS_INTERNAL blade_id;
     float ret = blade_id.id();
     STDOUT << "ID: " << ret << "\n";
+#ifdef SPEAK_BLADE_ID
+    talkie.Say(spI);
+    talkie.Say(spD);
+    talkie.SayNumber((int)ret);
+#endif    
 #ifdef BLADE_DETECT_PIN
     if (!blade_detected_) {
       STDOUT << "NO ";
@@ -394,12 +403,16 @@ public:
 #endif
     return;
 
-   bad_blade:
+#if NUM_BLADES != 0    
+
+  bad_blade:
     STDOUT.println("BAD BLADE");
 #ifdef ENABLE_AUDIO
     talkie.Say(talkie_error_in_15, 15);
     talkie.Say(talkie_blade_array_15, 15);
 #endif
+
+#endif    
   }
 
   void ResumePreset() {
@@ -414,6 +427,7 @@ public:
     FileReader out;
     LSFS::Remove(fn);
     out.Create(fn);
+    out.write_key_value("installed", install_time);
     out.write_key_value("preset", preset);
     out.write_key_value("end", "1");
     out.Close();
@@ -441,6 +455,7 @@ public:
     FileReader out;
     LSFS::Remove(filename);
     out.Create(filename);
+    out.write_key_value("installed", install_time);
 #ifdef ENABLE_AUDIO    
     out.write_key_value("volume", muted_volume_ ? muted_volume_ : dynamic_mixer.get_volume());
 #endif    
@@ -495,7 +510,7 @@ public:
     float v = diff.len();
     // If we're spinning the saber, require a stronger acceleration
     // to activate the clash.
-    if (v > CLASH_THRESHOLD_G + filtered_gyro_.len() / 200.0) {
+    if (v > CLASH_THRESHOLD_G + fusor.gyro().len() / 200.0) {
       if ( (accel_ - fusor.down()).len2() > (accel - fusor.down()).len2() ) {
         diff = -diff;
       }
@@ -512,7 +527,7 @@ public:
       STDOUT << "ACCEL: " << accel
              << " diff=" << diff
              << " v=" << v
-             << " fgl=" << (filtered_gyro_.len() / 200.0)
+             << " fgl=" << (fusor.gyro().len() / 200.0)
              << " accel_=" << accel_
              << " clear=" << clear
              << " millis=" << millis()
@@ -577,7 +592,7 @@ public:
 
   Stroke strokes[5];
 
-  void ProcessStrokes() {
+  void MonitorStrokes() {
     if (monitor.IsMonitoring(Monitoring::MonitorStrokes)) {
       STDOUT.print("Stroke: ");
       switch (strokes[NELEM(strokes)-1].type) {
@@ -603,39 +618,6 @@ public:
              << " mss=" << fusor.mss()
              << " swspd=" << fusor.swing_speed()
              << "\n";
-    }
-    if ((strokes[NELEM(strokes)-1].type == TWIST_LEFT &&
-         strokes[NELEM(strokes)-2].type == TWIST_RIGHT) ||
-        (strokes[NELEM(strokes)-1].type == TWIST_RIGHT &&
-         strokes[NELEM(strokes)-2].type == TWIST_LEFT)) {
-      if (strokes[NELEM(strokes) -1].length() > 90UL &&
-          strokes[NELEM(strokes) -1].length() < 300UL &&
-          strokes[NELEM(strokes) -2].length() > 90UL &&
-          strokes[NELEM(strokes) -2].length() < 300UL) {
-        uint32_t separation =
-          strokes[NELEM(strokes)-1].start_millis -
-          strokes[NELEM(strokes)-2].end_millis;
-        if (separation < 200UL) {
-          STDOUT.println("TWIST");
-          // We have a twisting gesture.
-          Event(BUTTON_NONE, EVENT_TWIST);
-        }
-      }
-    }
-    int i;
-    for (i = 0; i < 5; i++) {
-      if (strokes[NELEM(strokes)-1-i].type !=
-          ((i & 1) ? SHAKE_REW : SHAKE_FWD)) break;
-      if (i) {
-        uint32_t separation =
-          strokes[NELEM(strokes)-i].start_millis -
-          strokes[NELEM(strokes)-1-i].end_millis;
-        if (separation > 250) break;
-      }
-    }
-    if (i == 5) {
-      strokes[NELEM(strokes)-1].type = SHAKE_CLOSE;
-      Event(BUTTON_NONE, EVENT_SHAKE);
     }
   }
 
@@ -663,25 +645,26 @@ public:
     return false;
   }
 
-  void DoGesture(StrokeType gesture) {
+  bool DoGesture(StrokeType gesture) {
     if (gesture == strokes[NELEM(strokes)-1].type) {
       if (strokes[NELEM(strokes)-1].end_millis == 0) {
         // Stroke not done, wait.
-        return;
+        return false;
       }
       if (millis() - strokes[NELEM(strokes)-1].end_millis < 50)  {
         // Stroke continues
         strokes[NELEM(strokes)-1].end_millis = millis();
-        return;
+        return false;
       }
     }
     if (strokes[NELEM(strokes) - 1].end_millis == 0 &&
         GetStrokeGroup(gesture) == GetStrokeGroup(strokes[NELEM(strokes) - 1].type)) {
       strokes[NELEM(strokes) - 1].end_millis = millis();
-      ProcessStrokes();
+      MonitorStrokes();
+      return true;
     }
     // Exit here if it's a *_CLOSE stroke.
-    if (GetStrokeGroup(gesture) == gesture) return;
+    if (GetStrokeGroup(gesture) == gesture) return false;
     // If last stroke is very short, just write over it.
     if (strokes[NELEM(strokes)-1].end_millis -
         strokes[NELEM(strokes)-1].start_millis > 10) {
@@ -692,16 +675,85 @@ public:
     strokes[NELEM(strokes)-1].type = gesture;
     strokes[NELEM(strokes)-1].start_millis = millis();
     strokes[NELEM(strokes)-1].end_millis = 0;
+    return false;
   }
 
-  BoxFilter<Vec3, 5> gyro_filter_;
-  Vec3 filtered_gyro_;
-  void SB_Motion(const Vec3& gyro, bool clear) override {
-    if (clear)
-      for (int i = 0; i < 4; i++)
-        gyro_filter_.filter(gyro);
+  // The prop should call this from Loop() if it wants to detect twists.
+  void DetectTwist() {
+    Vec3 gyro = fusor.gyro();
+    bool process = false;
+    if (fabsf(gyro.x) > 200.0 &&
+        fabsf(gyro.x) > 3.0f * abs(gyro.y) &&
+        fabsf(gyro.x) > 3.0f * abs(gyro.z)) {
+      process = DoGesture(gyro.x > 0 ? TWIST_LEFT : TWIST_RIGHT);
+    } else {
+      process = DoGesture(TWIST_CLOSE);
+    }
+    if (process) {
+      if ((strokes[NELEM(strokes)-1].type == TWIST_LEFT &&
+	   strokes[NELEM(strokes)-2].type == TWIST_RIGHT) ||
+	  (strokes[NELEM(strokes)-1].type == TWIST_RIGHT &&
+	   strokes[NELEM(strokes)-2].type == TWIST_LEFT)) {
+	if (strokes[NELEM(strokes) -1].length() > 90UL &&
+	    strokes[NELEM(strokes) -1].length() < 300UL &&
+	    strokes[NELEM(strokes) -2].length() > 90UL &&
+	    strokes[NELEM(strokes) -2].length() < 300UL) {
+	  uint32_t separation =
+	    strokes[NELEM(strokes)-1].start_millis -
+	    strokes[NELEM(strokes)-2].end_millis;
+	  if (separation < 200UL) {
+	    STDOUT.println("TWIST");
+	    // We have a twisting gesture.
+	    Event(BUTTON_NONE, EVENT_TWIST);
+	  }
+	}
+      }
+    }
+  }
 
-    filtered_gyro_ = gyro_filter_.filter(gyro);
+  // The prop should call this from Loop() if it wants to detect shakes.
+  void DetectShake() {
+    Vec3 mss = fusor.mss();
+    bool process = false;
+    if (mss.y * mss.y + mss.z * mss.z < 16.0 &&
+        (mss.x > 7 || mss.x < -6)  &&
+        fusor.swing_speed() < 150) {
+      process = DoGesture(mss.x > 0 ? SHAKE_FWD : SHAKE_REW);
+    } else {
+      process = DoGesture(SHAKE_CLOSE);
+    }
+    if (process) {
+      int i;
+      for (i = 0; i < 5; i++) {
+	if (strokes[NELEM(strokes)-1-i].type !=
+	    ((i & 1) ? SHAKE_REW : SHAKE_FWD)) break;
+	if (i) {
+	  uint32_t separation =
+	    strokes[NELEM(strokes)-i].start_millis -
+	    strokes[NELEM(strokes)-1-i].end_millis;
+	  if (separation > 250) break;
+	}
+      }
+      if (i == 5) {
+	strokes[NELEM(strokes)-1].type = SHAKE_CLOSE;
+	Event(BUTTON_NONE, EVENT_SHAKE);
+      }
+    }
+  }
+
+  bool swinging_ = false;
+  // The prop should call this from Loop() if it wants to detect swings as an event.
+  void DetectSwing() {
+    if (!swinging_ && fusor.swing_speed() > 250) {
+      swinging_ = true;
+      Event(BUTTON_NONE, EVENT_SWING);
+    }
+    if (swinging_ && fusor.swing_speed() < 100) {
+      swinging_ = false;
+    }
+  }
+  
+  void SB_Motion(const Vec3& gyro, bool clear) override {
     if (monitor.ShouldPrint(Monitoring::MonitorGyro)) {
       // Got gyro data
       STDOUT.print("GYRO: ");
@@ -710,13 +762,6 @@ public:
       STDOUT.print(gyro.y);
       STDOUT.print(", ");
       STDOUT.println(gyro.z);
-    }
-    if (fabsf(gyro.x) > 200.0 &&
-        fabsf(gyro.x) > 3.0f * abs(gyro.y) &&
-        fabsf(gyro.x) > 3.0f * abs(gyro.z)) {
-      DoGesture(gyro.x > 0 ? TWIST_LEFT : TWIST_RIGHT);
-    } else {
-      DoGesture(TWIST_CLOSE);
     }
   }
 
@@ -732,7 +777,7 @@ public:
       EnableAmplifier();
       track_player_ = GetFreeWavPlayer();
       if (track_player_) {
-        track_player_->Play(current_preset_.track.get());
+	track_player_->Play(current_preset_.track.get());
       } else {
         STDOUT.println("No available WAV players.");
       }
@@ -823,19 +868,12 @@ public:
     if (monitor.ShouldPrint(Monitoring::MonitorVariation)) {
       STDOUT << " variation = " << SaberBase::GetCurrentVariation()
              << " ccmode = " << SaberBase::GetColorChangeMode()
+//	     << " color = " << current_config->blade1->current_style()->getColor(0)
              << "\n";
     }
 
 #endif
 
-    Vec3 mss = fusor.mss();
-    if (mss.y * mss.y + mss.z * mss.z < 16.0 &&
-        (mss.x > 7 || mss.x < -6)  &&
-        fusor.swing_speed() < 150) {
-      DoGesture(mss.x > 0 ? SHAKE_FWD : SHAKE_REW);
-    } else {
-      DoGesture(SHAKE_CLOSE);
-    }
 
 #ifdef IDLE_OFF_TIME
     if (SaberBase::IsOn() ||
@@ -923,6 +961,8 @@ public:
       case EVENT_SHAKE: STDOUT.print("Shake"); break;
       case EVENT_TWIST: STDOUT.print("Twist"); break;
       case EVENT_CLASH: STDOUT.print("Clash"); break;
+      case EVENT_THRUST: STDOUT.print("Thrust"); break;
+      case EVENT_PUSH: STDOUT.print("Push"); break;
       default: STDOUT.print("?"); STDOUT.print(e); break;
     }
     if (cnt) {
@@ -1012,6 +1052,33 @@ public:
       }
       return true;
     }
+    if (!strcmp(cmd, "lblock") || !strcmp(cmd, "lb")) {
+      STDOUT.print("lblock ");
+      if (SaberBase::Lockup() == SaberBase::LOCKUP_NONE) {
+	SaberBase::SetLockup(SaberBase::LOCKUP_LIGHTNING_BLOCK);
+	SaberBase::DoBeginLockup();
+	STDOUT.println("ON");
+      } else {
+	SaberBase::DoEndLockup();
+	SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
+	STDOUT.println("OFF");
+      }
+      return true;
+    }
+    if (!strcmp(cmd, "melt")) {
+      STDOUT.print("melt ");
+      if (SaberBase::Lockup() == SaberBase::LOCKUP_NONE) {
+	SaberBase::SetLockup(SaberBase::LOCKUP_MELT);
+	SaberBase::DoBeginLockup();
+	STDOUT.println("ON");
+      } else {
+	SaberBase::DoEndLockup();
+	SaberBase::SetLockup(SaberBase::LOCKUP_NONE);
+	STDOUT.println("OFF");
+      }
+      return true;
+    }
+
 #ifdef ENABLE_AUDIO
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
@@ -1230,8 +1297,16 @@ public:
     }
 
     if (!strcmp(cmd, "set_preset") && arg) {
-      size_t preset = strtol(arg, NULL, 0);
+      int preset = strtol(arg, NULL, 0);
       SetPreset(preset, true);
+      return true;
+    }
+
+    if (!strcmp(cmd, "change_preset") && arg) {
+      int preset = strtol(arg, NULL, 0);
+      if (preset != current_preset_.preset_num) {
+	SetPreset(preset, true);
+      }
       return true;
     }
 
@@ -1299,7 +1374,10 @@ public:
     STDOUT.println(" on/off - turn saber on/off");
     STDOUT.println(" force - trigger a force push");
     STDOUT.println(" blast - trigger a blast");
+    STDOUT.println(" stab - trigger a stab");
     STDOUT.println(" lock - begin/end lockup");
+    STDOUT.println(" lblock/lb - begin/end lightning block");
+    STDOUT.println(" melt - begin/end melt");
 #ifdef ENABLE_AUDIO
     STDOUT.println(" pwd - print current directory");
     STDOUT.println(" cd directory - change directory, and sound font");
@@ -1323,11 +1401,12 @@ public:
     }
 
     if (Event2(button, event, current_modifiers | (IsOn() ? MODE_ON : MODE_OFF))) {
-      current_modifiers = BUTTON_NONE;
+      current_modifiers = 0;
       return true;
     }
     if (Event2(button, event,  MODE_ANY_BUTTON | (IsOn() ? MODE_ON : MODE_OFF))) {
-      current_modifiers = BUTTON_NONE;
+      // Not matching modifiers, so no need to clear them.
+      current_modifiers &= ~button;
       return true;
     }
     return false;

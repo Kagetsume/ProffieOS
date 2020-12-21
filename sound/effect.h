@@ -223,6 +223,10 @@ class Effect {
   void Select(int n) {
     selected_ = n;
   }
+  void SelectNext() {
+    selected_++;
+    if (selected_ == (int)files_found()) selected_ = 0;
+  }
 
   Effect* GetFollowing() const {
     return following_;
@@ -447,7 +451,9 @@ EFFECT2(pwroff, pstoff);
 EFFECT(clash);
 EFFECT(force);    // also polyphonic
 EFFECT(stab);     // also polyphonic
+#ifdef ENABLE_SPINS
 EFFECT(spin);     // also polyphonic
+#endif
 EFFECT(blaster);
 EFFECT2(lockup, lockup);
 EFFECT(poweronf); // force poweron
@@ -505,18 +511,6 @@ EFFECT2(auto,auto);
 EFFECT(endauto); // Doesn't exist in fonts, but I expect there may be use for autofire transitions
 
 EFFECT(blast); // Not to be confused with "blst" and "blaster" as blocking sounds in sabers
-EFFECT(clipin);
-EFFECT(clipout);
-EFFECT(empty);
-EFFECT(full);
-EFFECT(jam);
-EFFECT(mode);
-EFFECT(plioff);
-EFFECT(plion);
-EFFECT(range);
-EFFECT(reload);
-EFFECT(stun);
-EFFECT(unjam);
 
 // battery low
 EFFECT(lowbatt);	// battery low

@@ -96,6 +96,8 @@ struct TSC_TYPE {
   volatile uint32_t IOGCR[7];
 };
 
+#define TOUCH_MAX 8192
+
 class TouchButton : public ButtonBase {
 public:
   TouchButton(enum BUTTON button, int pin, int threshold, const char* name)
@@ -120,9 +122,19 @@ protected:
       STDOUT.print(value);
       STDOUT.print(" (");
       STDOUT.print(min_);
+      if (min_ == TOUCH_MAX) STDOUT.print(" MAX! ");
       STDOUT.print(" - ");
       STDOUT.print(max_);
+      if (max_ == TOUCH_MAX) STDOUT.print(" MAX! ");
       STDOUT.println(")");
+
+#ifdef SPEAK_TOUCH_VALUES
+      if (talkie.Empty()) {
+	talkie.Say2Digits(min_);
+	talkie.Say(spTO);
+	talkie.Say2Digits(max_);
+      }
+#endif
 
       print_next_ = false;
       min_ = 10000000;
@@ -137,7 +149,7 @@ protected:
   
   void Loop() override {
     ButtonBase::Loop();
-    if (monitor.ShouldPrint(Monitoring::MonitorTouch)) {
+    if (monitor.ShouldPrintMultiple(Monitoring::MonitorTouch)) {
       print_next_ = true;
     }
     STATE_MACHINE_BEGIN();
@@ -219,12 +231,16 @@ protected:
       while (!TSC->ISR.get<TSC_IER_TYPE::EOA>()) YIELD();
 
       if (TSC->ISR.get<TSC_IER_TYPE::MCE>()) {
-	STDOUT.print("Touch error!\n");
-	SLEEP(100);
-	// Error
+	// Overflow
+	Update(TOUCH_MAX);
       } else {
 	Update(TSC->IOGCR[1]);
       }
+
+      TSC->IOCCR.set(TSC_IO_TYPE::G2_IO1(0) |
+		     TSC_IO_TYPE::G2_IO2(0) |
+		     TSC_IO_TYPE::G2_IO3(0) |
+		     TSC_IO_TYPE::G2_IO4(0));
       
       // Let someone else have a turn.
       current_button = NULL;

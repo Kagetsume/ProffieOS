@@ -17,6 +17,8 @@
 #define PROFFIE_TEST
 #define ENABLE_SD
 
+int random(int x) { return rand() % x; }
+
 const char install_time[] = __DATE__ " " __TIME__;
 
 const char* GetSaveDir() { return NULL; }
@@ -42,9 +44,8 @@ public:
   static void DoHFLoop() {}
 };
 
-char* itoa( int value, char *string, int radix )
+char* itoa( int value, char *ret, int radix )
 {
-  static char ret[33];
   sprintf(ret, "%d", value);
   return ret;
 }
@@ -169,20 +170,27 @@ BladeConfig* current_config;
   }						                        \
 } while(0)
 
+bool extras = false;
 
-void create_test_presets_ini(const char* filename, int presets, bool finish) {
+void create_test_presets_ini(const char* filename, int presets, bool finish, const char* it) {
   FILE* f = fopen(filename, "wct");
   CHECK(f);
-  fprintf(f, "installed=%s\n", install_time);
+  if (it) 
+    fprintf(f, "installed=%s\n", it);
+  if (extras) fprintf(f, "unknown_variable=blarg\n");
   for (int i = 0; i < presets; i++) {
     fprintf(f, "new_preset\n");
     fprintf(f, "FONT=font%d\n", i);
     fprintf(f, "TRACK=track%d\n", i);
     fprintf(f, "STYLE=style%d:1\n", i);
+    if (extras) fprintf(f, "unknown_variable=blarg\n");
     fprintf(f, "STYLE=style%d:2\n", i);
     fprintf(f, "STYLE=style%d:3\n", i);
     fprintf(f, "NAME=preset%d\n", i);
+    fprintf(f, "VARIATION=%d\n", i);
+    if (extras) fprintf(f, "unknown_variable=blarg\n");
   }
+  if (extras) fprintf(f, "unknown_variable=blarg\n");
   if (finish)
     fprintf(f, "END\n");
   fclose(f);
@@ -210,7 +218,7 @@ void test_current_preset() {
   CurrentPreset preset;
   // Cleanup
   RemovePresetINI();
-  create_test_presets_ini("presets.ini", 5, true);
+  create_test_presets_ini("presets.ini", 5, true, install_time);
   CHECK(preset.Load(0));
   CHECK_EQ(preset.preset_num, 0);
   CHECK_STREQ(preset.font.get(), "font0");
@@ -235,11 +243,19 @@ void test_current_preset() {
   RemovePresetINI();
 
   // Unterminated presets.ini, do not load.
-  create_test_presets_ini("presets.ini", 5, false);
+  create_test_presets_ini("presets.ini", 5, false, install_time);
+  CHECK(!preset.Load(0));
+
+  // Wrong install time presets.ini, do not load.
+  create_test_presets_ini("presets.ini", 5, false, "yesterday");
+  CHECK(!preset.Load(0));
+
+  // No install time, do not load.
+  create_test_presets_ini("presets.ini", 5, false, NULL);
   CHECK(!preset.Load(0));
 
   // Terminated tmp file, move and load
-  create_test_presets_ini("presets.tmp", 5, true);
+  create_test_presets_ini("presets.tmp", 5, true, install_time);
   CHECK(preset.Load(0));
   CHECK(LSFS::Exists("presets.ini"));
 
@@ -318,9 +334,9 @@ void test_rotate(Color16 c, int angle) {
   G+=V - C;
   B+=V - C;
   Color16 result(R*65535, G*65535, B*65535);
-  CHECK_NEAR(result.r, x.r, 2);
-  CHECK_NEAR(result.g, x.g, 2);
-  CHECK_NEAR(result.b, x.b, 2);
+  CHECK_NEAR(result.r, x.r, 5);
+  CHECK_NEAR(result.g, x.g, 5);
+  CHECK_NEAR(result.b, x.b, 5);
 }
 
 void test_rotate(Color16 c) {
@@ -342,6 +358,7 @@ void test_rotate() {
   test_rotate(Color16(65535,0,0));
   test_rotate(Color16(0,65535,0));
   test_rotate(Color16(0,0,65535));
+  test_rotate(Color16(Color8(0,135,255)));
 }
 
 
@@ -557,6 +574,8 @@ void runPaintTest(T1 A) {
     for (int c : N16) {
       RGBA_um B(Color16(c,c,c), false, d);
       runPaintTest(A, B);
+      RGBA_um_nod C(Color16(c,c,c), d);
+      runPaintTest(A, C);
       if (c > d * 2) continue;
       RGBA B2(Color16(c,c,c), false, d);
       runPaintTest(A, B2);
@@ -576,6 +595,8 @@ void color_tests() {
     for (int b : N15) {
       RGBA_um A(Color16(a,a,a), false, b);
       runPaintTest(A);
+      RGBA_um_nod A3(Color16(a,a,a), b);
+      runPaintTest(A3);
       if (a <= b * 2) {
 	RGBA A2(Color16(a,a,a), false, b);
 	runPaintTest(A2);
@@ -589,6 +610,10 @@ int main() {
   color_tests();
   fuse_tests();
   test_rotate();
+  extras = false;
+  test_current_preset();
+  fprintf(stderr, "Extra variables enabled....\n");
+  extras = true;
   test_current_preset();
   byteorder_tests();
   extrapolator_test();

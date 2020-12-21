@@ -42,8 +42,8 @@ enum SaberPins {
   bladePin = 16,                  // blade control, either WS2811 or PWM PA0
   bladeIdentifyPin = 16,          // blade identify input / FoC
   blade2Pin = 1,                  // PB10
-  blade3Pin = 17,                 // PA4
-  blade4Pin = 0,                  // PB3
+  blade3Pin = 17,                 // PB3
+  blade4Pin = 0,                  // PA4
   blade5Pin = 8,                  // PA15 (also UART)
   blade6Pin = 9,                  // PA02 (also UART)
 
@@ -71,6 +71,16 @@ enum SaberPins {
   // UART
   rxPin = 8,                      // PA15
   txPin = 9,                      // PA02
+
+  // MiCOM setup
+  trigger1Pin = 21,   // power button
+  trigger2Pin = 23,   // aux button
+  trigger3Pin = 22,   // aux2 button
+  trigger4Pin = 1,    // data2
+  trigger5Pin = 17,   // data3
+  trigger6Pin = 0,    // data4
+  trigger7Pin = 8,    // RX
+  trigger8Pin = 9,    // TX
 };
 
 #if PROFFIEBOARD_VERSION - 0 != 2

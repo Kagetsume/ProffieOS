@@ -16,7 +16,14 @@ public:
     CONFIG_VARIABLE(ProffieOSSwingLowerThreshold, 200.0f);
     CONFIG_VARIABLE(ProffieOSSlashAccelerationThreshold, 130.0f);
     CONFIG_VARIABLE(ProffieOSAnimationFrameRate, 0.0f);
+    CONFIG_VARIABLE(ProffieOSFontImageDuration, 5000.0f);
+    CONFIG_VARIABLE(ProffieOSOnImageDuration, 5000.0f);
+    CONFIG_VARIABLE(ProffieOSBlastImageDuration, 1000.0f);
+    CONFIG_VARIABLE(ProffieOSClashImageDuration, 500.0f);
+    CONFIG_VARIABLE(ProffieOSForceImageDuration, 1000.0f);
+#ifdef ENABLE_SPINS
     CONFIG_VARIABLE(ProffieOSSpinDegrees, 360.0f);
+#endif
   }
   // Igniter compat
   // This specifies how many milliseconds before the end of the
@@ -53,10 +60,22 @@ public:
   float ProffieOSSlashAccelerationThreshold;
   // For OLED displays, this specifies the frame rate of animations.
   float ProffieOSAnimationFrameRate;
+  // for OLED displays, the time a static BMP or loop will play when saber is off
+  float ProffieOSFontImageDuration;
+  // for OLED displays, the time an on.bmp will play
+  float ProffieOSOnImageDuration;
+  // for OLED displays, the time a blst.bmp will play
+  float ProffieOSBlastImageDuration;
+  // for OLED displays, the time a clsh.bmp will play
+  float ProffieOSClashImageDuration;
+  // for OLED displays, the time a force.bmp will play
+  float ProffieOSForceImageDuration;
+#ifdef ENABLE_SPINS
   // number of degrees the blade must travel while staying above the
   // swing threshold in order to trigger a spin sound.  Default is 360 or
   // one full rotation.
   float ProffieOSSpinDegrees;
+#endif
 };
 
 FontConfigFile font_config;
@@ -145,9 +164,9 @@ public:
       hum_player_.Free();
       next_hum_player_->set_volume_now(0);
       next_hum_player_->set_fade_time(0.003);
-      next_hum_player_->set_volume(font_config.volEff / 16.0);
+      next_hum_player_->set_volume(font_config.volEff / 16.0f);
     } else {
-      next_hum_player_->set_volume_now(font_config.volEff / 16.0);
+      next_hum_player_->set_volume_now(font_config.volEff / 16.0f);
     }
     hum_player_ = next_hum_player_;
     next_hum_player_.Free();
@@ -161,7 +180,7 @@ public:
     if (!f->files_found()) return RefPtr<BufferedWavPlayer>(nullptr);
     RefPtr<BufferedWavPlayer> player = GetFreeWavPlayer();
     if (player) {
-      player->set_volume_now(font_config.volEff / 16.0);
+      player->set_volume_now(font_config.volEff / 16.0f);
       player->PlayOnce(f);
       current_effect_length_ = player->length();
     }
@@ -196,8 +215,10 @@ public:
     last_swing_micros_ = now;
     if (delta_micros > 1000000) delta_micros = 1;
     if (swing_speed > swingThreshold) {
+#ifdef ENABLE_SPINS
       float delta = delta_micros * 0.000001;
       angle_ += swing_speed * delta;
+#endif
       if (!guess_monophonic_) {
         if (swing_player_) {
           // avoid overlapping swings, based on value set in ProffieOSSwingOverlap.  Value is
@@ -219,12 +240,14 @@ public:
             }
             swinging_ = true;
           } else {
+#ifdef ENABLE_SPINS
             if (angle_ > font_config.ProffieOSSpinDegrees) {
               if (SFX_spin) {
                 swing_player_ = PlayPolyphonic(&SFX_spin);
               }
               angle_ -= font_config.ProffieOSSpinDegrees;
             }
+#endif
           }
         }
       } else if (swing_speed > swingThreshold) {
@@ -232,19 +255,23 @@ public:
           PlayMonophonic(&SFX_swing, &SFX_hum);
           swinging_ = true;
         }
+#ifdef ENABLE_SPINS
         if (angle_ > 360 && swinging_) {
           if (SFX_spin) {
             PlayMonophonic(&SFX_spin, &SFX_hum);
           }
           angle_ -= font_config.ProffieOSSpinDegrees;
         }
+#endif
       }
       float swing_strength = std::min<float>(1.0, swing_speed / swingThreshold);
       SetSwingVolume(swing_strength, 1.0);
     } else if (swing_speed <= font_config.ProffieOSSwingLowerThreshold) {
       swinging_ = false;
       swing_player_.Free();
+#ifdef ENABLE_SPINS
       angle_ = 0;
+#endif
     }
     float vol = 1.0f;
     if (!swinging_) {
@@ -298,7 +325,7 @@ public:
       }
       RefPtr<BufferedWavPlayer> tmp = PlayPolyphonic(SFX_out ? &SFX_out : &SFX_poweron);
       hum_fade_in_ = 0.2;
-      if (SFX_humm) {
+      if (SFX_humm && tmp) {
 	hum_fade_in_ = tmp->length();
 	STDOUT << "HUM fade-in time: " << hum_fade_in_ << "\n";
       }
@@ -350,40 +377,23 @@ public:
         break;
     }
   }
-  void SB_Clash() override { Play(&SFX_clash, &SFX_clsh); }
-  void SB_Stab() override {
-    if (SFX_stab) {
-      PlayCommon(&SFX_stab);
-    } else {
-      // If no stab sounds are found, use a clash sound
-      SB_Clash();
-    }
-  }
-  void SB_Force() override { PlayCommon(&SFX_force); }
-  void SB_Blast() override { Play(&SFX_blaster, &SFX_blst); }
-  void SB_Boot() override { PlayPolyphonic(&SFX_boot); }
 
-  // Blaster effects, auto fire is handled by begin/end lockup
-  void SB_Stun() override { PlayCommon(&SFX_stun); }
-  void SB_Fire() override { PlayCommon(&SFX_blast); }
-  void SB_ClipIn() override { PlayCommon(&SFX_clipin); }
-  void SB_ClipOut() override { PlayCommon(&SFX_clipout); }
-  void SB_Reload() override { PlayCommon(&SFX_reload); }
-  void SB_Mode() override {
-    if (SFX_mode) {
-      PlayCommon(&SFX_mode);
-      return;
+  void SB_Effect(EffectType effect, float location) override {
+    switch (effect) {
+      default: return;
+      case EFFECT_STAB:
+	if (SFX_stab) { PlayCommon(&SFX_stab); return; }
+	// If no stab sounds are found, fall through to clash
+      case EFFECT_CLASH: Play(&SFX_clash, &SFX_clsh); return;
+      case EFFECT_FORCE: PlayCommon(&SFX_force); return;
+      case EFFECT_BLAST: Play(&SFX_blaster, &SFX_blst); return;
+      case EFFECT_BOOT: PlayPolyphonic(&SFX_boot); return;
+      case EFFECT_NEWFONT: SB_NewFont(); return;
+      case EFFECT_LOCKUP_BEGIN: SB_BeginLockup(); return;
+      case EFFECT_LOCKUP_END: SB_EndLockup(); return;
+      case EFFECT_LOW_BATTERY: SB_LowBatt(); return;
     }
-    // TODO: would rather do a Talkie to speak the mode we're in after mode sound
-    beeper.Beep(0.05, 2000.0);
   }
-  void SB_Range() override { PlayCommon(&SFX_range); }
-  void SB_Empty() override { PlayCommon(&SFX_empty); }
-  void SB_Full() override { PlayCommon(&SFX_full); }
-  void SB_Jam() override { PlayCommon(&SFX_jam); }
-  void SB_UnJam() override { PlayCommon(&SFX_unjam); }
-  void SB_PLIOn() override { PlayCommon(&SFX_plion); }
-  void SB_PLIOff() override { PlayCommon(&SFX_plioff); }
 
   void SB_BladeDetect(bool detected) {
     Effect &X(detected ? SFX_bladein : SFX_bladeout);
@@ -397,7 +407,7 @@ public:
     }
     beeper.Beep(0.05, 2000.0);
   }
-  void SB_NewFont() override {
+  void SB_NewFont() {
     if (!PlayPolyphonic(&SFX_font)) {
       beeper.Beep(0.05, 2000.0);
     }
@@ -426,7 +436,7 @@ public:
     }
   }
 
-  void SB_BeginLockup() override {
+  void SB_BeginLockup() {
     Effect *once = nullptr;
     Effect *loop = nullptr;
     switch (SaberBase::Lockup()) {
@@ -475,7 +485,7 @@ public:
     if (once == loop) current_effect_length_ = 0;
   }
 
-  void SB_EndLockup() override {
+  void SB_EndLockup() {
     Effect *end = nullptr;
     switch (SaberBase::Lockup()) {
       case SaberBase::LOCKUP_ARMED:
@@ -592,7 +602,7 @@ public:
     return current_effect_length_;
   }
 
-  void SB_LowBatt() override {
+  void SB_LowBatt() {
     // play the fonts low battery sound if it exists
     if (SFX_lowbatt) {
       PlayCommon(&SFX_lowbatt);
@@ -609,7 +619,9 @@ public:
   uint32_t hum_start_;
   float hum_fade_in_;
   float hum_fade_out_;
+#ifdef ENABLE_SPINS
   float angle_;
+#endif
   bool monophonic_hum_;
   bool guess_monophonic_;
   State state_;

@@ -76,8 +76,7 @@ public:
 	}
 	continue;
       }
-      if (!strcmp(variable, "installed")) continue;
-      if (!preset_count) return false;
+      if (!preset_count) continue;
       if (f->Peek() != '=') continue;
       f->Read();
       f->skipspace();
@@ -153,11 +152,7 @@ public:
     return c == '\n' || c == '\r' || c == ' ' || c == '\t';
   }
 
-  bool OpenPresets(FileReader* f, const char* filename) {
-    PathHelper fn(GetSaveDir(), filename);
-    if (!f->Open(fn))
-      return false;
-
+  bool ValidatePresets(FileReader* f) {
     if (f->FileSize() < 4) return false;
     int pos = 0;
 #ifndef KEEP_SAVEFILES_WHEN_PROGRAMMING    
@@ -165,11 +160,7 @@ public:
     f->readVariable(variable);
     if (strcmp(variable, "installed")) return false;
     if (f->Read() != '=') return false;
-    const char* tmp = install_time;
-    while (*tmp) {
-      if (f->Read() != *tmp) return false;
-      tmp++;
-    }
+    if (!f->Expect(install_time)) return false;
     if (f->Read() != '\n') return false;
     pos = f->Tell();
 #endif
@@ -186,15 +177,29 @@ public:
     return true;
   }
 
+  bool OpenPresets(FileReader* f, const char* filename) {
+    PathHelper fn(GetSaveDir(), filename);
+    if (!f->Open(fn)) {
+      STDOUT << "Failed to open: " << filename << "\n";
+      return false;
+    }
+    if (ValidatePresets(f)) {
+      return true;
+    } else {
+      f->Close();
+      return false;
+    }
+  }
+
   bool UpdateINI() {
     FileReader f, f2;
     PathHelper ini_fn(GetSaveDir(), "presets.ini");
     if (OpenPresets(&f2, "presets.tmp")) {
       uint8_t buf[512];
       // Found valid tmp file
+      f2.Seek(0);
       LSFS::Remove(ini_fn);
       f.Create(ini_fn);
-      f.write_key_value("installed", install_time);
       while (f2.Available()) {
 	int to_copy = std::min<int>(f2.Available(), sizeof(buf));
 	if (f2.Read(buf, to_copy) != to_copy ||
@@ -215,7 +220,11 @@ public:
   bool CreateINI() {
     FileReader f;
     PathHelper ini_fn(GetSaveDir(), "presets.ini");
-    f.Create(ini_fn);
+    LSFS::Remove(ini_fn);
+    if (!f.Create(ini_fn)) {
+      STDOUT << "Failed to open " << ini_fn << " for write\n";
+      return false;
+    }
     f.write_key_value("installed", install_time);
     CurrentPreset tmp;
     for (size_t i = 0; i < current_config->num_presets; i++) {
@@ -253,12 +262,7 @@ public:
     }
   }
 
-  // position = 0 -> first spot
-  // position = N -> last
-  // position = -1 -> delete
-  // To duplicate, set preset_num to -1
-  void SaveAt(int position) {
-    LOCK_SD(true);
+  void SaveAtLocked(int position) {
     FileReader f, out;
     if (!OpenPresets(&f, "presets.ini")) {
       if (!UpdateINI()) CreateINI();
@@ -292,6 +296,15 @@ public:
     out.Close();
     UpdateINI();
     preset_num = position;
+  }
+
+  // position = 0 -> first spot
+  // position = N -> last
+  // position = -1 -> delete
+  // To duplicate, set preset_num to -1
+  void SaveAt(int position) {
+    LOCK_SD(true);
+    SaveAtLocked(position);
     LOCK_SD(false);
   }
 
