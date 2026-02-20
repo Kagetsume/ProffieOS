@@ -31,11 +31,6 @@ const unsigned int maxLedsPerStrip = 144;
 // This defines how sensitive the clash detection is.
 #define CLASH_THRESHOLD_G 1.0
 
-// Define this if your power button is a touch button.
-// #define POWER_TOUCHBUTTON_SENSITIVITY 1700
-// #define AUX_TOUCHBUTTON_SENSITIVITY 1700
-// #define AUX2_TOUCHBUTTON_SENSITIVITY 1700
-
 // If your electonics inverts the bladePin for some reason, define this.
 // #define INVERT_WS2811
 
@@ -46,6 +41,7 @@ const unsigned int maxLedsPerStrip = 144;
 // #define ENABLE_SNOOZE
 #define ENABLE_WS2811
 // #define ENABLE_SERIAL
+#define ENABLE_DEBUG
 
 // Must be 20 characters or less.
 #define BLE_PASSWORD "password"
@@ -95,9 +91,9 @@ Preset testing_presets[] = {
 BladeConfig blades[] = {
   // Testing configuration.
 //  { 130000, SimpleBladePtr<CreeXPE2Red, CreeXPE2Green, Blue3mmLED, NoLED>(), CONFIGARRAY(testing_presets) }
-//  { 130000, WS2811BladePtr<97, WS2811_400kHz, 8, PowerPINS<bladePowerPin1>>(), CONFIGARRAY(testing_presets),  }
+  { 130000, WS2811BladePtr<97, WS2811_800kHz, bladePin, PowerPINS<bladePowerPin1>>(), CONFIGARRAY(testing_presets),  }
 //  { 130000, WS2811BladePtr<97, WS2811_400kHz, 8, PowerPINS<bladePowerPin1>, WS2811SerialPin>(), CONFIGARRAY(testing_presets),  }
-  { 130000, SubBlade(0, 9, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>()), CONFIGARRAY(testing_presets),  }
+//  { 130000, SubBlade(0, 9, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>()), CONFIGARRAY(testing_presets),  }
 
 };
 
@@ -109,7 +105,7 @@ BladeConfig blades[] = {
 // TouchButton (similar to momentary button, but reacts to touch).
 // LatchingButton (on/off button, always controls ignition)
 
-LatchingButton PowerButton(BUTTON_POWER, powerButtonPin, "pow");
-Button AuxButton(BUTTON_AUX, auxPin, "aux");
-Button Aux2Button(BUTTON_AUX2, aux2Pin, "aux2");
+//LatchingButton PowerButton(BUTTON_POWER, powerButtonPin, "pow");
+//Button AuxButton(BUTTON_AUX, auxPin, "aux");
+//Button Aux2Button(BUTTON_AUX2, aux2Pin, "aux2");
 #endif

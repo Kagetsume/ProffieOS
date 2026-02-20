@@ -22,7 +22,7 @@
 #define DUAL_POWER_BUTTONS
 
 // Volume, useful range is about 0-2000.
-#define VOLUME 100
+#define VOLUME 500
 
 // If you have two 144 LED/m strips in your blade, connect
 // both of them to bladePin and drive them in parallel.
@@ -38,7 +38,7 @@ const unsigned int maxLedsPerStrip = 196;
 // #define ENABLE_SNOOZE
 #define ENABLE_WS2811
 // #define ENABLE_SERIAL
-// #define ENABLE_DEVELOPER_COMMANDS
+#define ENABLE_DEVELOPER_COMMANDS
 // #define DISABLE_DIAGNOSTIC_COMMANDS
 // #define SAVE_COLOR_CHANGE
 // #define DISABLE_COLOR_CHANGE
@@ -57,14 +57,35 @@ const unsigned int maxLedsPerStrip = 196;
 #define ENABLE_SD
 // #define ENABLE_SERIALFLASH
 //#define ENABLE_SSD1306
-
+#define INCLUDE_SSD1306
 // #define ENABLE_DEBUG
 
 #define IDLE_OFF_TIME 100000
 
+#define ENABLE_POWER_FOR_ID PowerPINS<bladePowerPin1>
+#define BLADE_ID_CLASS ExternalPullupBladeID<bladeIdentifyPin, 33000>
+#define SHARED_POWER_PINS
+#define BLADE_ID_SCAN_MILLIS 100
+#define BLADE_ID_TIMES 10
+#define KILL_OLD_PLAYERS
+
 // #define BLADE_DETECT_PIN aux2Pin
 
-#endif
+// #define ENABLE_TRACING TRACE_CATEGORY_MOTION | TRACE_CATEGORY_I2C
+#define ENABLE_TRACING TRACE_CATEGORY_BLADE
+
+#define FILTER_CUTOFF_FREQUENCY 150
+#define FILTER_ORDER 8
+
+// #define BLASTER_SHOTS_UNTIL_EMPTY 144
+
+#endif  // CONFIG_TOP
+
+
+//#ifdef CONFIG_PROP
+//#include "../props/blaster.h"
+//#endif
+
 
 #ifdef CONFIG_PRESETS
 
@@ -79,8 +100,17 @@ RFID_Command RFID_Commands[] = {
 Preset testing_presets[] = {
 #if 1
   { "SmthFuzz", "tracks/cantina.wav",
-    StylePtr<Layers<RandomBlink<3000,Red,Black>,InOutTrL<TrWipe<300>,TrWipeIn<500>,Black>>>(),
-    StylePtr<ColorCycle<Rgb<0,0,50>, 10, 35, Cyan, 90, 1000, 6000>>(),
+//    StyleRainbowPtr<300, 800>(),
+    StylePtr<Layers<
+
+    Black,
+     TransitionLoop<AlphaL<Black,Int<0>>,TrDoEffect<TrDelay<1500>,EFFECT_USER1>>,
+     MultiTransitionEffectL<TrConcat<TrFade<3000>,AlphaL<Yellow,Bump<EffectPosition<>,Int<3000>>>,TrFade<3000>>,EFFECT_USER1,10>>>(),
+    
+    StyleRainbowPtr<300, 800>(),
+    //StylePtr<Layers<RandomBlink<3000,Red,Black>,InOutTrL<TrWipe<300>,TrWipeIn<500>,Black>>>(),
+    // StylePtr<ColorCycle<Rgb<0,0,50>, 10, 35, Cyan, 90, 1000, 6000>>(),
+    // StylePtr<Red>(),
     "ONE" },
 #endif  
 #if 0
@@ -209,8 +239,6 @@ Preset testing_presets[] = {
     StylePtr<InOutHelper<SimpleClash<Lockup<Blast<OnSpark<HumpFlicker<BLACK, BLUE, 5>, WHITE, 250>, YELLOW>, AudioFlicker<OnSpark<BLUE, WHITE, 200>, YELLOW>>, AudioFlicker<BLUE, YELLOW>, 200>, 400, 800>>(),
     "ONOFF" },
 #endif
-  { "font02", "tracks/cantina.wav", StyleRainbowPtr<300, 800>(),
-    "=RainboW++\n++BladE++" },
   { "graflex4", "tracks/title.wav", StyleNormalPtr<CYAN, WHITE, 300, 800>(), "cyan" },
   { "graflex4", "tracks/cantina.wav", StyleNormalPtr<BLUE, RED, 300, 800>(), "blue" },
   { "caliban", "tracks/duel.wav", StyleFirePtr<RED, YELLOW>(), "red fire" },
@@ -245,8 +273,25 @@ BladeConfig blades[] = {
     DimBlade(10.0, SubBladeReverse(0, 9, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>())),
 //    DimBlade(5.0, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>()),
 //    SimpleBladePtr<CreeXPE2WhiteTemplate<550>, NoLED, NoLED, NoLED, bladePowerPin6, -1, -1, -1>(),
-//    WS2811BladePtr<97, WS2811_800kHz, blade2Pin, PowerPINS<bladePowerPin2>>(),
-    WS2811BladePtr<30, WS2811_800kHz | WS2811_GRB, blade2Pin, PowerPINS<bladePowerPin2>>(),
+    WS2811BladePtr<97, WS2811_800kHz, blade2Pin, PowerPINS<bladePowerPin2>>(),
+//    WS2811BladePtr<30, WS2811_800kHz | WS2811_GRB, blade2Pin, PowerPINS<bladePowerPin2>>(),
+//    SaviBladePtr<blade2Pin, PowerPINS<bladePowerPin2>>(),
+    CONFIGARRAY(testing_presets) },
+//  { 130000, WS2811BladePtr<97, WS2811_800kHz, blade2Pin, PowerPINS<bladePowerPin1, bladePowerPin2, bladePowerPin3>>(), CONFIGARRAY(testing_presets) }
+//  { 130000, WS281XBladePtr<131, blade2Pin, Color8::RGBw>(), CONFIGARRAY(testing_presets) },
+#endif
+#if 1 
+  // Testing configuration.
+//  { 130000, StringBladePtr<Blue3mmLED>(), CONFIGARRAY(testing_presets) }
+//  { 1, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>(), CONFIGARRAY(testing_presets) }
+  { 100000,
+//    DimBlade(10.0, SubBladeReverse(0, 143, WS2811BladePtr<144, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>())),
+    DimBlade(10.0, SubBladeReverse(0, 9, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>())),
+//    DimBlade(5.0, WS2811BladePtr<10, WS2811_800kHz | WS2811_GRB , bladePin, PowerPINS<bladePowerPin1>>()),
+//    SimpleBladePtr<CreeXPE2WhiteTemplate<550>, NoLED, NoLED, NoLED, bladePowerPin6, -1, -1, -1>(),
+    WS2811BladePtr<97, WS2811_800kHz, blade2Pin, PowerPINS<bladePowerPin2>>(),
+//    WS2811BladePtr<30, WS2811_800kHz | WS2811_GRB, blade2Pin, PowerPINS<bladePowerPin2>>(),
+//    SaviBladePtr<blade2Pin, PowerPINS<bladePowerPin2>>(),
     CONFIGARRAY(testing_presets) },
 //  { 130000, WS2811BladePtr<97, WS2811_800kHz, blade2Pin, PowerPINS<bladePowerPin1, bladePowerPin2, bladePowerPin3>>(), CONFIGARRAY(testing_presets) }
 //  { 130000, WS281XBladePtr<131, blade2Pin, Color8::RGBw>(), CONFIGARRAY(testing_presets) },
@@ -275,6 +320,10 @@ BladeConfig blades[] = {
 
 //LatchingButton PowerButton(BUTTON_POWER, powerButtonPin, "pow");
 Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
+
+//Button FireButton(BUTTON_FIRE, auxPin, "fire");
+//Button ModeButton(BUTTON_MODE_SELECT, powerButtonPin, "modeselect");
+
 // Button AuxButton(BUTTON_AUX, auxPin, "aux");
 // Button Aux2Button(BUTTON_AUX2, aux2Pin, "aux2");
 
@@ -285,4 +334,28 @@ Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
 //NECDecoder nec_decoder;
 //RC6Decoder rc6_decoder;
 //PrintDecoder print_decoder;
+#endif
+
+#ifdef CONFIG_BOTTOM
+
+#if 1
+StandardDisplayController<128, uint32_t> display_controller;
+#endif
+
+#if 0
+DisplayHelper<128, uint32_t,
+  BaseLayerOp<StandardDisplayController>,
+  ClearRectangleOp<10, 80, 8, 24>,
+  WriteBulletCountOp<10, 20, 5>
+> display_controller;
+#endif
+
+#if 0
+DisplayHelper<128, uint32_t,
+  ClearScreenOp,
+  WriteBulletCountOp<10, 20, 5>
+> display_controller;
+#endif
+
+SSD1306Template<128, uint32_t> display(&display_controller);
 #endif

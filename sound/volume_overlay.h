@@ -10,8 +10,7 @@ const uint32_t kDefaultSpeed = 500 * kMaxVolume / AUDIO_RATE;
 template<class T>
 class VolumeOverlay : public T {
 public:
-  
-  VolumeOverlay() : volume_(kMaxVolume / 100) {
+  VolumeOverlay() : volume_(kMaxVolume / 100), stop_when_zero_(false) {
     volume_.set(kDefaultVolume);
     volume_.set_target(kDefaultVolume);
     volume_.set_speed(kDefaultSpeed);
@@ -24,9 +23,9 @@ public:
       if (mult == kMaxVolume) {
         // Do nothing
       } else if (mult == 0) {
-        if (stop_when_zero_) {
+        if (stop_when_zero_.get()) {
 	  volume_.set_speed(kDefaultSpeed);
-	  T::Stop();
+	  T::StopFromReader();
         }
         for (int i = 0; i < elements; i++) data[i] = 0;
       } else {
@@ -46,6 +45,9 @@ public:
   float volume() {
     return volume_.value() * (1.0f / (1 << kVolumeShift));
   }
+  int volume_target() {
+    return volume_.target_;
+  }
   void set_volume(int vol) {
     volume_.set_target(vol);
   }
@@ -56,7 +58,7 @@ public:
   void reset_volume() {
     set_volume_now((int)kDefaultVolume);
     volume_.set_speed(kDefaultSpeed);
-    stop_when_zero_ = false;
+    stop_when_zero_.set(false);
   }
   void set_volume(float vol) {
     set_volume((int)(kDefaultVolume * vol));
@@ -79,16 +81,20 @@ public:
 
   void FadeAndStop() {
     volume_.set_target(0);
-    stop_when_zero_ = true;
+    stop_when_zero_.set(true);
   }
 
   void ResetStopWhenZero() {
-    stop_when_zero_ = false;
+    stop_when_zero_.set(false);
+  }
+
+  void set_dodge(bool dodge) {
+    volume_.set_dodge(dodge);
   }
 
 private:
-  volatile bool stop_when_zero_ = false;
   ClickAvoiderLin volume_;
+  POAtomic<bool> stop_when_zero_;
 };
 
 #endif

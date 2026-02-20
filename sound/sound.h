@@ -39,6 +39,58 @@ RefPtr<BufferedWavPlayer> GetFreeWavPlayer()  {
   return RefPtr<BufferedWavPlayer>();
 }
 
+RefPtr<BufferedWavPlayer> GetWavPlayerPlaying(const Effect* effect) {
+  for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+    if (wav_players[unit].isPlaying() &&
+        wav_players[unit].current_file_id().GetEffect() == effect) {
+      return RefPtr<BufferedWavPlayer>(wav_players + unit);
+    }
+  }
+  return RefPtr<BufferedWavPlayer>();
+}
+
+#ifdef KILL_OLD_PLAYERS
+RefPtr<BufferedWavPlayer> GetOrFreeWavPlayer(Effect* e)  {
+  if (!e->GetFollowing() && !e->GetKillable() && GetWavPlayerPlaying(e)) {
+    STDERR << "MAKING " << e->GetName() << " killable.\n";
+    e->SetKillable(true);
+  }
+  RefPtr<BufferedWavPlayer> ret = GetFreeWavPlayer();
+  if (ret) return ret;
+
+  BufferedWavPlayer* p = nullptr;
+  float best_remaining = 1000.0;
+  for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+    if (wav_players[unit].isPlaying() &&
+        wav_players[unit].refs() == 0 &&
+        wav_players[unit].current_file_id().GetEffect() &&
+        wav_players[unit].current_file_id().GetEffect()->GetKillable()) {
+      float remaining = wav_players[unit].length() - wav_players[unit].pos();
+      if (remaining < best_remaining) {
+        best_remaining = remaining;
+        p = wav_players + unit;
+      }
+    }
+  }
+  if (p) {
+    STDERR << "KILLING PLAYER " << WhatUnit(p) << "\n";
+    p->set_fade_time(0.001);
+    p->FadeAndStop();
+    while (p->isPlaying()) {
+#if VERSION_MAJOR >= 4
+      armv7m_core_yield();
+#endif
+    }
+    return RefPtr<BufferedWavPlayer>(p);
+  }
+  return RefPtr<BufferedWavPlayer>();
+}
+#else
+RefPtr<BufferedWavPlayer> GetOrFreeWavPlayer(Effect* e)  {
+  return GetFreeWavPlayer();
+}
+#endif
+
 RefPtr<BufferedWavPlayer> RequireFreeWavPlayer()  {
   while (true) {
     RefPtr<BufferedWavPlayer> ret = GetFreeWavPlayer();
@@ -46,6 +98,52 @@ RefPtr<BufferedWavPlayer> RequireFreeWavPlayer()  {
     STDOUT.println("Failed to get hum player, trying again!");
     delay(100);
   }
+}
+
+// Helper class for dodging.
+class UnaDodger : public Looper {
+public:
+  UnaDodger() : Looper(NOLINK) {}
+  const char* name() override { return "undodge"; }
+  void start(int ms) {
+    if (millis_ == 0) Link();
+    millis_ = ms;
+    start_time_ = millis();
+    for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+      wav_players[unit].set_dodge(true);
+    }
+  }
+  void Loop() override {
+    if (millis() - start_time_ <= millis_) return;
+    start_time_ = 0;
+    millis_ = 0;
+    Unlink();
+    for (size_t unit = 0; unit < NELEM(wav_players); unit++) {
+      wav_players[unit].set_dodge(false);
+    }
+  }
+private:
+  uint32_t millis_ = 0;
+  uint32_t start_time_ = 0;
+};
+
+void DodgeSound(uint32_t millis) {
+  static UnaDodger undodge;
+  undodge.start(millis);
+}
+
+bool PlayErrorMessage(const char* filename) {
+  RefPtr<BufferedWavPlayer> ret = GetFreeWavPlayer();
+  if (!ret) return false;
+  if (!ret->PlayInCurrentDir(filename) &&
+      !ret->PlayInDir("errors", filename)) {
+    return false;
+  }
+
+  DodgeSound(ret->length() * 1000.0);
+  ret->set_dodge(false);
+  ret->UpdateSaberBaseSoundInfo();
+  return true;
 }
 
 size_t WhatUnit(class BufferedWavPlayer* player) {
@@ -63,7 +161,9 @@ void SetupStandardAudioLow() {
     wav_players[i].reset_volume();
   }
   dynamic_mixer.streams_[NELEM(wav_players)] = &beeper;
+#ifndef DISABLE_TALKIE
   dynamic_mixer.streams_[NELEM(wav_players)+1] = &talkie;
+#endif
 }
 
 void SetupStandardAudio() {
@@ -72,6 +172,23 @@ void SetupStandardAudio() {
   dac.SetStream(&dynamic_mixer);
 }
 
+void SaySDInitError(int error) {
+#ifndef DISABLE_TALKIE
+  talkie.Say(spS);
+  talkie.Say(spD);
+  talkie.Say(spSTART);
+  talkie.SayNumber(error);
+#endif
+}
+
+void SaySDCheckError(int error) {
+#ifndef DISABLE_TALKIE
+  talkie.Say(spS);
+  talkie.Say(spD);
+  talkie.Say(spCHECK);
+  talkie.SayNumber(error);
+#endif
+}
 
 #include "../common/config_file.h"
 #include "hybrid_font.h"
@@ -90,5 +207,6 @@ SmoothSwingV2 smooth_swing_v2;
 
 #define LOCK_SD(X) do { } while(0)
 #include "../common/sd_card.h"
+#include "effect.h"
 
 #endif  // ENABLE_AUDIO

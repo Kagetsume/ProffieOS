@@ -21,7 +21,7 @@ public:
     return mix_;
   }
 private:
-  GRADE grade_;
+  PONUA GRADE grade_;
   uint16_t mix_;
 };
 
@@ -30,6 +30,7 @@ private:
 // Returns a value between 0 and 32768 which changes randomly up and
 // down over time. All pixels gets the same value.
 // SPEED controls how quickly the value changes.
+
 template<class SPEED>
 class SlowNoise {
 public:
@@ -42,14 +43,14 @@ public:
     uint32_t delta = now - last_millis_;
     if (delta > 100) delta = 1;
     last_millis_ = now;
-    int speed = speed_.getInteger(0);
+    int speed = speed_.calculate(blade);
     // This makes the random value update exactly 1000 times per second.
     while (delta--)
       value_ = clampi32(value_ + (random(speed * 2 + 1) - speed), 0, 32768);
   }
   int getInteger(int led) { return value_ ; }
 private:
-  SPEED speed_;
+  PONUA SVFWrapper<SPEED> speed_;
   uint32_t last_millis_;
   int value_;
 };

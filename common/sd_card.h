@@ -3,7 +3,7 @@
 
 #include "lsfs.h"
 
-#if defined(ENABLE_SD) && VERSION_MAJOR >= 4
+#if defined(ENABLE_SD) && defined(ARDUINO_ARCH_STM32L4)
 
 // Unmount sdcard when we don't need it anymore.
 class SDCard : Looper {
@@ -13,7 +13,7 @@ public:
 
   bool Active() {
 #ifdef ENABLE_AUDIO    
-    if (amplifier.Active() || AudioStreamWork::sd_is_locked()) {
+    if (amplifier.Active() || AudioStreamWork::sd_is_locked() || AudioStreamWork::SDActive()) {
       last_enabled_ = millis();
       return true;
     }
@@ -22,6 +22,9 @@ public:
       last_enabled_ = millis();
       return true;
     }
+#ifdef USB_CLASS_MSC
+    if (USBD_Configured()) return false;
+#endif
     uint32_t t = millis() - last_enabled_;
     if (t < 1000) return true;
     return false;
@@ -79,8 +82,23 @@ private:
 
 SDCard sdcard;
 inline void MountSDCard() { sdcard.Mount(); }
+
+bool AvoidIdleSDAccess() {
+#ifdef MOUNT_SD_SETTING
+  if (LSFS::GetAllowMount()) return true;
+#elif defined(USB_CLASS_MSC)
+  // This fallback won't work as well as the
+  // MOUNT_SD_SETTING, but it will allow users
+  // to access the SD card in some cases that
+  // might otherwise be impossible.
+  if (USBD_Configured()) return true;
+#endif  
+  return false;
+}
+
 #else
 inline void MountSDCard() {  }
+bool AvoidIdleSDAccess() { return false; }
 #endif // v4 && enable_sd
 
 #endif

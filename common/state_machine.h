@@ -29,6 +29,8 @@ struct StateMachineState {
   void reset_state_machine() {
     next_state_ = -1;
   }
+  bool done() const { return next_state_ == -2; }
+  void stop() { next_state_ = -2; }
 };
 
 class StateMachine {

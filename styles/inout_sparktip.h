@@ -1,7 +1,7 @@
 #ifndef STYLES_INOUT_SPARKTIP_H
 #define STYLES_INOUT_SPARKTIP_H
-// Usage: InOutHelper<BASE, OUT_MILLIS, IN_MILLIS>
-// or: InOutHelper<BASE, OUT_MILLIS, IN_MILLIS, SPARK_COLOR>
+
+// Usage: InOutSparkTip<BASE, OUT_MILLIS, IN_MILLIS, SPARK_COLOR>
 // BASE, SPARK_COLOR: COLOR
 // OUT_MILLIS, IN_MILLIS: a number
 // return value: COLOR
@@ -16,7 +16,7 @@ public:
     extension_.run(blade);
     off_color_.run(blade);
     on_ = blade->is_on();
-    thres = (extension_.getInteger(0) * (blade->num_leds() + 4)) >> 7;
+    thres = (extension_.calculate(blade) * (blade->num_leds() + 4)) >> 7;
     if (ALLOW_DISABLE && is_same_type<OFF_COLOR, Rgb<0,0,0> >::value && thres == 0)
       return false;
     return true;
@@ -27,7 +27,7 @@ private:
   bool on_;
   int thres = 0;
   SPARK_COLOR spark_color_;
-  EXTENSION extension_;
+  SVFWrapper<EXTENSION> extension_;
   OFF_COLOR off_color_;
 public:
   auto getColor(int led) -> decltype(MixColors(off_color_.getColor(0), MixColors(spark_color_.getColor(0), base_.getColor(0), 1, 8), 1, 8)) {

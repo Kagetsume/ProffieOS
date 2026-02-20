@@ -11,94 +11,111 @@
 #define UPSCALE_C2 -8191
 
 #if 1
-#define UPSAMPLE_FUNC(NAME, EMIT)                               \
-  void NAME(int16_t sample) {                                   \
-    upsample_buf_##NAME##_a_ = upsample_buf_##NAME##_b_;        \
-    upsample_buf_##NAME##_b_ = upsample_buf_##NAME##_c_;        \
-    upsample_buf_##NAME##_c_ = upsample_buf_##NAME##_d_;        \
-    upsample_buf_##NAME##_d_ = sample;                          \
-    EMIT(clamptoi16((upsample_buf_##NAME##_a_ * UPSCALE_C2 +            \
-          upsample_buf_##NAME##_b_ * UPSCALE_C1 +                       \
-          upsample_buf_##NAME##_c_ * UPSCALE_C1 +                       \
-                   upsample_buf_##NAME##_d_ * UPSCALE_C2) >> 15));      \
-    EMIT(upsample_buf_##NAME##_c_);                             \
-  }                                                             \
-  void clear_##NAME() {                                         \
-    upsample_buf_##NAME##_a_ = 0;                               \
-    upsample_buf_##NAME##_b_ = 0;                               \
-    upsample_buf_##NAME##_c_ = 0;                               \
-    upsample_buf_##NAME##_d_ = 0;                               \
-  }                                                             \
-  int16_t upsample_buf_##NAME##_a_ = 0;                         \
-  int16_t upsample_buf_##NAME##_b_ = 0;                         \
-  int16_t upsample_buf_##NAME##_c_ = 0;                         \
+#define UPSAMPLE_FUNC(NAME, EMIT)                                  \
+  void NAME(int16_t sample) {                                      \
+    upsample_buf_##NAME##_a_ = upsample_buf_##NAME##_b_;           \
+    upsample_buf_##NAME##_b_ = upsample_buf_##NAME##_c_;           \
+    upsample_buf_##NAME##_c_ = upsample_buf_##NAME##_d_;           \
+    upsample_buf_##NAME##_d_ = sample;                             \
+    EMIT(clamptoi16((upsample_buf_##NAME##_a_ * UPSCALE_C2 +       \
+          upsample_buf_##NAME##_b_ * UPSCALE_C1 +                  \
+          upsample_buf_##NAME##_c_ * UPSCALE_C1 +                  \
+                   upsample_buf_##NAME##_d_ * UPSCALE_C2) >> 15)); \
+    EMIT(upsample_buf_##NAME##_c_);                                \
+  }                                                                \
+  void clear_##NAME() {                                            \
+    upsample_buf_##NAME##_a_ = 0;                                  \
+    upsample_buf_##NAME##_b_ = 0;                                  \
+    upsample_buf_##NAME##_c_ = 0;                                  \
+    upsample_buf_##NAME##_d_ = 0;                                  \
+  }                                                                \
+  int16_t upsample_buf_##NAME##_a_ = 0;                            \
+  int16_t upsample_buf_##NAME##_b_ = 0;                            \
+  int16_t upsample_buf_##NAME##_c_ = 0;                            \
   int16_t upsample_buf_##NAME##_d_ = 0
 #else
-#define UPSAMPLE_FUNC(NAME, EMIT)               \
-  void NAME(int16_t sample) {                   \
-      EMIT(sample);      EMIT(sample);          \
-  }                                             \
-  void clear_##NAME() {                         \
+#define UPSAMPLE_FUNC(NAME, EMIT)                                  \
+  void NAME(int16_t sample) {                                      \
+      EMIT(sample);      EMIT(sample);                             \
+  }                                                                \
+  void clear_##NAME() {                                            \
   }
 #endif
 
-#define DOWNSAMPLE_FUNC(NAME, EMIT)                     \
-  void NAME(int16_t sample) {                           \
-    if (downsample_flag_##NAME##_) {                    \
-      EMIT((downsample_buf_##NAME##_ + sample) >> 1);   \
-      downsample_flag_##NAME##_ = false;                \
-    } else {                                            \
-      downsample_buf_##NAME##_ = sample;                \
-      downsample_flag_##NAME##_ = true;                 \
-    }                                                   \
-  }                                                     \
-  void clear_##NAME() {                                 \
-    downsample_buf_##NAME##_ = 0;                       \
-    downsample_flag_##NAME##_ = false;                  \
-  }                                                     \
-  int16_t downsample_buf_##NAME##_ = 0;                 \
+#define DOWNSAMPLE_FUNC(NAME, EMIT)                                \
+  void NAME(int16_t sample) {                                      \
+    if (downsample_flag_##NAME##_) {                               \
+      EMIT((downsample_buf_##NAME##_ + sample) >> 1);              \
+      downsample_flag_##NAME##_ = false;                           \
+    } else {                                                       \
+      downsample_buf_##NAME##_ = sample;                           \
+      downsample_flag_##NAME##_ = true;                            \
+    }                                                              \
+  }                                                                \
+  void clear_##NAME() {                                            \
+    downsample_buf_##NAME##_ = 0;                                  \
+    downsample_flag_##NAME##_ = false;                             \
+  }                                                                \
+  int16_t downsample_buf_##NAME##_ = 0;                            \
   bool downsample_flag_##NAME##_ = false
 
 // PlayWav reads a file from serialflash or SD and converts
 // it into a stream of samples. Note that because it can
 // spend some time reading data between samples, the
 // reader must have enough buffers to provide smooth playback.
-class PlayWav : StateMachine, public AudioStream {
+class PlayWav : StateMachine, public ProffieOSAudioStream {
 public:
-  void Play(const char* filename) {
-    if (!*filename) return;
-    strcpy(filename_, filename);
-    run_ = true;
+  PlayWav() : run_(false), effect_(nullptr), sample_bytes_(0) {}
+  void Play(StringPiece filename, float start = 0.0) {
+    if (!filename) return;
+    filename.pasteZ(filename_);
+    new_file_id_ = Effect::FileID();
+    start_ = start;
+    run_.set(true);
   }
 
   const char* Filename() const {
     return filename_;
   }
 
-  void PlayOnce(Effect* effect, float start = 0.0) {
-    sample_bytes_ = 0;
-    if (effect->Play(filename_)) {
+  void PlayOnce(const Effect::FileID& file_id, float start = 0.0) {
+    sample_bytes_.set(0);
+    new_file_id_ = file_id;
+    if (new_file_id_) {
+      new_file_id_.GetName(filename_);
       start_ = start;
-      effect_ = nullptr;
-      run_ = true;
+      effect_.set(nullptr);
+      run_.set(true);
     }
-    PlayLoop(effect->GetFollowing());
-  }
-  void PlayLoop(Effect* effect) {
-    effect_ = effect;
+    PlayLoop(file_id.GetEffect()->GetFollowing());
   }
 
+  void PlayLoop(Effect* effect) {
+    effect_.set(effect);
+  }
+
+#if 0
   void Stop() override {
     noInterrupts();
-    run_ = false;
+    run_.set(false);
     state_machine_.reset_state_machine();
-    effect_ = nullptr;
+    effect_.set(nullptr);
     written_ = num_samples_ = 0;
     interrupts();
   }
+#endif
+
+  // No need to stop interrupts since this is
+  // already called from the reader (interrupt) thread.
+  void StopFromReader() override {
+    run_.set(false);
+    state_machine_.reset_state_machine();
+    effect_.set(nullptr);
+    written_ = num_samples_ = 0;
+  }
 
   bool isPlaying() const {
-    return run_;
+    return run_.get();
   }
 
 private:
@@ -126,8 +143,7 @@ private:
     len_ = 0;
     to_read_ = 0;
     ptr_ = end_;
-    run_ = false;
-    effect_ = nullptr;
+    effect_.set(nullptr);
   }
 
   template<int bits, int channels, int rate>
@@ -151,7 +167,7 @@ private:
       } else if (rate == AUDIO_RATE * 2) {
         Emit05(v);
       } else {
-	AbortDecodeBytes("Unsupported rate.");
+        AbortDecodeBytes("Unsupported rate.");
       }
     }
   }
@@ -191,27 +207,26 @@ private:
   void loop() {
     STATE_MACHINE_BEGIN();
     while (true) {
-      while (!run_ && !effect_) YIELD();
-      new_file_id_ = Effect::FileID();
-      if (!run_) {
-        new_file_id_ = effect_->RandomFile();
+      while (!run_.get() && !effect_.get()) YIELD();
+      if (!run_.get()) {
+        new_file_id_ = old_file_id_.GetFollowing(effect_.get());
         if (!new_file_id_) goto fail;
         new_file_id_.GetName(filename_);
-        run_ = true;
-	effect_ = effect_->GetFollowing();
+        run_.set(true);
+        effect_.set(effect_.get()->GetFollowing());
       }
       if (new_file_id_ && new_file_id_ == old_file_id_) {
         // Minor optimization: If we're reading the same file
         // as before, then seek to 0 instead of open/close file.
         file_.Rewind();
       } else {
-	if (!file_.OpenFast(filename_)) {
-	  default_output->print("File ");
-	  default_output->print(filename_);
-	  default_output->println(" not found.");
-	  goto fail;
-	}
-	YIELD();
+        if (!file_.OpenFast(filename_)) {
+          default_output->print("File ");
+          default_output->print(filename_);
+          default_output->println(" not found.");
+          goto fail;
+        }
+        YIELD();
         old_file_id_ = new_file_id_;
       }
       wav_ = endswith(".wav", filename_);
@@ -244,7 +259,7 @@ private:
           }
           break;
         }
-        
+
         if (16 != ReadFile(16)) {
           default_output->println("Read failed.");
           goto fail;
@@ -271,7 +286,7 @@ private:
 
       ptr_ = buffer + 8;
       end_ = buffer + 8;
-      
+
       while (true) {
         if (wav_) {
           if (ReadFile(8) != 8) break;
@@ -284,7 +299,7 @@ private:
           if (file_.Tell() >= file_.FileSize()) break;
           len_ = file_.FileSize() - file_.Tell();
         }
-        sample_bytes_ = len_;
+        sample_bytes_.set(len_);
 
         if (start_ != 0.0) {
           int samples = Fmod(start_, length()) * rate_;
@@ -328,11 +343,11 @@ private:
       }
 
       // EOF;
-      run_ = false;
+      run_.set(false);
       continue;
 
   fail:
-      run_ = false;
+      run_.set(false);
       YIELD();
     }
 
@@ -350,18 +365,18 @@ public:
   }
 
   bool eof() const override {
-    return !run_;
+    return !run_.get();
   }
 
   // Length, seconds.
   float length() const {
-    return (float)(sample_bytes_) * 8 / (bits_ * rate_ * channels_);
+    return (float)(sample_bytes_.get()) * 8 / (bits_ * rate_ * channels_);
   }
 
   // Current position, seconds.
   float pos() const {
     if (!isPlaying()) return 0.0;
-    return (float)(sample_bytes_ - len_ + end_ - ptr_) * 8 / (bits_ * rate_);
+    return (float)(sample_bytes_.get() - len_ + end_ - ptr_) * 8 / (bits_ * rate_ * channels_);
   }
 
   void Close() {
@@ -373,9 +388,22 @@ public:
     return filename_;
   }
 
+  Effect::FileID current_file_id() const {
+    return new_file_id_;
+  }
+
+  void dump() {
+    STDOUT << " run=" << run_.get()
+           << " filename=" << filename()
+           << " pos=" << pos()
+           << " len=" << length()
+           << "\n";
+  }
+
 private:
-  volatile bool run_ = false;
-  Effect* volatile effect_ = nullptr;
+  POAtomic<bool> run_;
+  POAtomic<Effect*> effect_;
+  // If we're playing from an Effect, this file ID is the file we're actually playing.
   Effect::FileID new_file_id_;
   Effect::FileID old_file_id_;
   char filename_[128];
@@ -393,7 +421,7 @@ private:
   FileReader file_;
 
   size_t len_ = 0;
-  volatile size_t sample_bytes_ = 0;
+  POAtomic<size_t> sample_bytes_;
   unsigned char* ptr_;
   unsigned char* end_;
   unsigned char buffer[512 + 8]  __attribute__((aligned(4)));
@@ -401,7 +429,7 @@ private:
   // Number of samples_ in samples that has been
   // sent out already.
   int written_ = 0;
-  
+
   // Number of samples in samples_
   int num_samples_ = 0;
   int16_t samples_[32];

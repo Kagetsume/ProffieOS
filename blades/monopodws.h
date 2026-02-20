@@ -378,13 +378,14 @@ MonopodWSPinBase(int num_leds, int pin, uint32_t frequency,
   bool IsReadyForEndFrame() {
     return micros() - start_micros_ > num_leds_ * 24000000.0 / frequency_ + 300;
   }
-  void BeginFrame() {
+  Color16* BeginFrame() {
     while (Color8::num_bytes(BYTEORDER) * num_leds_ * 8 + 1 > (int)sizeof(displayMemory)) {
       STDOUT.print("Display memory is not big enough, increase maxLedsPerStrip!");
       num_leds_ /= 2;
     }
     while (!IsReadyForBeginFrame());
     frame_num_ ++;
+    return color_buffer;
   }
   void EndFrame() {
     while (!IsReadyForEndFrame());
@@ -402,6 +403,7 @@ MonopodWSPinBase(int num_leds, int pin, uint32_t frequency,
     start_micros_ = micros();
   }
 
+  int pin() const override { return pin_; }
   int num_leds() const override { return num_leds_; }
   Color8::Byteorder get_byteorder() const override { return BYTEORDER; }
   void Enable(bool on) override {

@@ -3,15 +3,41 @@
 
 #include "monitoring.h"
 
+#ifdef PROFFIE_TEST
+struct Print {
+  void print(const char* s) { write((const uint8_t*)s, strlen(s)); }
+  void print(float v) {
+    char tmp[64];
+    sprintf(tmp, "%f", v);
+    print(tmp);
+  }
+  void print(int v, int base) {
+    char tmp[64];
+    sprintf(tmp, "%d", v);
+    print(tmp);
+  }
+  void write(char s) { write( (uint8_t) s); }
+  template<class T>
+  void println(T s) { print(s); write('\n'); }
+  template<class T>
+  void println(T s, int base) { print(s); write('\n'); }
+  virtual size_t write(uint8_t s) { putchar(s); return 1; }
+  virtual size_t write(const uint8_t *buffer, size_t size) {
+    for (size_t i = 0; i < size; i++) write(buffer[i]);
+    return size;
+  }
+
+};
+#endif
+
 extern Print* default_output;
 extern Print* stdout_output;
-
 
 template<typename T, typename X = void> struct PrintHelper {
   static void out(Print& p, T& x) { p.print(x); }
 };
 
-template<typename T> struct PrintHelper<T, decltype(((T*)0)->printTo(*(Print*)0))> {
+template<typename T> struct PrintHelper<T, decltype(std::declval<T*>()->printTo(*(Print*)0))> {
   static void out(Print& p, T& x) { x.printTo(p); }
 };
 
@@ -49,6 +75,11 @@ public:
 #endif
 };
 
+template<typename T>
+Print& operator<<(Print& p, T v) {
+  PrintHelper<const T>::out(p, v);
+  return p;
+}
 
 class CatchCommandOutput : public Print {
  public:
@@ -59,6 +90,7 @@ class CatchCommandOutput : public Print {
   }
   size_t write(uint8_t b) override {
     if (b == '\n') { line_++; return 1; }
+    if (b == '\r') return 1;	  
     if (line_ == target_line_) {
       if (bufsize_ > 1) {
 	*buf_ = b;
@@ -78,11 +110,164 @@ private:
  size_t bufsize_;
 };
 
+template<size_t MAXLINE>
+class GetNextLineCommandOutput : public Print {
+ public:
+  GetNextLineCommandOutput(const char* previous, char* target_buf, bool reverse) :
+    previous_(previous),
+    buf_(target_buf),
+    reverse_(reverse) {
+  }
+
+  bool compare(const char* a, const char *b) const {
+    return reverse_ ? (strcmp(a, b) > 0) : (strcmp(a, b) < 0);
+  }
+  size_t write(uint8_t b) override {
+    if (b == '\n') {
+      if (pos_) {
+	line_[pos_] = 0;
+	if (previous_ == nullptr || compare(previous_, line_)) {
+	  if (!found_ || compare(line_, buf_)) {
+	    strcpy(buf_, line_);
+	    found_ = true;
+	  }
+	}
+	pos_ = 0;
+      }
+      return 1;
+    }
+    if (b == '\r') return 1;
+    if (pos_ <  MAXLINE - 1) line_[pos_++] = b;
+    return 1;
+  }
+  bool found() const { return found_; }
+private:
+  bool reverse_;
+  bool found_ = false;
+  size_t pos_ = 0;
+  char* buf_;
+  const char* previous_;
+  char line_[MAXLINE];
+};
+
+#include "string_piece.h"
+
+void StringPiece::printTo(Print& p) const {
+  p.write((const uint8_t*)str, len);
+}
+
+template<size_t bufsize>
+struct Line {
+  int line_number;
+  char line[bufsize];
+  int cmp(const StringPiece other) const { return StringPiece(line).cmp(other); }
+  int cmp(const Line& other) const { return cmp(other.line); }
+  bool operator<(const Line& other) const { return cmp(other) < 0; }
+  bool operator<=(const Line& other) const { return cmp(other) <= 0; }
+  bool operator>(const Line& other) const { return cmp(other) > 0; }
+  bool operator>=(const Line& other) const { return cmp(other) >= 0; }
+  bool operator==(const Line& other) const { return cmp(other) == 0; }
+  bool operator!=(const Line& other) const { return cmp(other) != 0; }
+
+  bool operator<(const StringPiece other) const { return cmp(other) < 0; }
+  bool operator<=(const StringPiece other) const { return cmp(other) <= 0; }
+  bool operator>(const StringPiece other) const { return cmp(other) > 0; }
+  bool operator>=(const StringPiece other) const { return cmp(other) >= 0; }
+  bool operator==(const StringPiece other) const { return cmp(other) == 0; }
+  bool operator!=(const StringPiece other) const { return cmp(other) != 0; }
+
+  operator bool() const { return line[0] != 0; }
+  void clear() { line[0] = 0; line_number=-1; }
+};
+
+
+template<size_t MAXLINE>
+class CommandOutputCaptureHelper : public Print {
+ public:
+  CommandOutputCaptureHelper() {
+    saved_output_ = stdout_output;
+    stdout_output = this;
+  }
+  virtual ~CommandOutputCaptureHelper() {
+    stdout_output = saved_output_;
+  }
+  
+  virtual void GotLine(const Line<MAXLINE>& line_) = 0;
+  size_t write(uint8_t b) override {
+    if (b == '\n') {
+      if (pos_) {
+	line_.line[pos_] = 0;
+	GotLine(line_);
+	pos_ = 0;
+      }
+      return 1;
+    }
+    if (b == '\r') return 1;
+    if (pos_ <  MAXLINE - 1) line_.line[pos_++] = b;
+    return 1;
+  }
+protected:
+  size_t pos_ = 0;
+  Line<MAXLINE> line_;
+  Print* saved_output_;
+};
+
+
+template<int bufsize>
+class LineTagger : public CommandOutputCaptureHelper<bufsize> {
+public:
+  LineTagger(const StringPiece& tag) : line_(0), tag_(tag) {}
+  void GotLine(const Line<bufsize>& l) override {
+    *(this->saved_output_) << ++line_ << "," << strlen(l.line) << "," << tag_ << "|" << l.line << "\n";
+  }
+protected:
+  int line_;
+  const StringPiece tag_;
+};
+
+
 extern ConsoleHelper STDOUT;
+
+struct DevNullHelper {
+public:
+  template<typename T>
+  DevNullHelper& operator<<(T v) { return *this; }
+};
+
+DevNullHelper DEVNULL;
 
 #define DEFINE_COMMON_STDOUT_GLOBALS            \
 Print* default_output = &Serial;                \
 Print* stdout_output = &Serial;                 \
 ConsoleHelper STDOUT
+#define STDERR (*default_output)
+
+
+// Default log level.
+// Log level can be changed by undefining and re-defining PROFFIEOS_LOG_LEVEL.
+// This can be used to raise the log level in a particular code segment.
+// PVLOG() statements with log levels over PROFFIOS_LOG_LEVEL will generally
+// generate no code and take no memory.
+#ifndef PROFFIEOS_LOG_LEVEL
+#define PROFFIEOS_LOG_LEVEL 300
+#endif
+
+namespace {
+template<bool shouldlog> struct VlogClassSelector { static Print* get() { return default_output; } };
+template<> struct VlogClassSelector<false> { static DevNullHelper* get() { return &DEVNULL; } };
+};
+
+// 100 = errors
+// 200 = things you should probably know, like blade ID
+// 300 = normal information about what is happening (default level)
+// 400 = information helpful for debugging
+// 500 = repeated, spammy information you don't normally want
+#define PVLOG(V) (*VlogClassSelector<(V) <= PROFFIEOS_LOG_LEVEL>::get())
+
+#define PVLOG_ERROR   PVLOG(100)
+#define PVLOG_STATUS  PVLOG(200)
+#define PVLOG_NORMAL  PVLOG(300)
+#define PVLOG_DEBUG   PVLOG(400)
+#define PVLOG_VERBOSE PVLOG(500)
 
 #endif

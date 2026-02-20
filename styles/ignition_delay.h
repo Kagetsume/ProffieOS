@@ -21,9 +21,9 @@ public:
         waiting_ = true;
         wait_start_time_ = millis();
       }
-      int delay_millis = millis_.getInteger(0);
+      int delay_millis = millis_.calculate(base);
       uint32_t waited = millis() - wait_start_time_;
-      if (waited > delay_millis) {
+      if (delay_millis < 0 || (waited > (uint32_t)delay_millis)) {
         is_on_ = true;
         wait_start_time_ = millis() - delay_millis - 1;
       }
@@ -37,7 +37,7 @@ private:
   bool is_on_ = false;
   bool waiting_ = false;
   uint32_t wait_start_time_;
-  MILLIS millis_;
+  SVFWrapper<MILLIS> millis_;
 };
 
 template<class MILLIS, class BASE>

@@ -6,8 +6,8 @@
 // depends on the blade.
 class Color8 {
   public:
-  Color8() : r(0), g(0), b(0) {}
-  Color8(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+  constexpr Color8() : r(0), g(0), b(0) {}
+  constexpr Color8(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
   // x = 0..256
   Color8 mix(const Color8& other, int x) const {
     // Wonder if there is an instruction for this?
@@ -39,6 +39,10 @@ class Color8 {
 
   enum Byteorder {
     NONE = 0,
+
+    R = 0x1,
+    G = 0x2,
+    B = 0x3,
 
     // RGB colors
     BGR=0x321,
@@ -80,11 +84,17 @@ class Color8 {
   };
 
   static int num_bytes(int byteorder) {
-    return byteorder <= 0xfff ? 3 : 4;
+    return
+      byteorder <= 0xf ? 1 :
+      byteorder <= 0xfff ? 3 :
+      4;
   }
 
   static constexpr int inline_num_bytes(int byteorder) __attribute__((always_inline)) {
-    return byteorder <= 0xfff ? 3 : 4;
+    return
+      byteorder <= 0xf ? 1 :
+      byteorder <= 0xfff ? 3 :
+      4;
   }
 
 
@@ -165,6 +175,26 @@ template<int BYTEORDER, int byte> static inline uint8_t GETBYTE(const Color8& rg
   return GETBYTEN<((BYTEORDER >> (byte * 4)) & 0x7)>(rgb);
 }
 
+class HSL {
+public:
+  HSL() : H(0), S(0), L(0) {}
+  HSL(float h, float s, float l) : H(h), S(s), L(l) {}
+  HSL rotate(float angle) {
+    return HSL(fract(H + angle), S, L);
+  }
+  void printTo(Print& p) {
+    p.print("HSL:");
+    p.print(H);
+    p.write(',');
+    p.print(S);
+    p.write(',');
+    p.print(L);
+  }
+  float H; // 0 - 1.0
+  float S; // 0 - 1.0
+  float L; // 0 - 1.0
+};
+
 
 static int8_t color16_dither_matrix[4][4] = {
   { -127, 111,  -76,  94 },
@@ -176,7 +206,7 @@ static int8_t color16_dither_matrix[4][4] = {
 class Color16 {
   public:
   constexpr Color16() : r(0), g(0), b(0) {}
-  Color16(const Color8& c) : r(c.r * 0x101), g(c.g * 0x101), b(c.b * 0x101) {}
+  constexpr Color16(const Color8& c) : r(c.r * 0x101), g(c.g * 0x101), b(c.b * 0x101) {}
   constexpr Color16(uint16_t r_, uint16_t g_, uint16_t b_) : r(r_), g(g_), b(b_) {}
   // x = 0..256
   Color16 mix(const Color16& other, int x) const {
@@ -289,6 +319,48 @@ public:
                    f(1*16384+H, C, MAX));
   }
 
+  HSL toHSL() const {
+    int MAX = std::max(r, std::max(g, b));
+    int MIN = std::min(r, std::min(g, b));
+    int C = MAX - MIN;
+    float H;
+    // Note 16384 = 60 degrees.
+    if (C == 0) {
+      H = 0;
+    } else if (r == MAX) {
+      // r is biggest
+      H = (g - b) / (float)C;
+    } else if (g == MAX) {
+      // g is biggest
+      H = (b - r) / (float)C + 2.0f;
+    } else {
+      // b is biggest
+      H = (r - g) / (float)C + 4.0f;
+    }
+    int L = MIN + MAX;
+    float S = (MAX*2 - L) / (float)std::min<int>(L, 131072 - L);
+    return HSL(fract(H / 6.0f), S, L / 131070.0);
+  }
+
+  explicit Color16(HSL hsl) {
+    float C = (1.0 - fabsf(2 * hsl.L - 1.0f)) * hsl.S;
+    float h = hsl.H * 6;
+    float X = C * (1 - fabsf(fmodf(h, 2.0f) - 1));
+    float R=0.0, G=0.0, B=0.0;
+    switch ((int)floor(h)) {
+      case 0: R=C; G=X; break;
+      case 1: R=X; G=C; break;
+      case 2: G=C; B=X; break;
+      case 3: G=X; B=C; break;
+      case 4: R=X; B=C; break;
+      case 5: R=C; B=X; break;
+    }
+    float m = hsl.L - C / 2;
+    r = (R + m) * 65535;
+    g = (G + m) * 65535;
+    b = (B + m) * 65535;
+  }
+
   uint16_t r, g, b;
 };
 
@@ -299,6 +371,7 @@ struct SimpleColor {
   void printTo(Print& p) {
     c.printTo(p);
   }
+  bool getOverdrive() const { return false; }
 };
 
 struct OverDriveColor {
@@ -309,9 +382,10 @@ struct OverDriveColor {
   bool overdrive;
   
   void printTo(Print& p) {
-    if (overdrive) p.write('!');
+    p.write(overdrive ? '!' : '#');
     c.printTo(p);
   }
+  bool getOverdrive() const { return overdrive; }
 };
 
 
@@ -362,6 +436,7 @@ struct RGBA_um_nod {
     p.write(',');
     p.print(alpha);
   }
+  bool getOverdrive() const { return false; }
 };
 
 // Unmultiplied RGBA, used as a temporary and makes optimization easier.
@@ -376,11 +451,12 @@ struct RGBA_um {
   bool overdrive;
 
   void printTo(Print& p) {
-    if (overdrive) p.write('!');
+    p.write(overdrive ? '!' : '#');
     c.printTo(p);
     p.write(',');
     p.print(alpha);
   }
+  bool getOverdrive() const { return overdrive; }
 };
 
 // Premultiplied ALPHA, no overdrive
@@ -395,6 +471,7 @@ struct RGBA_nod {
     p.write('*');
     p.print(alpha);
   }
+  bool getOverdrive() const { return false; }
 };
 
 // Premultiplied ALPHA
@@ -409,11 +486,12 @@ struct RGBA {
   uint16_t alpha;
   bool overdrive;
   void printTo(Print& p) {
-    if (overdrive) p.write('!');
+    p.write(overdrive ? '!' : '#');
     c.printTo(p);
     p.write('*');
     p.print(alpha);
   }
+  bool getOverdrive() const { return overdrive; }
 };
 
 inline RGBA_um_nod operator*(const SimpleColor& a, uint16_t x) {

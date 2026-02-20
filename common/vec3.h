@@ -17,7 +17,9 @@ public:
     ORIENTATION_FETS_TOWARDS_BLADE = 0x00,
     ORIENTATION_USB_TOWARDS_BLADE = 0x10,
     ORIENTATION_SDA_TOWARDS_BLADE = 0x02,
+    ORIENTATION_USB_CCW_FROM_BLADE = 0x02,
     ORIENTATION_SERIAL_TOWARDS_BLADE = 0x12,
+    ORIENTATION_USB_CW_FROM_BLADE = 0x12,
     ORIENTATION_TOP_TOWARDS_BLADE = 0x04,
     ORIENTATION_BOTTOM_TOWARDS_BLADE = 0x14,
   };
@@ -42,8 +44,16 @@ public:
     y += o.y;
     z += o.z;
   }
+  void operator-=(const Vec3& o)  {
+    x -= o.x;
+    y -= o.y;
+    z -= o.z;
+  }
   Vec3 operator*(float f) const {
     return Vec3(x * f, y * f, z * f);
+  }
+  Vec3 operator*(const Vec3& o) const {
+    return Vec3(x * o.x, y * o.y, z * o.z);
   }
   Vec3 operator*=(float f) {
     x*=f;
@@ -122,6 +132,27 @@ public:
     p.write('}');
   }
   float x, y, z;
+};
+
+struct Motion {
+  Motion() {}
+  explicit Motion(float v) : accel(v), gyro(v) {}
+  Motion(const Vec3& a, const Vec3& g) : accel(a), gyro(g) {}
+
+  Motion operator+(const Motion& o) const { return Motion(accel + o.accel, gyro + o.gyro); }
+  Motion operator-(const Motion& o) const { return Motion(accel - o.accel, gyro - o.gyro); }
+  Motion operator*(float f) const { return Motion(accel * f, gyro * f); }
+  void operator+=(const Motion& o) {
+    accel += o.accel;
+    gyro += o.gyro;
+  }
+  void operator-=(const Motion& o) {
+    accel -= o.accel;
+    gyro -= o.gyro;
+  }
+  
+  Vec3 accel;
+  Vec3 gyro;
 };
 
 #endif

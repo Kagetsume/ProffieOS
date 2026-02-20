@@ -3,33 +3,41 @@
 
 class ScopedCycleCounter {
 public:
+  static inline uint32_t getCycles() {
+#if defined(TEENSYDUINO)
+    return ARM_DWT_CYCCNT - counted_cycles_;
+#elif defined(ARDUINO_ARCH_STM32L4)
+    return DWT->CYCCNT - counted_cycles_;
+#elif defined(ESP32)
+    return cpu_hal_get_cycle_count();
+#else    
+    return 0;
+#endif    
+  }
   ScopedCycleCounter(uint64_t& dest) :
     dest_(dest) {
-#ifndef DISABLE_DIAGNOSTIC_COMMANDS      
-#ifdef TEENSYDUINO
-    cycles_ = ARM_DWT_CYCCNT;
-#else
-    cycles_ = DWT->CYCCNT;
-#endif
+#ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    noInterrupts();
+    cycles_ = getCycles();
+    interrupts();
 #endif    
   }
   ~ScopedCycleCounter() {
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    noInterrupts();
     uint32_t cycles;
-#ifdef TEENSYDUINO
-    cycles = ARM_DWT_CYCCNT - cycles_;
-    ARM_DWT_CYCCNT = cycles_;
-#else
-    cycles = DWT->CYCCNT - cycles_;
-    DWT->CYCCNT = cycles_;
-#endif
+    cycles = getCycles() - cycles_;
+    counted_cycles_ += cycles;
+    interrupts();
     dest_ += cycles;
-#endif    
+#endif
   }
 private:
+  static volatile uint32_t counted_cycles_;
   uint32_t cycles_;
   uint64_t& dest_;
 };
 
+volatile uint32_t ScopedCycleCounter::counted_cycles_ = 0;
 
 #endif

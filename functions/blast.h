@@ -7,11 +7,11 @@
 // WAVE_MS: a number (defaults to 400)
 // EFFECT: a BladeEffectType (defaults to EFFECT_BLAST)
 // returned value: FUNCTION
-// This function is intended to Mix<> or AlphaL<>, when a
-// a blast  occurs, it makes a wave starting at the blast.
+// This function is intended to be used in a Mix<> or AlphaL<>
+// When a blast occurs, it makes a wave starting at the blast
 // location (which is currently random) and travels out
 // from that direction. At the peak, this function returns
-// 32768 and when there is no blash it returns zero.
+// 32768 and when there is no blast it returns zero.
 // The FADOUT_MS controls how long it takes the wave to
 // fade out. The WAVE_SIZE controls the width of the wave.
 // The WAVE_MS parameter controls the speed of the waves.
@@ -34,7 +34,8 @@ class BlastF {
 public:
   void run(BladeBase* blade) {
     num_leds_ = blade->num_leds();
-    num_blasts_ = blade->GetEffects(&effects_);
+    num_blasts_ = SaberBase::GetEffects(&effects_);
+    blade_number_ = blade->GetBladeNumber();
   }
 
   int getInteger(int led) {
@@ -42,12 +43,13 @@ public:
     for (size_t i = 0; i < num_blasts_; i++) {
       const BladeEffect& b = effects_[i];
       if (!(b.type == EFFECT)) continue;
+      if (!b.location.on_blade(blade_number_)) continue;
       uint32_t T = micros() - b.start_micros;
       int M = 1000 - T/FADEOUT_MS;
       if (M > 0) {
 	// TODO: Get rid of float math.
 	float dist = fabsf(b.location - led/(float)num_leds_);
-	int N = fabsf(dist - T / (WAVE_MS * 1000.0)) * WAVE_SIZE;
+	int N = fabsf(dist - T / (WAVE_MS * 1000.0f)) * WAVE_SIZE;
 	if (N <= 32) {
 	  mix += blast_hump[N] * M / 1000;
 	}
@@ -58,24 +60,26 @@ public:
 
 private:
   int num_leds_;
+  int blade_number_;
   size_t num_blasts_;
   BladeEffect* effects_;
 };
-
 
 // Usage: BlastFadeoutF<FADEOUT_MS, EFFECT>
 // FADEOUT_MS: a number (defaults to 250)
 // EFFECT: a BladeEffectType (defaults to EFFECT_BLAST)
 // return value: FUNCTION
-// NOrmally returns 0, but returns up to 32768 when the
+// Normally returns 0, but returns up to 32768 when the
 // selected effect occurs. Then if fades back to zero over
 // FADEOUT_MS milliseconds.
+
 template<int FADEOUT_MS = 250, BladeEffectType EFFECT = EFFECT_BLAST>
 class BlastFadeoutF {
 public:
   void run(BladeBase* blade) {
     num_leds_ = blade->num_leds();
-    num_blasts_ = blade->GetEffects(&effects_);
+    num_blasts_ = SaberBase::GetEffects(&effects_);
+    blade_number_ = blade->GetBladeNumber();
   }
   int getInteger(int led) {
     if (num_blasts_ == 0) return 0;
@@ -83,6 +87,7 @@ public:
     for (size_t i = 0; i < num_blasts_; i++) {
       const BladeEffect& b = effects_[i];
       if (b.type != EFFECT) continue;
+      if (!b.location.on_blade(blade_number_)) continue;
       uint32_t T = micros() - b.start_micros;
       int M = 1000 - T/FADEOUT_MS;
       if (M > 0) {
@@ -94,6 +99,7 @@ public:
 
 private:
   int num_leds_;
+  int blade_number_;
   size_t num_blasts_;
   BladeEffect* effects_;
 };
@@ -103,12 +109,14 @@ private:
 // return value: FUNCTION
 // Original blast function. Normally returns zero, but
 // returns up to 32768 when the selected effect occurs.
+
 template<BladeEffectType EFFECT=EFFECT_BLAST>
 class OriginalBlastF {
 public:
   void run(BladeBase* blade) {
     num_leds_ = blade->num_leds();
-    num_blasts_ = blade->GetEffects(&effects_);
+    num_blasts_ = SaberBase::GetEffects(&effects_);
+    blade_number_ = blade->GetBladeNumber();
   }
   int getInteger(int led) {
     if (num_blasts_ == 0) return 0;
@@ -117,6 +125,7 @@ public:
       // TODO(hubbe): Use sin_table and avoid floats
       const BladeEffect& b = effects_[i];
       if (b.type != EFFECT) continue;
+      if (!b.location.on_blade(blade_number_)) continue;
       float x = (b.location - led/(float)num_leds_) * 30.0;
       uint32_t T = micros() - b.start_micros;
       float t = 0.5 + T / 200000.0;
@@ -130,8 +139,9 @@ public:
   }
 private:
   int num_leds_;
+  int blade_number_;
   size_t num_blasts_;
   BladeEffect* effects_;
 };
 
-#endif
+#endif  // FUNCTIONS_BLAST_H

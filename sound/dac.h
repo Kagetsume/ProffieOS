@@ -1,8 +1,43 @@
 #ifndef SOUND_DAC_H
 #define SOUND_DAC_H
 
+#include "filter.h"
+
+#ifdef ESP32
+#include "dac_esp32.h"
+#else
+
+
 #if defined(__IMXRT1062__)
-void set_audioClock(int nfact, int32_t nmult, uint32_t ndiv,  bool force = false); // sets PLL4
+#define IMXRT_CACHE_ENABLED 2 // 0=disabled, 1=WT, 2= WB
+
+#include <Arduino.h>
+#include <imxrt.h>
+
+FLASHMEM
+void my_set_audioClock(int nfact, int32_t nmult, uint32_t ndiv, bool force) // sets PLL4
+{
+	if (!force && (CCM_ANALOG_PLL_AUDIO & CCM_ANALOG_PLL_AUDIO_ENABLE)) return;
+
+	CCM_ANALOG_PLL_AUDIO = CCM_ANALOG_PLL_AUDIO_BYPASS | CCM_ANALOG_PLL_AUDIO_ENABLE
+			     | CCM_ANALOG_PLL_AUDIO_POST_DIV_SELECT(2) // 2: 1/4; 1: 1/2; 0: 1/1
+			     | CCM_ANALOG_PLL_AUDIO_DIV_SELECT(nfact);
+
+	CCM_ANALOG_PLL_AUDIO_NUM   = nmult & CCM_ANALOG_PLL_AUDIO_NUM_MASK;
+	CCM_ANALOG_PLL_AUDIO_DENOM = ndiv & CCM_ANALOG_PLL_AUDIO_DENOM_MASK;
+
+	CCM_ANALOG_PLL_AUDIO &= ~CCM_ANALOG_PLL_AUDIO_POWERDOWN;//Switch on PLL
+	while (!(CCM_ANALOG_PLL_AUDIO & CCM_ANALOG_PLL_AUDIO_LOCK)) {}; //Wait for pll-lock
+
+	const int div_post_pll = 1; // other values: 2,4
+	CCM_ANALOG_MISC2 &= ~(CCM_ANALOG_MISC2_DIV_MSB | CCM_ANALOG_MISC2_DIV_LSB);
+	if(div_post_pll>1) CCM_ANALOG_MISC2 |= CCM_ANALOG_MISC2_DIV_LSB;
+	if(div_post_pll>3) CCM_ANALOG_MISC2 |= CCM_ANALOG_MISC2_DIV_MSB;
+
+	CCM_ANALOG_PLL_AUDIO &= ~CCM_ANALOG_PLL_AUDIO_BYPASS;//Disable Bypass
+}
+
+
 #endif
 
 #ifdef USE_I2S
@@ -61,7 +96,7 @@ void set_audioClock(int nfact, int32_t nmult, uint32_t ndiv,  bool force = false
 
 #define CHANNELS 2
 
-#else // TEENSYDUINO
+#elif defined(ARDUINO_ARCH_STM32L4)
 
 #define CHANNELS 1
 
@@ -81,6 +116,14 @@ void my_stm32l4_system_saiclk_configure_22579200()
   while (!(RCC->CR & RCC_CR_PLLSAI1RDY)){}
 }
 
+#elif defined(ESP32)
+
+#define CHANNELS 1
+
+#else
+
+#error Unknown I2S arch
+
 #endif
 
 #else   // USE_I2S
@@ -89,17 +132,60 @@ void my_stm32l4_system_saiclk_configure_22579200()
 
 #define PDB_CONFIG (PDB_SC_TRGSEL(15) | PDB_SC_PDBEN | PDB_SC_CONT | PDB_SC_PDBIE | PDB_SC_DMAEN)
 
-class LS_DAC : CommandParser, Looper {
+class LS_DAC : CommandParser {
 public:
-  virtual void Loop() override {}
-  virtual const char* name() { return "DAC"; }
-  void Setup() override {
+  void Setup() {
     if (!needs_setup_) return;
     needs_setup_ = false;
 #ifdef TEENSYDUINO
     dma.begin(true); // Allocate the DMA channel first
 
 #ifdef USE_I2S
+
+#if defined(ESP32)
+    //#include "driver/i2s_std.h"
+    //#include "driver/gpio.h"
+
+    i2s_chan_handle_t tx_handle;
+    i2s_chan_config_t chan_cfg = I2S_CHANNEL_DEFAULT_CONFIG(I2S_NUM_AUTO, I2S_ROLE_MASTER);
+    i2s_new_channel(&chan_cfg, &tx_handle, NULL);
+
+    i2s_std_config_t std_cfg = {
+      .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(44100),
+      .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO),
+      .gpio_cfg = {
+	.mclk = I2S_GPIO_UNUSED,
+	.bclk = bclkPin,
+	.ws = lrclkPin,
+	.dout = txd0Pin,
+	.din = I2S_GPIO_UNUSED,
+	.invert_flags = {
+	  .mclk_inv = false,
+	  .bclk_inv = false,
+	  .ws_inv = false,
+	},
+      },
+    };
+    i2s_channel_init_std_mode(tx_handle, &std_cfg);
+
+    /* Before write data, start the tx channel first */
+    //i2s_channel_enable(tx_handle);
+    //i2s_channel_write(tx_handle, src_buf, bytes_to_write, bytes_written, ticks_to_wait);
+
+    /* If the configurations of slot or clock need to be updated,
+     * stop the channel first and then update it */
+    // i2s_channel_disable(tx_handle);
+    // std_cfg.slot_cfg.slot_mode = I2S_SLOT_MODE_MONO; // Default is stereo
+    // i2s_channel_reconfig_std_slot(tx_handle, &std_cfg.slot_cfg);
+    // std_cfg.clk_cfg.sample_rate_hz = 96000;
+    // i2s_channel_reconfig_std_clock(tx_handle, &std_cfg.clk_cfg);
+
+    /* Have to stop the channel before deleting it */
+    //i2s_channel_disable(tx_handle);
+    /* If the handle is not needed any more, delete it to release the channel resources */
+    // i2s_del_channel(tx_handle);
+#endif
+
 
 #if defined(KINETISK) || defined(KINETISL)
     SIM_SCGC6 |= SIM_SCGC6_I2S;
@@ -138,7 +224,7 @@ public:
     int c0 = C;
     int c2 = 10000;
     int c1 = C * c2 - (c0 * c2);
-    set_audioClock(c0, c1, c2);
+    my_set_audioClock(c0, c1, c2, false);
 
     // clear SAI1_CLK register locations
     CCM_CSCMR1 = (CCM_CSCMR1 & ~(CCM_CSCMR1_SAI1_CLK_SEL_MASK))
@@ -152,7 +238,11 @@ public:
                        & ~(IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL_MASK))
       | (IOMUXC_GPR_GPR1_SAI1_MCLK_DIR | IOMUXC_GPR_GPR1_SAI1_MCLK1_SEL(0));
 
+#ifdef AUDIO_CONTROL_SGTL5000
+    // Most I2C boards don't need the MCLK, but the audio shield does.
     CORE_PIN23_CONFIG = 3;  //1:MCLK
+#endif
+    
     CORE_PIN21_CONFIG = 3;  //1:RX_BCLK
     CORE_PIN20_CONFIG = 3;  //1:RX_SYNC
 
@@ -254,7 +344,11 @@ public:
 
 #else  // teensyduino
     // check return value?
+#if PROFFIEBOARD_VERSION == 3
+    stm32l4_dma_create(&dma, DMA_CHANNEL_DMA2_CH1_SAI1_A, STM32L4_SAI_IRQ_PRIORITY);
+#else
     stm32l4_dma_create(&dma, DMA_CHANNEL_DMA2_CH6_SAI1_A, STM32L4_SAI_IRQ_PRIORITY);
+#endif
 #if defined(ENABLE_I2S_OUT) || defined(ENABLE_SPDIF_OUT)
     stm32l4_dma_create(&dma2, DMA_CHANNEL_DMA2_CH2_SAI1_B, STM32L4_SAI_IRQ_PRIORITY);
     // stm32l4_dma_create(&dma2, DMA_CHANNEL_DMA2_CH7_SAI1_B, STM32L4_SAI_IRQ_PRIORITY);
@@ -272,9 +366,11 @@ public:
 #if defined(ENABLE_SPDIF_OUT) || defined(ENABLE_I2S_OUT)
     memset(dac_dma_buffer2, 0, sizeof(dac_dma_buffer2));
 #endif
+#ifdef FILTER_CUTOFF_FREQUENCY
+    filter_.clear();
+#endif
 
 #ifndef TEENSYDUINO
-
     stm32l4_system_periph_enable(SYSTEM_PERIPH_SAI1);
     stm32l4_dma_enable(&dma, &isr, 0);
     SAI_Block_TypeDef *SAIx = SAI1_Block_A;
@@ -319,15 +415,25 @@ public:
                       DMA_OPTION_CIRCULAR);
     SAIx->CR1 |= SAI_xCR1_DMAEN;
 
+#define SAIB_SCK g_SAI1Pins.sck
+#define SAIB_FS g_SAI1Pins.fs
+#define SAIB_SD g_SAI1Pins.sd
+    
+#if PROFFIEBOARD_VERSION < 3
+#undef SAIB_FS
+#define SAIB_FS GPIO_PIN_PA4_SAI1_FS_B
+#endif    
+
 #ifdef ENABLE_I2S_OUT
+    extern const stm32l4_sai_pins_t g_SAI1Pins;
     // Neopixel data 3 pin is SCK
-    stm32l4_gpio_pin_configure(GPIO_PIN_PB3_SAI1_SCK_B, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
+    stm32l4_gpio_pin_configure(SAIB_SCK, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
 
     // Neopixel data 4 is FS, it is also possible to use GPIO_PIN_PB6_SAI1_FS_B, which is the power button pin.
-    stm32l4_gpio_pin_configure(GPIO_PIN_PA4_SAI1_FS_B, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
+    stm32l4_gpio_pin_configure(SAIB_FS, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
 
     // aux/Button2 button pin is DATA
-    stm32l4_gpio_pin_configure(GPIO_PIN_PB5_SAI1_SD_B, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
+    stm32l4_gpio_pin_configure(SAIB_SD, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
     stm32l4_dma_start(&dma2, (uint32_t)&SAI2->DR, (uint32_t)dac_dma_buffer2, AUDIO_BUFFER_SIZE * 2,
                       DMA_OPTION_EVENT_TRANSFER_DONE |
                       DMA_OPTION_EVENT_TRANSFER_HALF |
@@ -341,8 +447,9 @@ public:
 #endif
 
 #ifdef ENABLE_SPDIF_OUT
+    extern const stm32l4_sai_pins_t g_SAI1Pins;
     // aux button pin becomes S/PDIF out
-    stm32l4_gpio_pin_configure(GPIO_PIN_PB5_SAI1_SD_B, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
+    stm32l4_gpio_pin_configure(SAIB_SD, (GPIO_PUPD_NONE | GPIO_OSPEED_HIGH | GPIO_OTYPE_PUSHPULL | GPIO_MODE_ALTERNATE));
     stm32l4_dma_start(&dma2, (uint32_t)&SAI2->DR, (uint32_t)dac_dma_buffer2, AUDIO_BUFFER_SIZE * 2 * 2,
                       DMA_OPTION_EVENT_TRANSFER_DONE |
                       DMA_OPTION_EVENT_TRANSFER_HALF |
@@ -417,6 +524,16 @@ public:
 
   bool Parse(const char* cmd, const char* arg) override {
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
+
+#ifdef FILTER_CUTOFF_FREQUENCY
+    if (!strcmp(cmd, "filterdata")) {
+      for (size_t i = 0; i < NELEM(filter_.data_); i++) {
+	STDOUT << "filter[" << i << "] = " << filter_.data_[i][0] << ", " << filter_.data_[i][1] << "\n";
+      }
+      return true;
+    }
+#endif
+    
     if (!strcmp(cmd, "dacbuf")) {
 #ifndef TEENSYDUINO
       SAI_Block_TypeDef *SAIx = SAI1_Block_A;
@@ -454,12 +571,8 @@ public:
      return true;
   }
 
-  void Help() override {
-    STDOUT.println(" dacbuf - print the current contents of the dac buffer");
-  }
-
   // TODO: Replace with enable/disable
-  void SetStream(class AudioStream* stream) {
+  void SetStream(class ProffieOSAudioStream* stream) {
     stream_ = stream;
   }
 
@@ -476,7 +589,7 @@ private:
 #ifdef TEENSYDUINO
   static void isr(void)
 #else
-  static void isr(void* arg, unsigned long int event)
+  static void isr(void* arg, uint32_t events)
 #endif
   {
     ScopedCycleCounter cc(audio_dma_interrupt_cycles);
@@ -496,8 +609,11 @@ private:
       // DMA is transmitting the first half of the buffer
       // so we must fill the second half
       dest = (int16_t *)&dac_dma_buffer[AUDIO_BUFFER_SIZE*CHANNELS];
-#if defined(ENABLE_SPDIF_OUT) || defined(ENABLE_I2S_OUT)
+#ifdef ENABLE_SPDIF_OUT
       secondary = dac_dma_buffer2 + AUDIO_BUFFER_SIZE * 2;
+#endif
+#ifdef ENABLE_I2S_OUT
+      secondary = dac_dma_buffer2 + AUDIO_BUFFER_SIZE * CHANNELS;
 #endif
     } else {
       // DMA is transmitting the second half of the buffer
@@ -516,7 +632,7 @@ private:
 #define LINE_OUT_VOLUME 2000
 #endif      
     
-#if defined(ENABLE_SPDIF_OUT) || defined(ENABLE_I2S_OUT)
+#if defined(ENABLE_SPDIF_OUT) || defined(ENABLE_I2S_OUT) || defined(FILTER_CUTOFF_FREQUENCY)
 #define DAC_GET_FLOATS
 #endif
 
@@ -530,11 +646,9 @@ private:
       n = dynamic_mixer.read(data, AUDIO_BUFFER_SIZE);
     }
     while (n < AUDIO_BUFFER_SIZE) data[n++] = 0;
-    for (int i = 0; i < n; i++) {
 
-#ifdef DAC_GET_FLOATS
-      int16_t sample = clamptoi16(data[i] * dynamic_mixer.get_volume());
-      
+#if defined(ENABLE_SPDIF_OUT) || defined(ENABLE_I2S_OUT)
+    for (int i = 0; i < AUDIO_BUFFER_SIZE; i++) {
 #ifdef ENABLE_I2S_OUT
       *(secondary++) = clamptoi16(data[i] * (LINE_OUT_VOLUME));
 #endif
@@ -543,7 +657,19 @@ private:
       *(secondary++) = sample24 & 0xFFFFFF;
       *(secondary++) = sample24 & 0xFFFFFF;
 #endif
-      
+    }
+#endif  // GET_FLOATS
+
+#ifdef FILTER_CUTOFF_FREQUENCY
+    // Run the filter
+    static_assert(AUDIO_BUFFER_SIZE % 4 == 0);
+    for (int i = 0; i < AUDIO_BUFFER_SIZE; i+=4) {
+      filter_.Run4(data + i);
+    }
+#endif    
+    for (int i = 0; i < AUDIO_BUFFER_SIZE; i++) {
+#ifdef DAC_GET_FLOATS
+      int16_t sample = clamptoi16(data[i] * dynamic_mixer.get_volume());
 #else   // GET_FLOATS
       int16_t sample = data[i];
 #endif  // GET_FLOATS
@@ -559,12 +685,16 @@ private:
       *(dest++) = (((uint16_t)sample) + 32768) >> 4;
 #endif
     }
+    
 #ifdef __IMXRT1062__
     arm_dcache_flush_delete(clear_cache, sizeof(dac_dma_buffer)/2);
 #endif
   }
 
   static void isr2(void* arg, unsigned long int event) {}
+#ifndef DMAMEM
+#define DMAMEM
+#endif
 
   bool on_ = false;
   bool needs_setup_ = true;
@@ -575,11 +705,18 @@ private:
 #ifdef ENABLE_I2S_OUT
   DMAMEM static uint16_t dac_dma_buffer2[AUDIO_BUFFER_SIZE*2*CHANNELS];
 #endif
-  static AudioStream * volatile stream_;
+  static ProffieOSAudioStream * volatile stream_;
   static DMAChannel dma;
 #if defined(ENABLE_I2S_OUT) || defined(ENABLE_SPDIF_OUT)
   static DMAChannel dma2;
 #endif
+#ifdef FILTER_CUTOFF_FREQUENCY
+  static Filter::Biquad<
+    Filter::Bilinear<
+    Filter::BLT<
+      Filter::ConvertToHighPass<
+	Filter::ButterWorthProtoType<FILTER_ORDER>, FILTER_CUTOFF_FREQUENCY, AUDIO_RATE>>>> filter_;
+#endif  
 };
 
 #ifdef TEENSYDUINO
@@ -591,7 +728,7 @@ DMAChannel LS_DAC::dma2;
 #endif
 
 #endif
-AudioStream * volatile LS_DAC::stream_ = nullptr;
+ProffieOSAudioStream * volatile LS_DAC::stream_ = nullptr;
 DMAMEM __attribute__((aligned(32))) uint16_t LS_DAC::dac_dma_buffer[AUDIO_BUFFER_SIZE*2*CHANNELS];
 #ifdef ENABLE_SPDIF_OUT
 DMAMEM __attribute__((aligned(32))) uint32_t LS_DAC::dac_dma_buffer2[AUDIO_BUFFER_SIZE*2*2];
@@ -599,7 +736,15 @@ DMAMEM __attribute__((aligned(32))) uint32_t LS_DAC::dac_dma_buffer2[AUDIO_BUFFE
 #ifdef ENABLE_I2S_OUT
 DMAMEM __attribute__((aligned(32))) uint16_t LS_DAC::dac_dma_buffer2[AUDIO_BUFFER_SIZE*2*CHANNELS];
 #endif
+#ifdef FILTER_CUTOFF_FREQUENCY
+Filter::Biquad<
+  Filter::Bilinear<
+  Filter::BLT<
+    Filter::ConvertToHighPass<
+      Filter::ButterWorthProtoType<FILTER_ORDER>, FILTER_CUTOFF_FREQUENCY, AUDIO_RATE>>>> LS_DAC::filter_;
+#endif  
 
 LS_DAC dac;
 
-#endif
+#endif  // ESP32
+#endif  // SOUND_DAC

@@ -9,7 +9,7 @@ class BatteryMonitor : Looper, CommandParser, StateMachine {
 public:
 BatteryMonitor() : reader_(batteryLevelPin,
 			     INPUT
-#if VERSION_MAJOR == 5
+#if VERSION_MAJOR == 5 || VERSION_MAJOR == 6
                              , 10e-6
 #endif
    ) {}
@@ -24,9 +24,9 @@ BatteryMonitor() : reader_(batteryLevelPin,
   float battery_percent() {
     // Energy is roughly proportional to voltage squared.
     float v = battery();
-    float min_v = 3.0;
-    float max_v = 4.2;
-    return 100.0 * (v * v - min_v * min_v) / (max_v * max_v - min_v * min_v);
+    float min_v = 2.85;
+    float max_v = 4.1;
+    return 100.0 * clamp((v * v - min_v * min_v) / (max_v * max_v - min_v * min_v), 0, 1);
 //    return 100.0 * (v - min_v) / (max_v - min_v);
   }
   void SetPinHigh(bool go_high) {
@@ -64,13 +64,14 @@ protected:
       while (!reader_.Done()) YIELD();
       float v = battery_now();
       uint32_t now = micros();
-      float mul = powf(0.05, (now - last_voltage_read_time_) / 1000000.0);
+      // float mul = powf(0.05, (now - last_voltage_read_time_) / 1000000.0);
+      float mul = expf(logf(0.05) * (now - last_voltage_read_time_) / 1000000.0);
       last_voltage_read_time_ = now;
       last_voltage_ = last_voltage_ * mul + v * (1 - mul);
       if (IsLow()) {
-	low_count_++;
+        low_count_++;
       } else {
-	low_count_ = 0;
+        low_count_ = 0;
       }
     }
     STATE_MACHINE_END();
@@ -82,7 +83,7 @@ protected:
 #endif
     // Battery isn't low if it's not connected at all.
     if (battery() < 0.5) return false;
-    
+
     return battery() < (loaded_ ? 2.6 : 3.0);
   }
 
@@ -95,7 +96,7 @@ protected:
       STDOUT.print("Battery voltage: ");
       float v = battery();
       STDOUT.println(v);
-#ifdef ENABLE_AUDIO
+#if defined(ENABLE_AUDIO) && !defined(DISABLE_TALKIE)
       talkie.SayDigit((int)floorf(v));
       talkie.Say(spPOINT);
       talkie.SayDigit(((int)floorf(v * 10)) % 10);
@@ -117,14 +118,11 @@ protected:
 #endif
     return false;
   }
-  void Help() override {
-    STDOUT.println(" batt[ery[_voltage]] - show battery voltage");
-  }
 private:
   float battery_now() {
     // This is the volts on the battery monitor pin.
     float volts = 3.3 * reader_.Value() / 1024.0;
-#if VERSION_MAJOR == 5
+#if VERSION_MAJOR == 5 || VERSION_MAJOR == 6
     return volts * 2.0;
 #else
 #ifdef V2
@@ -161,4 +159,4 @@ public:
 
 BatteryMonitor battery_monitor;
 
-#endif
+#endif  // COMMON_BATTERY_MONITOR_H

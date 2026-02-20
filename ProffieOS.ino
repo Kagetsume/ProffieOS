@@ -18,39 +18,91 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// You can have multiple configuration files, and specify which one
-// to use here.
+/*-----------------------------------------------------------------*\
+|  You can have multiple configuration files, and specify which one |
+|  to use here by removing the two slashes at the beginning.        |
+|  **NOTE** Only ONE line should be left uncommented at a time!     |
+|  Add the slashes to any that you are not using.                   |
+\*-----------------------------------------------------------------*/
 
-#define CONFIG_FILE "config/default_proffieboard_config.h"
-// #define CONFIG_FILE "config/default_v3_config.h"
-// #define CONFIG_FILE "config/crossguard_config.h"
-// #define CONFIG_FILE "config/graflex_v1_config.h"
-// #define CONFIG_FILE "config/prop_shield_fastled_v1_config.h"
-// #define CONFIG_FILE "config/owk_v2_config.h"
-// #define CONFIG_FILE "config/test_bench_config.h"
-// #define CONFIG_FILE "config/toy_saber_config.h"
+// #define CONFIG_FILE "config/YOUR_CONFIG_FILE_NAME_HERE.h"
+
+// #define CONFIG_FILE "config/default_proffieboard_config.h"
 // #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
+// #define CONFIG_FILE "config/proffieboard_v2_testing_config.h"
 // #define CONFIG_FILE "config/td_proffieboard_config.h"
+// #define CONFIG_FILE "config/proffieboard_v1_graflex.h"
 // #define CONFIG_FILE "config/teensy_audio_shield_micom.h"
 // #define CONFIG_FILE "config/proffieboard_v2_ob4.h"
 
-#ifdef CONFIG_FILE_TEST
-#undef CONFIG_FILE
-#define CONFIG_FILE CONFIG_FILE_TEST
+#ifndef CONFIG_FILE
+#error Please set CONFIG_FILE as shown above.
 #endif
+
+#include "common/resources.h"
 
 #define CONFIG_TOP
 #include CONFIG_FILE
 #undef CONFIG_TOP
 
+#include "common/capabilities.h"
+
+#if !defined(ENABLE_AUDIO) && !defined(DISABLE_AUDIO)
+#define ENABLE_AUDIO
+#endif
+
+#if !defined(ENABLE_MOTION) && !defined(DISABLE_MOTION)
+#define ENABLE_MOTION
+#endif
+
+#if !defined(ENABLE_WS2811) && !defined(DISABLE_WS2811)
+#define ENABLE_WS2811
+#endif
+
+#if !defined(ENABLE_SD) && !defined(DISABLE_SD)
+#define ENABLE_SD
+#endif
+
+#if !defined(KILL_OLD_PLAYERS) && !defined(DISABLE_KILL_OLD_PLAYERS)
+#define KILL_OLD_PLAYERS
+#endif
+
+#if !defined(NO_REPEAT_RANDOM) && !defined(DISABLE_NO_REPEAT_RANDOM)
+#define NO_REPEAT_RANDOM
+#endif
+
+
+#ifndef BOOT_VOLUME
+#define BOOT_VOLUME VOLUME
+#endif
+
+#ifndef FONT_PATTERN
+#define FONT_PATTERN "*;common"
+#endif
+
 #ifdef SAVE_STATE
 #define SAVE_VOLUME
 #define SAVE_PRESET
 #define SAVE_COLOR_CHANGE
+#define SAVE_BLADE_DIMMING
+#endif
+
+#ifdef ENABLE_ALL_EDIT_OPTIONS
+#define DYNAMIC_BLADE_LENGTH
+#define DYNAMIC_BLADE_DIMMING
+#define DYNAMIC_CLASH_THRESHOLD
+#define SAVE_VOLUME
+#define SAVE_BLADE_DIMMING
+#define SAVE_CLASH_THRESHOLD
+#define SAVE_COLOR_CHANGE
+#define MOUNT_SD_SETTING
 #endif
 
 // #define ENABLE_DEBUG
 
+#ifdef KEEP_SAVEFILES_WHEN_PROGRAMMING
+#warning Your config file has KEEP_SAVEFILES_WHEN_PROGRAMMING in it. If you experience problems, please remove it and try again before asking for help. For more information, see: https://pod.hubbe.net/config/keeping-edits-when-uploading.html
+#endif
 
 //
 // OVERVIEW
@@ -64,7 +116,7 @@
 // is instantiated as "prop", and is responsible for handling
 // button clicks, clashes, swings and other events. These events
 // are then send to all registered SaberBase classes.
-///
+//
 // Generally speaking, there are usually two registered SaberBase
 // classes listening for events. One for sound and one for
 // the blade. Sound and blade effects are generally executed
@@ -126,28 +178,53 @@
 
 #include <Arduino.h>
 
+#if !defined(ENABLE_SD)
+// No SD support, no mount_sd_setting
+#undef MOUNT_SD_SETTING
+#endif
+
+#if !defined(USB_CLASS_MSC)
+// No mass storage, no mount_sd_setting
+#undef MOUNT_SD_SETTING
+#endif
+
 #ifdef TEENSYDUINO
 #include <DMAChannel.h>
 #include <usb_dev.h>
 
 #ifndef USE_TEENSY4
 #include <kinetis.h>
+#include <i2c_t3.h>
+#else
+// This is a hack to let me access the internal stuff..
+#define private public
+#include <Wire.h>
+#undef private
 #endif
 
-#include <i2c_t3.h>
 #include <SD.h>
 #include <SPI.h>
 
-#define INPUT_ANALOG INPUT
-#else
+#ifdef abs
+#undef abs
+namespace {
+template<typename T> constexpr auto abs(T x) -> decltype(-x) {
+  return x < 0 ? -x : x;
+}
+}
+#endif
 
+#else  // TEENSYDUINO
+#define digitalWriteFast digitalWrite
+#endif  // TEENSYDUINO
+
+#ifdef ARDUINO_ARCH_STM32L4
 // This is a hack to let me access the internal stuff..
 #define private public
 #include <Wire.h>
 #undef private
 
 #include <FS.h>
-#define digitalWriteFast digitalWrite
 #include <stm32l4_wiring_private.h>
 #include <stm32l4xx.h>
 #include <armv7m.h>
@@ -159,9 +236,10 @@
 #include <STM32.h>
 #define DMAChannel stm32l4_dma_t
 #define DMAMEM
-#define NVIC_SET_PRIORITY(X,Y) NVIC_SetPriority((X), (IRQn_Type)(Y))
-
-#endif
+#define NVIC_SET_PRIORITY(X, Y) NVIC_SetPriority((X), (IRQn_Type)(Y))
+#else  //  ARDUINO_ARCH_STM32L4
+#define INPUT_ANALOG INPUT
+#endif  //  ARDUINO_ARCH_STM32L4
 
 #include <math.h>
 #include <malloc.h>
@@ -190,16 +268,17 @@ SnoozeBlock snooze_config(snooze_touch, snooze_digital, snooze_timer);
 #endif
 
 const char version[] = "$Id: ce12a06a1e236b5101ec60c950530a9a4719a74d $";
-const char install_time[] = __DATE__ " " __TIME__;
 
+#include "common/common.h"
 #include "common/state_machine.h"
 #include "common/monitoring.h"
 #include "common/stdout.h"
+#include "common/errors.h"
 
 Monitoring monitor;
 DEFINE_COMMON_STDOUT_GLOBALS;
 
-void PrintQuotedValue(const char *name, const char* str) {
+void PrintQuotedValue(const char* name, const char* str) {
   STDOUT.print(name);
   STDOUT.write('=');
   if (str) {
@@ -213,6 +292,7 @@ void PrintQuotedValue(const char *name, const char* str) {
           break;
         case '\\':
           STDOUT.write('\\');
+          [[gnu::fallthrough]];
         default:
           STDOUT.write(*str);
       }
@@ -231,7 +311,8 @@ void PrintQuotedValue(const char *name, const char* str) {
 // it will stay high.
 class ScopedPinTracer {
 public:
-  explicit ScopedPinTracer(int pin) : pin_(pin) {
+  explicit ScopedPinTracer(int pin)
+    : pin_(pin) {
     pinMode(pin_, OUTPUT);
     digitalWriteFast(pin, HIGH);
   }
@@ -266,12 +347,31 @@ public:
 
 uint64_t audio_dma_interrupt_cycles = 0;
 uint64_t pixel_dma_interrupt_cycles = 0;
+uint64_t motion_interrupt_cycles = 0;
 uint64_t wav_interrupt_cycles = 0;
 uint64_t loop_cycles = 0;
 
 #include "common/loop_counter.h"
 
-#define NELEM(X) (sizeof(X)/sizeof((X)[0]))
+#if defined(ENABLE_SSD1306) || defined(INCLUDE_SSD1306)
+#define ENABLE_DISPLAY_CODE
+#endif
+
+#ifdef DOSFS_CONFIG_STARTUP_DELAY
+#define PROFFIEOS_SD_STARTUP_DELAY DOSFS_CONFIG_STARTUP_DELAY
+#else
+#define PROFFIEOS_SD_STARTUP_DELAY 1000
+#endif
+
+#ifndef CONFIG_STARTUP_DELAY
+#define CONFIG_STARTUP_DELAY 0
+#endif
+
+#if PROFFIEOS_SD_STARTUP_DELAY > CONFIG_STARTUP_DELAY
+#define PROFFIEOS_STARTUP_DELAY PROFFIEOS_SD_STARTUP_DELAY
+#else
+#define PROFFIEOS_STARTUP_DELAY CONFIG_STARTUP_DELAY
+#endif
 
 #include "common/linked_list.h"
 #include "common/looper.h"
@@ -292,37 +392,17 @@ SaberBase* saberbases = NULL;
 SaberBase::LockupType SaberBase::lockup_ = SaberBase::LOCKUP_NONE;
 SaberBase::ColorChangeMode SaberBase::color_change_mode_ =
   SaberBase::COLOR_CHANGE_MODE_NONE;
-bool SaberBase::on_ = false;
 uint32_t SaberBase::last_motion_request_ = 0;
 uint32_t SaberBase::current_variation_ = 0;
+float SaberBase::sound_length = 0.0;
+int SaberBase::sound_number = -1;
+float SaberBase::clash_strength_ = 0.0;
+#ifdef DYNAMIC_BLADE_DIMMING
+int SaberBase::dimming_ = 16384;
+#endif
 
 #include "common/box_filter.h"
-
-// Returns the decimals of a number, ie 12.2134 -> 0.2134
-float fract(float x) { return x - floorf(x); }
-
-// clamp(x, a, b) makes sure that x is between a and b.
-float clamp(float x, float a, float b) {
-  if (x < a) return a;
-  if (x > b) return b;
-  return x;
-}
-float Fmod(float a, float b) {
-  return a - floorf(a / b) * b;
-}
-
-int32_t clampi32(int32_t x, int32_t a, int32_t b) {
-  if (x < a) return a;
-  if (x > b) return b;
-  return x;
-}
-int16_t clamptoi16(int32_t x) {
-  return clampi32(x, -32768, 32767);
-}
-int32_t clamptoi24(int32_t x) {
-  return clampi32(x, -8388608, 8388607);
-}
-
+#include "common/math.h"
 #include "common/sin_table.h"
 
 void EnableBooster();
@@ -330,6 +410,7 @@ void EnableAmplifier();
 bool AmplifierIsActive();
 void MountSDCard();
 const char* GetSaveDir();
+bool AvoidIdleSDAccess();
 
 #include "common/lsfs.h"
 #include "common/strfun.h"
@@ -339,9 +420,26 @@ const char* GetSaveDir();
 char current_directory[128];
 const char* next_current_directory(const char* dir) {
   dir += strlen(dir);
-  dir ++;
+  dir++;
   if (!*dir) return NULL;
   return dir;
+}
+const char* last_current_directory() {
+  const char* ret = current_directory;
+  while (true) {
+    const char* tmp = next_current_directory(ret);
+    if (!tmp) return ret;
+    ret = tmp;
+  }
+}
+const char* previous_current_directory(const char* dir) {
+  if (dir == current_directory) return nullptr;
+  dir -= 2;
+  while (true) {
+    if (dir == current_directory) return current_directory;
+    if (!*dir) return dir + 1;
+    dir--;
+  }
 }
 
 #include "sound/sound.h"
@@ -349,12 +447,18 @@ const char* next_current_directory(const char* dir) {
 #include "common/color.h"
 #include "common/range.h"
 #include "common/fuse.h"
+#include "common/config_file.h"
 #include "blades/blade_base.h"
 #include "blades/blade_wrapper.h"
 
 class MicroEventTime {
-  void SetToNow() { micros_ = micros(); millis_ = millis(); }
-  uint32_t millis_since() { return millis() - millis_; }
+  void SetToNow() {
+    micros_ = micros();
+    millis_ = millis();
+  }
+  uint32_t millis_since() {
+    return millis() - millis_;
+  }
   uint32_t micros_since() {
     if (millis_since() > (0xFFFF0000UL / 1000)) return 0xFFFFFFFFUL;
     return micros() - micros_;
@@ -409,15 +513,22 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "styles/byteorder.h"
 #include "styles/rotate_color.h"
 #include "styles/colorchange.h"
+#include "styles/transition_pulse.h"
 #include "styles/transition_effect.h"
 #include "styles/transition_loop.h"
 #include "styles/effect_sequence.h"
+#include "styles/color_select.h"
+#include "styles/remap.h"
+#include "styles/edit_mode.h"
+#include "styles/pixelate.h"
+#include "styles/display.h"
 
 // functions
 #include "functions/ifon.h"
 #include "functions/change_slowly.h"
 #include "functions/int.h"
 #include "functions/int_arg.h"
+#include "functions/int_select.h"
 #include "functions/sin.h"
 #include "functions/scale.h"
 #include "functions/battery_level.h"
@@ -435,6 +546,28 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "functions/marble.h"
 #include "functions/slice.h"
 #include "functions/mult.h"
+#include "functions/wavlen.h"
+#include "functions/wavnum.h"
+#include "functions/effect_position.h"
+#include "functions/time_since_effect.h"
+#include "functions/sum.h"
+#include "functions/ramp.h"
+#include "functions/center_dist.h"
+#include "functions/linear_section.h"
+#include "functions/hold_peak.h"
+#include "functions/clash_impact.h"
+#include "functions/effect_increment.h"
+#include "functions/increment.h"
+#include "functions/subtract.h"
+#include "functions/divide.h"
+#include "functions/isbetween.h"
+#include "functions/clamp.h"
+#include "functions/alt.h"
+#include "functions/volume_level.h"
+#include "functions/mod.h"
+#include "functions/readpin.h"
+#include "functions/bullet_count.h"
+#include "functions/blaster_mode.h"
 
 // transitions
 #include "transitions/fade.h"
@@ -448,100 +581,17 @@ struct is_same_type<T, T> { static const bool value = true; };
 #include "transitions/random.h"
 #include "transitions/colorcycle.h"
 #include "transitions/wave.h"
+#include "transitions/select.h"
+#include "transitions/extend.h"
+#include "transitions/center_wipe.h"
+#include "transitions/sequence.h"
+#include "transitions/blink.h"
+#include "transitions/doeffect.h"
+#include "transitions/loop.h"
 
+#include "styles/legacy_styles.h"
 //responsive styles
 #include "styles/responsive_styles.h"
-
-// This macro has a problem with commas, please don't use it.
-#define EASYBLADE(COLOR, CLASH_COLOR) \
-  SimpleClash<Lockup<Blast<COLOR, WHITE>, AudioFlicker<COLOR, WHITE> >, CLASH_COLOR>
-
-// Use EasyBlade<COLOR, CLASH_COLOR> instead of EASYBLADE(COLOR, CLASH_COLOR)
-template<class color, class clash_color, class lockup_flicker_color = WHITE>
-using EasyBlade = SimpleClash<Lockup<Blast<color, WHITE>, AudioFlicker<color, lockup_flicker_color> >, clash_color>;
-
-// The following functions are mostly for illustration.
-// The templates above gives you more power and functionality.
-
-// Arguments: color, clash color, turn-on/off time
-template<class base_color,
-          class clash_color,
-          int out_millis,
-          int in_millis,
-         class lockup_flicker_color = WHITE,
-         class blast_color = WHITE>
-StyleAllocator StyleNormalPtr() {
-#if 0
-  typedef AudioFlicker<base_color, lockup_flicker_color> AddFlicker;
-  typedef Blast<base_color, blast_color> AddBlast;
-  typedef Lockup<AddBlast, AddFlicker> AddLockup;
-  typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelper<AddClash, out_millis, in_millis> >();
-#else
- typedef Layers<base_color,
-                SimpleClashL<clash_color>,
-                LockupL<AudioFlickerL<lockup_flicker_color> >,
-                BlastL<blast_color> > Blade;
-  return StylePtr<InOutHelper<Blade, out_millis, in_millis> >();
-#endif  
-}
-
-// Arguments: color, clash color, turn-on/off time
-template<class base_color,
-         class clash_color,
-         class out_millis,
-         class in_millis,
-         class lockup_flicker_color = WHITE,
-         class blast_color = WHITE>
-StyleAllocator StyleNormalPtrX() {
-  typedef AudioFlicker<base_color, lockup_flicker_color> AddFlicker;
-  typedef Blast<base_color, blast_color> AddBlast;
-  typedef Lockup<AddBlast, AddFlicker> AddLockup;
-  typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelperX<AddClash, InOutFuncX<out_millis, in_millis>> >();
-}
-
-// Rainbow blade.
-// Arguments: color, clash color, turn-on/off time
-template<int out_millis,
-          int in_millis,
-          class clash_color = WHITE,
-          class lockup_flicker_color = WHITE>
-StyleAllocator StyleRainbowPtr() {
-  typedef AudioFlicker<Rainbow, lockup_flicker_color> AddFlicker;
-  typedef Lockup<Rainbow, AddFlicker> AddLockup;
-  typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelper<AddClash, out_millis, in_millis> >();
-}
-
-// Rainbow blade.
-// Arguments: color, clash color, turn-on/off time
-template<class out_millis,
-          class in_millis,
-          class clash_color = WHITE,
-          class lockup_flicker_color = WHITE>
-StyleAllocator StyleRainbowPtrX() {
-  typedef AudioFlicker<Rainbow, lockup_flicker_color> AddFlicker;
-  typedef Lockup<Rainbow, AddFlicker> AddLockup;
-  typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelperX<AddClash, InOutFuncX<out_millis, in_millis>> >();
-}
-
-// Stroboscope, flickers the blade at the desired frequency.
-// Arguments: color, clash color, turn-on/off time
-template<class strobe_color,
-          class clash_color,
-          int frequency,
-          int out_millis,
-          int in_millis>
-StyleAllocator StyleStrobePtr() {
-  typedef Strobe<BLACK, strobe_color, frequency, 1> strobe;
-  typedef Strobe<BLACK, strobe_color, 3* frequency, 1> fast_strobe;
-  typedef Lockup<strobe, fast_strobe> AddLockup;
-  typedef SimpleClash<AddLockup, clash_color> clash;
-  return StylePtr<InOutHelper<clash, out_millis, in_millis> >();
-}
-
 #include "styles/pov.h"
 
 class NoLED;
@@ -551,25 +601,62 @@ class NoLED;
 #include "blades/pwm_pin.h"
 #include "blades/ws2811_blade.h"
 #include "blades/fastled_blade.h"
+#include "blades/leds.h"
 #include "blades/simple_blade.h"
+#include "blades/saviblade.h"
 #include "blades/sub_blade.h"
 #include "blades/dim_blade.h"
-#include "blades/leds.h"
 #include "blades/blade_id.h"
 #include "common/preset.h"
 #include "common/blade_config.h"
 #include "common/current_preset.h"
+#include "common/status_led.h"
 #include "styles/style_parser.h"
 #include "styles/length_finder.h"
+#include "styles/show_color.h"
+#include "styles/blade_shortener.h"
+
+#include "sound/sound_library.h"
+
+#include "modes/mode.h"
+#include "modes/stepped_mode.h"
+#include "modes/color_change_modes.h"
+#include "modes/menu_list.h"
+#include "modes/bool_setting.h"
+#include "modes/color_menues.h"
+#include "modes/sorted_list_menues.h"
+#include "modes/preset_modes.h"
+#include "modes/style_option_modes.h"
+#include "modes/settings_menues.h"
+#include "modes/default_spec.h"
 
 BladeConfig* current_config = nullptr;
 class BladeBase* GetPrimaryBlade() {
 #if NUM_BLADES == 0
   return nullptr;
-#else  
+#else
   return current_config->blade1;
-#endif  
+#endif
 }
+
+#define BLADE_NUMBER_FINDER(N) if (current_config->blade##N == blade) return N;
+// Returns 1..NUM_BLADES (0 if not found)
+int GetBladeNumber(BladeBase *blade) {
+  ONCEPERBLADE(BLADE_NUMBER_FINDER);
+  return 0;
+}
+
+#define RETURN_BLADE_BY_NUMBER(N) case N: return current_config->blade##N;
+
+// 1 is first blade
+BladeBase* GetBladeByNumber(int n) {
+  if (!current_config) return nullptr;
+  switch (n) {
+    ONCEPERBLADE(RETURN_BLADE_BY_NUMBER);
+  }
+  return nullptr;
+}
+
 const char* GetSaveDir() {
   if (!current_config) return "";
   if (!current_config->save_dir) return "";
@@ -577,6 +664,10 @@ const char* GetSaveDir() {
 }
 
 ArgParserInterface* CurrentArgParser;
+
+#define CONFIG_STYLES
+#include CONFIG_FILE
+#undef CONFIG_STYLES
 
 #define CONFIG_PRESETS
 #include CONFIG_FILE
@@ -592,19 +683,77 @@ ArgParserInterface* CurrentArgParser;
 
 PROP_TYPE prop;
 
+#ifdef BLADE_ID_SCAN_MILLIS
+bool ScanBladeIdNow() {
+  return prop.ScanBladeIdNow();
+}
+#endif
+
+#ifdef BLASTER_SHOTS_UNTIL_EMPTY
+int prop_GetBulletCount() {
+    return prop.GetBulletCount();
+}
+#endif
+
+#ifdef PROP_HAS_GETBLASTERMODE
+int prop_GetBlasterMode() {
+    return prop.GetBlasterMode();
+}
+#endif
+
+
+#ifdef DYNAMIC_CLASH_THRESHOLD
+int prop_GetCurrentClashThreshold() {
+  return prop.GetCurrentClashThreshold();
+}
+void prop_SetClashThreshold(int clash_threshold) {
+  prop.SetClashThreshold(clash_threshold);
+}
+#endif
+
+void prop_SaveState() { prop.SaveState(); }
+void prop_UpdateStyle() { prop.UpdateStyle(); }
+void prop_next_preset() { prop.next_preset(); }
+void prop_previous_preset() { prop.previous_preset(); }
+
+#ifdef DYNAMIC_BLADE_LENGTH
+int prop_GetBladeLength(int blade) {
+  return prop.GetBladeLength(blade);
+}
+int prop_GetMaxBladeLength(int blade) {
+  return prop.GetMaxBladeLength(blade);
+}
+void prop_SetBladeLength(int blade, int len) {
+  prop.SetBladeLength(blade, len);
+}
+#endif
+
+int prop_GetPresetPosition() {
+  return prop.GetPresetPosition();
+}
+void prop_MovePreset(int position) {
+  prop.MovePreset(position);
+}
+
+const char* GetStyle(int blade) { return prop.GetStyle(blade); }
+void SetStyle(int blade, LSPtr<char> style);
+void SetStyle(int blade, LSPtr<char> style) { prop.SetStyle(blade, std::move(style)); }
+void SetFont(const char* font) { prop.SetFont(font); }
+void SetTrack(const char* track) { prop.SetTrack(track); }
+const char* GetFont() { return prop.GetFont(); }
+const char* GetTrack() { return prop.GetTrack(); }
+void chdir(const StringPiece font) { prop.chdir(font); }
+
+#if 0
+#include "scripts/test_motion_timeout.h"
+#warning MOTION TEST SCRIPT ACTIVE
+MotionTimeoutScript script;
+#endif
+
 #if 0
 #include "scripts/v3_test_script.h"
 #warning !!! V3 TEST SCRIPT ACTIVE !!!
 V3TestScript script;
-#endif
-
-#if 0
-#include "scripts/proffieboard_test_script.h"
-#warning !!! PROFFIEBOARD TEST SCRIPT ACTIVE !!!
-V4TestScript script;
-Blinker1 blinker1;
-Blinker2 blinker2;
-CapTest captest;
 #endif
 
 #include "buttons/floating_button.h"
@@ -612,9 +761,13 @@ CapTest captest;
 #include "buttons/button.h"
 #ifdef TEENSYDUINO
 #include "buttons/touchbutton.h"
-#else
+#endif
+#ifdef ARDUINO_ARCH_STM32L4
 #include "buttons/stm32l4_touchbutton.h"
 #endif
+#include "buttons/rotary.h"
+#include "buttons/pots.h"
+#include "buttons/fast_button.h"
 
 #include "ir/ir.h"
 #include "ir/receiver.h"
@@ -642,19 +795,27 @@ uint32_t startup_MODER[4];
 
 #ifdef BLADE_DETECT_PIN
 LatchingButtonTemplate<FloatingButtonBase<BLADE_DETECT_PIN>>
-    BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect");
+  BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect");
+
+USE_PIN_OUTPUT(BLADE_DETECT_PIN, PO_SubSystems::PO_BLADE_DETECT);
 #endif
 
 #include "common/sd_test.h"
 
+class I2CDevice;
+
 class Commands : public CommandParser {
- public:
+public:
   enum PinType {
     PinTypeFloating,
     PinTypePulldown,
     PinTypeCap,
     PinTypeOther,
   };
+
+#ifndef DISABLE_DIAGNOSTIC_COMMANDS
+  File current_file;
+#endif
 
   bool TestPin(int pin, PinType t) {
     int ret = 0;
@@ -675,7 +836,7 @@ class Commands : public CommandParser {
     uint32_t end;
     while (digitalRead(pin)) {
       end = micros();
-      if (end - start > 32768) break; // 32 millis
+      if (end - start > 32768) break;  // 32 millis
     }
     ret <<= 16;
     ret |= (end - start);
@@ -689,12 +850,6 @@ class Commands : public CommandParser {
     return ret;
   }
   bool Parse(const char* cmd, const char* e) override {
-#ifndef DISABLE_DIAGNOSTIC_COMMANDS
-    if (!strcmp(cmd, "help")) {
-      CommandParser::DoHelp();
-      return true;
-    }
-#endif    
 
 #ifdef ENABLE_SERIALFLASH
     if (!strcmp(cmd, "ls")) {
@@ -746,6 +901,7 @@ class Commands : public CommandParser {
 #endif
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
+    // TODO: Maybe use the commands from the workbench?
     if (!strcmp(cmd, "cat") && e) {
       LOCK_SD(true);
       File f = LSFS::Open(e);
@@ -756,7 +912,25 @@ class Commands : public CommandParser {
       LOCK_SD(false);
       return true;
     }
-#endif    
+    if (!strcmp(cmd, "openfile") && e) {
+      LOCK_SD(true);
+      current_file = LSFS::OpenRW(e);
+      LOCK_SD(false);
+      return true;
+    }
+    if (!strcmp(cmd, "closefile")) {
+      LOCK_SD(true);
+      current_file.close();
+      LOCK_SD(false);
+      return true;
+    }
+    if (!strcmp(cmd, ">>")) {
+      LOCK_SD(true);
+      current_file.println(e ? e : "");
+      LOCK_SD(false);
+      return true;
+    }
+#endif
 
     if (!strcmp(cmd, "del") && e) {
       LOCK_SD(true);
@@ -781,15 +955,15 @@ class Commands : public CommandParser {
       STDOUT.println("Done");
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
     if (!strcmp(cmd, "sdtest")) {
       SDTestHelper sdtester;
       if (e && !strcmp(e, "all")) {
-	sdtester.TestDir("");
+        sdtester.TestDir("");
       } else {
-	sdtester.TestFont();
+        sdtester.TestFont();
       }
       return true;
     }
@@ -827,7 +1001,7 @@ class Commands : public CommandParser {
       Effect::ShowAll();
       return true;
     }
-#endif    
+#endif
 #if 0
     if (!strcmp(cmd, "df")) {
       STDOUT.print(SerialFlashChip::capacity());
@@ -842,7 +1016,7 @@ class Commands : public CommandParser {
       STDOUT.println("Ok.");
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "low") && e) {
       pinMode(atoi(e), OUTPUT);
@@ -850,20 +1024,20 @@ class Commands : public CommandParser {
       STDOUT.println("Ok.");
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 
 #if VERSION_MAJOR >= 4
     if (!strcmp(cmd, "booster")) {
-       if (!strcmp(e, "on")) {
-         digitalWrite(boosterPin, HIGH);
-         STDOUT.println("Booster on.");
-         return true;
-       }
-       if (!strcmp(e, "off")) {
-         digitalWrite(boosterPin, LOW);
-         STDOUT.println("Booster off.");
-         return true;
-       }
+      if (!strcmp(e, "on")) {
+        digitalWrite(boosterPin, HIGH);
+        STDOUT.println("Booster on.");
+        return true;
+      }
+      if (!strcmp(e, "off")) {
+        digitalWrite(boosterPin, LOW);
+        STDOUT.println("Booster off.");
+        return true;
+      }
     }
 #endif
 #ifdef ENABLE_AUDIO
@@ -896,8 +1070,25 @@ class Commands : public CommandParser {
       wav_players[0].Stop();
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "dumpwavplayer")) {
+      for (size_t i = 0; i < NELEM(wav_players); i++) {
+        if (e && atoi(e) != (int)i) continue;
+        wav_players[i].dump();
+      }
+      return true;
+    }
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #endif
+
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "sleep") && e) {
+      delay(atoi(e));
+      return true;
+    }
+#endif
+
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "twiddle")) {
       int pin = strtol(e, NULL, 0);
@@ -913,7 +1104,7 @@ class Commands : public CommandParser {
       STDOUT.println("done");
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "twiddle2")) {
       int pin = strtol(e, NULL, 0);
@@ -932,7 +1123,7 @@ class Commands : public CommandParser {
       STDOUT.println("done");
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifndef DISABLE_DIAGNOSTIC_COMMANDS
     if (!strcmp(cmd, "malloc")) {
@@ -942,10 +1133,24 @@ class Commands : public CommandParser {
       STDOUT.println(mallinfo().fordblks);
       return true;
     }
-#endif    
+#endif
     if (!strcmp(cmd, "make_default_console")) {
       default_output = stdout_output;
       return true;
+    }
+    if (endswith("|", cmd) && e) {
+      char tmp[32];
+      StringPiece tag(cmd, strlen(cmd)-1);
+      LineTagger<128> line_tagger(tag);
+      const char* cmd2 = e;
+      const char *arg2 = strchr(e, ' ');
+      if (arg2 && arg2 - e < (int)sizeof(tmp)) {
+	memcpy(tmp, e, arg2 - e);
+	tmp[arg2 - e] = 0;
+	cmd2 = tmp;
+	arg2++;
+      }
+      return CommandParser::DoParse(cmd2, arg2);
     }
 #if 0
     // Not finished yet
@@ -998,9 +1203,10 @@ class Commands : public CommandParser {
         STDOUT.println("Cycle counting enabled, top will work next time.");
         return true;
       }
-#else
+#endif
+#ifdef ARDUINO_ARCH_STM32L4
       if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
-        CoreDebug->DEMCR |= 1<<24; // DEMCR_TRCENA_Msk;
+        CoreDebug->DEMCR |= 1 << 24;  // DEMCR_TRCENA_Msk;
         DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
         STDOUT.println("Cycle counting enabled, top will work next time.");
         return true;
@@ -1009,11 +1215,7 @@ class Commands : public CommandParser {
 
       // TODO: list cpu usage for various objects.
       float total_cycles =
-        (float)(audio_dma_interrupt_cycles +
-	        pixel_dma_interrupt_cycles +
-                 wav_interrupt_cycles +
-		 Looper::CountCycles() +
-		 CountProfileCycles());
+        (float)(audio_dma_interrupt_cycles + pixel_dma_interrupt_cycles + motion_interrupt_cycles + wav_interrupt_cycles + Looper::CountCycles() + CountProfileCycles());
       STDOUT.print("Audio DMA: ");
       STDOUT.print(audio_dma_interrupt_cycles * 100.0f / total_cycles);
       STDOUT.println("%");
@@ -1026,8 +1228,14 @@ class Commands : public CommandParser {
       STDOUT.print("LOOP: ");
       STDOUT.print(loop_cycles * 100.0f / total_cycles);
       STDOUT.println("%");
+      STDOUT.print("Motion: ");
+      STDOUT.print(motion_interrupt_cycles * 100.0f / total_cycles);
+      STDOUT.println("%");
       STDOUT.print("Global loops / second: ");
       global_loop_counter.Print();
+      STDOUT.println("");
+      STDOUT.print("High frequency loops / second: ");
+      hf_loop_counter.Print();
       STDOUT.println("");
       SaberBase::DoTop(total_cycles);
       Looper::LoopTop(total_cycles);
@@ -1035,6 +1243,7 @@ class Commands : public CommandParser {
       noInterrupts();
       audio_dma_interrupt_cycles = 0;
       pixel_dma_interrupt_cycles = 0;
+      motion_interrupt_cycles = 0;
       wav_interrupt_cycles = 0;
       interrupts();
       return true;
@@ -1042,21 +1251,22 @@ class Commands : public CommandParser {
 #endif
 
     if (!strcmp(cmd, "version")) {
-      STDOUT.println(version);
-      STDOUT.print("Installed: ");
-      STDOUT.println(install_time);
+      STDOUT << version
+             << "\n" CONFIG_FILE "\nprop: " TOSTRING(PROP_TYPE) "\nbuttons: " TOSTRING(NUM_BUTTONS) "\ninstalled: "
+             << install_time << "\n";
       return true;
     }
     if (!strcmp(cmd, "reset")) {
 #ifdef TEENSYDUINO
       SCB_AIRCR = 0x05FA0004;
-#else
+#endif
+#ifdef ARDUINO_ARCH_STM32L4
       STM32.reset();
-#endif 
+#endif
       STDOUT.println("Reset failed.");
       return true;
     }
-#ifndef TEENSYDUINO
+#ifdef ARDUINO_ARCH_STM32L4
     if (!strcmp(cmd, "shutdown")) {
       STDOUT.println("Sleeping 10 seconds.\n");
       STM32.stop(100000);
@@ -1067,6 +1277,12 @@ class Commands : public CommandParser {
       return true;
     }
 #ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "dumpfusor")) {
+      fusor.dump();
+      return true;
+    }
+#endif
+#ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "stm32info")) {
       STDOUT.print("VBAT: ");
       STDOUT.println(STM32.getVBAT());
@@ -1076,26 +1292,34 @@ class Commands : public CommandParser {
       STDOUT.println(STM32.getTemperature());
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
+#ifdef ENABLE_DEVELOPER_COMMANDS
+    if (!strcmp(cmd, "i2cstate")) {
+      extern void DumpI2CState();
+      DumpI2CState();
+      SaberBase::DumpMotionRequest();
+      return true;
+    }
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "portstates")) {
-      GPIO_TypeDef *GPIO;
+      GPIO_TypeDef* GPIO;
       for (int i = 0; i < 4; i++) {
         switch (i) {
           case 0:
-            GPIO = (GPIO_TypeDef *)GPIOA_BASE;
+            GPIO = (GPIO_TypeDef*)GPIOA_BASE;
             STDOUT.print("PORTA: ");
             break;
           case 1:
-            GPIO = (GPIO_TypeDef *)GPIOB_BASE;
+            GPIO = (GPIO_TypeDef*)GPIOB_BASE;
             STDOUT.print("PORTB: ");
             break;
           case 2:
-            GPIO = (GPIO_TypeDef *)GPIOC_BASE;
+            GPIO = (GPIO_TypeDef*)GPIOC_BASE;
             STDOUT.print("PORTC: ");
             break;
           case 3:
-            GPIO = (GPIO_TypeDef *)GPIOH_BASE;
+            GPIO = (GPIO_TypeDef*)GPIOH_BASE;
             STDOUT.print("PORTH: ");
             break;
         }
@@ -1117,16 +1341,22 @@ class Commands : public CommandParser {
           STDOUT.print("lhLH"[now]);
           if (!(j & 3)) STDOUT.print(" ");
         }
+        STDOUT.print("  ");
+        for (int j = 15; j >= 0; j--) {
+          int afr = 0xf & (GPIO->AFR[j >> 3] >> ((j & 7) * 4));
+          STDOUT.print("0123456789ABCDEF"[afr]);
+          if (!(j & 3)) STDOUT.print(" ");
+        }
         STDOUT.println("");
       }
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "CLK")) {
       if (e) {
         uint32_t c = atoi(e) * 1000000;
-        stm32l4_system_sysclk_configure(c, c/2, c/2);
+        stm32l4_system_sysclk_configure(c, c / 2, c / 2);
       }
       STDOUT.print("Clocks: hse=");
       STDOUT.print(stm32l4_system_hseclk());
@@ -1146,110 +1376,125 @@ class Commands : public CommandParser {
       STDOUT.println(stm32l4_system_saiclk());
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "whatispowered")) {
       STDOUT.print("ON: ");
-#define PRINTIFON(REG, BIT) do {                                        \
-        if (RCC->REG & RCC_##REG##_##BIT##EN) {                         \
-          STDOUT.print(" " #BIT);                                       \
-          if (!(startup_##REG & RCC_##REG##_##BIT##EN)) STDOUT.print("+"); \
-        }                                                               \
-      } while(0)
+#define PRINTIFON(REG, BIT)                                            \
+  do {                                                                 \
+    if (RCC->REG & RCC_##REG##_##BIT##EN) {                            \
+      STDOUT.print(" " #BIT);                                          \
+      if (!(startup_##REG & RCC_##REG##_##BIT##EN)) STDOUT.print("+"); \
+    }                                                                  \
+  } while (0)
 
-      PRINTIFON(AHB1ENR,FLASH);
-      PRINTIFON(AHB1ENR,DMA1);
-      PRINTIFON(AHB1ENR,DMA2);
-      PRINTIFON(AHB2ENR,GPIOA);
-      PRINTIFON(AHB2ENR,GPIOB);
-#if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(AHB2ENR,GPIOC);
-      PRINTIFON(AHB2ENR,GPIOD);
-      PRINTIFON(AHB2ENR,GPIOE);
+      PRINTIFON(AHB1ENR, FLASH);
+      PRINTIFON(AHB1ENR, DMA1);
+      PRINTIFON(AHB1ENR, DMA2);
+      PRINTIFON(AHB2ENR, GPIOA);
+      PRINTIFON(AHB2ENR, GPIOB);
+#ifdef GPIOC_BASE
+      PRINTIFON(AHB2ENR, GPIOC);
+#endif
+#ifdef GPIOD_BASE
+      PRINTIFON(AHB2ENR, GPIOD);
+#endif
+#ifdef GPIOE_BASE
+      PRINTIFON(AHB2ENR, GPIOE);
 #endif
 #if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(AHB2ENR,GPIOF);
-      PRINTIFON(AHB2ENR,GPIOG);
+      PRINTIFON(AHB2ENR, GPIOF);
+      PRINTIFON(AHB2ENR, GPIOG);
 #endif
-      PRINTIFON(AHB2ENR,GPIOH);
+      PRINTIFON(AHB2ENR, GPIOH);
 #if defined(STM32L496xx)
-      PRINTIFON(AHB2ENR,GPIOI);
+      PRINTIFON(AHB2ENR, GPIOI);
 #endif
-      PRINTIFON(AHB2ENR,ADC);
-      PRINTIFON(APB1ENR1,DAC1);
+      PRINTIFON(AHB2ENR, ADC);
+      PRINTIFON(APB1ENR1, DAC1);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(AHB2ENR,OTGFS);
+      PRINTIFON(AHB2ENR, OTGFS);
 #else
-      PRINTIFON(APB1ENR1,USBFS);
+      PRINTIFON(APB1ENR1, USBFS);
 #endif
-      PRINTIFON(APB2ENR,USART1);
-      PRINTIFON(APB1ENR1,USART2);
+      PRINTIFON(APB2ENR, USART1);
+      PRINTIFON(APB1ENR1, USART2);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,USART3);
+      PRINTIFON(APB1ENR1, USART3);
 #endif
 #if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,UART4);
-      PRINTIFON(APB1ENR1,UART5);
+      PRINTIFON(APB1ENR1, UART4);
+      PRINTIFON(APB1ENR1, UART5);
 #endif
-      PRINTIFON(APB1ENR2,LPUART1);
-      PRINTIFON(APB1ENR1,I2C1);
+      PRINTIFON(APB1ENR2, LPUART1);
+      PRINTIFON(APB1ENR1, I2C1);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,I2C2);
+      PRINTIFON(APB1ENR1, I2C2);
 #endif
-      PRINTIFON(APB1ENR1,I2C3);
+      PRINTIFON(APB1ENR1, I2C3);
 #if defined(STM32L496xx)
-      PRINTIFON(APB1ENR2,I2C4);
+      PRINTIFON(APB1ENR2, I2C4);
 #endif
-      PRINTIFON(APB2ENR,SPI1);
+      PRINTIFON(APB2ENR, SPI1);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,SPI2);
+      PRINTIFON(APB1ENR1, SPI2);
 #endif
-      PRINTIFON(APB1ENR1,SPI3);
-      PRINTIFON(APB1ENR1,CAN1);
+      PRINTIFON(APB1ENR1, SPI3);
+      PRINTIFON(APB1ENR1, CAN1);
 #if defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,CAN2);
+      PRINTIFON(APB1ENR1, CAN2);
 #endif
-      PRINTIFON(AHB3ENR,QSPI);
+      PRINTIFON(AHB3ENR, QSPI);
 #if defined(STM32L433xx) || defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB2ENR,SDMMC1);
+      PRINTIFON(APB2ENR, SDMMC1);
 #endif
-      PRINTIFON(APB2ENR,SAI1);
+      PRINTIFON(APB2ENR, SAI1);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB2ENR,SAI2);
-      PRINTIFON(APB2ENR,DFSDM1);
+      PRINTIFON(APB2ENR, SAI2);
+      PRINTIFON(APB2ENR, DFSDM1);
 #endif
-      PRINTIFON(APB2ENR,TIM1);
-      PRINTIFON(APB1ENR1,TIM2);
+      PRINTIFON(APB2ENR, TIM1);
+      PRINTIFON(APB1ENR1, TIM2);
+#ifdef TIM3_BASE
+      PRINTIFON(APB1ENR1, TIM3);
+#endif
+#ifdef TIM4_BASE
+      PRINTIFON(APB1ENR1, TIM4);
+#endif
+#ifdef TIM5_BASE
+      PRINTIFON(APB1ENR1, TIM5);
+#endif
+      PRINTIFON(APB1ENR1, TIM6);
+#ifdef TIM7_BASE
+      PRINTIFON(APB1ENR1, TIM7);
+#endif
+#ifdef TIM8_BASE
+      PRINTIFON(APB2ENR, TIM8);
+#endif
+      PRINTIFON(APB2ENR, TIM15);
+      PRINTIFON(APB2ENR, TIM16);
 #if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB1ENR1,TIM3);
-      PRINTIFON(APB1ENR1,TIM4);
-      PRINTIFON(APB1ENR1,TIM5);
+      PRINTIFON(APB2ENR, TIM17);
 #endif
-      PRINTIFON(APB1ENR1,TIM6);
-      PRINTIFON(APB1ENR1,TIM7);
-#if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB2ENR,TIM8);
-#endif
-      PRINTIFON(APB2ENR,TIM15);
-      PRINTIFON(APB2ENR,TIM16);
-#if defined(STM32L476xx) || defined(STM32L496xx)
-      PRINTIFON(APB2ENR,TIM17);
-#endif
-      PRINTIFON(APB1ENR1,LPTIM1);
-      PRINTIFON(APB1ENR2,LPTIM2);
+      PRINTIFON(APB1ENR1, LPTIM1);
+      PRINTIFON(APB1ENR2, LPTIM2);
 
       // Not sure what CPUs implement these
       PRINTIFON(AHB1ENR, CRC);
       PRINTIFON(AHB1ENR, TSC);
       PRINTIFON(AHB2ENR, RNG);
+#ifdef LCD_BASE
       PRINTIFON(APB1ENR1, LCD);
+#endif
       PRINTIFON(APB1ENR1, RTCAPB);
       PRINTIFON(APB1ENR1, WWDG);
       PRINTIFON(APB1ENR1, CRS);
       PRINTIFON(APB1ENR1, CAN1);
       PRINTIFON(APB1ENR1, PWR);
       PRINTIFON(APB1ENR1, OPAMP);
+#ifdef SWPMI1_BASE
       PRINTIFON(APB1ENR2, SWPMI1);
+#endif
       PRINTIFON(APB2ENR, SYSCFG);
       PRINTIFON(APB2ENR, FW);
 
@@ -1260,389 +1505,64 @@ class Commands : public CommandParser {
       STDOUT.println(USBD_Connected());
       return true;
     }
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // ENABLE_DEVELOPER_COMMANDS
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
-#ifdef HAVE_STM32L4_DMA_GET    
+#ifdef HAVE_STM32L4_DMA_GET
     if (!strcmp(cmd, "dmamap")) {
       for (int channel = 0; channel < 16; channel++) {
-	stm32l4_dma_t *dma = stm32l4_dma_get(channel);
-	if (dma) {
-	  STDOUT.print(" DMA");
-	  STDOUT.print( 1 +(channel / 8) );
-	  STDOUT.print("_CH");
-	  STDOUT.print( channel % 8 );
-	  STDOUT.print(" = ");
-	  STDOUT.println(dma->channel >> 4, HEX);
-	}
+        stm32l4_dma_t* dma = stm32l4_dma_get(channel);
+        if (dma) {
+          STDOUT.print(" DMA");
+          STDOUT.print(1 + (channel / 8));
+          STDOUT.print("_CH");
+          STDOUT.print(channel % 8);
+          STDOUT.print(" = ");
+          STDOUT.println(dma->channel >> 4, HEX);
+        }
       }
       return true;
     }
-#endif // HAVE_STM32L4_DMA_GET    
-#endif // ENABLE_DEVELOPER_COMMANDS
+#endif  // HAVE_STM32L4_DMA_GET
+#endif  // ENABLE_DEVELOPER_COMMANDS
 
 #endif  // TEENSYDUINO
 
     return false;
   }
-
-  void Help() override {
-    STDOUT.println(" version - show software version");
-    STDOUT.println(" reset - restart software");
-#ifndef DISABLE_DIAGNOSTIC_COMMANDS    
-    STDOUT.println(" effects - list current effects");
-#endif    
-#ifdef ENABLE_SERIALFLASH
-    STDOUT.println("Serial Flash memory management:");
-    STDOUT.println("   ls, rm <file>, format, play <file>, effects");
-    STDOUT.println("To upload files: tar cf - files | uuencode x >/dev/ttyACM0");
-#endif
-#if defined(ENABLE_SD) && !defined(DISABLE_DIAGNOSTIC_COMMANDS)
-    STDOUT.println(" dir [directory] - list files on SD card.");
-    STDOUT.println(" sdtest - benchmark SD card");
-#endif
-  }
 };
 
 StaticWrapper<Commands> commands;
 
-class SerialAdapter {
-public:
-  static void begin() {
-    // Already configured in Setup().
-    // Serial.begin(115200);
-  }
-  static bool Connected() { return !!Serial; }
-  static bool AlwaysConnected() { return false; }
-  static Stream& stream() { return Serial; }
-  static const char* response_header() { return ""; }
-  static const char* response_footer() { return ""; }
-};
+#include "common/serial.h"
 
-class Serial3Adapter {
-public:
-  static void begin() { Serial3.begin(115200); }
-  static bool Connected() { return true; }
-  static bool AlwaysConnected() { return true; }
-  static Stream& stream() { return Serial3; }
-  static const char* response_header() { return "-+=BEGIN_OUTPUT=+-\n"; }
-  static const char* response_footer() { return "-+=END_OUTPUT=+-\n"; }
-};
-
-#ifdef USB_CLASS_WEBUSB
-class WebUSBSerialAdapter {
-public:
-  static void begin() { WebUSBSerial.begin(115200); }
-  // static bool Connected() { return !!WebUSBSerial; }
-  static bool Connected() { return true; }
-  static bool AlwaysConnected() { return true; }
-  static Stream& stream() { return WebUSBSerial; }
-  static const char* response_header() { return "-+=BEGIN_OUTPUT=+-\n"; }
-  static const char* response_footer() { return "-+=END_OUTPUT=+-\n"; }
-};
-#endif
-
-#ifdef RFID_SERIAL
-class RFIDParser : public Looper {
-public:
-  RFIDParser() : Looper() {}
-  const char* name() override { return "Parser"; }
-  void Setup() override {
-    RFID_SERIAL.begin(9600);
-  }
-
-#define RFID_READCHAR() do {						\
-  state_machine_.sleep_until_ = millis();				\
-  while (!RFID_SERIAL.available()) {					\
-    if (millis() - state_machine_.sleep_until_ > 200) goto retry;	\
-    YIELD();								\
-  }									\
-  getc();								\
-} while (0)
-
-  int c, x;
-  uint64_t code;
-
-  void getc() {
-    c = RFID_SERIAL.read();
-    if (monitor.IsMonitoring(Monitoring::MonitorSerial)) {
-      default_output->print("SER: ");
-      default_output->println(c, HEX);
-    }
-  }
-
-  void Loop() override {
-    STATE_MACHINE_BEGIN();
-    while (true) {
-    retry:
-      RFID_READCHAR();
-      if (c != 2) goto retry;
-      code = 0;
-      for (x = 0; x < 10; x++) {
-	RFID_READCHAR();
-	code <<= 4;
-	if (c >= '0' && c <= '9') {
-	  code |= c - '0';
-	} else if (c >= 'A' && c <= 'F') {
-	  code |= c - ('A' - 10);
-	} else {
-	  goto retry;
-	}
-      }
-      RFID_READCHAR();
-      x = code ^ (code >> 24);
-      x ^= (x >> 8) ^ (x >> 16);
-      x &= 0xff;
-      if (c != x) goto retry;
-      RFID_READCHAR();
-      if (c == 3) {
-	default_output->print("RFID: ");
-	for (int i = 36; i >= 0; i-=4) {
-	  default_output->print((int)((code >> i) & 0xf), HEX);
-	}
-	default_output->println("");
-	for (size_t i = 0; i < NELEM(RFID_Commands); i++) {
-	  if (code == RFID_Commands[i].id) {
-	    CommandParser::DoParse(RFID_Commands[i].cmd, RFID_Commands[i].arg);
-	  }
-	}
-      }
-    }
-    STATE_MACHINE_END();
-  }
-
-private:
-  StateMachineState state_machine_;
-};
-
-StaticWrapper<RFIDParser> rfid_parser;
-#endif
-
-// Command-line parser. Easiest way to use it is to start the arduino
-// serial monitor.
-template<class SA> /* SA = Serial Adapter */
-class Parser : Looper, StateMachine {
-public:
-  Parser() : Looper() {}
-  const char* name() override { return "Parser"; }
-
-  void Setup() override {
-    SA::begin();
-  }
-
-  void Loop() override {
-    STATE_MACHINE_BEGIN();
-    while (true) {
-      while (!SA::Connected()) YIELD();
-      if (!SA::AlwaysConnected()) {
-        STDOUT.println("Welcome to ProffieOS, type 'help' for more info.");
-      }
-
-      while (SA::Connected()) {
-        while (!SA::stream().available()) YIELD();
-        int c = SA::stream().read();
-        if (c < 0) { break; }
-#if 0
-        STDOUT.print("GOT:");
-        STDOUT.println(c);
-#endif
-#if 0
-        if (monitor.IsMonitoring(Monitoring::MonitorSerial) &&
-            default_output != &SA::stream()) {
-          default_output->print("SER: ");
-          default_output->println(c, HEX);
-        }
-#endif
-        if (c == '\n' || c == '\r') {
-          if (cmd_) ParseLine();
-          len_ = 0;
-          space_ = 0;
-          free(cmd_);
-          cmd_ = nullptr;
-          continue;
-        }
-        if (len_ + 1 >= space_) {
-          int new_space = space_ * 3 / 2 + 8;
-          char* tmp = (char*)realloc(cmd_, new_space);
-          if (tmp) {
-            space_ = new_space;
-            cmd_ = tmp;
-          } else {
-            STDOUT.println("Line too long.");
-            len_ = 0;
-            space_ = 0;
-            free(cmd_);
-            cmd_ = nullptr;
-            continue;
-          }
-        }
-        cmd_[len_] = c;
-        cmd_[len_ + 1] = 0;
-        len_++;
-      }
-      len_ = 0;
-      space_ = 0;
-      free(cmd_);
-      cmd_ = nullptr;
-    }
-    STATE_MACHINE_END();
-  }
-
-  void ParseLine() {
-    if (len_ == 0) return;
-    while (len_ > 0 && (cmd_[len_-1] == '\r' || cmd_[len_-1] == ' ')) {
-      len_--;
-      cmd_[len_] = 0;
-    }
-    if (cmd_[0] == '#') {
-      Serial.println(cmd_);
-      return;
-    }
-    stdout_output = &SA::stream();
-    STDOUT.print(SA::response_header());
-    char *cmd = cmd_;
-    while (*cmd == ' ') cmd++;
-    char *e = cmd;
-    while (*e != ' ' && *e) e++;
-    if (*e) {
-      *e = 0;
-      e++;  // e is now argument (if any)
-    } else {
-      e = nullptr;
-    }
-    if (monitor.IsMonitoring(Monitoring::MonitorSerial) &&
-        default_output != &SA::stream()) {
-      default_output->print("Received command: ");
-      default_output->print(cmd);
-      if (e) {
-        default_output->print(" arg: ");
-        default_output->print(e);
-      }
-      default_output->print(" HEX ");
-      for (size_t i = 0; i < strlen(cmd); i++) {
-        default_output->print(cmd[i], HEX);
-        default_output->print(" ");
-      }
-      default_output->println("");
-    }
-    if (!CommandParser::DoParse(cmd, e)) {
-      STDOUT.print("Whut? :");
-      STDOUT.println(cmd);
-    }
-    STDOUT.print(SA::response_footer());
-    stdout_output = default_output;
-  }
-
-private:
-  int len_ = 0;
-  char* cmd_ = nullptr;
-  int space_ = 0;
-};
-
-StaticWrapper<Parser<SerialAdapter>> parser;
-
-#ifdef ENABLE_SERIAL
-StaticWrapper<Parser<Serial3Adapter>> serial_parser;
-#define ENABLE_SERIAL_COMMANDS
-#endif
-
-#ifdef USB_CLASS_WEBUSB
-StaticWrapper<Parser<WebUSBSerialAdapter>> webusb_parser;
-#endif
-
-#ifdef ENABLE_SERIAL_COMMANDS
-class SerialCommands : public CommandParser {
- public:
-  void HM1XCmd(const char* cmd) {
-    STDOUT.print("Sending: ");
-    STDOUT.println(cmd);
-    STDOUT.print("Reply: ");
-    Serial3.print(cmd);
-    uint32_t last_char = millis();
-    uint32_t timeout = 300;
-    while (millis() - last_char < timeout) {
-      if (Serial3.available()) {
-        last_char = millis();
-        timeout = 100;
-        STDOUT.write(Serial3.read());
-      }
-    }
-    STDOUT.println("");
-  }
-  bool Parse(const char* cmd, const char* e) override {
-#if 0
-    if (!strcmp(cmd, "hm1Xpin")) {
-      // Doesn't work, pine is 4 chars, pinb is 6
-      HM1XCmd("AT+AUTH1");
-      HM1XCmd("AT+DUAL1");
-      Serial3.write("AT+PINE");
-      Serial3.println(e);
-      Serial3.write("AT+PINB");
-      Serial3.println(e);
-      return true;
-    }
-    if (!strcmp(cmd, "hm1Xname")) {
-      Serial3.write("AT+NAME");
-      Serial3.println(e);
-      Serial3.write("AT+NAMB");
-      Serial3.println(e);
-      return true;
-    }
-#endif
-    if (cmd[0] == 'A' && cmd[1] == 'T') {
-      HM1XCmd(cmd);
-      return true;
-    }
-    if (!strcmp(cmd, "send") && e) {
-      Serial3.println(e);
-      STDOUT.print("Wrote: ");
-      STDOUT.println(e);
-      return true;
-    }
-#ifdef BLE_PASSWORD
-    if (!strcmp(cmd, "get_ble_config")) {
-      PrintQuotedValue("password", BLE_PASSWORD);
-#ifndef BLE_NAME
-#define BLE_NAME "ProffieOS"
-#endif
-      PrintQuotedValue("name", BLE_NAME);
-#ifdef BLE_SHORTNAME
-      PrintQuotedValue("shortname", BLE_SHORTNAME);
-#else
-      if (sizeof(BLE_NAME) - sizeof("") <= 8) {
-        PrintQuotedValue("shortname", BLE_NAME);
-      } else {
-        PrintQuotedValue("shortname", "Saber");
-      }
-#endif
-      return true;
-    }
-#endif
-    return false;
-  }
-  void Help() override {
-    // STDOUT.println(" hm13pin PIN - configure HM13 PIN");
-    // STDOUT.println(" hm13name NAME - configure HM13 NAME");
-    STDOUT.println(" get_ble_config - show BLE PIN");
-    if (default_output != stdout_output)
-      STDOUT.println(" make_default_console - make this connection the default connection");
-  }
-};
-
-StaticWrapper<SerialCommands> serial_commands;
-
-#endif
-
-
-#if defined(ENABLE_MOTION) || defined(ENABLE_SSD1306)
+#if defined(ENABLE_MOTION) || defined(ENABLE_DISPLAY_CODE)
 #include "common/i2cdevice.h"
 I2CBus i2cbus;
 #endif
 
 #ifdef ENABLE_SSD1306
 #include "display/ssd1306.h"
-SSD1306 display;
+
+#ifndef DISPLAY_POWER_PINS
+#define DISPLAY_POWER_PINS PowerPINS<>
 #endif
+
+StandardDisplayController<128, uint32_t> display_controller;
+SSD1306Template<128, uint32_t, DISPLAY_POWER_PINS> display(&display_controller);
+#endif
+
+#ifdef INCLUDE_SSD1306
+#include "display/ssd1306.h"
+#endif
+
+#include "display/layer_controller.h"
+#include "display/rgb565frame.h"
+
+#ifdef ENABLE_SPIDISPLAY
+#include "display/spidisplay.h"
+#endif
+
 
 #ifdef ENABLE_MOTION
 
@@ -1655,8 +1575,6 @@ SSD1306 display;
 // Define this to record clashes to sd card as CSV files
 // #define CLASH_RECORDER
 
-#include "scripts/clash_recorder.h"
-
 #ifdef GYRO_CLASS
 // Can also be gyro+accel.
 StaticWrapper<GYRO_CLASS> gyroscope;
@@ -1666,7 +1584,7 @@ StaticWrapper<GYRO_CLASS> gyroscope;
 StaticWrapper<ACCEL_CLASS> accelerometer;
 #endif
 
-#endif   // ENABLE_MOTION
+#endif  // ENABLE_MOTION
 
 #include "sound/amplifier.h"
 #include "common/sd_card.h"
@@ -1681,7 +1599,7 @@ void setup() {
   SAVE_RCC(APB1ENR1);
   SAVE_RCC(APB1ENR2);
   SAVE_RCC(APB2ENR);
-#define SAVE_MODER(PORT, X) startup_MODER[X] = ((GPIO_TypeDef *)GPIO##PORT##_BASE)->MODER
+#define SAVE_MODER(PORT, X) startup_MODER[X] = ((GPIO_TypeDef*)GPIO##PORT##_BASE)->MODER
   SAVE_MODER(A, 0);
   SAVE_MODER(B, 1);
   SAVE_MODER(C, 2);
@@ -1691,8 +1609,10 @@ void setup() {
   pinMode(boosterPin, OUTPUT);
   digitalWrite(boosterPin, HIGH);
 #endif
-
-  Serial.begin(9600);
+#ifdef MOUNT_SD_SETTING
+  LSFS::SetAllowMount(false);
+#endif
+  Serial.begin(115200);
 #if VERSION_MAJOR >= 4
   // TODO: Figure out if we need this.
   // Serial.blockOnOverrun(false);
@@ -1701,24 +1621,9 @@ void setup() {
   // Wait for all voltages to settle.
   // Accumulate some entrypy while we wait.
   uint32_t now = millis();
-#ifdef DOSFS_CONFIG_STARTUP_DELAY
-#define PROFFIEOS_SD_STARTUP_DELAY DOSFS_CONFIG_STARTUP_DELAY
-#else
-#define PROFFIEOS_SD_STARTUP_DELAY 1000
-#endif
-
-#ifndef CONFIG_STARTUP_DELAY
-#define CONFIG_STARTUP_DELAY 0
-#endif
-
-#if PROFFIEOS_SD_STARTUP_DELAY > CONFIG_STARTUP_DELAY
-#define PROFFIEOS_STARTUP_DELAY PROFFIEOS_SD_STARTUP_DELAY
-#else
-#define PROFFIEOS_STARTUP_DELAY CONFIG_STARTUP_DELAY
-#endif
 
   while (millis() - now < PROFFIEOS_STARTUP_DELAY) {
-#ifndef NO_BATTERY_MONITOR  
+#ifndef NO_BATTERY_MONITOR
     srand((rand() * 917823) ^ LSAnalogRead(batteryLevelPin));
 #endif
 
@@ -1748,12 +1653,12 @@ void setup() {
       }
     }
 #if VERSION_MAJOR >= 4
-    stm32l4_gpio_pin_configure(GPIO_PIN_PA5,   (GPIO_PUPD_PULLUP | GPIO_OSPEED_HIGH | GPIO_MODE_INPUT));
+    stm32l4_gpio_pin_configure(GPIO_PIN_PA5, (GPIO_PUPD_PULLUP | GPIO_OSPEED_HIGH | GPIO_MODE_INPUT));
     delayMicroseconds(10);
     if (!stm32l4_gpio_pin_read(GPIO_PIN_PA5)) {
       STDOUT.println("SCK won't go high!");
     }
-    stm32l4_gpio_pin_configure(GPIO_PIN_PA5,   (GPIO_PUPD_PULLDOWN | GPIO_OSPEED_HIGH | GPIO_MODE_INPUT));
+    stm32l4_gpio_pin_configure(GPIO_PIN_PA5, (GPIO_PUPD_PULLDOWN | GPIO_OSPEED_HIGH | GPIO_MODE_INPUT));
     delayMicroseconds(10);
     if (stm32l4_gpio_pin_read(GPIO_PIN_PA5)) {
       STDOUT.println("SCK won't go low!");
@@ -1765,20 +1670,20 @@ void setup() {
 #endif
 
   Looper::DoSetup();
+  PVLOG_DEBUG << "***************** Booting up! *******************\n";
   // Time to identify the blade.
-  prop.FindBlade();
+  prop.FindBlade(true);
   SaberBase::DoBoot();
-#if defined(ENABLE_SD) && defined(ENABLE_AUDIO)
-  if (!sd_card_found) {
-    talkie.Say(talkie_sd_card_15, 15);
-    talkie.Say(talkie_not_found_15, 15);
-  }
-#endif // ENABLE_AUDIO && ENABLE_SD
+#if defined(ENABLE_SD)
+  if (!sd_card_found) ProffieOSErrors::sd_card_not_found();
+#endif  // ENABLE_SD
 }
 
 #ifdef MTP_RX_ENDPOINT
 
-void mtp_yield() { Looper::DoLoop(); }
+void mtp_yield() {
+  Looper::DoLoop();
+}
 void mtp_lock_storage(bool lock) {
   AudioStreamWork::LockSD(lock);
 }
@@ -1806,3 +1711,16 @@ void loop() {
 #endif
   Looper::DoLoop();
 }
+
+#define CONFIG_PROP
+#define PROP_BOTTOM
+#include CONFIG_FILE
+#undef CONFIG_PROP
+#undef PROP_BOTTOM
+
+#define CONFIG_BOTTOM
+#include CONFIG_FILE
+#undef CONFIG_BOTTOM
+
+#define PROFFIEOS_DEFINE_FUNCTION_STAGE
+#include "common/errors.h"

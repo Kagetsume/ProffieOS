@@ -4,8 +4,17 @@
 #include "vec3.h"
 #include "quat.h"
 #include "saber_base.h"
+#include "extrapolator.h"
+#include "box_filter.h"
 
 // #define FUSE_SPEED
+
+#ifndef ACCEL_MEASUREMENTS_PER_SECOND
+#define ACCEL_MEASUREMENTS_PER_SECOND 800
+#endif
+#ifndef GYRO_MEASUREMENTS_PER_SECOND
+#define GYRO_MEASUREMENTS_PER_SECOND 800
+#endif
 
 #if 1 // def DEBUG
 
@@ -45,120 +54,14 @@ int nan_count = 0;
 
 #endif
 
+float exp2_fast(float x) {
+  int i = floorf(x);
+  x -= i;
+  return ldexpf(-8.24264/(x-3.41421)-1.41421356237, i);
+}
 
-#if 1
-template<class T, int SIZE = 10>
-class Extrapolator {
-public:
-  Extrapolator() {
-    uint32_t now = micros();
-    for (int i = 0; i < SIZE; i++) {
-      v_[i] = T(0);
-      t_[i] = now;
-    }
-  }
-  T get() { return get(micros()); }
 
-  T avg_;
-  T slope_;
-  float avg_t_;
-  bool needs_update_ = true;
-  void update() {
-    if (!needs_update_) return;
-    needs_update_ = false;
-    uint32_t now = t_[entry_];
-    T sum(0.0f);
-    float sum_t = 0.0;
-    for (size_t i = 0; i < SIZE; i++) {
-      float t = now - t_[i];
-      sum_t += t;
-      sum += v_[i];
-    }
-    avg_ = sum * (1.0 / SIZE);
-    CHECK_NAN(avg_);
-    avg_t_ = sum_t / SIZE;
-    CHECK_NAN(avg_t_);
-
-#if 0
-    // Enable this code if response becomes too slow in low-power mode
-    if (avg_t > 200000 /* 200ms */) {
-      // Just use last value if everything is too spread out.
-      avg_ = last();
-      slope_ = T(0.0f);
-      return;
-    }
-#endif    
-
-    T dot_sum(0.0f);
-    float t_square_sum = 0.0;
-    for (size_t i = 0; i < SIZE; i++) {
-      float t = avg_t_ - (now - t_[i]);
-      T v = v_[i] - avg_;
-      t_square_sum += t * t;
-      dot_sum += v * t;
-    }
-    CHECK_NAN(dot_sum);
-    CHECK_NAN(t_square_sum);
-    CHECK_NAN(sum);
-    if (t_square_sum == 0.0) {
-      slope_ = T(0.0f);
-    } else {
-      slope_ = dot_sum * (1.0 / t_square_sum);
-      CHECK_NAN(slope_);
-    }
-  }
-  T get(uint32_t now) {
-    update();
-    return avg_ + slope_ * (now - t_[entry_] + avg_t_);
-  }
-  T slope() {
-    update();
-    return slope_;
-  }
-  void push(const T& value, uint32_t now) {
-    entry_++;
-    if (entry_ >= SIZE) entry_ = 0;
-    v_[entry_] = value;
-    t_[entry_] = now;
-    values_++;
-    needs_update_ = true;
-  }
-  void push(const T& value) {
-    push(value, micros());
-  }
-  void clear(const T& value) {
-    uint32_t now = micros();
-    for (int i = 0; i < SIZE; i++)
-      push(value, now);
-    values_ = 1;
-  }
-  bool ready() { return values_ >= SIZE; }
-  T& last() { return v_[entry_]; }
-  uint32_t last_time() { return t_[entry_]; }
-
-  uint32_t t_[SIZE];
-  T v_[SIZE];
-  size_t entry_;
-  size_t values_;
-};
-#else
-template<class T, int SIZE = 10>
-class Extrapolator {
-public:
-  Extrapolator() {}
-  T get() { return get(micros()); }
-  T get(uint32_t now) { return value_; }
-  T slope() { return 0.0; }
-  void push(const T& value, uint32_t now) { value_ = value; t_ = now; }
-  void push(const T& value) { push(value, micros());  }
-  void clear(const T& value) { value_ = value;  }
-  bool ready() { return true; }
-  uint32_t last_time() { return t_; }
-  T value_;
-  uint32_t t_;
-};
-#endif
-class Fusor : public SaberBase, Looper {
+class Fusor : public Looper {
 public:
   Fusor() :
 #ifdef FUSE_SPEED
@@ -167,33 +70,52 @@ public:
     down_(0.0), last_micros_(0) {
   }
   const char* name() override { return "Fusor"; }
-  void SB_Motion(const Vec3& gyro, bool clear) override {
+  void DoMotion(const Vec3& gyro, bool clear) {
     CHECK_NAN(gyro);
     if (clear) {
       gyro_extrapolator_.clear(gyro);
+      gyro_clash_filter_.clear(gyro);
     } else {
       gyro_extrapolator_.push(gyro);
+      gyro_clash_filter_.push(gyro);
     }
   }
-  void SB_Accel(const Vec3& accel, bool clear) override {
+  void DoAccel(const Vec3& accel, bool clear) {
     CHECK_NAN(accel);
     if (clear) {
       accel_extrapolator_.clear(accel);
+      accel_clash_filter_.clear(accel);
       down_ = accel;
+      last_clear_ = micros();
     } else {
       accel_extrapolator_.push(accel);
+      accel_clash_filter_.push(accel);
     }
   }
 
+#ifndef GYRO_STABILIZATION_TIME_MS
+#define GYRO_STABILIZATION_TIME_MS 64
+#endif
+
   void Loop() override {
+    uint32_t last_accel = accel_extrapolator_.last_time();
+    uint32_t last_gyro = gyro_extrapolator_.last_time();
     uint32_t now = micros();
-    if (!accel_extrapolator_.ready()) return;
-    if (!gyro_extrapolator_.ready()) return;
-    if (now - accel_extrapolator_.last_time() > 1000000) return;
-    if (now - gyro_extrapolator_.last_time() > 1000000) return;
+    if (!accel_extrapolator_.ready() ||
+	!gyro_extrapolator_.ready() ||
+	now - last_accel > 200000 ||
+	now - last_gyro > 200000 ||
+	now - last_clear_ < GYRO_STABILIZATION_TIME_MS * 1000) {
+      gyro_ = Vec3(0.0f);
+      accel_ = Vec3(0.0f);
+      swing_speed_ = 0.0f;
+      return;
+    }
 
     float delta_t = (now - last_micros_) / 1000000.0;
     last_micros_ = now;
+    // Update last_clear_ so we won't have wrap-around issues.
+    last_clear_ = now - GYRO_STABILIZATION_TIME_MS * 1000;
     CHECK_NAN(delta_t);
 
     accel_ = accel_extrapolator_.get(now);
@@ -262,7 +184,9 @@ public:
 #endif
 #endif
     // goes towards 1.0 when moving.
-    float gyro_factor = powf(0.01, delta_t / wGyro);
+    // float gyro_factor = powf(0.01, delta_t / wGyro);
+    // float gyro_factor = expf(logf(0.01) * delta_t / wGyro);
+    float gyro_factor = expf(logf(0.01) * delta_t / wGyro);
     CHECK_NAN(gyro_factor);
     down_ = down_ *  gyro_factor + accel_ * (1.0 - gyro_factor);
     // Might be a good idea to normalize down_, but then
@@ -271,18 +195,18 @@ public:
     CHECK_NAN(down_.x);
 
     if (monitor.ShouldPrint(Monitoring::MonitorFusion)) {
-      STDOUT << " Accel=" << accel_ << "(" << accel_.len() << ")"
-             << " Gyro=" << gyro_
+      STDOUT << "Acl" << accel_ << "(" << accel_.len() << ")"
+             << " Gyro" << gyro_
         // << " rotation=" << rotation << "(" << rotation.len() << ")"
-             << " down=" << down_ << " (" << down_.len() << ")"
-             << " mss=" << mss_  << " (" << mss_.len() << ")"
+             << " dn" << down_ << "(" << down_.len() << ")"
+             << " mss" << mss_  << "(" << mss_.len() << ")"
         //     << " Speed=" << speed_ << " (" << speed_.len() << ")"
-             << " swing speed=" << swing_speed()
+             << " ss=" << swing_speed()
              << " wGyro=" << wGyro
-             << " delta_t=" << (delta_t * 1000)
+             << " dt=" << (delta_t * 1000)
 //           << " delta factor=" << delta_factor
-             << " gyro factor=" << gyro_factor
-             << " gyro slope=" << gyro_slope().len()
+             << " factor=" << gyro_factor
+             << " slope=" << gyro_slope().len()
              << "\n";
     }
   }
@@ -303,6 +227,7 @@ public:
 
   // Twist angle.
   // Note: Twist speed is simply gyro().z!
+  // Range: -PI to PI
   float angle2() {
     if (angle2_ == 1000.0f) {
       angle2_ = atan2f(down_.y, down_.z);
@@ -314,6 +239,7 @@ public:
   float pov_angle() {
     return atan2f(down_.y, down_.x);
   }
+
 #if 1
   float swing_speed() {
     if (swing_speed_ < 0) {
@@ -382,13 +308,71 @@ public:
   Vec3 mss() { return mss_; }      // m/s/s (acceleration - down vector)
   Vec3 down() { return down_; }    // G/s/s (length should be close to 1.0)
 
+  // Meters per second per second
+  Vec3 clash_mss() {
+    return accel_clash_filter_.get() - down_;
+  }
+
+  // Meters per second per second
+  float gyro_clash_value() {
+#if 0    
+    static uint32_t last_printout=0;
+    if (millis() - last_printout > 1000) {
+      last_printout = millis();
+      STDOUT << "GYRO CLASH FILTER: "<< gyro_clash_filter_.get()
+	     << " XTRAPOLATOR: "<< gyro_extrapolator_.get(micros())
+	     << "\n";
+    }
+#endif    
+    // degrees per microsecond
+    float v = (gyro_clash_filter_.get() - gyro_extrapolator_.get(micros())).len();
+    // Translate into meters per second per second, assuming blade is one meter.
+    return v / 9.81;
+  }
+  
 #ifdef FUSE_SPEED
   Vec3 speed() { return speed_; }  // m/s
 #endif
 
+  // Acceleration into swing in radians per second per second
+  float swing_accel() {
+    Vec3 gyro_slope_ = gyro_slope();
+    return sqrtf(gyro_slope_.z * gyro_slope_.z + gyro_slope_.y * gyro_slope_.y) * (M_PI / 180);
+  }
+
+  // Acceleration into twist (one direction) in degrees per second per second
+  float twist_accel() {
+    return gyro_slope().x;
+  }
+
+  void dump() {
+    STDOUT << " Accel=" << accel_ << " ("<<  accel_.len() << ")"
+	   << " Gyro=" << gyro_ << " (" << gyro_.len() << ")"
+	   << " down=" << down_ << " (" << down_.len() << ")"
+	   << " mss=" << mss_  << " (" << mss_.len() << ")"
+	   << "\n";
+    STDOUT << " ready=" << ready()
+	   << " swing speed=" << swing_speed()
+	   << " gyro slope=" << gyro_slope().len()
+	   << " last_micros_ = " << last_micros_
+	   << " now = " << micros()
+	   << "\n";
+    STDOUT << " acceleration extrapolator data:\n";
+    accel_extrapolator_.dump();
+    STDOUT << " gyro extrapolator data:\n";
+    gyro_extrapolator_.dump();
+  }
+
+  bool ready() { return micros() - last_micros_ < 50000; }
+
 private:
-  Extrapolator<Vec3> accel_extrapolator_;
-  Extrapolator<Vec3> gyro_extrapolator_;
+  uint32_t last_clear_ = 0;
+  static const int filter_hz = 80;
+  static const int clash_filter_hz = 1600;
+  Extrapolator<Vec3, ACCEL_MEASUREMENTS_PER_SECOND/filter_hz> accel_extrapolator_;
+  Extrapolator<Vec3, GYRO_MEASUREMENTS_PER_SECOND/filter_hz> gyro_extrapolator_;
+  BoxFilter<Vec3, ACCEL_MEASUREMENTS_PER_SECOND/clash_filter_hz> accel_clash_filter_;
+  BoxFilter<Vec3, ACCEL_MEASUREMENTS_PER_SECOND/clash_filter_hz> gyro_clash_filter_;
 
 #ifdef FUSE_SPEED
   Vec3 speed_;

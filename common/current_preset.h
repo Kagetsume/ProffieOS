@@ -9,46 +9,107 @@ class CurrentPreset {
 public:
   enum { PRESET_DISK, PRESET_ROM } preset_type;
   int preset_num;
+  ConfigFileExt read_from_ext_ = ConfigFileExt::CONFIG_UNKNOWN;
+  const char* read_from_save_dir_ = "";
+  uint32_t iteration_ = 0;
   LSPtr<char> font;
   LSPtr<char> track;
-#define DEFINE_CURRENT_STYLE_STRING(N) LSPtr<char> current_style##N;
-  ONCEPERBLADE(DEFINE_CURRENT_STYLE_STRING);
+#if NUM_BLADES > 0
+  LSPtr<char> current_style_[NUM_BLADES];
+#endif
   LSPtr<char> name;
   uint32_t variation;
 
-  const char *mk_builtin_str(int num, int N) {
+  static const char *mk_builtin_str(int num, int N) {
     char tmp[30];
     strcpy(tmp, "builtin ");
     itoa(num, tmp + strlen(tmp), 10);
     strcat(tmp, " ");
     itoa(N, tmp + strlen(tmp), 10);
-    char *ret = (char *)malloc(strlen(tmp)+1);
-    if (!ret) return "";
-//    STDOUT.print("MALLOC ");
-//    STDOUT.println((uint32_t)ret, HEX);
-    strcpy(ret, tmp);
-    return ret;
+    return mkstr(tmp);
   }
+
+  const char *mk_preset_name(int num) {
+    char tmp[30];
+    strcpy(tmp, "Preset: ");
+    itoa(num + 1, tmp + strlen(tmp), 10);
+    return mkstr(tmp);
+  }
+
+  static bool IsValidStyleString(const char* s) {
+    if (strlen(s) < 5) return false;
+    for (; *s != ' '; s++) {
+      if (*s >= 'a' && *s <= 'z') continue;
+      return false;
+    }
+    for (; *s; s++) {
+      if (*s >= '0' && *s <= '9') continue;
+      if (*s == ' ') continue;
+      if (*s == ',') continue;
+      return false;
+    }
+    return true;
+  }
+
+  static const char* ValidateStyleStringF(const char* s, const char* file, int line) {
+    if (!IsValidStyleString(s)) {
+      while (true) {
+	STDOUT << "INVALID STYLE STRING " << s << " @ " << file << ":" << line << "\n";
+      }
+    }
+    return s;
+  }
+
+  static const LSPtr<char> ValidateStyleStringF(LSPtr<char> s, const char* file, int line) {
+    if (!IsValidStyleString(s.get())) {
+      while (true) {
+	STDOUT << "INVALID STYLE STRING " << s.get() << " @ " << file << ":" << line << "\n";
+      }
+    }
+    return s;
+  }
+
+#define VALIDATE_STYLE_STRING(N) ValidateStyleString(PRE.current_style_[N-1].get());
+
+#if defined(ENABLE_DEBUG) && NUM_BLADES > 0
+#define ValidateStyleString(X) CurrentPreset::ValidateStyleStringF((X), __FILE__, __LINE__)
+#define VSS(X) CurrentPreset::ValidateStyleStringF((X), __FILE__, __LINE__)
+#define DOVALIDATE(X) do { CurrentPreset&PRE=(X); ONCEPERBLADE(VALIDATE_STYLE_STRING); } while(0)
+#else
+#define ValidateStyleString(X) (X)
+#define VSS(X) (X)
+#define DOVALIDATE(X) do {  } while(0)
+#endif
 
   void Clear() {
     font = "";
     track = "";
-#define CLEAR_STYLE_STRING(N) current_style##N = "";
-    ONCEPERBLADE(CLEAR_STYLE_STRING);
+#if NUM_BLADES > 0
+    for (size_t N = 0; N < NUM_BLADES; N++) current_style_[N] = "";
+#endif
     name = "";
     variation = 0;
   }
 
   void Set(int num) {
+    PVLOG_VERBOSE << "CurrentPreset::Set(" << num << "/" << current_config->num_presets << ")\n";
     num = (current_config->num_presets + num) % current_config->num_presets;
     Preset* preset = current_config->presets + num;
     preset_type = PRESET_ROM;
     preset_num = num;
     font = preset->font;
     track = preset->track;
-#define MAKE_STYLE_STRING(N) current_style##N = mk_builtin_str(num, N);
+#define MAKE_STYLE_STRING(N) current_style_[N-1] = ValidateStyleString(mk_builtin_str(num, N));
     ONCEPERBLADE(MAKE_STYLE_STRING);
-    name = preset->name;
+// TODO Test with 3+ blades
+//#if NUM_BLADES > 0
+//    for (size_t N = 0; N < NUM_BLADES; N++) current_style_[N] = ValidateStyleString(mk_builtin_str(num, N+1));
+//#endif
+    if (preset->name && strlen(preset->name)) {
+      name = preset->name;
+    } else {
+      name = mk_preset_name(num);
+    }
     variation = 0;
   }
 
@@ -57,7 +118,7 @@ public:
     int current_style = 0;
     if (f->Tell() <= sizeof(install_time) + 11) preset_num = -1;
     preset_type = PRESET_DISK;
-    
+
     for (; f->Available(); f->skipline()) {
       char variable[33];
       f->skipspace();
@@ -65,7 +126,10 @@ public:
       int line_begin = f->Tell();
       f->readVariable(variable);
 
+      //      fprintf(stderr, "VAR: %s\n", variable);
+
       if (!variable[0]) continue;
+
       if (!strcmp(variable, "new_preset")) {
 	preset_count++;
 	if (preset_count == 2) {
@@ -76,20 +140,22 @@ public:
 	}
 	continue;
       }
-      if (!preset_count) continue;
-      if (f->Peek() != '=') continue;
-      f->Read();
-      f->skipspace();
 
       if (!strcmp(variable, "end")) {
 	f->Seek(line_begin);
+	if (preset_count == 0) break;
 	if (preset_count == 1) {
 	  preset_num++;
 	  return true;
 	}
 	return false;
       }
-      
+
+      if (!preset_count) continue;
+      if (f->Peek() != '=') continue;
+      f->Read();
+      f->skipspace();
+
       if (!strcmp(variable, "name")) {
 	name = f->readString();
 	continue;
@@ -111,11 +177,14 @@ public:
 	continue;
       }
       if (!strcmp(variable, "style")) {
-	current_style++;
 	char* tmp = f->readString();
-#define SET_PRESET_STYLE(N) if (current_style == N) { current_style##N = tmp; tmp = 0; }
-	ONCEPERBLADE(SET_PRESET_STYLE);
-	if (tmp) free(tmp);
+	(void)ValidateStyleString(tmp);
+#if NUM_BLADES > 0
+	current_style_[current_style] = tmp;
+#else
+	free(tmp);
+#endif
+	current_style++;
 	continue;
       }
     }
@@ -126,12 +195,21 @@ public:
     return false;
   }
 
-  bool Write(FileReader* f) {
+  bool Write(BufferedFileWriter* f) {
+    DOVALIDATE(*this);
     f->Write("new_preset\n");
+    DOVALIDATE(*this);
     f->write_key_value("font", font.get());
+    DOVALIDATE(*this);
     f->write_key_value("track", track.get());
-#define WRITE_PRESET_STYLE(N) f->write_key_value("style", current_style##N.get());
-    ONCEPERBLADE(WRITE_PRESET_STYLE);
+    DOVALIDATE(*this);
+//#define WRITE_PRESET_STYLE(N) f->write_key_value("style", ValidateStyleString(current_style_[N-1].get()));
+//    ONCEPERBLADE(WRITE_PRESET_STYLE);
+#if NUM_BLADES > 0
+    for (size_t N = 0; N < NUM_BLADES; N++) {
+      f->write_key_value("style", ValidateStyleString(current_style_[N].get()));
+    }
+#endif
     f->write_key_value("name", name.get());
     char tmp[12];
     itoa(variation, tmp, 10);
@@ -142,7 +220,7 @@ public:
   void Print() {
     PrintQuotedValue("FONT", font.get());
     PrintQuotedValue("TRACK", track.get());
-#define PRINT_PRESET_STYLE(N) PrintQuotedValue("STYLE" #N, current_style##N.get());
+#define PRINT_PRESET_STYLE(N) PrintQuotedValue("STYLE" #N, ValidateStyleString(current_style_[N-1].get()));
     ONCEPERBLADE(PRINT_PRESET_STYLE);
     PrintQuotedValue("NAME", name.get());
     STDOUT << "VARIATION=" << variation << "\n";
@@ -155,7 +233,7 @@ public:
   bool ValidatePresets(FileReader* f) {
     if (f->FileSize() < 4) return false;
     int pos = 0;
-#ifndef KEEP_SAVEFILES_WHEN_PROGRAMMING    
+#ifndef KEEP_SAVEFILES_WHEN_PROGRAMMING
     char variable[33];
     f->readVariable(variable);
     if (strcmp(variable, "installed")) return false;
@@ -177,125 +255,165 @@ public:
     return true;
   }
 
-  bool OpenPresets(FileReader* f, const char* filename) {
-    PathHelper fn(GetSaveDir(), filename);
-    if (!f->Open(fn)) {
-      STDOUT << "Failed to open: " << filename << "\n";
-      return false;
-    }
-    if (ValidatePresets(f)) {
-      return true;
-    } else {
-      f->Close();
-      return false;
-    }
+  bool TryValidator(FileValidator* a) {
+    if (!a->validHeader()) return false;
+    if (!a->validateChecksum()) return false;
+    read_from_ext_ = a->ext;
+    iteration_ = a->iteration();
+    return true;
   }
 
-  bool UpdateINI() {
-    FileReader f, f2;
-    PathHelper ini_fn(GetSaveDir(), "presets.ini");
-    if (OpenPresets(&f2, "presets.tmp")) {
-      uint8_t buf[512];
-      // Found valid tmp file
-      f2.Seek(0);
-      LSFS::Remove(ini_fn);
-      f.Create(ini_fn);
-      while (f2.Available()) {
-	int to_copy = std::min<int>(f2.Available(), sizeof(buf));
-	if (f2.Read(buf, to_copy) != to_copy ||
-	    f.Write(buf, to_copy) != to_copy) {
-	  f2.Close();
-	  f.Close();
-	  LSFS::Remove(ini_fn);
-	  return false;
-	}
-      }
-      f2.Close();
-      f.Close();
-      return true;
+  bool TryPlain(FileValidator* a) {
+    a->f.Seek(0);
+    if (!ValidatePresets(& a->f)) return false;
+    read_from_ext_ = a->ext;
+    iteration_ = 0;
+    return true;
+  }
+
+  FileReader *OpenPresets2(FileSelector* fs) {
+    if (GetSaveDir() != read_from_save_dir_) {
+      read_from_ext_ = ConfigFileExt::CONFIG_UNKNOWN;
+      iteration_ = 0;
+      read_from_save_dir_ = GetSaveDir();
     }
-    return false;
+    if (iteration_) {
+      if (read_from_ext_ == ConfigFileExt::CONFIG_INI) {
+	return & fs->ini.f;
+      } else if(read_from_ext_ == ConfigFileExt::CONFIG_TMP) {
+	return & fs->tmp.f;
+      }
+    }
+    if (TryValidator(fs->a)) return & fs->a->f;
+    if (TryValidator(fs->b)) return & fs->b->f;
+    if (TryPlain(&fs->ini)) return & fs->ini.f;
+    if (TryPlain(&fs->tmp)) return & fs->tmp.f;
+    return nullptr;
+  }
+
+  FileReader *OpenPresets(FileSelector* fs) {
+    FileReader* ret = OpenPresets2(fs);
+    if (read_from_ext_ == ConfigFileExt::CONFIG_INI) {
+      fs->tmp.f.Close();
+    }
+    if (read_from_ext_ == ConfigFileExt::CONFIG_TMP) {
+      fs->ini.f.Close();
+    }
+    return ret;
   }
 
   bool CreateINI() {
-    FileReader f;
+#ifndef ENABLE_SD
+    return false;
+#else
     PathHelper ini_fn(GetSaveDir(), "presets.ini");
-    LSFS::Remove(ini_fn);
-    if (!f.Create(ini_fn)) {
-      STDOUT << "Failed to open " << ini_fn << " for write\n";
-      return false;
-    }
+    BufferedFileWriter f(ini_fn);
     f.write_key_value("installed", install_time);
     CurrentPreset tmp;
     for (size_t i = 0; i < current_config->num_presets; i++) {
       tmp.Set(i);
+      DOVALIDATE(tmp);
       tmp.Write(&f);
     }
     f.Write("end\n");
-    f.Close();
+    f.Close(++iteration_);
     return true;
+#endif
   }
 
   // preset = -1 means to load the *last* pre
   bool Load(int preset) {
-    FileReader f;
-    if (!OpenPresets(&f, "presets.ini")) {
-      if (!UpdateINI()) return false;
-      if (!OpenPresets(&f, "presets.ini")) return false;
+#ifndef ENABLE_SD
+    return false;
+#else
+    FileSelector fs(GetSaveDir(), "presets");
+    FileReader* f = OpenPresets(&fs);
+    if (!f) return false;
+#ifdef ENABLE_DEBUG
+    if (!f->IsOpen()) {
+      STDERR << "File returned by OpenPresets is not open!\n";
+      return false;
     }
-    
+#endif
+    int start = f->Tell();
     int n = 0;
+    preset_num = -1;
     while (true) {
-      if (Read(&f)) {
+      if (Read(f)) {
 	if (n == preset) return true;
 	n++;
       } else {
 	if (n && preset == -1) return true;
 	if (n == preset) {
-	  f.Seek(0);
+	  f->Seek(start);
 	  n=0;
-	  Read(&f);
+	  preset_num = -1;
+	  Read(f);
 	  return true;
 	}
 	return false;
       }
     }
+#endif
   }
 
   void SaveAtLocked(int position) {
-    FileReader f, out;
-    if (!OpenPresets(&f, "presets.ini")) {
-      if (!UpdateINI()) CreateINI();
-      if (!OpenPresets(&f, "presets.ini")) {
-	STDOUT << "SAVING FAILED!!!!\n";
-	return;
-      }
+#ifdef ENABLE_DEBUG
+    if (GetSaveDir() != read_from_save_dir_) {
+      STDERR << "WARNING! SAVE DIR DOES NOT MATCH\n";
     }
-    PathHelper tmp_fn(GetSaveDir(), "presets.tmp");
-    LSFS::Remove(tmp_fn);
-    out.Create(tmp_fn);
+#endif
+#ifdef ENABLE_SD
+
+    DOVALIDATE(*this);
+    FileSelector fs(GetSaveDir(), "presets");
+    FileReader *f = OpenPresets(&fs);
+    if (!f) {
+      fs.Close();
+      CreateINI();
+      SaveAtLocked(position);
+      return;
+    }
+    DOVALIDATE(*this);
+
+    if (read_from_ext_ == ConfigFileExt::CONFIG_INI) {
+      read_from_ext_ = ConfigFileExt::CONFIG_TMP;
+    } else {
+      read_from_ext_ = ConfigFileExt::CONFIG_INI;
+    }
+    iteration_++;
+
+    PathHelper tmp_fn(GetSaveDir(), "presets", read_from_ext_ == ConfigFileExt::CONFIG_INI ? "ini" : "tmp");
+    STDERR << "Creating file " << tmp_fn << " iteration = " << iteration_ << "\n";
+
+    BufferedFileWriter out(tmp_fn);
+    DOVALIDATE(*this);
     out.write_key_value("installed", install_time);
     CurrentPreset tmp;
     int opos = 0;
     if (position == 0) {
+      DOVALIDATE(*this);
       Write(&out);
       opos++;
     }
-    while (tmp.Read(&f)) {
+    tmp.preset_num = -1;
+    while (tmp.Read(f)) {
       if (tmp.preset_num != preset_num) {
+	DOVALIDATE(tmp);
 	tmp.Write(&out);
 	opos++;
 	if (position == opos) {
+	  DOVALIDATE(*this);
 	  Write(&out);
 	  opos++;
 	}
       }
     }
-    f.Close();
+    fs.Close();
     out.Write("end\n");
-    out.Close();
-    UpdateINI();
+    out.Close(iteration_);
     preset_num = position;
+#endif
   }
 
   // position = 0 -> first spot
@@ -315,6 +433,23 @@ public:
     LOCK_SD(true);
     if (!Load(preset)) Set(preset);
     LOCK_SD(false);
+  }
+
+  void SetStyle(int blade, LSPtr<char> style) {
+    DOVALIDATE(*this);
+    ValidateStyleString(style.get());
+#if NUM_BLADES > 0
+    current_style_[blade-1] = std::move(style);
+#endif
+    DOVALIDATE(*this);
+  }
+
+  const char* GetStyle(int blade) {
+#if NUM_BLADES > 0
+    return current_style_[blade-1].get();
+#else
+    return "";
+#endif
   }
 };
 

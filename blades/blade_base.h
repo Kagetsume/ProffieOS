@@ -13,31 +13,27 @@ using BladeEffectType = EffectType;
     HANDLED_FEATURE_DRAG = 1 << 3,
     HANDLED_FEATURE_MELT = 1 << 4,
     HANDLED_FEATURE_LIGHTNING_BLOCK = 1 << 5,
+    HANDLED_FEATURE_INTERACTIVE_PREON = 1 << 6,
+    HANDLED_FEATURE_INTERACTIVE_BLAST = 1 << 7,
   };
 
 #include "../styles/blade_style.h"
-
-struct BladeEffect {
-  BladeEffectType type;
-
-  uint32_t start_micros;
-  float location; // 0 = base, 1 = tip
-};
 
 class BladeBase {
 public:
   // Returns number of LEDs in this blade.
   virtual int num_leds() const = 0;
 
+  virtual int GetBladeNumber() const = 0;
+
   // Returns the byte order of this blade.
   virtual Color8::Byteorder get_byteorder() const = 0;
 
   // Returns true if the blade is supposed to be on.
   // false while "turning off".
-  virtual bool is_on() const = 0;
+  virtual bool is_on() const { return SaberBase::BladeIsOn(GetBladeNumber()); }
 
-  // Return how many effects are in effect.
-  virtual size_t GetEffects(BladeEffect** blade_effects) = 0;
+  virtual bool is_powered() const = 0;
 
   // Set led 'led' to color 'c'.
   virtual void set(int led, Color16 c) = 0;
@@ -55,9 +51,8 @@ public:
   // disable power now. (Usually called after is_on()
   // has returned false for some period of time.)
   virtual void allow_disable() = 0;
-  virtual bool IsPrimary() = 0;
 
-  virtual void Activate() = 0;
+  virtual void Activate(int blade_number) = 0;
   virtual void Deactivate() = 0;
 
   virtual BladeStyle* UnSetStyle() = 0;
@@ -83,6 +78,17 @@ public:
 
 HandledFeature BladeBase::handled_features_ = HANDLED_FEATURE_NONE;
 
+BladeEffect* last_detected_blade_effect = NULL;
+
+class SaveLastDetectedBladeEffectScoped {
+public:
+  SaveLastDetectedBladeEffectScoped() : last_detected_blade_effect_(last_detected_blade_effect) {}
+  ~SaveLastDetectedBladeEffectScoped() { last_detected_blade_effect = last_detected_blade_effect_; }
+private:
+  BladeEffect* last_detected_blade_effect_;
+};
+
+
 template<BladeEffectType effect>
 class OneshotEffectDetector {
 public:
@@ -91,28 +97,52 @@ public:
       case EFFECT_STAB:
 	BladeBase::HandleFeature(HANDLED_FEATURE_STAB);
 	break;
+      case EFFECT_INTERACTIVE_PREON:
+        BladeBase::HandleFeature(HANDLED_FEATURE_INTERACTIVE_PREON);
+        break;
+      case EFFECT_INTERACTIVE_BLAST:
+        BladeBase::HandleFeature(HANDLED_FEATURE_INTERACTIVE_BLAST);
+        break;
       default:
 	break;
     }
   }
-  BladeEffect* Detect(BladeBase* blade) {
+  BladeEffect* Find(BladeBase* blade) {
     BladeEffect* effects;
-    size_t n = blade->GetEffects(&effects);
+    size_t n = SaberBase::GetEffects(&effects);
+    int blade_number = blade->GetBladeNumber();
     // If no other thing is handling stab, treat it like a clash.
     // But only for the primary blade...
     bool match_stab = effect == EFFECT_CLASH &&
       !blade->current_style()->IsHandled(HANDLED_FEATURE_STAB) &&
-      blade->IsPrimary();
+      blade_number == 1;
     for (size_t i = 0; i < n; i++) {
+      if (!effects[i].location.on_blade(blade_number)) continue;
       if (effect == effects[i].type ||
 	  (match_stab && effects[i].type == EFFECT_STAB)) {
-	if (effects[i].start_micros == last_detected_)
-	  return nullptr;
-	last_detected_ = effects[i].start_micros;
 	return effects + i;
       }
     }
     return nullptr;
+  }
+  BladeEffect* Detect(BladeBase* blade) {
+    BladeEffect* e = Find(blade);
+    if (!e) return nullptr;
+    if (e->start_micros == last_detected_)
+      return nullptr;
+    last_detected_ = e->start_micros;
+    return e;
+  }
+  // Like "Detect", but also sets last_detected_blade_effect
+  // so what WavLen<> and friends can find the detected effect.
+  BladeEffect* DetectScoped(BladeBase* blade) {
+    BladeEffect* e = Find(blade);
+    last_detected_blade_effect = e;
+    if (!e) return nullptr;
+    if (e->start_micros == last_detected_)
+      return nullptr;
+    last_detected_ = e->start_micros;
+    return e;
   }
   uint32_t last_detected_micros() { return last_detected_; }
 private:

@@ -19,7 +19,10 @@ const unsigned int maxLedsPerStrip = 144;
 #define ENABLE_MOTION
 #define ENABLE_WS2811
 #define ENABLE_SD
-#define ENABLE_SERIAL
+#define SAVE_STATE
+#define ENABLE_ALL_EDIT_OPTIONS
+#define MENU_SPEC_TEMPLATE DefaultMenuSpec
+#define MOUNT_SD_SETTING
 #endif
 
 #ifdef CONFIG_PRESETS

@@ -7,6 +7,14 @@ class Looper;
 Looper* loopers = NULL;
 Looper* hf_loopers = NULL;
 LoopCounter global_loop_counter;
+LoopCounter hf_loop_counter;
+
+#ifdef ENABLE_DEBUG
+Looper* volatile current_looper = NULL;
+Looper* volatile last_looper = NULL;
+uint32_t last_looper_count = 0;
+#endif
+
 class Looper {
 public:
   void Link() {
@@ -41,14 +49,41 @@ public:
   explicit Looper(NoLink _) { }
   explicit Looper(HFLink _) { HighFrequencyLink(); }
   ~Looper() { Unlink(); }
+
+#ifdef ENABLE_DEBUG
+#define  CALL_LOOP(X) do { Looper* tmp = (X); current_looper = tmp; tmp->Loop(); current_looper = nullptr; } while(0)
+  virtual void LoopDebug() {};
+  static void CheckFrozen() {
+    Looper* current = current_looper;
+    if (current != last_looper) {
+      last_looper_count = 0;
+      last_looper = current;
+      return;
+    }
+    if (last_looper_count++ > 2000) {
+      if (current) {
+	STDERR << "Looper stuck in " << current->name() << "\n";
+	current->LoopDebug();
+      } else {
+	STDERR << "No looper for 2000 iterations!\n";
+      }
+      last_looper_count = 0;
+    }
+  }
+#else
+#define  CALL_LOOP(X) (X)->Loop()
+  static void CheckFrozen() {}
+#endif
+
   static void DoLoop() {
     ScopedCycleCounter cc(loop_cycles);
     CHECK_LL(Looper, loopers, next_looper_);
     for (Looper *l = loopers; l; l = l->next_looper_) {
       ScopedCycleCounter cc2(l->cycles_);
-      l->Loop();
+      CALL_LOOP(l);
     }
     global_loop_counter.Update();
+    hf_loop_counter.Update();
   }
   static void DoHFLoop() {
     ScopedCycleCounter cc(loop_cycles);
@@ -57,9 +92,9 @@ public:
       // TODO: We're currently double-counting these cycles, since
       // DoHfLoop() is likely to be called from inside of DoLoop()
       ScopedCycleCounter cc2(l->cycles_);
-      l->Loop();
+      CALL_LOOP(l);
     }
-    global_loop_counter.Update();
+    hf_loop_counter.Update();
   }
   static void DoSetup() {
     for (Looper *l = loopers; l; l = l->next_looper_) {
@@ -91,5 +126,31 @@ private:
   uint64_t cycles_ = 0;
   Looper* next_looper_;
 };
+
+
+template<size_t N = 4>
+class PolyHoleTemplate : public Looper {
+public:
+  const char* name() override { return "polyhole"; }
+  PolyHoleTemplate() {
+    for (size_t i = 0; i < N; i++) {
+      holes[i] = ((size_t)holes) ^ (i * 293729374u);
+    }
+  }
+  void Loop() override {
+    for (size_t i = 0; i < N; i++) {
+      PROFFIEOS_ASSERT(holes[i] == ((size_t)holes) ^ (i * 293729374u));
+    }
+  }
+  size_t holes[N];
+};
+
+#ifdef ENABLE_DEBUG
+#define POLYHOLECONCAT_(a, b) a##b
+#define POLYHOLECONCAT(a, b) POLYHOLECONCAT_(a, b)
+#define POLYHOLE PolyHoleTemplate<4> POLYHOLECONCAT(polyhole_, __LINE__)
+#else
+#define POLYHOLE static_assert(true)
+#endif
 
 #endif

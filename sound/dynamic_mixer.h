@@ -2,12 +2,13 @@
 #define SOUND_DYNAMIC_MIXER_H
 
 #include <algorithm>
+#include "../common/atomic.h"
 
 // Audio compressor, takes N input channels, sums them and divides the
 // result by the square root of the average volume.
-template<int N> class AudioDynamicMixer : public AudioStream, Looper {
+template<int N> class AudioDynamicMixer : public ProffieOSAudioStream, Looper {
 public:
-  AudioDynamicMixer() {
+  AudioDynamicMixer() : underflow_count_(0) {
     for (int i = 0; i < N; i++) {
       streams_[i] = nullptr;
     }
@@ -68,7 +69,7 @@ public:
 	if (!streams_[i]) continue;
         int e = streams_[i]->read(data, to_do);
 	if (e < to_do && !streams_[i]->eof()) {
-	  underflow_count_++;
+	  underflow_count_ += 1;
 	}
         for (int j = 0; j < e; j++) {
           sum[j] += data[j];
@@ -77,7 +78,9 @@ public:
 
       for (int i = 0; i < to_do; i++) {
         v = sum[i];
-        vol_ = ((vol_ + abs(v)) * 255) >> 8;
+//        vol_ = ((vol_ + abs(v)) * 255) >> 8;
+	vol_ += abs(v);
+	vol_ -= (vol_ + 255) >> 8;
         v2 = v * volume_ / (my_sqrt(vol_) + 100);
 //	v2 = (int)((v * (float)volume_)/(sqrtf(vol_)+100.0f));
         data[i] = clamptoi16(v2);
@@ -109,7 +112,7 @@ public:
 	if (!streams_[i]) continue;
         int e = streams_[i]->read(tmp, to_do);
 	if (e < to_do && !streams_[i]->eof()) {
-	  underflow_count_++;
+	  underflow_count_ += 1;
 	}
         for (int j = 0; j < e; j++) {
           sum[j] += tmp[j];
@@ -118,7 +121,9 @@ public:
 
       for (int i = 0; i < to_do; i++) {
         v = sum[i];
-        vol_ = ((vol_ + abs(v)) * 255) >> 8;
+        // vol_ = ((vol_ + abs(v)) * 255) >> 8;
+	vol_ += abs(v);
+	vol_ -= (vol_ + 255) >> 8;
 	data[i] = v / (sqrtf(vol_) + 100.0f);
       }
       data += to_do;
@@ -132,7 +137,7 @@ public:
   }
 
   void Loop() override {
-    uint32_t underflows = underflow_count_;
+    uint32_t underflows = underflow_count_.get();
     if (underflows != last_underflow_count_) {
       if (millis() - last_printout_ > 100) {
 	uint32_t new_underflows = underflows - last_underflow_count_;
@@ -156,7 +161,7 @@ public:
       STDOUT.print(" peak: ");
       STDOUT.print(peak_);
       STDOUT.print(" underflows: ");
-      STDOUT.println(underflow_count_);
+      STDOUT.println(underflow_count_.get());
       peak_sum_ = peak_ = 0;
     }
   }
@@ -178,15 +183,15 @@ public:
   void set_volume(int32_t volume) { volume_ = volume; }
   int32_t get_volume() const { return volume_; }
 
-  AudioStream* streams_[N];
-  int32_t vol_ = 0;
+  ProffieOSAudioStream* streams_[N];
+  uint32_t vol_ = 0;
   int32_t last_sample_ = 0;
   int32_t last_sum_ = 0;
   int32_t peak_sum_ = 0;
   int32_t peak_ = 0;
   int32_t num_samples_ = 0;
-  int32_t volume_ = VOLUME;
-  volatile uint32_t underflow_count_ = 0;
+  int32_t volume_ = BOOT_VOLUME;
+  POAtomic<uint32_t> underflow_count_;
   uint32_t last_underflow_count_ = 0;
   uint32_t last_printout_ = 0;
 //  int32_t sum_;

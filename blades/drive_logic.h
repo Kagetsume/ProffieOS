@@ -2,8 +2,7 @@
 #define BLADES_DRIVE_LOGIC_H
 
 #include "led_interface.h"
-
-template<typename T> struct ToVoid { typedef void Type; };
+#include "../common/common.h"
 
 template<class LED, typename Enable=void>
 struct ColorSelector {
@@ -96,6 +95,9 @@ class DriveLogic<LED, typename ToVoid<typename LED::CustomDriveLogic>::Type> : p
 public:
   int PWM_overdrive(Color16 c) override { return drive_.PWM_overdrive(c); }
   int PWM(Color16 c) override { return drive_.PWM(c); }
+  Color8 getColor8() const {
+    return ColorSelector<LED>::getColor8();
+  }
 private:
   typename LED::CustomDriveLogic drive_;
 };

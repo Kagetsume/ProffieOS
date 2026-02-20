@@ -8,6 +8,7 @@ template<BladeEffectType EFFECT, class... COLORS>
 class EffectSequence {
 public:
   void run(BladeBase* blade) {
+    SaveLastDetectedBladeEffectScoped save;
     colors_.run(blade);
     if (effect_.Detect(blade)) {
 	n_ = (n_ + 1) % sizeof...(COLORS);
@@ -22,7 +23,6 @@ public:
   auto getColor(int led) -> decltype(colors_.getColor(n_, led)) {
     return colors_.getColor(n_, led);
   }
-
 };
 
 #endif

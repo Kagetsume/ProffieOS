@@ -23,7 +23,9 @@ public:
 //    if (saber_synth.on_) return true;
 //    if (audio_splicer.isPlaying()) return true;
     if (beeper.isPlaying()) return true;
+#ifndef DISABLE_TALKIE    
     if (talkie.isPlaying()) return true;
+#endif    
     for (size_t i = 0; i < NELEM(wav_players); i++)
       if (wav_players[i].isPlaying())
         return true;
@@ -38,11 +40,12 @@ public:
 #ifdef AUDIO_CONTROL_SGTL5000
     if (!sgtl5000_enabled) {
       sgtl5000_1.enable();
-      sgtl5000_1.volume(0.5);
+      sgtl5000_1.volume(0.7);
       sgtl5000_enabled = true;
     }
 #else    
-    if (!digitalRead(amplifierPin)) {
+    if (!on_) {
+      on_ = true;
       EnableBooster();
       pinMode(amplifierPin, OUTPUT);
       digitalWrite(amplifierPin, HIGH);
@@ -68,6 +71,7 @@ protected:
       SLEEP(20);
       if (Active()) continue;
       STDOUT.println("Amplifier off.");
+      on_ = false;
       // digitalWrite(amplifierPin, LOW); // turn the amplifier off
 #ifdef AUDIO_CONTROL_SGTL5000
       // Disable does nothing, so this is pointless.
@@ -78,6 +82,7 @@ protected:
       pinMode(amplifierPin, INPUT_ANALOG); // Let the pull-down do the work
 #endif      
       SLEEP(20);
+      if (on_) continue;
       dac.end();
       while (!Active()) YIELD();
     }
@@ -106,12 +111,15 @@ protected:
       SaberBase::DoIsOn(&on);
       STDOUT.print("Saber bases: ");
       STDOUT.println(on ? "On" : "Off");
+      STDOUT << "Blades: " << SaberBase::OnBlades() << "\n";
 //      STDOUT.print("Audio splicer: ");
 //      STDOUT.println(audio_splicer.isPlaying() ? "On" : "Off");
       STDOUT.print("Beeper: ");
       STDOUT.println(beeper.isPlaying() ? "On" : "Off");
+#ifndef DISABLE_TALKIE      
       STDOUT.print("Talker: ");
       STDOUT.println(talkie.isPlaying() ? "On" : "Off");
+#endif
       for (size_t i = 0; i < NELEM(wav_players); i++) {
 	STDOUT << "Wav player " << i << ": "
 	       << (wav_players[i].isPlaying() ? "On" : "Off")
@@ -127,11 +135,8 @@ protected:
     return false;
   }
 
-  void Help() {
-    STDOUT.println(" amp on/off - turn amplifier on or off");
-  }
-
 private:
+  bool on_ = false;
   uint32_t last_enabled_;
 };
 

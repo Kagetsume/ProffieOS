@@ -25,7 +25,7 @@
 template<int R, int G, int B>
 class Rgb {
 public:
-  static Color16 color() { return Color16(Color8(R,G,B)); }
+  static constexpr Color16 color() { return Color16(Color8(R,G,B)); }
   LayerRunResult run(BladeBase* base) {
     if (R == 0 && G == 0 && B == 0) return LayerRunResult::OPAQUE_BLACK_UNTIL_IGNITION;
     return LayerRunResult::UNKNOWN;
@@ -53,7 +53,7 @@ class Rgba16 {
 public:
   void run(BladeBase* base) {}
   RGBA_um_nod getColor(int led) {
-    return RGBA_um_nod(Color16(R, G, B), false, A >> 1);
+    return RGBA_um_nod(Color16(R, G, B), A >> 1);
   }
 };
 

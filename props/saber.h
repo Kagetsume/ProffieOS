@@ -1,3 +1,33 @@
+/*
+How buttons behave when using this prop file:
+
+On/Off -                  Zero buttons saber = Twist (2 directional, like revving a motorcycle)
+                          ** Note that the motion has to be done long enough to count, so a very quick flick of the wrist will not work.
+                          1 button saber = Click to turn the saber on or off.
+                          2 button saber = Click POW
+                          ** Note, if #define DUAL_POWER_BUTTONS is added to config file,  Clicking either POW or AUX will power on.
+                             Also note that POW and AUX become swapped while the saber is on if AUX used to power on.
+Turn On muted -           Double-click POW button
+Next preset -             Zero button saber = Point up and shake
+                          1 or 2 button saber = Hold POW button and hit the blade while saber is off.
+Previous Preset -         Hold AUX button and click the POW button while saber is off.
+Clash -                   Hit the blade while saber is on.
+Lockup -                  Hold either POW or AUX, then trigger a clash. Release button to end.
+Drag -                    Hold either POW or AUX, then trigger a clash while pointing down. Release button to end.
+Melt -                    Hold either POW or AUX and stab something.
+Force Lightning Block -   Click AUX while holding POW.
+Force -                   Long-click POW button.
+Start Soundtrack -        Long-click the POW button while blade is off.
+Blaster block -           Short-click AUX button.
+Enter/Exit Color Change - 1 button saber = Hold button and Twist.
+                          2 button saber = Hold Aux and click POW while on.
+** Note Color Change only works with ProffieOS 3.x and above
+Enter Menu -              Double-click AUX button while blade is off.
+  Use POW to select
+  Use AUX to cancel/exit
+** Note Menu requires a voicepack V2 in your common folder to work
+*/
+
 #ifndef PROPS_SABER_H
 #define PROPS_SABER_H
 
@@ -7,7 +37,7 @@
 
 // The Saber class implements the basic states and actions
 // for the saber.
-class Saber : public PropBase {
+class Saber : public PROP_INHERIT_PREFIX PropBase {
 public:
   Saber() : PropBase() {}
   const char* name() override { return "Saber"; }
@@ -58,7 +88,11 @@ public:
         return true;
 #endif
 
+#ifdef MENU_SPEC_TEMPLATE
+      case EVENTID(BUTTON_AUX, EVENT_SAVED_CLICK_SHORT, MODE_OFF):
+#else
       case EVENTID(BUTTON_AUX, EVENT_CLICK_SHORT, MODE_OFF):
+#endif
 #ifdef DUAL_POWER_BUTTONS
         aux_on_ = true;
         On();
@@ -67,7 +101,7 @@ public:
 #endif
         return true;
 
-        // Handle double-click with preon
+      // Handle double-click with preon
       case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_OFF):
         if (on_pending_) {
           if (SetMute(true)) {
@@ -76,6 +110,14 @@ public:
           return true;
         }
         return false;
+
+#ifdef MENU_SPEC_TEMPLATE
+      // Serial monitor command: aux p2
+      // Navigate with [l]eft [r]ight, [sel]ect and [can]cel.
+      case EVENTID(BUTTON_AUX, EVENT_DOUBLE_CLICK, MODE_OFF):
+	EnterMenu();
+	return true;
+#endif
 
       case EVENTID(BUTTON_POWER, EVENT_DOUBLE_CLICK, MODE_ON):
         if (millis() - activated_ < 500) {
@@ -90,6 +132,8 @@ public:
       case EVENTID(BUTTON_AUX, EVENT_LATCH_OFF, MODE_ON):
       case EVENTID(BUTTON_AUX2, EVENT_LATCH_OFF, MODE_ON):
 #if NUM_BUTTONS == 0
+#undef NEED_DETECT_TWIST
+#define NEED_DETECT_TWIST
       case EVENTID(BUTTON_NONE, EVENT_TWIST, MODE_ON):
 #endif
 #ifndef DISABLE_COLOR_CHANGE
@@ -114,10 +158,12 @@ public:
         SaberBase::DoBlast();
         return true;
 
+#ifndef DISABLE_COLOR_CHANGE
 #if NUM_BUTTONS == 1
+#undef NEED_DETECT_TWIST
+#define NEED_DETECT_TWIST
       case EVENTID(BUTTON_NONE, EVENT_TWIST, MODE_ON | BUTTON_POWER):
 #endif
-#ifndef DISABLE_COLOR_CHANGE
       case EVENTID(BUTTON_POWER, EVENT_CLICK_SHORT, MODE_ON | BUTTON_AUX):
         ToggleColorChangeMode();
         return true;
@@ -162,6 +208,7 @@ public:
 
       case EVENTID(BUTTON_NONE, EVENT_CLASH, MODE_OFF | BUTTON_POWER):
 #if NUM_BUTTONS == 0
+#define NEED_DETECT_SHAKE
       case EVENTID(BUTTON_NONE, EVENT_SHAKE, MODE_OFF):
 #endif
         next_preset();
@@ -191,13 +238,26 @@ public:
     }
     return false;
   }
-#if NUM_BUTTONS == 0
+
+#if defined(NEED_DETECT_SHAKE) || defined(NEED_DETECT_TWIST)
   void Loop() override {
     PropBase::Loop();
+
+#ifdef NEED_DETECT_TWIST
     DetectTwist();
+#endif
+
+#ifdef NEED_DETECT_SHAKE
     DetectShake();
+#endif
+    // DetectSwing();
+
+#if NUM_BUTTONS == 0
+    SaberBase::RequestMotion();
+#endif
   }
-#endif  
+#endif
+
 private:
   bool aux_on_ = true;
   bool pointing_down_ = false;
