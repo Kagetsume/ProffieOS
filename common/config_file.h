@@ -89,6 +89,7 @@ struct ConfigFile {
     READ_OK,
     READ_END,
   };
+  // Whitespace-tolerant; malformed lines are ignored and do not crash.
   virtual ReadStatus Read(FileReader* f, bool reset = true) {
     if (reset) SetVariable("=", 0.0);  // This resets all variables.
     if (!f || !f->IsOpen()) return ReadStatus::READ_FAIL;
@@ -96,17 +97,19 @@ struct ConfigFile {
       char variable[33];
       variable[0] = 0;
       f->skipwhite();
+      if (!f->Available()) break;
       if (f->Peek() == '#') continue;
       f->readVariable(variable);
+      if (!variable[0]) continue;
       if (!strcmp(variable,"end")) return ReadStatus::READ_END;
       f->skipwhite();
-      if (f->Peek() != '=') continue;
+      if (!f->Available() || f->Peek() != '=') continue;
       f->Read();
       f->skipwhite();
 #ifndef KEEP_SAVEFILES_WHEN_PROGRAMMING
       if (!strcmp(variable, "installed")) {
 	if (!f->Expect(install_time)) {
-	  return ReadStatus::READ_FAIL;
+	  continue;
 	}
 	continue;
       }

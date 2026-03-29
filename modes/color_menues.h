@@ -272,7 +272,7 @@ struct ResetColorToDefaultEntry : public MenuEntry {
     getSL<SPEC>()->SaySelect();
     LSPtr<char> builtin = style_parser.ResetArguments(GetStyle(menu_current_blade));
     char argspace[32];
-    style_parser.GetArgument(builtin.get(), menu_current_arg, argspace);
+    style_parser.GetArgument(builtin.get(), menu_current_arg, argspace, sizeof(argspace));
     char* tmp;
     int r = strtol(argspace, &tmp, 0);
     int g = strtol(tmp+1, &tmp, 0);

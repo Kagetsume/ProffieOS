@@ -2,8 +2,30 @@
 #define STYLES_STYLE_PARSER_H
 
 #include "../common/preset.h"
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <climits>
 #include "../common/arg_parser.h"
+
+inline void StyleParserCopyArgBounded(char* output, size_t output_max, const char* start, const char* end) {
+  if (!output || output_max == 0) return;
+  if (!start || !end || end < start) {
+    output[0] = '\0';
+    return;
+  }
+  size_t len = (size_t)(end - start);
+  size_t maxcopy = output_max - 1;
+  size_t n = len < maxcopy ? len : maxcopy;
+  memcpy(output, start, n);
+  output[n] = '\0';
+}
+#include "../common/sd_config.h"
+#include "../common/style_config_file.h"
 #include "../functions/int_arg.h"
+#include "config_layers_style.h"
+#include "pixel_sequencer.h"
 
 class NamedStyle {
 public:
@@ -18,6 +40,7 @@ public:
 #if NUM_BLADES == 0
     return nullptr;
 #else
+    if (UseSDConfig()) return nullptr;  // SD presets use style strings, not builtin
     // Technically we should call run on these.
     IntArg<1, 0> preset_arg;
     IntArg<2, 1> style_arg;
@@ -25,8 +48,9 @@ public:
     int style = style_arg.getInteger(0);
 
     StyleAllocator allocator = nullptr;
-    if (preset < 0 || preset >= (int)(current_config->num_presets))
+    if (preset < 0 || preset >= (int)GetNumPresets())
       return nullptr;
+    if (!current_config) return nullptr;
 
     Preset* p = current_config->presets + preset;
 #define GET_PRESET_STYLE(N) if (style == N) allocator = p->style_allocator##N;
@@ -41,6 +65,84 @@ public:
 };
 
 BuiltinPresetAllocator builtin_preset_allocator;
+
+BladeStyle* ParseStyleStringForConfig(const char* str);
+
+class ConfigStyleFactory : public StyleFactory {
+public:
+  BladeStyle* make() override {
+    const char* name = CurrentArgParser ? CurrentArgParser->GetArg(1, "", "") : "";
+    if (!name || !name[0]) return nullptr;
+    char ov_keys[STYLE_CONFIG_MAX_LOCAL_VARS][STYLE_CONFIG_LOCAL_KEY_LEN];
+    char ov_vals[STYLE_CONFIG_MAX_LOCAL_VARS][STYLE_CONFIG_LOCAL_VAL_LEN];
+    int ov_count = 0;
+    if (CurrentArgParser) {
+      for (int ai = 2; ai < 32 && ov_count < STYLE_CONFIG_MAX_LOCAL_VARS; ai++) {
+        const char* kv = CurrentArgParser->GetArg(ai, "", "");
+        if (!kv || !kv[0]) break;
+        const char* eq = strchr(kv, '=');
+        if (!eq) break;
+        size_t key_len = (size_t)(eq - kv);
+        if (key_len == 0 || key_len >= STYLE_CONFIG_LOCAL_KEY_LEN) break;
+        memcpy(ov_keys[ov_count], kv, key_len);
+        ov_keys[ov_count][key_len] = '\0';
+        strncpy(ov_vals[ov_count], eq + 1, STYLE_CONFIG_LOCAL_VAL_LEN - 1);
+        ov_vals[ov_count][STYLE_CONFIG_LOCAL_VAL_LEN - 1] = '\0';
+        ov_count++;
+      }
+    }
+    char layers[STYLE_CONFIG_MAX_LAYERS][STYLE_CONFIG_LAYER_STR_LEN];
+    int n = LoadStyleConfigLayers(name, layers, STYLE_CONFIG_MAX_LAYERS, ov_count, ov_keys, ov_vals);
+    if (n <= 0) return nullptr;
+    if (n > STYLE_CONFIG_MAX_LAYERS) n = STYLE_CONFIG_MAX_LAYERS;
+    BladeStyle* sub[CONFIG_LAYERS_MAX];
+    uint16_t layer_alpha[CONFIG_LAYERS_MAX];
+    uint8_t layer_blend[CONFIG_LAYERS_MAX];
+    int count = 0;
+    for (int i = 0; i < n && i < STYLE_CONFIG_MAX_LAYERS && count < CONFIG_LAYERS_MAX; i++) {
+      if (!layers[i][0]) continue;
+      uint16_t alpha = CONFIG_LAYER_ALPHA_OPAQUE;
+      uint8_t blend = CONFIG_LAYER_BLEND_NORMAL;
+      const char* p = layers[i];
+      if (FirstWord(p, "multiply")) {
+        blend = CONFIG_LAYER_BLEND_MULTIPLY;
+        p = SkipWord(p);
+      } else if (FirstWord(p, "screen")) {
+        blend = CONFIG_LAYER_BLEND_SCREEN;
+        p = SkipWord(p);
+      } else if (FirstWord(p, "add")) {
+        blend = CONFIG_LAYER_BLEND_ADD;
+        p = SkipWord(p);
+      } else if (FirstWord(p, "normal")) {
+        blend = CONFIG_LAYER_BLEND_NORMAL;
+        p = SkipWord(p);
+      }
+      const char* parse_from = p;
+      if (FirstWord(p, "opacity")) {
+        ArgParser ap(SkipWord(p));
+        const char* av = ap.GetArg(1, "", "");
+        if (!av || !av[0]) continue;
+        int ai = strtol(av, nullptr, 10);
+        if (ai < 0) ai = 0;
+        if (ai > 32768) ai = 32768;
+        alpha = (uint16_t)ai;
+        parse_from = ap.GetArg(2, "", "");
+        if (!parse_from || !parse_from[0]) continue;
+      }
+      BladeStyle* s = ParseStyleStringForConfig(parse_from);
+      if (!s) continue;
+      sub[count] = s;
+      layer_alpha[count] = alpha;
+      layer_blend[count] = blend;
+      count++;
+    }
+    if (count == 0) return nullptr;
+    CurrentArgParser->Shift(1 + ov_count);
+    return new ConfigLayersStyle(sub, count, layer_alpha, layer_blend);
+  }
+};
+
+ConfigStyleFactory config_style_factory;
 
 NamedStyle named_styles[] = {
 #ifndef DISABLE_BASIC_PARSER_STYLES
@@ -98,7 +200,13 @@ NamedStyle named_styles[] = {
     "Rainbow blade, extension time, retraction time"
   },
   { "charging", &style_charging, "Charging style" },
+  { "pixel_sequence", &pixel_sequencer_factory,
+    "Pixel sequencer: config = steps separated by |, each step pixel,r,g,b,brightness,ms; repeating pattern (pixel 0..N-1 or 255=all)",
+  },
 #endif
+  { "config", &config_style_factory,
+    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add), then optional opacity <0-32768>, then sub-style. Example: layer = multiply opacity 16000 strobe black white 15 1 300 800",
+  },
   { "builtin", &builtin_preset_allocator,
     // TODO: Support multiple argument templates.
     "builtin preset styles, "
@@ -130,6 +238,7 @@ public:
   }
 
   BladeStyle* Parse(const char* str) {
+    if (!str) return nullptr;
     NamedStyle* style = FindStyle(str);
     if (!style) return nullptr;
     ArgParser ap(SkipWord(str));
@@ -143,7 +252,7 @@ public:
     if (!style) return false;
     if (argument == 0) return true;
     char unused_output[32];
-    GetArgParser ap(SkipWord(str), argument, unused_output);
+    GetArgParser ap(SkipWord(str), argument, unused_output, sizeof(unused_output));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
     return ap.next();
@@ -232,14 +341,19 @@ public:
   }
 
   // Get the Nth argument of a style string.
-  // The output will be copied to |output|.
+  // The output will be copied to |output| (at most output_max - 1 chars + NUL).
   // If the string itself doesn't contain that argument, the style
   // will be parsed, and it's default argument will be returned.
-  bool GetArgument(const char* str, int argument, char* output) {
+  bool GetArgument(const char* str, int argument, char* output, size_t output_max) {
+    if (!output || output_max == 0) return false;
+    if (!str) {
+      *output = '\0';
+      return false;
+    }
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
     if (argument >= 0) {
-      GetArgParser ap(SkipWord(str), argument, output);
+      GetArgParser ap(SkipWord(str), argument, output, output_max);
       CurrentArgParser = &ap;
       delete style->style_allocator->make();
       if (ap.next()) return true;
@@ -254,8 +368,7 @@ public:
     }
     str = SkipSpace(str);
     const char* tmp = SkipWord(str);
-    memcpy(output, str, tmp - str);
-    output[tmp-str] = 0;
+    StyleParserCopyArgBounded(output, output_max, str, tmp);
     if (!strcmp(output, "~")) {
       *output = 0;
       return false;
@@ -265,25 +378,41 @@ public:
 
   // Replace the Nth argument of a style string with a new value and return
   // the new style string. Missing arguments will be replaced with default
-  // values.
+  // values. Result is capped at 511 characters + NUL (same as buffer size).
   LSPtr<char> SetArgument(const char* str, int argument, const char* new_value) {
-    char ret[512];  // maximum length for now
-    char* tmp = ret;
-    int output_args = std::max<int>(CountWords(str), argument + 1);
+    char ret[512];
+    const size_t cap = sizeof(ret);
+    ret[0] = '\0';
+    if (!str) return LSPtr<char>(mkstr(ret));
+    if (!new_value) new_value = "";
+    int cw = CountWords(str);
+    int output_args = cw;
+    if (argument >= 0 && argument < INT_MAX) {
+      int na = argument + 1;
+      if (na > output_args) output_args = na;
+    }
+    if (output_args < 0) output_args = 0;
+    if (output_args > 512) output_args = 512;
     for (int i = 0; i < output_args; i++) {
-      if (i) strcat(tmp++, " ");
+      size_t len = strlen(ret);
+      if (len >= cap - 1) break;
+      size_t rem = cap - len;
+      if (i) {
+        if (rem <= 1) break;
+        snprintf(ret + len, rem, " ");
+      }
+      len = strlen(ret);
+      if (len >= cap - 1) break;
+      rem = cap - len;
+      if (rem == 0) break;
       if (i == argument) {
-        strcat(tmp, new_value);
-        tmp += strlen(tmp);
+        snprintf(ret + len, rem, "%s", new_value);
       } else {
-        if (!GetArgument(str, i, tmp)) {
-          strcat(tmp, "~");
+        if (!GetArgument(str, i, ret + len, rem)) {
+          snprintf(ret + len, rem, "~");
         }
-//      fprintf(stderr, "OUTPUT: %s\n", tmp);
-        tmp += strlen(tmp);
       }
     }
-    *tmp = 0;
     return LSPtr<char>(mkstr(ret));
   }
 
@@ -300,10 +429,15 @@ public:
 
   // Truncates all arguments and just returns the style identifier.
   LSPtr<char> ResetArguments(const char* str) {
+    if (!str) {
+      char empty[1] = { '\0' };
+      return LSPtr<char>(mkstr(StringPiece(empty)));
+    }
     int len = StyleIdentifierLength(str);
-    char* ret = (char*) malloc(len + 1);
+    if (len < 0) len = 0;
+    char* ret = (char*) malloc((size_t)len + 1);
     if (ret) {
-      memcpy(ret, str, len);
+      memcpy(ret, str, (size_t)len);
       ret[len] = 0;
     }
     return LSPtr<char>(ret);
@@ -312,10 +446,16 @@ public:
   // Takes the style identifier "builtin X Y" from |to| and the
   // arguments from |from| and puts them together into one string.
   LSPtr<char> CopyArguments(const char* from, const char* to) {
+    if (!from || !to) {
+      char empty[1] = { '\0' };
+      return LSPtr<char>(mkstr(StringPiece(empty)));
+    }
     int from_style_length = StyleIdentifierLength(from);
     int to_style_length = StyleIdentifierLength(to);
-    int len = strlen(from) - from_style_length + to_style_length;
-    char* ret = (char*) malloc(len + 1);
+    size_t slen = strlen(from);
+    int len = (int)slen - from_style_length + to_style_length;
+    if (len < 0) len = 0;
+    char* ret = (char*) malloc((size_t)len + 1);
     if (ret) {
       memcpy(ret, to, to_style_length);
       ret[to_style_length] = 0;
@@ -489,7 +629,7 @@ public:
       for (size_t i = 0; i < NELEM(named_styles) - 1; i++) {
         STDOUT.println(named_styles[i].name);
       }
-      for (size_t i = 0; i < current_config->num_presets; i++) {
+      for (size_t i = 0; i < GetNumPresets(); i++) {
         for (size_t j = 1; j <= NUM_BLADES; j++) {
           STDOUT << "builtin " << i << " " << j << "\n";
         }
@@ -515,5 +655,10 @@ public:
 };
 
 StyleParser style_parser;
+
+inline BladeStyle* ParseStyleStringForConfig(const char* str) {
+  if (!str) return nullptr;
+  return style_parser.Parse(str);
+}
 
 #endif  // STYLES_STYLE_PARSER_H

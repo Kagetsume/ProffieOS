@@ -1,5 +1,7 @@
-#ifndef SCRIPTS_CLASH_RECORDER_H
-#define SCRIPTS_CLASH_RECORDER_H
+#ifndef SCRIPTS_MOTION_STARTUP_RECORDER_H
+#define SCRIPTS_MOTION_STARTUP_RECORDER_H
+
+#include <stdio.h>
 
 // To use, simply include this file *after* your normal prop include in CONFIG_PROP, like so:
 //
@@ -49,16 +51,20 @@ public:
 
   void Save() {
     LOCK_SD(true);
-    char file_name[16];
+    char file_name[64];
     size_t file_num = last_file_ + 1;
     while (true) {
-      char num[16];
+      char num[24];
       itoa(file_num, num, 10);
-      strcpy(file_name, "M");
-      while(strlen(num) + strlen(file_name) < 8) strcat(file_name, "0");
-      strcat(file_name, num);
-      strcat(file_name, ".CSV");
-          
+      char base[32];
+      strcpy(base, "M");
+      while (strlen(num) + strlen(base) < 8 && strlen(base) < sizeof(base) - 1) {
+        size_t bi = strlen(base);
+        base[bi] = '0';
+        base[bi + 1] = '\0';
+      }
+      snprintf(file_name, sizeof(file_name), "%s%s.CSV", base, num);
+
       int last_skip = file_num - last_file_;
       if (LSFS::Exists(file_name)) {
 	last_file_ = file_num;

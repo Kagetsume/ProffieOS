@@ -3,6 +3,9 @@
 
 // Update SPEC and sound_library_ defines before we use them.
 #include "../sound/sound_library.h"
+#ifdef ENABLE_SD
+#include "common/blade_config_file.h"
+#endif
 
 #ifndef PROP_INHERIT_PREFIX
 #define PROP_INHERIT_PREFIX
@@ -80,7 +83,7 @@ public:
 #if NUM_BLADES == 0
     return nullptr;
 #else
-    if (!current_config->blade1) return nullptr;
+    if (!current_config || !current_config->blade1) return nullptr;
     return current_config->blade1->current_style();
 #endif
   }
@@ -374,7 +377,7 @@ public:
 
   void FreeBladeStyles() {
 #define UNSET_BLADE_STYLE(N) \
-    delete current_config->blade##N->UnSetStyle();
+    if (current_config->blade##N) { delete current_config->blade##N->UnSetStyle(); }
     ONCEPERBLADE(UNSET_BLADE_STYLE)
   }
 
@@ -382,7 +385,7 @@ public:
 #ifdef DYNAMIC_BLADE_LENGTH
     savestate_.ReadINIFromSaveDir("curstate");
 #define WRAP_BLADE_SHORTERNER(N)                                                                              \
-    if (savestate_.blade##N##len != -1 && savestate_.blade##N##len != current_config->blade##N->num_leds()) { \
+    if (current_config->blade##N && savestate_.blade##N##len != -1 && savestate_.blade##N##len != current_config->blade##N->num_leds()) { \
       tmp = new BladeShortenerWrapper(savestate_.blade##N##len, tmp);                                         \
     }
 #else
@@ -391,7 +394,7 @@ public:
 #define SET_BLADE_STYLE(N) do {                                           \
       BladeStyle* tmp = style_parser.Parse(current_preset_.GetStyle(N));  \
     WRAP_BLADE_SHORTERNER(N)                                              \
-    current_config->blade##N->SetStyle(tmp);                              \
+    if (current_config->blade##N) current_config->blade##N->SetStyle(tmp); \
   } while (0);
 
     ONCEPERBLADE(SET_BLADE_STYLE)
@@ -524,7 +527,7 @@ public:
   // This function changes when we're properly initialized
   // the blade, the bool is an internal to blade detect.
   bool blade_present() {
-    return current_config->ohm < NO_BLADE;
+    return current_config && current_config->ohm < NO_BLADE;
   }
 
   virtual void SpeakBladeID(float id) {
@@ -619,8 +622,8 @@ public:
   }
 
   virtual int GetNoBladeLevelBefore() {
-    int level = current_config->ohm / NO_BLADE;
-    return level;
+    if (!current_config) return 0;
+    return current_config->ohm / NO_BLADE;
   }
 
   // Must be called from loop()
@@ -629,6 +632,7 @@ public:
       find_blade_again_pending_ = false;
       int noblade_level_before = GetNoBladeLevelBefore();
       FindBladeAgain();
+      if (!current_config) return;
       int noblade_level_after = current_config->ohm / NO_BLADE;
 
       if (noblade_level_before < noblade_level_after) {
@@ -647,6 +651,17 @@ public:
   // Called from setup to identify the blade and select the right
   // Blade driver, style and sound font.
   void FindBlade(bool announce = false) {
+#ifdef ENABLE_SD
+    if (UseBladeConfigFile() && GetSDBladeConfig()) {
+      current_config = GetSDBladeConfig();
+      PVLOG_STATUS << "blade = SD config (" << sd_blade_def_count << " blades)\n";
+      for (int i = 1; i <= (int)sd_blade_def_count && i <= NUM_BLADES; i++) {
+        BladeBase* b = GetBladeByNumber(i);
+        if (b) b->Activate(i);
+      }
+    } else
+#endif
+    {
     size_t best_config = FindBestConfig(announce);
     PVLOG_STATUS << "blade = " << best_config << "\n";
     current_config = blades + best_config;
@@ -657,6 +672,7 @@ public:
   } while(0);
 
     ONCEPERBLADE(ACTIVATE);
+    }
     RestoreGlobalState();
 #ifdef SAVE_PRESET
     ResumePreset();
@@ -688,7 +704,8 @@ public:
 
   // Blade length from config file.
   int GetMaxBladeLength(int blade) {
-#define GET_SINGLE_MAX_BLADE_LENGTH(N) if (blade == N) return current_config->blade##N->num_leds();
+    if (!current_config) return 0;
+#define GET_SINGLE_MAX_BLADE_LENGTH(N) if (blade == N && current_config->blade##N) return current_config->blade##N->num_leds();
     ONCEPERBLADE(GET_SINGLE_MAX_BLADE_LENGTH)
     return 0;
   }
@@ -780,15 +797,17 @@ public:
   }
 
   bool CheckInteractivePreon() {
+    if (!current_config) return false;
     #define USES_INTERACTIVE_PREON(N) \
-    if (current_config->blade##N->current_style() && current_config->blade##N->current_style()->IsHandled(HANDLED_FEATURE_INTERACTIVE_PREON)) return true;
+    if (current_config->blade##N && current_config->blade##N->current_style() && current_config->blade##N->current_style()->IsHandled(HANDLED_FEATURE_INTERACTIVE_PREON)) return true;
     ONCEPERBLADE(USES_INTERACTIVE_PREON)
     return false;
   }
 
   bool CheckInteractiveBlast() {
+    if (!current_config) return false;
     #define USES_INTERACTIVE_BLAST(N) \
-    if (current_config->blade##N->current_style() && current_config->blade##N->current_style()->IsHandled(HANDLED_FEATURE_INTERACTIVE_BLAST)) return true;
+    if (current_config->blade##N && current_config->blade##N->current_style() && current_config->blade##N->current_style()->IsHandled(HANDLED_FEATURE_INTERACTIVE_BLAST)) return true;
     ONCEPERBLADE(USES_INTERACTIVE_BLAST)
     return false;
   }

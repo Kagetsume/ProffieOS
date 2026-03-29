@@ -46,6 +46,11 @@
 #undef CONFIG_TOP
 
 #include "common/capabilities.h"
+#include "common/sd_config_defs.h"
+#include "common/blade_config_file_defs.h"
+#include "common/board_config_file_defs.h"
+#include "common/features_config_file.h"
+#include "common/blade_config_pin_names.h"
 
 #if !defined(ENABLE_AUDIO) && !defined(DISABLE_AUDIO)
 #define ENABLE_AUDIO
@@ -635,13 +640,15 @@ class BladeBase* GetPrimaryBlade() {
 #if NUM_BLADES == 0
   return nullptr;
 #else
+  if (!current_config) return nullptr;
   return current_config->blade1;
 #endif
 }
 
-#define BLADE_NUMBER_FINDER(N) if (current_config->blade##N == blade) return N;
+#define BLADE_NUMBER_FINDER(N) if (current_config && current_config->blade##N == blade) return N;
 // Returns 1..NUM_BLADES (0 if not found)
 int GetBladeNumber(BladeBase *blade) {
+  if (!current_config) return 0;
   ONCEPERBLADE(BLADE_NUMBER_FINDER);
   return 0;
 }
@@ -679,6 +686,10 @@ ArgParserInterface* CurrentArgParser;
 
 #ifndef PROP_TYPE
 #include "props/saber.h"
+#endif
+
+#ifdef ENABLE_SD
+#include "common/sd_blade_runtime.inc"
 #endif
 
 PROP_TYPE prop;
@@ -1668,11 +1679,19 @@ void setup() {
     STDOUT.println("Sdcard found..");
   }
 #endif
-
+#ifdef ENABLE_SD
+  LoadBoardConfigFile();   // hardware (buttons, oled) and optionally gesture/twist
+  LoadFeaturesConfigFile(); // feature toggles (gesture, twist_on, twist_off) override when present
+#endif
   Looper::DoSetup();
   PVLOG_DEBUG << "***************** Booting up! *******************\n";
   // Time to identify the blade.
   prop.FindBlade(true);
+#ifdef ENABLE_SD
+  LoadSDConfig();
+  LoadBladeConfigFile();
+  InitSDBladeConfig();
+#endif
   SaberBase::DoBoot();
 #if defined(ENABLE_SD)
   if (!sd_card_found) ProffieOSErrors::sd_card_not_found();

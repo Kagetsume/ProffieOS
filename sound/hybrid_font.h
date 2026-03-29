@@ -1,5 +1,6 @@
 #ifndef SOUND_HYBRID_FONT_H
 #define SOUND_HYBRID_FONT_H
+#include <stdio.h>
 #include "../common/fuse.h"
 
 class FontConfigFile : public ConfigFile {
@@ -25,21 +26,20 @@ public:
     CONFIG_VARIABLE2(ProffieOSSmoothSwingHumstart, 0);
 
     for (Effect* e = all_effects; e; e = e->next_) {
-      char name[32];
-      strcpy(name, "ProffieOS.");
+      const char* pfx = "ProffieOS.";
+      const char* mid = "";
       switch (e->GetFileType()) {
         case Effect::FileType::SOUND:
-          strcat(name, "SFX.");
+          mid = "SFX.";
           break;
         case Effect::FileType::IMAGE:
-          strcat(name, "IMG.");
+          mid = "IMG.";
           break;
         default:
           continue;
       }
-      strcat(name, e->GetName());
-      strcat(name, ".");
-      char* x = name + strlen(name);
+      char name[64];
+      snprintf(name, sizeof(name), "%s%s%s.paired", pfx, mid, e->GetName());
 
       struct PairedVariable : public VariableBase {
         Effect* e_;
@@ -49,7 +49,6 @@ public:
         void setDefault() override { e_->SetPaired(false);  }
       };
       
-      strcpy(x, "paired");
       PairedVariable var1(e);
       op->run(name, &var1);
 
@@ -61,7 +60,7 @@ public:
         void setDefault() override { e_->SetVolume(100);  }
       };
       
-      strcpy(x, "volume");
+      snprintf(name, sizeof(name), "%s%s%s.volume", pfx, mid, e->GetName());
       VolumeVariable var2(e);
       op->run(name, &var2);
     }

@@ -1,6 +1,8 @@
 #ifndef MODES_STYLE_OPTION_MODES_H
 #define MODES_STYLE_OPTION_MODES_H
 
+#include "common/sd_config.h"
+
 namespace mode {
 
 template<class SPEC>
@@ -255,7 +257,7 @@ struct ResetStyleArgumentsEntry : public MenuEntry {
 template<class SPEC>
 struct SelectStyleMenu : public SPEC::MenuBase {
   uint16_t size() override {
-    return NUM_BLADES * current_config->num_presets;
+    return NUM_BLADES * GetNumPresets();
   }
   int preset() { return this->pos_ / NUM_BLADES; }
   int blade() { return this->pos_ % NUM_BLADES; }

@@ -20,6 +20,11 @@ struct BladeConfig {
 
 extern BladeConfig* current_config;
 
+#ifdef ENABLE_SD
+BladeConfig* GetSDBladeConfig();
+void InitSDBladeConfig();
+#endif
+
 struct RFID_Command {
   uint64_t id;
   const char* cmd;

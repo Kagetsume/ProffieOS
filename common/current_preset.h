@@ -4,6 +4,7 @@
 #include "preset.h"
 #include "file_reader.h"
 #include "blade_config.h"
+#include "sd_config.h"
 
 class CurrentPreset {
 public:
@@ -91,7 +92,26 @@ public:
     variation = 0;
   }
 
+  void SetFromSD(int num) {
+    size_t n = GetNumPresets();
+    if (n == 0) return;
+    num = (int)((n + num) % n);
+    if (num < 0 || (size_t)num >= sd_preset_count) return;
+    const SDPresetDef* p = &sd_presets_storage[num];
+    preset_type = PRESET_DISK;
+    preset_num = num;
+    font = p->font.get() ? mkstr(StringPiece(p->font.get())) : "";
+    track = p->track.get() ? mkstr(StringPiece(p->track.get())) : "";
+    name = (p->name.get() && strlen(p->name.get())) ? mkstr(StringPiece(p->name.get())) : mk_preset_name(num);
+    variation = p->variation;
+#if NUM_BLADES > 0
+    for (size_t N = 0; N < NUM_BLADES; N++)
+      current_style_[N] = (p->style[N].get() && p->style[N].get()[0]) ? ValidateStyleString(mkstr(StringPiece(p->style[N].get()))) : "";
+#endif
+  }
+
   void Set(int num) {
+    if (!current_config) return;
     PVLOG_VERBOSE << "CurrentPreset::Set(" << num << "/" << current_config->num_presets << ")\n";
     num = (current_config->num_presets + num) % current_config->num_presets;
     Preset* preset = current_config->presets + num;
@@ -113,28 +133,28 @@ public:
     variation = 0;
   }
 
+  // Whitespace-tolerant; malformed lines or parts are ignored and do not crash.
   bool Read(FileReader* f) {
+    if (!f || !f->IsOpen()) return false;
     int preset_count = 0;
     int current_style = 0;
-    if (f->Tell() <= sizeof(install_time) + 11) preset_num = -1;
+    if (f->Tell() <= (int)(sizeof(install_time) + 11)) preset_num = -1;
     preset_type = PRESET_DISK;
 
     for (; f->Available(); f->skipline()) {
       char variable[33];
-      f->skipspace();
+      variable[0] = 0;
+      f->skipwhite();
+      if (!f->Available()) break;
       if (f->Peek() == '#') continue;
       int line_begin = f->Tell();
       f->readVariable(variable);
-
-      //      fprintf(stderr, "VAR: %s\n", variable);
-
       if (!variable[0]) continue;
 
       if (!strcmp(variable, "new_preset")) {
 	preset_count++;
 	if (preset_count == 2) {
 	  preset_num++;
-	  // Go back to the beginning of the line
 	  f->Seek(line_begin);
 	  return true;
 	}
@@ -152,37 +172,48 @@ public:
       }
 
       if (!preset_count) continue;
-      if (f->Peek() != '=') continue;
+      if (!f->Available() || f->Peek() != '=') continue;
       f->Read();
       f->skipspace();
 
       if (!strcmp(variable, "name")) {
-	name = f->readString();
+	char* tmp = f->readString();
+	name = tmp ? tmp : "";
+	/* LSPtr owns tmp when assigned; do not free */
 	continue;
       }
       if (!strcmp(variable, "font")) {
-	font = f->readString();
+	char* tmp = f->readString();
+	font = tmp ? tmp : "";
+	/* LSPtr owns tmp when assigned; do not free */
 	continue;
       }
       if (!strcmp(variable, "track")) {
-	track = f->readString();
+	char* tmp = f->readString();
+	track = tmp ? tmp : "";
+	/* LSPtr owns tmp when assigned; do not free */
 	continue;
       }
       if (!strcmp(variable, "variation")) {
-	char *tmp = f->readString();
+	char* tmp = f->readString();
 	if (tmp) {
-	  variation = strtol(tmp, nullptr, 10);
-	  if (tmp) free(tmp);
+	  variation = (uint32_t)strtol(tmp, nullptr, 10);
+	  free(tmp);
 	}
 	continue;
       }
       if (!strcmp(variable, "style")) {
 	char* tmp = f->readString();
-	(void)ValidateStyleString(tmp);
 #if NUM_BLADES > 0
-	current_style_[current_style] = tmp;
+	if (current_style >= 0 && current_style < (int)NUM_BLADES) {
+	  if (tmp) (void)ValidateStyleString(tmp);
+	  current_style_[current_style] = tmp ? tmp : "";
+	  /* LSPtr owns tmp when assigned; do not free */
+	} else if (tmp) {
+	  free(tmp);
+	}
 #else
-	free(tmp);
+	if (tmp) free(tmp);
 #endif
 	current_style++;
 	continue;
@@ -310,8 +341,8 @@ public:
     BufferedFileWriter f(ini_fn);
     f.write_key_value("installed", install_time);
     CurrentPreset tmp;
-    for (size_t i = 0; i < current_config->num_presets; i++) {
-      tmp.Set(i);
+    for (size_t i = 0; i < GetNumPresets(); i++) {
+      if (UseSDConfig()) tmp.SetFromSD((int)i); else tmp.Set((int)i);
       DOVALIDATE(tmp);
       tmp.Write(&f);
     }
@@ -431,7 +462,11 @@ public:
   void SetPreset(int preset) {
     Clear();
     LOCK_SD(true);
-    if (!Load(preset)) Set(preset);
+    if (UseSDConfig()) {
+      SetFromSD(preset);
+    } else if (!Load(preset)) {
+      Set(preset);
+    }
     LOCK_SD(false);
   }
 

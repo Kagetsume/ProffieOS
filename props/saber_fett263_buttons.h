@@ -1387,6 +1387,7 @@ struct FETT263_MENU_SPEC : public DefaultMenuSpec<SPEC> {
 #endif
 
 #include "prop_base.h"
+#include "common/board_config_file.h"
 #include "../sound/hybrid_font.h"
 #include "../sound/effect.h"
 #include "../common/current_preset.h"
@@ -1841,7 +1842,7 @@ SaberFett263Buttons() : PropBase() {}
 
   Color16 GetColorArg(int blade, int arg) {
     char argspace[32];
-    if (style_parser.GetArgument(current_preset_.GetStyle(blade), arg + 2, argspace)) {
+    if (style_parser.GetArgument(current_preset_.GetStyle(blade), arg + 2, argspace, sizeof(argspace))) {
       char* tmp;
       int r = strtol(argspace, &tmp, 0);
       int g = strtol(tmp+1, &tmp, 0);
@@ -1979,7 +1980,8 @@ SaberFett263Buttons() : PropBase() {}
     sound_library_.SayNumber(style_num, SAY_WHOLE);
     if (style_parser.UsesArgument(current_preset_.GetStyle(blade_num_), STYLE_OPTION_ARG + 2)) {
       char argspace[32];
-      style_parser.GetArgument(current_preset_.GetStyle(blade_num_), STYLE_OPTION_ARG + 2, argspace);
+      style_parser.GetArgument(current_preset_.GetStyle(blade_num_), STYLE_OPTION_ARG + 2, argspace,
+                               sizeof(argspace));
       int opt = strtol(argspace, NULL, 0);
       sound_library_.SayOption();
       sound_library_.SayNumber(opt, SAY_WHOLE);
@@ -2335,6 +2337,11 @@ SaberFett263Buttons() : PropBase() {}
 
   void Setup() override {
     RestoreGestureState();
+    if (UseBoardConfigFile()) {
+      if (board_config_file.gesture >= 0) saved_gesture_control.gestureon = (board_config_file.gesture == 1);
+      if (board_config_file.twist_on >= 0) saved_gesture_control.twiston = (board_config_file.twist_on == 1);
+      if (board_config_file.twist_off >= 0) saved_gesture_control.twistoff = (board_config_file.twist_off == 1);
+    }
 #ifndef MENU_SPEC_TEMPLATE
 #ifdef MOUNT_SD_SETTING
    sound_library_v2.init();
@@ -3852,7 +3859,8 @@ SaberFett263Buttons() : PropBase() {}
       break;
     case MENU_STYLE_SETTING_SUB:
       char argspace[32];
-      style_parser.GetArgument(current_preset_.GetStyle(blade_num_), set_num_ + 2, argspace);
+      style_parser.GetArgument(current_preset_.GetStyle(blade_num_), set_num_ + 2, argspace,
+                               sizeof(argspace));
       calc_ = strtol(argspace, NULL, 0);
       IntEdit::SetIntValue(calc_);
       if (NUM_BLADES == 1) blade_num_ = 1;
@@ -3912,7 +3920,8 @@ SaberFett263Buttons() : PropBase() {}
         case RETRACTION_OPTION_ARG:
         case RETRACTION_OPTION2_ARG:
           char ig[32];
-          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, ig);
+          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, ig,
+                                   sizeof(ig));
           ignite_time_ = strtol(ig, NULL, 0);
           current_preset_.SetStyle(blade_num_,style_parser.SetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, "1"));
           arg_revert_ = strtol(argspace, NULL, 0);
@@ -3927,7 +3936,8 @@ SaberFett263Buttons() : PropBase() {}
         case RETRACTION_TIME_ARG:
           menu_type_ = MENU_RETRACTION_TIME;
           char igt[32];
-          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igt);
+          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igt,
+                                   sizeof(igt));
           ignite_time_ = strtol(igt, NULL, 0);
           current_preset_.SetStyle(blade_num_,style_parser.SetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, "1"));
           arg_revert_ = strtol(argspace, NULL, 0);
@@ -3935,7 +3945,8 @@ SaberFett263Buttons() : PropBase() {}
         case RETRACTION_COOL_DOWN_ARG:
           menu_type_ = MENU_RETRACTION_COOL_DOWN_OPTION;
           char igc[32];
-          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igc);
+          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igc,
+                                   sizeof(igc));
           ignite_time_ = strtol(igc, NULL, 0);
           current_preset_.SetStyle(blade_num_,style_parser.SetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, "1"));
           arg_revert_ = strtol(argspace, NULL, 0);
@@ -3945,7 +3956,8 @@ SaberFett263Buttons() : PropBase() {}
         case RETRACTION_DELAY_ARG:
           menu_type_ = MENU_RETRACTION_DELAY;
           char igd[32];
-          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igd);
+          style_parser.GetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, igd,
+                                   sizeof(igd));
           ignite_time_ = strtol(igd, NULL, 0);
           current_preset_.SetStyle(blade_num_,style_parser.SetArgument(current_preset_.GetStyle(blade_num_), RETRACTION_TIME_ARG, "1"));
           arg_revert_ = strtol(argspace, NULL, 0);

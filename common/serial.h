@@ -15,9 +15,17 @@ public:
 };
 
 #if defined(TEENSYDUINO) || SERIAL_INTERFACES_COUNT - 0 > 3
+#ifdef ENABLE_SERIAL
+#include "board_config_file.h"
+#endif
 class Serial3Adapter {
 public:
-  static void begin() { Serial3.begin(115200); }
+  static void begin() {
+#ifdef ENABLE_SERIAL
+    if (BoardConfigBluetoothEnabled())
+#endif
+      Serial3.begin(115200);
+  }
   static bool Connected() { return true; }
   static bool AlwaysConnected() { return true; }
   static Stream& stream() { return Serial3; }

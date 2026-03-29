@@ -1075,6 +1075,7 @@ push                    - force push
 #define PROPS_SABER_BC_BUTTONS_H
 
 #include "prop_base.h"
+#include "common/board_config_file.h"
 #include "../sound/hybrid_font.h"
 #include "../sound/sound_library.h"
 #include "../modes/select_cancel_mode.h"
@@ -2574,6 +2575,7 @@ any # of buttons
 
 #ifdef BC_TWIST_ON
       case EVENTID(BUTTON_NONE, EVENT_TWIST, MODE_OFF):
+        if (UseBoardConfigFile() && board_config_file.twist_on == 0) return false;  // config/board.ini twist_on=off
         NoBladeDisableGestures();
         // Delay twist events to prevent false trigger from over twisting
         if (millis() - last_twist_millis_ > 300 &&
@@ -2587,6 +2589,7 @@ any # of buttons
 
 #ifdef BC_TWIST_OFF
       case EVENTID(BUTTON_NONE, EVENT_TWIST, MODE_ON):
+        if (UseBoardConfigFile() && board_config_file.twist_off == 0) return false;  // config/board.ini twist_off=off
         NoBladeDisableGestures();
         // Delay twist events to prevent false trigger from over twisting
         if (millis() - last_twist_millis_ > 500) {

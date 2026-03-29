@@ -116,4 +116,30 @@ private:
   PowerPINS<PINS...> rest_;
 };
 
+// Runtime power pins for SD blade config (pins from config/blades.ini).
+#define RUNTIME_POWER_PINS_MAX 6
+class RuntimePowerPins : public PowerPinInterface {
+public:
+  void SetPins(const int* pins, int count) {
+    count_ = (count <= RUNTIME_POWER_PINS_MAX) ? count : RUNTIME_POWER_PINS_MAX;
+    for (int i = 0; i < count_; i++) pins_[i] = pins[i] >= 0 ? pins[i] : -1;
+    for (int i = count_; i < RUNTIME_POWER_PINS_MAX; i++) pins_[i] = -1;
+  }
+  void Init() override {
+    for (int i = 0; i < count_; i++)
+      if (pins_[i] >= 0) pinMode(pins_[i], OUTPUT);
+  }
+  void DeInit() override {
+    for (int i = 0; i < count_; i++)
+      if (pins_[i] >= 0) pinMode(pins_[i], INPUT_ANALOG);
+  }
+  void Power(bool on) override {
+    for (int i = 0; i < count_; i++)
+      if (pins_[i] >= 0) digitalWrite(pins_[i], on);
+  }
+private:
+  int pins_[RUNTIME_POWER_PINS_MAX];
+  int count_ = 0;
+};
+
 #endif

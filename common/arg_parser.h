@@ -1,6 +1,7 @@
 #ifndef COMMON_ARG_PARSER_H
 #define COMMON_ARG_PARSER_H
 
+#include <stddef.h>
 #include "strfun.h"
 
 class ArgParserInterface {
@@ -93,17 +94,23 @@ public:
 
 class GetArgParser : public ArgParser {
 public:
-  GetArgParser(const char* data, int argument, char* output) : ArgParser(data), current_arg(argument), output_(output) {}
+  GetArgParser(const char* data, int argument, char* output, size_t output_cap)
+    : ArgParser(data), current_arg(argument), output_(output), output_cap_(output_cap) {}
 
   const char* GetArg(int arg_num,
 		     const char* name,
 		     const char* default_value) override {
     const char* ret = ArgParser::GetArg(arg_num, name, default_value);
     if (current_arg == arg_num + offset) {
-
       const char* tmp = SkipWord(ret);
-      memcpy(output_, ret, tmp - ret);
-      output_[tmp-ret] = 0;
+      size_t len = 0;
+      if (tmp >= ret) len = (size_t)(tmp - ret);
+      if (output_ && output_cap_ > 0) {
+        size_t maxcopy = output_cap_ - 1;
+        size_t n = len < maxcopy ? len : maxcopy;
+        memcpy(output_, ret, n);
+        output_[n] = '\0';
+      }
       found = true;
     }
     return ret;
@@ -121,7 +128,7 @@ private:
   bool found = false;
   int current_arg = 1;
   char* output_;
-  const char* str_;
+  size_t output_cap_;
 };
 
 template<size_t SIZE>

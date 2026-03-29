@@ -378,12 +378,14 @@ public:
     return true;
   }
 
-  // LSPtr<> ?
+  // LSPtr<> ? Max length 512 to prevent unbounded allocation / DoS.
+  static const int READ_STRING_MAX_LEN = 512;
   char* readString() {
     int len = 0;
     int space = 16;
     char* ret = (char*)malloc(space);
-    while (Available()) {
+    if (!ret) return nullptr;
+    while (Available() && len < READ_STRING_MAX_LEN) {
       int c = Read();
       switch (c) {
 	case '\n':
@@ -391,22 +393,26 @@ public:
 	  Seek(Tell() - 1);
 	  return ret;
 	case '\\':
-	  switch (c = Read()) {
-	    case '\\': ret[len++] = '\\'; break;
-	    case 'n': ret[len++] = '\n'; break;
-	    case 't': ret[len++] = '\t'; break;
-	    default: ret[len++] = c; break;
+	  if (Available()) {
+	    switch (c = Read()) {
+	      case '\\': ret[len++] = '\\'; break;
+	      case 'n': ret[len++] = '\n'; break;
+	      case 't': ret[len++] = '\t'; break;
+	      default: ret[len++] = c; break;
+	    }
 	  }
 	  break;
 	default:
 	  ret[len++] = c;
       }
+      if (len >= READ_STRING_MAX_LEN) break;
       if (len == space) {
 	int new_space = space * 3/2 + 8;
-	char* tmp = (char*) realloc(ret, new_space);
+	if (new_space > READ_STRING_MAX_LEN + 1) new_space = READ_STRING_MAX_LEN + 1;
+	char* tmp = (char*) realloc(ret, (size_t)new_space);
 	if (!tmp) {
 	  STDOUT.println("Line too long.");
-	  free(tmp);
+	  free(ret);
 	  return nullptr;
 	}
 	space = new_space;

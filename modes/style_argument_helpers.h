@@ -19,7 +19,8 @@ bool isTimeArg(int arg) {
 }
 
 bool GetArg(int blade, int arg, char* argspace) {
-  return style_parser.GetArgument(GetStyle(blade), arg + menu_current_style_offset, argspace);
+  // argspace must be at least 32 bytes (callers use char argspace[32]).
+  return style_parser.GetArgument(GetStyle(blade), arg + menu_current_style_offset, argspace, 32);
 }
 void SetArg(int blade, int arg, const char* argument) {
   SetStyle(blade, style_parser.SetArgument(GetStyle(blade), arg + menu_current_style_offset, argument));

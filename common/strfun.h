@@ -98,26 +98,31 @@ float parsefloat(const char* s) {
 
 // Exactly one %s
 const char* Sprintf(const char* pattern, const char* arg) {
-  char* ret = (char*) malloc(strlen(pattern) + strlen(arg) + 1);
+  const char *pct = strchr((char *)pattern, '%');
+  if (!pct || pct[1] != 's') return "";
+  size_t pre = (size_t)(pct - pattern);
+  size_t arg_len = strlen(arg);
+  size_t suf_len = strlen(pct + 2);
+  char* ret = (char*) malloc(pre + arg_len + suf_len + 1);
   if (!ret) return "";
-  char *pct = strchr((char *)pattern, '%');
-  memcpy(ret, pattern, pct - pattern);
-  strcat(ret, arg);
-  strcat(ret, pct + 2);
+  memcpy(ret, pattern, pre);
+  memcpy(ret + pre, arg, arg_len + 1);
+  memcpy(ret + pre + arg_len, pct + 2, suf_len + 1);
   return ret;
 }
 
 // Exactly one %s
 bool Sscanf(const char* str, const char* pattern, const char** arg) {
   const char *pct = strchr(pattern, '%');
-  int l = pct - pattern;
-  if (strlen(str) < strlen(pattern) - 2) return false;
-  if (memcmp(str, pattern, l)) return false;
+  if (!pct || pct[1] != 's') return false;
+  int l = (int)(pct - pattern);
+  if (memcmp(str, pattern, (size_t)l)) return false;
   if (!endswith(pct + 2, str)) return false;
-  int len = strlen(str) - strlen(pattern) - 2;
-  char* ret = (char *)malloc(len + 1);
+  int len = (int)strlen(str) - l - (int)strlen(pct + 2);
+  if (len < 0) return false;
+  char* ret = (char *)malloc((size_t)len + 1);
   if (!ret) return false;
-  memcpy(ret, str + l, l);
+  memcpy(ret, str + l, (size_t)len);
   ret[len] = 0;
   *arg = ret;
   return true;
