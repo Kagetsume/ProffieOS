@@ -1,6 +1,8 @@
 #ifndef COMMON_MALLOC_HELPER_H
 #define COMMON_MALLOC_HELPER_H
 
+#include <stdint.h>
+
 #include "string_piece.h"
 
 #ifdef TEENSYDUINO

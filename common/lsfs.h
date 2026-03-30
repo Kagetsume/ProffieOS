@@ -3,6 +3,8 @@
 
 // Filesystem abstractions
 
+#include <string.h>
+
 #include "string_piece.h"
 
 struct PathHelper {

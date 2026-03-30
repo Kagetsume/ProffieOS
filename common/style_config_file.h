@@ -129,10 +129,11 @@ inline bool StyleConfigNormalizeIncludePath(const char* in, char* out, size_t ou
   if (!in || !out || out_max < 16) return false;
   char work[STYLE_PATH_MAX];
   int wi = 0;
-  while (*in == ' ' || *in == '\t') in++;
+  while (*in == ' ' || *in == '\t' || *in == '\r') in++;
   while (*in && wi < (int)sizeof(work) - 1) work[wi++] = *in++;
   work[wi] = '\0';
-  while (wi > 0 && (work[wi - 1] == ' ' || work[wi - 1] == '\t')) work[--wi] = '\0';
+  while (wi > 0 && (work[wi - 1] == ' ' || work[wi - 1] == '\t' || work[wi - 1] == '\r')) work[--wi] = '\0';
+  StripIniTrailingLineEndings(work);
   if (!work[0]) return false;
   if (strstr(work, "..")) return false;
   for (const char* p = work; *p; p++) {
@@ -174,14 +175,15 @@ inline void StyleConfigScanPalettesRecursive(FileReader& f, StylePaletteCacheEnt
       int ni = 0;
       while (f.Available() && ni < 63 && f.Peek() != ']') {
         int c = f.Peek();
-        if (c == '\n') break;
+        if (c == '\n' || c == '\r') break;
         name[ni++] = (char)f.Read();
         name[ni] = 0;
       }
-      while (f.Available() && f.Peek() != '\n') f.Read();
-      while (ni > 0 && (name[ni - 1] == ' ' || name[ni - 1] == '\t')) name[--ni] = 0;
+      f.skipline();
+      while (ni > 0 && (name[ni - 1] == ' ' || name[ni - 1] == '\t' || name[ni - 1] == '\r')) name[--ni] = 0;
+      StripIniTrailingLineEndings(name);
       const char* p = name;
-      while (*p == ' ' || *p == '\t') p++;
+      while (*p == ' ' || *p == '\t' || *p == '\r') p++;
       in_palette = false;
       cur = -1;
       if (strlen(p) > 8 && !strncmp(p, "palette_", 8)) {
@@ -215,7 +217,8 @@ inline void StyleConfigScanPalettesRecursive(FileReader& f, StylePaletteCacheEnt
           pathbuf[pi++] = (char)f.Read();
         }
         pathbuf[pi] = 0;
-        while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t')) pathbuf[--pi] = 0;
+        while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t' || pathbuf[pi - 1] == '\r')) pathbuf[--pi] = 0;
+        StripIniTrailingLineEndings(pathbuf);
         f.skipline();
         line_count++;
         char norm[STYLE_PATH_MAX];
@@ -258,7 +261,8 @@ inline void StyleConfigScanPalettesRecursive(FileReader& f, StylePaletteCacheEnt
       valbuf[vi++] = (char)f.Read();
     }
     valbuf[vi] = 0;
-    while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t')) valbuf[--vi] = 0;
+    while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t' || valbuf[vi - 1] == '\r')) valbuf[--vi] = 0;
+    StripIniTrailingLineEndings(valbuf);
     StyleConfigSetOrOverrideVar(cache[cur].keys, cache[cur].vals, &cache[cur].nvars, variable, valbuf);
     f.skipline();
     line_count++;
@@ -313,24 +317,33 @@ inline void StyleConfigExpandLocalVars(char* out, size_t out_max, const char* in
       if (in[0] == '}' && in[1] == '}') {
         in += 2;
         const char* repl = nullptr;
+        bool found = false;
         if (preset_override_count > 0 && preset_override_keys && preset_override_vals) {
           for (int i = 0; i < preset_override_count && i < STYLE_CONFIG_MAX_LOCAL_VARS; i++) {
             if (preset_override_keys[i][0] && !strcmp(preset_override_keys[i], key)) {
               repl = preset_override_vals[i];
+              found = true;
               break;
             }
           }
         }
-        if (!repl) {
+        if (!found) {
           for (int i = 0; i < nvars; i++) {
             if (!strcmp(keys[i], key)) {
               repl = vals[i];
+              found = true;
               break;
             }
           }
         }
-        if (repl) {
-          while (*repl && o + 1 < out_max) out[o++] = *repl++;
+        if (found) {
+          if (repl) {
+            while (*repl && o + 1 < out_max) out[o++] = *repl++;
+          }
+        } else {
+          // No key: keep "{{name}}" so configs don't become "standard   " (breaks base colors;
+          // effect-only layers without {{}} still parsed).
+          for (const char* q = open; q < in && o + 1 < out_max; q++) out[o++] = *q;
         }
       } else {
         out[o++] = '{';
@@ -584,7 +597,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
         temp[ti++] = (char)f.Read();
       }
       temp[ti] = 0;
-      while (ti > 0 && (temp[ti - 1] == ' ' || temp[ti - 1] == '\t')) temp[--ti] = 0;
+      while (ti > 0 && (temp[ti - 1] == ' ' || temp[ti - 1] == '\t' || temp[ti - 1] == '\r')) temp[--ti] = 0;
+      StripIniTrailingLineEndings(temp);
       StyleConfigExpandLocalVars(layers[*count], STYLE_CONFIG_LAYER_STR_LEN, temp, st->keys, st->vals,
                                  st->var_count, st->preset_override_count, st->preset_override_keys,
                                  st->preset_override_vals);
@@ -609,7 +623,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
         valbuf[vi++] = (char)f.Read();
       }
       valbuf[vi] = 0;
-      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t')) valbuf[--vi] = 0;
+      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t' || valbuf[vi - 1] == '\r')) valbuf[--vi] = 0;
+      StripIniTrailingLineEndings(valbuf);
       StyleConfigApplyStructuredLayerLine(st, sty, sl, valbuf, layers, count, max_layers);
     } else if (!strcmp(variable, "palette")) {
       StyleConfigFlushPendingStructuredLayer(st, layers, count, max_layers);
@@ -625,7 +640,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
         palname[vi++] = (char)f.Read();
       }
       palname[vi] = 0;
-      while (vi > 0 && (palname[vi - 1] == ' ' || palname[vi - 1] == '\t')) palname[--vi] = 0;
+      while (vi > 0 && (palname[vi - 1] == ' ' || palname[vi - 1] == '\t' || palname[vi - 1] == '\r')) palname[--vi] = 0;
+      StripIniTrailingLineEndings(palname);
       const StylePaletteCacheEntry* pal =
           StyleConfigFindPalette(palette_cache, palette_ncache, palname);
       StyleConfigMergePaletteMissing(st->keys, st->vals, &st->var_count, pal);
@@ -643,7 +659,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
         pathbuf[pi++] = (char)f.Read();
       }
       pathbuf[pi] = 0;
-      while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t')) pathbuf[--pi] = 0;
+      while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t' || pathbuf[pi - 1] == '\r')) pathbuf[--pi] = 0;
+      StripIniTrailingLineEndings(pathbuf);
       f.skipline();
       (*line_count)++;
       char norm[STYLE_PATH_MAX];
@@ -671,7 +688,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
         valbuf[vi++] = (char)f.Read();
       }
       valbuf[vi] = 0;
-      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t')) valbuf[--vi] = 0;
+      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t' || valbuf[vi - 1] == '\r')) valbuf[--vi] = 0;
+      StripIniTrailingLineEndings(valbuf);
       StyleConfigSetOrOverrideVar(st->keys, st->vals, &st->var_count, variable, valbuf);
     }
     f.skipline();
@@ -723,14 +741,15 @@ inline int LoadStyleConfigLayers(const char* section_name,
       int i = 0;
       while (f.Available() && i < 63 && f.Peek() != ']') {
         int c = f.Peek();
-        if (c == '\n') break;
+        if (c == '\n' || c == '\r') break;
         name[i++] = (char)f.Read();
         name[i] = 0;
       }
-      while (f.Available() && f.Peek() != '\n') f.Read();
-      while (i > 0 && (name[i - 1] == ' ' || name[i - 1] == '\t')) name[--i] = 0;
+      f.skipline();
+      while (i > 0 && (name[i - 1] == ' ' || name[i - 1] == '\t' || name[i - 1] == '\r')) name[--i] = 0;
+      StripIniTrailingLineEndings(name);
       const char* p = name;
-      while (*p == ' ' || *p == '\t') p++;
+      while (*p == ' ' || *p == '\t' || *p == '\r') p++;
       if (in_section) {
         StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
         break;
@@ -766,7 +785,8 @@ inline int LoadStyleConfigLayers(const char* section_name,
         temp[ti++] = (char)f.Read();
       }
       temp[ti] = 0;
-      while (ti > 0 && (temp[ti - 1] == ' ' || temp[ti - 1] == '\t')) temp[--ti] = 0;
+      while (ti > 0 && (temp[ti - 1] == ' ' || temp[ti - 1] == '\t' || temp[ti - 1] == '\r')) temp[--ti] = 0;
+      StripIniTrailingLineEndings(temp);
       StyleConfigExpandLocalVars(layers[count], STYLE_CONFIG_LAYER_STR_LEN, temp, st.keys, st.vals,
                                  st.var_count, st.preset_override_count, st.preset_override_keys,
                                  st.preset_override_vals);
@@ -791,7 +811,8 @@ inline int LoadStyleConfigLayers(const char* section_name,
         valbuf[vi++] = (char)f.Read();
       }
       valbuf[vi] = 0;
-      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t')) valbuf[--vi] = 0;
+      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t' || valbuf[vi - 1] == '\r')) valbuf[--vi] = 0;
+      StripIniTrailingLineEndings(valbuf);
       StyleConfigApplyStructuredLayerLine(&st, sty, sl, valbuf, layers, &count, max_layers);
     } else if (!strcmp(variable, "palette")) {
       StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
@@ -807,7 +828,8 @@ inline int LoadStyleConfigLayers(const char* section_name,
         palname[vi++] = (char)f.Read();
       }
       palname[vi] = 0;
-      while (vi > 0 && (palname[vi - 1] == ' ' || palname[vi - 1] == '\t')) palname[--vi] = 0;
+      while (vi > 0 && (palname[vi - 1] == ' ' || palname[vi - 1] == '\t' || palname[vi - 1] == '\r')) palname[--vi] = 0;
+      StripIniTrailingLineEndings(palname);
       const StylePaletteCacheEntry* pal =
           StyleConfigFindPalette(palette_cache, palette_ncache, palname);
       StyleConfigMergePaletteMissing(st.keys, st.vals, &st.var_count, pal);
@@ -825,7 +847,8 @@ inline int LoadStyleConfigLayers(const char* section_name,
         pathbuf[pi++] = (char)f.Read();
       }
       pathbuf[pi] = 0;
-      while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t')) pathbuf[--pi] = 0;
+      while (pi > 0 && (pathbuf[pi - 1] == ' ' || pathbuf[pi - 1] == '\t' || pathbuf[pi - 1] == '\r')) pathbuf[--pi] = 0;
+      StripIniTrailingLineEndings(pathbuf);
       f.skipline();
       line_count++;
       char norm[STYLE_PATH_MAX];
@@ -852,7 +875,8 @@ inline int LoadStyleConfigLayers(const char* section_name,
         valbuf[vi++] = (char)f.Read();
       }
       valbuf[vi] = 0;
-      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t')) valbuf[--vi] = 0;
+      while (vi > 0 && (valbuf[vi - 1] == ' ' || valbuf[vi - 1] == '\t' || valbuf[vi - 1] == '\r')) valbuf[--vi] = 0;
+      StripIniTrailingLineEndings(valbuf);
       StyleConfigSetOrOverrideVar(st.keys, st.vals, &st.var_count, variable, valbuf);
     }
     f.skipline();

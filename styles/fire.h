@@ -118,6 +118,9 @@ public:
   }
 
   SimpleColor getColor(int led) {
+    if (!this->heat_) {
+      return SimpleColor(Color16());
+    }
     int h = this->heat_[this->num_leds_ - 1 - led];
     SimpleColor c;
     if (h < 256) {

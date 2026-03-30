@@ -494,6 +494,32 @@ struct RGBA {
   bool getOverdrive() const { return overdrive; }
 };
 
+// Premultiplied RGBA -> straight-alpha RGBA_um (for stacking config layers without losing transparency).
+inline RGBA_um RGBA_to_RGBA_um(const RGBA& r) {
+  if (!r.alpha) return RGBA_um::Transparent();
+  uint32_t a = r.alpha;
+  uint32_t rr = (uint32_t)r.c.r * 32768u / a;
+  uint32_t gg = (uint32_t)r.c.g * 32768u / a;
+  uint32_t bb = (uint32_t)r.c.b * 32768u / a;
+  if (rr > 65535) rr = 65535;
+  if (gg > 65535) gg = 65535;
+  if (bb > 65535) bb = 65535;
+  return RGBA_um(Color16((uint16_t)rr, (uint16_t)gg, (uint16_t)bb), r.overdrive, r.alpha);
+}
+
+// Premultiplied RGBA -> OverDriveColor (unpremultiply for blade->set).
+inline OverDriveColor RGBA_premul_to_overdrive(const RGBA& r) {
+  if (!r.alpha) return OverDriveColor(Color16(), false);
+  uint32_t a = r.alpha;
+  uint32_t rr = (uint32_t)r.c.r * 32768u / a;
+  uint32_t gg = (uint32_t)r.c.g * 32768u / a;
+  uint32_t bb = (uint32_t)r.c.b * 32768u / a;
+  if (rr > 65535) rr = 65535;
+  if (gg > 65535) gg = 65535;
+  if (bb > 65535) bb = 65535;
+  return OverDriveColor(Color16((uint16_t)rr, (uint16_t)gg, (uint16_t)bb), r.overdrive);
+}
+
 inline RGBA_um_nod operator*(const SimpleColor& a, uint16_t x) {
   return RGBA_um_nod(a.c, x);
 }

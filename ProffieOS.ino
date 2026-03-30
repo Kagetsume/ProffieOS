@@ -35,6 +35,8 @@
 // #define CONFIG_FILE "config/teensy_audio_shield_micom.h"
 // #define CONFIG_FILE "config/proffieboard_v2_ob4.h"
 
+#define CONFIG_FILE "config/config-files-config.h"
+
 #ifndef CONFIG_FILE
 #error Please set CONFIG_FILE as shown above.
 #endif
@@ -46,11 +48,6 @@
 #undef CONFIG_TOP
 
 #include "common/capabilities.h"
-#include "common/sd_config_defs.h"
-#include "common/blade_config_file_defs.h"
-#include "common/board_config_file_defs.h"
-#include "common/features_config_file.h"
-#include "common/blade_config_pin_names.h"
 
 #if !defined(ENABLE_AUDIO) && !defined(DISABLE_AUDIO)
 #define ENABLE_AUDIO
@@ -448,6 +445,14 @@ const char* previous_current_directory(const char* dir) {
 }
 
 #include "sound/sound.h"
+
+// After sound stack (LOCK_SD from audio_stream_work.h): SD INI loaders use LOCK_SD.
+#include "common/sd_config_defs.h"
+#include "common/blade_config_file_defs.h"
+#include "common/board_config_file_defs.h"
+#include "common/features_config_file.h"
+#include "common/blade_config_pin_names.h"
+
 #include "common/battery_monitor.h"
 #include "common/color.h"
 #include "common/range.h"
@@ -689,7 +694,7 @@ ArgParserInterface* CurrentArgParser;
 #endif
 
 #ifdef ENABLE_SD
-#include "common/sd_blade_runtime.inc"
+#include "common/sd_blade_runtime.h"
 #endif
 
 PROP_TYPE prop;
@@ -1685,13 +1690,15 @@ void setup() {
 #endif
   Looper::DoSetup();
   PVLOG_DEBUG << "***************** Booting up! *******************\n";
-  // Time to identify the blade.
-  prop.FindBlade(true);
 #ifdef ENABLE_SD
+  // Must run before FindBlade(): otherwise SetPreset() runs with UseSDConfig()==false and
+  // compiled blade config only; SD presets / config/blades.ini never apply to styles or drivers.
   LoadSDConfig();
   LoadBladeConfigFile();
   InitSDBladeConfig();
 #endif
+  // Time to identify the blade (uses SD presets + SD blade defs when present).
+  prop.FindBlade(true);
   SaberBase::DoBoot();
 #if defined(ENABLE_SD)
   if (!sd_card_found) ProffieOSErrors::sd_card_not_found();

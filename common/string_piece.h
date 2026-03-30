@@ -1,6 +1,8 @@
 #ifndef COMMON_STRING_PIECE_H
 #define COMMON_STRING_PIECE_H
 
+#include <string.h>
+
 int constexpr toLower(char x) {
   return (x >= 'A' && x <= 'Z') ? x - 'A' + 'a' : x;
 }

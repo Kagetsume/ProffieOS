@@ -31,10 +31,12 @@ public:
   }
 
   void On() override {
+    ArgParserInterface* saved = CurrentArgParser;
     ArgParser ap("");
     CurrentArgParser = &ap;
     free(current_config->blade1->UnSetStyle());
     current_config->blade1->SetStyle(new Style<ClashRecorderStyle>());
+    CurrentArgParser = saved;
 
     BASE::On();
   }

@@ -1,7 +1,10 @@
 #ifndef COMMON_BLADE_CONFIG_H
 #define COMMON_BLADE_CONFIG_H
 
+#include "onceperblade.h"
+
 class BladeBase;
+struct Preset;
 
 struct BladeConfig {
   // Blade identifier resistor.

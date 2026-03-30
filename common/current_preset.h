@@ -39,15 +39,17 @@ public:
 
   static bool IsValidStyleString(const char* s) {
     if (strlen(s) < 5) return false;
+    // First word: style name (standard, config, fire, …) — lowercase letters only.
     for (; *s != ' '; s++) {
       if (*s >= 'a' && *s <= 'z') continue;
       return false;
     }
+    // Rest: full style line (colors, numbers, config section names, key=value overrides).
+    // Previously only digits/space/comma were allowed, which rejected every normal preset style.
     for (; *s; s++) {
-      if (*s >= '0' && *s <= '9') continue;
-      if (*s == ' ') continue;
-      if (*s == ',') continue;
-      return false;
+      unsigned char c = (unsigned char)*s;
+      if (c == '\t') continue;
+      if (c < 32 || c > 126) return false;
     }
     return true;
   }
@@ -96,7 +98,7 @@ public:
     size_t n = GetNumPresets();
     if (n == 0) return;
     num = (int)((n + num) % n);
-    if (num < 0 || (size_t)num >= sd_preset_count) return;
+    if (num < 0 || (size_t)num >= n) return;
     const SDPresetDef* p = &sd_presets_storage[num];
     preset_type = PRESET_DISK;
     preset_num = num;
@@ -107,6 +109,13 @@ public:
 #if NUM_BLADES > 0
     for (size_t N = 0; N < NUM_BLADES; N++)
       current_style_[N] = (p->style[N].get() && p->style[N].get()[0]) ? ValidateStyleString(mkstr(StringPiece(p->style[N].get()))) : "";
+    // If presets.ini has fewer style= lines than NUM_BLADES, mirror blade 0 (common oversight).
+    for (size_t N = 1; N < NUM_BLADES; N++) {
+      if ((!current_style_[N].get() || !current_style_[N].get()[0]) &&
+          current_style_[0].get() && current_style_[0].get()[0]) {
+        current_style_[N] = ValidateStyleString(mkstr(StringPiece(current_style_[0].get())));
+      }
+    }
 #endif
   }
 
@@ -270,7 +279,11 @@ public:
     if (strcmp(variable, "installed")) return false;
     if (f->Read() != '=') return false;
     if (!f->Expect(install_time)) return false;
-    if (f->Read() != '\n') return false;
+    {
+      int eol = f->Read();
+      if (eol == '\r' && f->Peek() == '\n') f->Read();
+      else if (eol != '\n' && eol != '\r') return false;
+    }
     pos = f->Tell();
 #endif
 

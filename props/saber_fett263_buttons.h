@@ -1387,7 +1387,7 @@ struct FETT263_MENU_SPEC : public DefaultMenuSpec<SPEC> {
 #endif
 
 #include "prop_base.h"
-#include "common/board_config_file.h"
+#include "../common/board_config_file.h"
 #include "../sound/hybrid_font.h"
 #include "../sound/effect.h"
 #include "../common/current_preset.h"

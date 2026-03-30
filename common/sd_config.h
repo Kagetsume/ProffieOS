@@ -43,8 +43,65 @@ inline size_t GetNumPresets() {
   return current_config ? current_config->num_presets : 0;
 }
 
+#ifdef ENABLE_SD
+#include <string.h>
+
+// Trim spaces/tabs/CR/LF; each ;-separated font path is rooted with '/' for SD (trailing slashes removed).
+static char* NormalizePresetFontPath(char* s) {
+  if (!s) return nullptr;
+  char* p = s;
+  while (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') p++;
+  if (p != s) memmove(s, p, strlen(p) + 1);
+  StripIniTrailingLineEndings(s);
+  size_t n = strlen(s);
+  while (n > 0 && (s[n - 1] == ' ' || s[n - 1] == '\t')) s[--n] = 0;
+
+  if (!*s) {
+    free(s);
+    return (char*)mkstr(StringPiece(""));
+  }
+
+  char buf[128];
+  char* out = buf;
+  const char* const end = buf + sizeof(buf) - 1;
+  const char* seg = s;
+  bool first = true;
+  while (seg) {
+    const char* semi = strchr(seg, ';');
+    size_t len = semi ? (size_t)(semi - seg) : strlen(seg);
+    const char* t = seg;
+    while (len > 0 && (t[0] == ' ' || t[0] == '\t')) {
+      t++;
+      len--;
+    }
+    while (len > 0 && (t[len - 1] == ' ' || t[len - 1] == '\t')) len--;
+    while (len > 1 && t[len - 1] == '/') len--;
+    if (len > 0) {
+      if (!first) {
+        if (out >= end) break;
+        *out++ = ';';
+      }
+      first = false;
+      if (t[0] != '/') {
+        if (out + 1 + len > end) break;
+        *out++ = '/';
+      }
+      if (out + len > end) break;
+      memcpy(out, t, len);
+      out += len;
+    }
+    seg = semi ? semi + 1 : nullptr;
+  }
+  *out = 0;
+  free(s);
+  if (out == buf) return (char*)mkstr(StringPiece(""));
+  return (char*)mkstr(StringPiece(buf));
+}
+#endif  // ENABLE_SD
+
 // Load preset list from SD card config/presets.ini if present.
-// Call after SD is mounted and after FindBlade() (so current_config is set).
+// Call after SD is mounted, and before FindBlade() (see ProffieOS.ino) so UseSDConfig() is true
+// when SetPreset runs. Does not require current_config.
 // Format: same as save-dir presets.ini (new_preset, font=, track=, style=, name=, variation=, end).
 // Whitespace (space, tab, newline) is tolerated. Malformed lines or parts are ignored and do not crash.
 inline void LoadSDConfig() {
@@ -56,6 +113,21 @@ inline void LoadSDConfig() {
   if (!f.Open(SD_CONFIG_PRESETS_PATH)) {
     LOCK_SD(false);
     return;
+  }
+  // UTF-8 BOM (common from Windows editors) breaks readVariable on the first line (e.g. "new_preset").
+  if (f.Available() && (unsigned char)f.Peek() == 0xEF) {
+    int bom_pos = f.Tell();
+    f.Read();
+    if (f.Available() && (unsigned char)f.Peek() == 0xBB) {
+      f.Read();
+      if (f.Available() && (unsigned char)f.Peek() == 0xBF) {
+        f.Read();
+      } else {
+        f.Seek(bom_pos);
+      }
+    } else {
+      f.Seek(bom_pos);
+    }
   }
   int preset_count = 0;
   int current_style_idx = 0;
@@ -69,6 +141,7 @@ inline void LoadSDConfig() {
 #endif
   }
   int line_count = 0;
+  bool parsed_end_line = false;
   while (f.Available() && line_count < SD_PRESETS_CONFIG_MAX_LINES) {
     f.skipwhite();
     if (!f.Available()) break;
@@ -78,13 +151,18 @@ inline void LoadSDConfig() {
     if (!f.readVariable(variable)) { f.skipline(); line_count++; continue; }
     if (!variable[0]) { f.skipline(); line_count++; continue; }
     if (!strcmp(variable, "installed")) {
-      if (f.Available() && f.Peek() == '=') { f.Read(); f.skipspace(); while (f.Available() && f.Peek() != '\n') f.Read(); }
+      if (f.Available() && f.Peek() == '=') {
+        f.Read();
+        f.skipspace();
+      }
       f.skipline();
       line_count++;
       continue;
     }
     if (!strcmp(variable, "new_preset")) {
-      if (preset_count >= 2 && sd_preset_count < SD_MAX_PRESETS) sd_preset_count++;
+      // Advance to next preset slot before reading the new block (was >=2, which
+      // overwrote slot 0 for every preset until the 3rd new_preset).
+      if (preset_count >= 1 && sd_preset_count < SD_MAX_PRESETS) sd_preset_count++;
       preset_count++;
       current_style_idx = 0;
       f.skipline();
@@ -93,6 +171,7 @@ inline void LoadSDConfig() {
     }
     if (!strcmp(variable, "end")) {
       if (preset_count >= 1 && sd_preset_count < SD_MAX_PRESETS) sd_preset_count++;
+      parsed_end_line = true;
       break;
     }
     if (preset_count == 0) { f.skipline(); line_count++; continue; }
@@ -104,15 +183,14 @@ inline void LoadSDConfig() {
     if (!strcmp(variable, "name")) {
       char* s = f.readString();
       sd_presets_storage[idx].name.set(s ? s : "");
-      if (s) free(s);
+      // LSPtr owns s; do not free here.
     } else if (!strcmp(variable, "font")) {
       char* s = f.readString();
-      sd_presets_storage[idx].font.set(s ? s : "");
-      if (s) free(s);
+      sd_presets_storage[idx].font.set(s ? NormalizePresetFontPath(s) : "");
     } else if (!strcmp(variable, "track")) {
       char* s = f.readString();
       sd_presets_storage[idx].track.set(s ? s : "");
-      if (s) free(s);
+      // LSPtr owns s; do not free here.
     } else if (!strcmp(variable, "variation")) {
       char* s = f.readString();
       if (s) {
@@ -125,12 +203,18 @@ inline void LoadSDConfig() {
       if (current_style_idx >= 0 && current_style_idx < (int)NUM_BLADES) {
         sd_presets_storage[idx].style[current_style_idx].set(s ? s : "");
         current_style_idx++;
+        s = nullptr;
       }
 #endif
       if (s) free(s);
     }
     f.skipline();
     line_count++;
+  }
+  // If the file has no "end" line (EOF or line limit), finalize the last preset
+  // the same way "end" would, or sd_preset_count stays 0 and UseSDConfig() is false.
+  if (!parsed_end_line && preset_count >= 1 && sd_preset_count < SD_MAX_PRESETS) {
+    sd_preset_count++;
   }
   f.Close();
   LOCK_SD(false);

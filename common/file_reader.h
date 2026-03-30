@@ -7,6 +7,14 @@
 #include "lsfs.h"
 #include "strfun.h"
 #include "stdout.h"
+#include <string.h>
+
+// Strip trailing CR/LF from mutable C strings (Windows CRLF in INI values and paths).
+inline void StripIniTrailingLineEndings(char* s) {
+  if (!s) return;
+  size_t n = strlen(s);
+  while (n > 0 && (s[n - 1] == '\r' || s[n - 1] == '\n')) s[--n] = 0;
+}
 
 // inline void* operator new(size_t, void* p) { return p; }
 
@@ -292,6 +300,7 @@ public:
       switch (Peek()) {
 	case ' ':
 	case '\t':
+	case '\r':
 	  Read();
 	  continue;
 	default:
@@ -299,9 +308,16 @@ public:
       }
     }
   }
-  // Skip rest of line.
+  // Skip rest of line (LF, CRLF, or CR-only).
   void skipline() {
-    while (Available() && Read() != '\n');
+    while (Available()) {
+      int c = Read();
+      if (c == '\n') return;
+      if (c == '\r') {
+	if (Peek() == '\n') Read();
+	return;
+      }
+    }
   }
 
   // Note: Byte order may be an issue!!
@@ -313,6 +329,7 @@ public:
   }
 
   int64_t readIntValue() {
+    skipspace();
     int64_t ret = 0;
     int64_t sign = 1;
     if (Peek() == '-') {
@@ -332,6 +349,7 @@ public:
   }
 
   float readFloatValue() {
+    skipspace();
     float ret = 0.0;
     float sign = 1.0;
     float mult = 1.0;
@@ -390,6 +408,7 @@ public:
       switch (c) {
 	case '\n':
 	  ret[len] = 0;
+	  StripIniTrailingLineEndings(ret);
 	  Seek(Tell() - 1);
 	  return ret;
 	case '\\':
@@ -420,6 +439,7 @@ public:
       }
     }
     ret[len] = 0;
+    StripIniTrailingLineEndings(ret);
     return ret;
   }
 

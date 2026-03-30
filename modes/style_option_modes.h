@@ -1,7 +1,7 @@
 #ifndef MODES_STYLE_OPTION_MODES_H
 #define MODES_STYLE_OPTION_MODES_H
 
-#include "common/sd_config.h"
+#include "../common/sd_config.h"
 
 namespace mode {
 

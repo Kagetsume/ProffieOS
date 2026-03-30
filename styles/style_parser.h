@@ -40,17 +40,17 @@ public:
 #if NUM_BLADES == 0
     return nullptr;
 #else
-    if (UseSDConfig()) return nullptr;  // SD presets use style strings, not builtin
-    // Technically we should call run on these.
+    // "builtin P B" uses compiled ROM preset P, blade style B (current_config->presets).
+    // When SD overrides the preset *list*, GetNumPresets() is the SD count — do not use it here.
     IntArg<1, 0> preset_arg;
     IntArg<2, 1> style_arg;
     int preset = preset_arg.getInteger(0);
     int style = style_arg.getInteger(0);
 
     StyleAllocator allocator = nullptr;
-    if (preset < 0 || preset >= (int)GetNumPresets())
-      return nullptr;
     if (!current_config) return nullptr;
+    if (preset < 0 || preset >= (int)current_config->num_presets)
+      return nullptr;
 
     Preset* p = current_config->presets + preset;
 #define GET_PRESET_STYLE(N) if (style == N) allocator = p->style_allocator##N;
@@ -71,8 +71,16 @@ BladeStyle* ParseStyleStringForConfig(const char* str);
 class ConfigStyleFactory : public StyleFactory {
 public:
   BladeStyle* make() override {
-    const char* name = CurrentArgParser ? CurrentArgParser->GetArg(1, "", "") : "";
-    if (!name || !name[0]) return nullptr;
+    const char* name_raw = CurrentArgParser ? CurrentArgParser->GetArg(1, "", "") : "";
+    if (!name_raw || !name_raw[0]) return nullptr;
+    // GetArg returns the full remainder ("with_vars base=magenta"); extract first word only.
+    char name[64];
+    int ni = 0;
+    while (name_raw[ni] && name_raw[ni] != ' ' && name_raw[ni] != '\t' && ni < 63) {
+      name[ni] = name_raw[ni];
+      ni++;
+    }
+    name[ni] = '\0';
     char ov_keys[STYLE_CONFIG_MAX_LOCAL_VARS][STYLE_CONFIG_LOCAL_KEY_LEN];
     char ov_vals[STYLE_CONFIG_MAX_LOCAL_VARS][STYLE_CONFIG_LOCAL_VAL_LEN];
     int ov_count = 0;
@@ -86,11 +94,17 @@ public:
         if (key_len == 0 || key_len >= STYLE_CONFIG_LOCAL_KEY_LEN) break;
         memcpy(ov_keys[ov_count], kv, key_len);
         ov_keys[ov_count][key_len] = '\0';
-        strncpy(ov_vals[ov_count], eq + 1, STYLE_CONFIG_LOCAL_VAL_LEN - 1);
-        ov_vals[ov_count][STYLE_CONFIG_LOCAL_VAL_LEN - 1] = '\0';
+        const char* val_start = eq + 1;
+        int vlen = 0;
+        while (val_start[vlen] && val_start[vlen] != ' ' && val_start[vlen] != '\t'
+               && vlen < STYLE_CONFIG_LOCAL_VAL_LEN - 1)
+          vlen++;
+        memcpy(ov_vals[ov_count], val_start, vlen);
+        ov_vals[ov_count][vlen] = '\0';
         ov_count++;
       }
     }
+    ArgParserInterface* outer_ap = CurrentArgParser;
     char layers[STYLE_CONFIG_MAX_LAYERS][STYLE_CONFIG_LAYER_STR_LEN];
     int n = LoadStyleConfigLayers(name, layers, STYLE_CONFIG_MAX_LAYERS, ov_count, ov_keys, ov_vals);
     if (n <= 0) return nullptr;
@@ -137,6 +151,7 @@ public:
       count++;
     }
     if (count == 0) return nullptr;
+    CurrentArgParser = outer_ap;
     CurrentArgParser->Shift(1 + ov_count);
     return new ConfigLayersStyle(sub, count, layer_alpha, layer_blend);
   }
@@ -199,9 +214,43 @@ NamedStyle named_styles[] = {
   { "rainbow", StyleRainbowPtrX<IntArg<1, 300>, IntArg<2, 800>>(),
     "Rainbow blade, extension time, retraction time"
   },
+  // BlastL returns RGBA_um_nod; Style<> + getLayerColor() preserve alpha for ConfigLayersStyle (see style_ptr.h).
+  { "blast",
+    StylePtr<BlastL<RgbArg<1, White>>>(),
+    "Blast overlay layer: blast color (optional three numbers after color match INI examples but use fixed fadeout/wave 200/100/400). Mostly transparent until a blast — use an opaque base layer first"
+  },
   { "charging", &style_charging, "Charging style" },
   { "pixel_sequence", &pixel_sequencer_factory,
     "Pixel sequencer: config = steps separated by |, each step pixel,r,g,b,brightness,ms; repeating pattern (pixel 0..N-1 or 255=all)",
+  },
+  // Preon/Postoff layers — transparent when idle, triggered by EFFECT_PREON / EFFECT_POSTOFF.
+  // Uses TransitionEffectConfigL (not TransitionEffectL) so that:
+  //   idle  → Style<> calls allow_disable → captured by AllowDisableCapture
+  //   active → Style<> does NOT call allow_disable → blade stays powered
+  // ConfigLayersStyle only forwards allow_disable to the real blade when ALL layers agree.
+  { "preon_glow",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<IntArg<2, 500>>, RgbArg<1, Blue>, TrFadeX<IntArg<3, 500>>>,
+      EFFECT_PREON>>(),
+    "Preon glow: color, fade_in_ms, fade_out_ms"
+  },
+  { "preon_wipe",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrWipeX<IntArg<2, 1000>>, RgbArg<1, Green>, TrFadeX<IntArg<3, 500>>>,
+      EFFECT_PREON>>(),
+    "Preon wipe: color, wipe_ms, fade_out_ms"
+  },
+  { "postoff_glow",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<IntArg<2, 100>>, RgbArg<1, Red>, TrFadeX<IntArg<3, 2000>>>,
+      EFFECT_POSTOFF>>(),
+    "Postoff glow: color, fade_in_ms, fade_out_ms"
+  },
+  { "postoff_wipe",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<IntArg<2, 100>>, RgbArg<1, White>, TrWipeInX<IntArg<3, 1000>>>,
+      EFFECT_POSTOFF>>(),
+    "Postoff wipe: color, fade_in_ms, wipe_ms"
   },
 #endif
   { "config", &config_style_factory,
@@ -238,12 +287,15 @@ public:
   }
 
   BladeStyle* Parse(const char* str) {
-    if (!str) return nullptr;
+    if (!str || !str[0]) return nullptr;
     NamedStyle* style = FindStyle(str);
     if (!style) return nullptr;
+    ArgParserInterface* saved = CurrentArgParser;
     ArgParser ap(SkipWord(str));
     CurrentArgParser = &ap;
-    return style->style_allocator->make();
+    BladeStyle* ret = style->style_allocator->make();
+    CurrentArgParser = saved;
+    return ret;
   }
 
   // Returns true if the listed style references the specified argument.
@@ -251,11 +303,14 @@ public:
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
     if (argument == 0) return true;
+    ArgParserInterface* saved = CurrentArgParser;
     char unused_output[32];
     GetArgParser ap(SkipWord(str), argument, unused_output, sizeof(unused_output));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    return ap.next();
+    bool result = ap.next();
+    CurrentArgParser = saved;
+    return result;
   }
 
   bool GetBuiltinPos(const char* str, int* preset, int* blade) {
@@ -272,10 +327,11 @@ public:
   int MaxUsedArgument(const char* str) {
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
+    ArgParserInterface* saved = CurrentArgParser;
     GetMaxArgParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.max_arg() <= 2) return 0;
     return ap.max_arg();
   }
@@ -284,10 +340,11 @@ public:
   int UsedArguments(const char* str) {
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
+    ArgParserInterface* saved = CurrentArgParser;
     GetUsedArgsParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.used() <= 2) return 0;
     return ap.used();
   }
@@ -296,10 +353,11 @@ public:
   int NextUsedArguments(const char* str, int arg) {
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
+    ArgParserInterface* saved = CurrentArgParser;
     GetUsedArgsParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.used() <= 2) return 0;
     return ap.next(arg);
   }
@@ -308,10 +366,11 @@ public:
   int PrevUsedArguments(const char* str, int arg) {
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
+    ArgParserInterface* saved = CurrentArgParser;
     GetUsedArgsParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.used() <= 2) return 0;
     return ap.prev(arg);
   }
@@ -320,10 +379,11 @@ public:
   int GetNthUsedArguments(const char* str, int arg) {
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
+    ArgParserInterface* saved = CurrentArgParser;
     GetUsedArgsParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.used() <= 2) return 0;
     return ap.nth(arg);
   }
@@ -332,10 +392,11 @@ public:
   ArgInfo GetArgInfo(const char* str) {
     NamedStyle* style = FindStyle(str);
     if (!style) return ArgInfo();
+    ArgParserInterface* saved = CurrentArgParser;
     GetUsedArgsParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     delete style->style_allocator->make();
-    // Ignore the two "builtin" arguments
+    CurrentArgParser = saved;
     if (FirstWord(str, "builtin") && ap.used() <= 2) return ArgInfo();
     return ap.getArgInfo();
   }
@@ -353,9 +414,11 @@ public:
     NamedStyle* style = FindStyle(str);
     if (!style) return false;
     if (argument >= 0) {
+      ArgParserInterface* saved = CurrentArgParser;
       GetArgParser ap(SkipWord(str), argument, output, output_max);
       CurrentArgParser = &ap;
       delete style->style_allocator->make();
+      CurrentArgParser = saved;
       if (ap.next()) return true;
     }
     if (argument >= CountWords(str)) {
@@ -640,12 +703,14 @@ public:
     if (!strcmp("describe_named_style", cmd)) {
       if (NamedStyle* style = FindStyle(arg)) {
         STDOUT.println(style->description);
+        ArgParserInterface* saved = CurrentArgParser;
         ArgParserPrinter arg_parser_printer(SkipWord(arg));
         CurrentArgParser = &arg_parser_printer;
         do {
           BladeStyle* tmp = style->style_allocator->make();
           delete tmp;
         } while (arg_parser_printer.next());
+        CurrentArgParser = saved;
       }
       return true;
     }

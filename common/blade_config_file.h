@@ -147,12 +147,24 @@ inline void LoadBladeConfigFile() {
         while (j < SD_MAX_POWER_PINS_PER_BLADE && def.power_pin[j] >= 0) j++;
         if (j < SD_MAX_POWER_PINS_PER_BLADE) def.power_pin[j] = p;
       }
-    } else if (!strcmp(variable, "power_pin1")) { def.power_pin[0] = ReadPinValueFromFile(f); if (def.power_pin[0] < 0) def.power_pin[0] = -1; }
-    } else if (!strcmp(variable, "power_pin2")) { def.power_pin[1] = ReadPinValueFromFile(f); if (def.power_pin[1] < 0) def.power_pin[1] = -1; }
-    } else if (!strcmp(variable, "power_pin3")) { def.power_pin[2] = ReadPinValueFromFile(f); if (def.power_pin[2] < 0) def.power_pin[2] = -1; }
-    } else if (!strcmp(variable, "power_pin4")) { def.power_pin[3] = ReadPinValueFromFile(f); if (def.power_pin[3] < 0) def.power_pin[3] = -1; }
-    } else if (!strcmp(variable, "power_pin5")) { def.power_pin[4] = ReadPinValueFromFile(f); if (def.power_pin[4] < 0) def.power_pin[4] = -1; }
-    } else if (!strcmp(variable, "power_pin6")) { def.power_pin[5] = ReadPinValueFromFile(f); if (def.power_pin[5] < 0) def.power_pin[5] = -1; }
+    } else if (!strcmp(variable, "power_pin1")) {
+      def.power_pin[0] = ReadPinValueFromFile(f);
+      if (def.power_pin[0] < 0) def.power_pin[0] = -1;
+    } else if (!strcmp(variable, "power_pin2")) {
+      def.power_pin[1] = ReadPinValueFromFile(f);
+      if (def.power_pin[1] < 0) def.power_pin[1] = -1;
+    } else if (!strcmp(variable, "power_pin3")) {
+      def.power_pin[2] = ReadPinValueFromFile(f);
+      if (def.power_pin[2] < 0) def.power_pin[2] = -1;
+    } else if (!strcmp(variable, "power_pin4")) {
+      def.power_pin[3] = ReadPinValueFromFile(f);
+      if (def.power_pin[3] < 0) def.power_pin[3] = -1;
+    } else if (!strcmp(variable, "power_pin5")) {
+      def.power_pin[4] = ReadPinValueFromFile(f);
+      if (def.power_pin[4] < 0) def.power_pin[4] = -1;
+    } else if (!strcmp(variable, "power_pin6")) {
+      def.power_pin[5] = ReadPinValueFromFile(f);
+      if (def.power_pin[5] < 0) def.power_pin[5] = -1;
     } else if (!strcmp(variable, "sub_blade") && def.sub_blade_count < SD_MAX_SUB_BLADES_PER_BLADE) {
       // sub_blade = first, last (two integers, comma-separated; max 5 digits each)
       int first = -1, last = -1;

@@ -32,7 +32,7 @@ template<class RetType>
 class StyleHelper : public StyleBase {
 public:
   virtual RetType getColor2(int i) = 0;
-  OverDriveColor getColor(int i) override { return getColor2(i); }
+  OverDriveColor getColor(int i) override { return RetTypeToOverdrive(getColor2(i)); }
 
   template<bool ROTATE>
   void runloop2(BladeBase* blade) {
@@ -67,6 +67,22 @@ public:
   }
 };
 
+// Map template COLOR::getColor() to straight-alpha RGBA_um for ConfigLayersStyle (keeps AlphaL/BlastL transparency).
+inline RGBA_um StyleLayerToRgba(const OverDriveColor& c) { return RGBA_um(c); }
+inline RGBA_um StyleLayerToRgba(const SimpleColor& c) { return RGBA_um(c); }
+inline RGBA_um StyleLayerToRgba(const RGBA_um_nod& c) { return RGBA_um(c); }
+inline RGBA_um StyleLayerToRgba(const RGBA_um& c) { return c; }
+inline RGBA_um StyleLayerToRgba(const RGBA& r) { return RGBA_to_RGBA_um(r); }
+
+// StyleHelper::getColor must compile for all RetType (e.g. RGBA_um_nod from BlastL/AlphaL); cannot return getColor2() directly.
+inline OverDriveColor RetTypeToOverdrive(const OverDriveColor& c) { return c; }
+inline OverDriveColor RetTypeToOverdrive(const SimpleColor& c) { return OverDriveColor(c); }
+inline OverDriveColor RetTypeToOverdrive(const RGBA_um_nod& c) {
+  return RGBA_premul_to_overdrive(RGBA(RGBA_um(c)));
+}
+inline OverDriveColor RetTypeToOverdrive(const RGBA_um& c) { return RGBA_premul_to_overdrive(RGBA(c)); }
+inline OverDriveColor RetTypeToOverdrive(const RGBA& r) { return RGBA_premul_to_overdrive(r); }
+
 #include "get_arg_max.h"
 
 template<class T>
@@ -76,13 +92,21 @@ public:
     return handled_type_saver_.IsHandled(effect);
   }
 
+  RGBA_um getLayerColor(int i) override {
+    return StyleLayerToRgba(this->base_.getColor(i));
+  }
+
   virtual auto getColor2(int i) -> decltype(T().getColor(0)) override {
     return base_.getColor(i);
   }
 
-  void run(BladeBase* blade) override {
+  void runUpdate(BladeBase* blade) override {
     if (!RunStyle(&base_, blade))
       blade->allow_disable();
+  }
+
+  void run(BladeBase* blade) override {
+    runUpdate(blade);
     this->runloop(blade);
   }
 
@@ -122,8 +146,12 @@ protected:
 template<class T>
 class ChargingStyle : public Style<T> {
 public:
-  void run(BladeBase* blade) override {
+  void runUpdate(BladeBase* blade) override {
     RunStyle(&this->base_, blade);
+  }
+
+  void run(BladeBase* blade) override {
+    runUpdate(blade);
     this->runloop(blade);
   }
   bool NoOnOff() override { return true; }

@@ -4,8 +4,9 @@
 // Update SPEC and sound_library_ defines before we use them.
 #include "../sound/sound_library.h"
 #ifdef ENABLE_SD
-#include "common/blade_config_file.h"
+#include "../common/blade_config_file.h"
 #endif
+#include "../common/debug_preset_cycle_flash.h"
 
 #ifndef PROP_INHERIT_PREFIX
 #define PROP_INHERIT_PREFIX
@@ -465,6 +466,9 @@ public:
     SaveState(current_preset_.preset_num + 1);
 #endif
     SetPreset(current_preset_.preset_num + 1, true);
+#if DEBUG_PRESET_CYCLE_FLASH
+    DebugPresetCycleFlashRun();
+#endif
   }
 
   // Go to the next Preset skipping NewFont and Preon effects using FastOn.
@@ -473,6 +477,9 @@ public:
     SaveState(current_preset_.preset_num + 1);
 #endif
     SetPresetFast(current_preset_.preset_num + 1);
+#if DEBUG_PRESET_CYCLE_FLASH
+    DebugPresetCycleFlashRun();
+#endif
   }
 
   // Go to the previous Preset.
@@ -481,6 +488,9 @@ public:
     SaveState(current_preset_.preset_num - 1);
 #endif
     SetPreset(current_preset_.preset_num - 1, true);
+#if DEBUG_PRESET_CYCLE_FLASH
+    DebugPresetCycleFlashRun();
+#endif
   }
 
   // Go to the previous Preset skipping NewFont and Preon effects using FastOn.
@@ -489,6 +499,9 @@ public:
     SaveState(current_preset_.preset_num - 1);
 #endif
     SetPresetFast(current_preset_.preset_num - 1);
+#if DEBUG_PRESET_CYCLE_FLASH
+    DebugPresetCycleFlashRun();
+#endif
   }
 
   // Go to the first Preset

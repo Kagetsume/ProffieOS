@@ -1,6 +1,8 @@
 #ifndef STYLES_BLADE_STYLE_H
 #define STYLES_BLADE_STYLE_H
 
+#include "../common/color.h"
+
 class BladeBase;
 
 // Base class for blade styles.
@@ -22,6 +24,10 @@ public:
   // blade->allow_disable to do set all the LEDs to the right value.
   virtual void run(BladeBase* blade) = 0;
 
+  // Advance animation/state without writing pixels. Style<> overrides to run
+  // RunStyle(&base_) only; default is full run() for simple styles.
+  virtual void runUpdate(BladeBase* blade) { run(blade); }
+
   // If this returns true, this blade style has no on/off states, so
   // we disable the saber from turning on. Mostly used for charging
   // styles.
@@ -32,6 +38,8 @@ public:
   virtual bool IsHandled(HandledFeature feature) = 0;
   
   virtual OverDriveColor getColor(int i) { return OverDriveColor(); }
+  // Straight-alpha layer color for compositing (preserves transparency; see ConfigLayersStyle).
+  virtual RGBA_um getLayerColor(int i) { return RGBA_um(getColor(i)); }
   virtual int get_max_arg(int arg) { return -1; }
 };
 

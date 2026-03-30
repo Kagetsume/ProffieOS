@@ -19,6 +19,7 @@ template<class T, class SHORT_STYLE = ShowColorStyle>
 class ShowColorAllBladesTemplate {
 public:
   void SetStyle(BladeBase *blade, const char* str) {
+    ArgParserInterface* saved = CurrentArgParser;
     ArgParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     if (blade->num_leds() > 10) {
@@ -26,6 +27,7 @@ public:
     } else {
       blade->SetStyle(new Style<SHORT_STYLE>());
     }
+    CurrentArgParser = saved;
   }
   void Start(const char* str) {
 #define SHOW_COLOR_STYLE_START(N)				\
@@ -50,6 +52,7 @@ class ShowColorSingleBladeTemplate {
 public:
   void SetStyle(BladeBase *blade, const char* str) {
     style_ = blade->UnSetStyle();
+    ArgParserInterface* saved = CurrentArgParser;
     ArgParser ap(SkipWord(str));
     CurrentArgParser = &ap;
     if (blade->num_leds() > 10) {
@@ -57,6 +60,7 @@ public:
     } else {
       blade->SetStyle(new Style<SHORT_STYLE>());
     }
+    CurrentArgParser = saved;
   }
   void Start(int blade, const char* str) {
 #define SHOW_COLOR_STYLE_START2(N)		\

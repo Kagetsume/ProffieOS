@@ -9,6 +9,8 @@
 
 #include "blade_style.h"
 #include "../common/color.h"
+#include "../common/looper.h"
+#include "../common/math.h"
 #include "../common/saber_base.h"
 
 #define CONFIG_LAYERS_MAX 16  // Fixed array size per style; increase uses more RAM
@@ -24,8 +26,11 @@ enum ConfigLayerBlend : uint8_t {
 };
 
 // Combine premultiplied base with straight overlay color using blend mode, then alpha-over (same as <<).
+// Fully transparent overlay must leave base unchanged: base << RGBA_um(alpha=0) still perturbs premultiplied
+// alpha in operator<<(RGBA, RGBA_um) due to rounding, which can zero the stack so only effects (e.g. blast) show.
 inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend_mode) {
-  if (blend_mode == CONFIG_LAYER_BLEND_NORMAL || !over.alpha) return base << over;
+  if (!over.alpha) return base;
+  if (blend_mode == CONFIG_LAYER_BLEND_NORMAL) return base << over;
   if (!base.alpha) return base << over;
   uint32_t ba = base.alpha;
   uint64_t br = ((uint64_t)base.c.r << 15) / ba;
@@ -65,6 +70,40 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
   return base << blended;
 }
 
+// CompositeConfigLayer produces premultiplied RGBA (see RGBA ctor from RGBA_um in color.h).
+// RGBA_premul_to_overdrive / RGBA_to_RGBA_um: common/color.h
+
+// Set to true by TransitionEffectConfigL when a preon/postoff transition is
+// running.  ConfigLayersStyle checks this after running all sub-layers; if set,
+// it suppresses the allow_disable call so the blade stays powered during the
+// transition.  Saved/restored across nested ConfigLayersStyle invocations.
+bool config_disable_blocked_ = false;
+
+// Wraps a BladeBase to intercept allow_disable() calls from sub-layer styles.
+// ConfigLayersStyle uses this so that individual layers cannot prematurely power
+// off the blade (e.g. the main blade says "off" during a preon transition).
+class AllowDisableCapture : public BladeBase {
+public:
+  AllowDisableCapture(BladeBase* b) : blade_(b), any_captured_(false) {}
+  bool any_captured() const { return any_captured_; }
+  int num_leds() const override { return blade_->num_leds(); }
+  int GetBladeNumber() const override { return blade_->GetBladeNumber(); }
+  Color8::Byteorder get_byteorder() const override { return blade_->get_byteorder(); }
+  bool is_on() const override { return blade_->is_on(); }
+  bool is_powered() const override { return blade_->is_powered(); }
+  void set(int led, Color16 c) override { blade_->set(led, c); }
+  void set_overdrive(int led, Color16 c) override { blade_->set_overdrive(led, c); }
+  void allow_disable() override { any_captured_ = true; }
+  void Activate(int bn) override { blade_->Activate(bn); }
+  void Deactivate() override { blade_->Deactivate(); }
+  BladeStyle* UnSetStyle() override { return blade_->UnSetStyle(); }
+  void SetStyle(BladeStyle* s) override { blade_->SetStyle(s); }
+  BladeStyle* current_style() const override { return blade_->current_style(); }
+private:
+  BladeBase* blade_;
+  bool any_captured_;
+};
+
 class ConfigLayersStyle : public BladeStyle {
 public:
   // alphas / blend_modes: optional per-layer (length num_layers); nullptr = opaque / normal blend.
@@ -92,25 +131,57 @@ public:
     }
   }
 
-  void run(BladeBase* blade) override {
+  // Run sub-layers through a capture proxy so their individual allow_disable
+  // calls don't reach the real blade directly. After all layers have run:
+  //   - Forward allow_disable if ANY layer requested it (matches original
+  //     behavior for existing layer types like BlastL that never call it).
+  //   - UNLESS config_disable_blocked_ was set by a TransitionEffectConfigL
+  //     whose preon/postoff transition is actively running, in which case
+  //     suppress allow_disable so the blade stays powered.
+  // The blocked flag propagates from nested ConfigLayersStyles via OR.
+  void runUpdate(BladeBase* blade) override {
+    AllowDisableCapture capture(blade);
+    bool saved_blocked = config_disable_blocked_;
+    config_disable_blocked_ = false;
     for (int i = 0; i < num_layers_; i++) {
-      if (layers_[i]) layers_[i]->run(blade);
+      if (layers_[i]) layers_[i]->runUpdate(&capture);
+    }
+    bool blocked = config_disable_blocked_;
+    config_disable_blocked_ = saved_blocked || blocked;
+    if (capture.any_captured() && !blocked) blade->allow_disable();
+  }
+
+  void run(BladeBase* blade) override {
+    runUpdate(blade);
+    int num_leds = blade->num_leds();
+    int rotation = (SaberBase::GetCurrentVariation() & 0x7fff) * 3;
+    bool rotate = !IsHandled(HANDLED_FEATURE_CHANGE) &&
+                  blade->get_byteorder() != Color8::NONE &&
+                  (SaberBase::GetCurrentVariation() & 0x7fff) != 0;
+    for (int i = 0; i < num_leds; i++) {
+      OverDriveColor c = getColor(i);
+      Color16 cc = c.c;
+      if (rotate) cc = cc.rotate(rotation);
+      if (c.getOverdrive()) {
+        blade->set_overdrive(i, cc);
+      } else {
+#ifdef DYNAMIC_BLADE_DIMMING
+        cc.r = clampi32((cc.r * SaberBase::GetCurrentDimming()) >> 14, 0, 65535);
+        cc.g = clampi32((cc.g * SaberBase::GetCurrentDimming()) >> 14, 0, 65535);
+        cc.b = clampi32((cc.b * SaberBase::GetCurrentDimming()) >> 14, 0, 65535);
+#endif
+        blade->set(i, cc);
+      }
+      if (!(i & 0xf)) Looper::DoHFLoop();
     }
   }
 
   OverDriveColor getColor(int led) override {
-    RGBA result(RGBA_um::Transparent());
-    for (int i = 0; i < num_layers_; i++) {
-      if (layers_[i]) {
-        OverDriveColor layer_c = layers_[i]->getColor(led);
-        RGBA_um rgba(layer_c);
-        if (layer_alpha_[i] != CONFIG_LAYER_ALPHA_OPAQUE) {
-          rgba.alpha = (uint32_t)rgba.alpha * layer_alpha_[i] >> 15;
-        }
-        result = CompositeConfigLayer(result, rgba, (ConfigLayerBlend)layer_blend_[i]);
-      }
-    }
-    return OverDriveColor(result.c, result.overdrive);
+    return RGBA_premul_to_overdrive(CompositeConfigLayersRGBA(led));
+  }
+
+  RGBA_um getLayerColor(int led) override {
+    return RGBA_to_RGBA_um(CompositeConfigLayersRGBA(led));
   }
 
   bool IsHandled(HandledFeature feature) override {
@@ -135,10 +206,50 @@ public:
   }
 
 private:
+  RGBA CompositeConfigLayersRGBA(int led) {
+    RGBA result(RGBA_um::Transparent());
+    for (int i = 0; i < num_layers_; i++) {
+      if (layers_[i]) {
+        RGBA_um layer_rgba = layers_[i]->getLayerColor(led);
+        if (layer_alpha_[i] != CONFIG_LAYER_ALPHA_OPAQUE) {
+          layer_rgba.alpha = (uint32_t)layer_rgba.alpha * layer_alpha_[i] >> 15;
+        }
+        result = CompositeConfigLayer(result, layer_rgba, (ConfigLayerBlend)layer_blend_[i]);
+      }
+    }
+    return result;
+  }
+
   BladeStyle* layers_[CONFIG_LAYERS_MAX];
   uint16_t layer_alpha_[CONFIG_LAYERS_MAX];
   uint8_t layer_blend_[CONFIG_LAYERS_MAX];
   int num_layers_;
+};
+
+// Wraps TransitionEffectL for use as a ConfigLayersStyle sub-layer.
+// Two responsibilities:
+//   1. Converts run() return from LayerRunResult to bool so that
+//      Style<>::runUpdate calls allow_disable when idle (false) but
+//      not when the transition is running (true).
+//   2. Sets config_disable_blocked_ = true while the transition is
+//      running, so ConfigLayersStyle's AllowDisableCapture logic knows
+//      to suppress allow_disable from other layers (e.g. the main blade
+//      layer says "off" during preon, but the blade must stay powered).
+template<class TRANSITION, BladeEffectType EFFECT>
+class TransitionEffectConfigL {
+  TransitionEffectL<TRANSITION, EFFECT> effect_;
+public:
+  bool run(BladeBase* blade) {
+    LayerRunResult r = effect_.run(blade);
+    if (r == LayerRunResult::UNKNOWN) {
+      config_disable_blocked_ = true;
+      return true;
+    }
+    return false;
+  }
+  auto getColor(int led) -> decltype(effect_.getColor(led)) {
+    return effect_.getColor(led);
+  }
 };
 
 #endif  // STYLES_CONFIG_LAYERS_STYLE_H
