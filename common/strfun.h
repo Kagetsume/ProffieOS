@@ -4,6 +4,7 @@
 #include "stdout.h"
 
 const char *startswith(const char *prefix, const char* x) {
+  if (!prefix || !x) return nullptr;
   while (*prefix) {
     if (toLower(*x) != toLower(*prefix)) return nullptr;
     prefix++;
@@ -46,17 +47,22 @@ bool endswith(const char *postfix, const char* x) {
 }
 
 const char* SkipSpace(const char* str) {
+  static const char kEmpty[] = "";
+  if (!str) return kEmpty;
   while (*str == ' ' || *str == '\t') str++;
   return str;
 }
 
 const char* SkipWord(const char* str) {
+  static const char kEmpty[] = "";
+  if (!str) return kEmpty;
   str = SkipSpace(str);
   while (*str != ' ' && *str != '\t' && *str) str++;
   return str;
 }
 
 int CountWords(const char* str) {
+  if (!str) return 0;
   int words = 0;
   while (*str) {
     str = SkipWord(str);

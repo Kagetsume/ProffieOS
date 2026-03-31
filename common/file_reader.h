@@ -9,7 +9,7 @@
 #include "stdout.h"
 #include <string.h>
 
-// Strip trailing CR/LF from mutable C strings (Windows CRLF in INI values and paths).
+// Strip trailing CR/LF from mutable C strings (Windows CRLF, Unix LF, classic Mac CR).
 inline void StripIniTrailingLineEndings(char* s) {
   if (!s) return;
   size_t n = strlen(s);
@@ -405,11 +405,22 @@ public:
     if (!ret) return nullptr;
     while (Available() && len < READ_STRING_MAX_LEN) {
       int c = Read();
+      if (c < 0) {
+        ret[len] = 0;
+        StripIniTrailingLineEndings(ret);
+        return ret;
+      }
       switch (c) {
+	// End of line: Unix (LF), Windows (CRLF), or CR-only. Do not store CR in the value;
+	// seek back so the following skipline() still consumes the full line ending (CRLF-safe).
 	case '\n':
+	case '\r':
 	  ret[len] = 0;
 	  StripIniTrailingLineEndings(ret);
-	  Seek(Tell() - 1);
+	  {
+	    uint32_t pos = Tell();
+	    if (pos > 0) Seek(pos - 1);
+	  }
 	  return ret;
 	case '\\':
 	  if (Available()) {

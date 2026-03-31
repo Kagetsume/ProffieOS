@@ -217,7 +217,7 @@ NamedStyle named_styles[] = {
   // BlastL returns RGBA_um_nod; Style<> + getLayerColor() preserve alpha for ConfigLayersStyle (see style_ptr.h).
   { "blast",
     StylePtr<BlastL<RgbArg<1, White>>>(),
-    "Blast overlay layer: blast color (optional three numbers after color match INI examples but use fixed fadeout/wave 200/100/400). Mostly transparent until a blast — use an opaque base layer first"
+    "Blast overlay layer: blast color only (fade/wave timing fixed at 200/100/400 ms in template). Mostly transparent until a blast — use an opaque base layer first"
   },
   { "charging", &style_charging, "Charging style" },
   { "pixel_sequence", &pixel_sequencer_factory,
@@ -228,29 +228,89 @@ NamedStyle named_styles[] = {
   //   idle  → Style<> calls allow_disable → captured by AllowDisableCapture
   //   active → Style<> does NOT call allow_disable → blade stays powered
   // ConfigLayersStyle only forwards allow_disable to the real blade when ALL layers agree.
+  //
+  // DURATION: All preon effects use WavLen<EFFECT_PREON> so their visual
+  // duration automatically matches the preon sound file length.  The prop
+  // waits for the preon sound to finish before igniting the main blade, so
+  // the preon visual ends at exactly the right time.  Similarly, postoff
+  // effects use WavLen<EFFECT_POSTOFF>.
+  //
+  // AUDIO-REACTIVE: Glow and sputter effects use SmoothSoundLevel to drive
+  // blade brightness/length from the audio envelope.  SmoothSoundLevel is an
+  // IIR-filtered audio envelope (0-32768) that follows loudness over time.
+  // When the sound is loud the blade is bright/long; when quiet it dims/retracts.
+  // This naturally fades the visual as the preon/postoff sound ends.
+  //
+  // TRANSPARENCY: Effects use bare AlphaL<> (not Layers<Black, AlphaL<>>)
+  // so they produce RGBA with alpha=0 when SmoothSoundLevel is 0, making
+  // them truly transparent when audio is silent.  This prevents opaque-black
+  // artifacts from covering the main blade.
+
+  // preon_glow: entire blade glows uniformly, brightness follows preon sound
+  // volume.  All LEDs get the same brightness = SmoothSoundLevel.
+  // Loud preon sound = bright blade, quiet = dim, silence = transparent.
   { "preon_glow",
     StylePtr<TransitionEffectConfigL<
-      TrConcat<TrFadeX<IntArg<2, 500>>, RgbArg<1, Blue>, TrFadeX<IntArg<3, 500>>>,
+      TrConcat<TrFadeX<Int<1>>,\
+              AlphaL<RgbArg<1, Blue>, SmoothSoundLevel>,\
+              TrDelayX<WavLen<EFFECT_PREON>>>,
       EFFECT_PREON>>(),
-    "Preon glow: color, fade_in_ms, fade_out_ms"
+    "Preon glow: color. Brightness follows preon sound volume, duration matches preon sound file"
   },
+  // preon_wipe: color sweeps hilt→tip over the preon sound duration.
+  // A directional "preview" of the blade path before the main ignition.
   { "preon_wipe",
     StylePtr<TransitionEffectConfigL<
-      TrConcat<TrWipeX<IntArg<2, 1000>>, RgbArg<1, Green>, TrFadeX<IntArg<3, 500>>>,
+      TrConcat<TrWipeX<WavLen<EFFECT_PREON>>,\
+              RgbArg<1, Green>,\
+              TrFadeX<Int<50>>>,
       EFFECT_PREON>>(),
-    "Preon wipe: color, wipe_ms, fade_out_ms"
+    "Preon wipe: color. Wipes hilt-to-tip over preon sound duration"
   },
+  // preon_sputter: blade LENGTH extends from hilt proportional to preon
+  // sound volume.  IsLessThan<RampF, SmoothSoundLevel> lights each LED only
+  // when its position (0=hilt, 32768=tip) is below the audio envelope level.
+  // Loud = long blade, quiet = short, silence = no blade.
+  { "preon_sputter",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<Int<1>>,\
+              AlphaL<RgbArg<1, Blue>,\
+                     IsLessThan<RampF, SmoothSoundLevel>>,\
+              TrDelayX<WavLen<EFFECT_PREON>>>,
+      EFFECT_PREON>>(),
+    "Preon sputter: color. Blade length follows preon sound volume, duration matches preon sound file"
+  },
+  // postoff_glow: entire blade glows uniformly after retraction, brightness
+  // follows postoff sound volume.  Naturally fades as the postoff sound ends.
   { "postoff_glow",
     StylePtr<TransitionEffectConfigL<
-      TrConcat<TrFadeX<IntArg<2, 100>>, RgbArg<1, Red>, TrFadeX<IntArg<3, 2000>>>,
+      TrConcat<TrFadeX<Int<1>>,\
+              AlphaL<RgbArg<1, Red>, SmoothSoundLevel>,\
+              TrDelayX<WavLen<EFFECT_POSTOFF>>>,
       EFFECT_POSTOFF>>(),
-    "Postoff glow: color, fade_in_ms, fade_out_ms"
+    "Postoff glow: color. Brightness follows postoff sound volume, duration matches postoff sound file"
   },
+  // postoff_wipe: color wipes tip→hilt over the postoff sound duration.
+  // A "draining" retraction effect after the main blade has already retracted.
   { "postoff_wipe",
     StylePtr<TransitionEffectConfigL<
-      TrConcat<TrFadeX<IntArg<2, 100>>, RgbArg<1, White>, TrWipeInX<IntArg<3, 1000>>>,
+      TrConcat<TrFadeX<Int<100>>,\
+              RgbArg<1, White>,\
+              TrWipeInX<WavLen<EFFECT_POSTOFF>>>,
       EFFECT_POSTOFF>>(),
-    "Postoff wipe: color, fade_in_ms, wipe_ms"
+    "Postoff wipe: color. Wipes tip-to-hilt over postoff sound duration"
+  },
+  // postoff_sputter: blade LENGTH extends from hilt proportional to postoff
+  // sound volume after retraction.  Same audio-reactive mechanism as
+  // preon_sputter but for EFFECT_POSTOFF.
+  { "postoff_sputter",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<Int<1>>,\
+              AlphaL<RgbArg<1, Red>,\
+                     IsLessThan<RampF, SmoothSoundLevel>>,\
+              TrDelayX<WavLen<EFFECT_POSTOFF>>>,
+      EFFECT_POSTOFF>>(),
+    "Postoff sputter: color. Blade length follows postoff sound volume, duration matches postoff sound file"
   },
 #endif
   { "config", &config_style_factory,

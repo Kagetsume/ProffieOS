@@ -13,6 +13,7 @@ public:
 };
 
 bool FirstWord(const char *str, const char *word) {
+  if (!str || !word) return false;
   while (*str == ' ' || *str == '\t') str++;
   while (*str == *word) {
     if (!*word) return true;
@@ -31,6 +32,7 @@ public:
   const char* GetArg(int arg_num,
 		     const char* name,
 		     const char* default_value) override {
+    if (!str_) return default_value;
     const char* ret = str_;
     int arg = 0;
     while (true) {
@@ -44,6 +46,7 @@ public:
     }
   }
   void Shift(int words) override {
+    if (!str_) return;
     while (words-- > 0) str_ = SkipWord(str_);
   }
 protected:

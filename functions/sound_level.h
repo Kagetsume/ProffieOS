@@ -48,6 +48,7 @@ using NoisySoundLevelCompat = SingleValueAdapter<NoisySoundLevelCompatSVF>;
 
 #else  // ENABLE_AUDIO
 
+using SmoothSoundLevel = Int<0>;
 using NoisySoundLevel = Int<0>;
 using NoisySoundLevelCompat = Int<0>;
 

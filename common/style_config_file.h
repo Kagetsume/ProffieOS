@@ -13,6 +13,11 @@
 //   bound RAM and recursion; include paths are normalized and cycle-checked.
 // - After StyleConfigFlushPendingStructuredLayer, a plain layer = line is skipped if count >= max_layers
 //   so layers[count] is never written out of range.
+// - LoadStyleConfigLayers clamps override_count to [0, STYLE_CONFIG_MAX_LOCAL_VARS] before use so preset
+//   k=v pairs never index past override buffer bounds.
+// - Line endings: values read with bounded Peek loops stop at \n or \r (leave terminator for skipline);
+//   FileReader::skipline() consumes LF, CRLF, or CR-only. Preset/font/track/style values use readString(),
+//   which treats \n and \r as line ends without storing CR (see file_reader.h).
 // - Helpers null-check pointers where misuse would be UB; preset override counts are clamped in
 //   StyleConfigExpandLocalVars; strncpy targets are always sized arrays.
 
@@ -714,6 +719,9 @@ inline int LoadStyleConfigLayers(const char* section_name,
                                   const char (*override_vals)[STYLE_CONFIG_LOCAL_VAL_LEN] = nullptr) {
   if (!section_name || !section_name[0] || !layers || max_layers <= 0) return 0;
 #ifdef ENABLE_SD
+  int oc = override_count;
+  if (oc < 0) oc = 0;
+  else if (oc > STYLE_CONFIG_MAX_LOCAL_VARS) oc = STYLE_CONFIG_MAX_LOCAL_VARS;
   StyleConfigSectionState st;
   memset(&st, 0, sizeof(st));
   LOCK_SD(true);
@@ -757,7 +765,7 @@ inline int LoadStyleConfigLayers(const char* section_name,
       if (strcmp(p, section_name) == 0) {
         in_section = true;
         memset(&st, 0, sizeof(st));
-        st.preset_override_count = override_count;
+        st.preset_override_count = oc;
         st.preset_override_keys = override_keys;
         st.preset_override_vals = override_vals;
       }
