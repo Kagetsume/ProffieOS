@@ -133,34 +133,17 @@ void LSanalogWriteTeardown(uint32_t pin) {
 
 };
 #elif defined(ESP32)
-// First some abstractions for controlling PWM pin
-
-#ifdef SOC_LEDC_SUPPORT_HS_MODE
-#define LEDC_CHANNELS           (SOC_LEDC_CHANNEL_NUM<<1)
-#else
-#define LEDC_CHANNELS           (SOC_LEDC_CHANNEL_NUM)
-#endif
-
-static int8_t po_pin_to_channel[SOC_GPIO_PIN_COUNT] = { 0 };
-static int po_cnt_channel = LEDC_CHANNELS;
 
 void LSanalogWriteSetup(uint32_t pin, PWM_USECASE usecase = PWM_USECASE::PWM) {
-  if (po_pin_to_channel[pin] == 0) {
-    if (!po_cnt_channel) {
-      log_e("No more analogWrite channels available! You can have maximum %u", LEDC_CHANNELS);
-      return;
-    }
-    po_pin_to_channel[pin] = po_cnt_channel--;
-    ledcAttachPin(pin, po_cnt_channel);
-    ledcSetup(po_cnt_channel, usecase == PWM_USECASE::SERVO : 50 ? 500, 16);
-  }
+  ledcAttach(pin, usecase == PWM_USECASE::SERVO ? 50 : 500, 16);
 }
 void LSanalogWriteTeardown(uint32_t pin) {
-  ledcDetachPin(pin);
+  ledcDetach(pin);
 }
 void LSanalogWrite(uint32_t pin, int value) {
-  ledcWrite(po_pin_to_channel[pin] - 1, value);
+  ledcWrite(pin, value);
 }
+
 #elif defined(TEENSYDUINO)
 // First some abstractions for controlling PWM pin
 void LSanalogWriteSetup(uint32_t pin, PWM_USECASE usecase = PWM_USECASE::PWM) {

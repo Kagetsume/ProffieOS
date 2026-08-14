@@ -196,7 +196,9 @@ public:
 };
 
 
-static int8_t color16_dither_matrix[4][4] = {
+
+static const
+int8_t color16_dither_matrix[4][4] = {
   { -127, 111,  -76,  94 },
   {    9, -59,   60,  -8 },
   {  -93,  77, -110, 127 },

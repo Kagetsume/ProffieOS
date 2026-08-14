@@ -66,6 +66,10 @@ public:
 
   void PlayOnce(Effect::FileID fileid, float start = 0.0) {
     const Effect* effect = fileid.GetEffect();
+    if (!effect) {
+      STDOUT << "NULL EFFECT!\n";
+      return;
+    }
     MountSDCard();
     EnableAmplifier();
     set_volume_now(volume_target() * effect->GetVolume() / 100);

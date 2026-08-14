@@ -59,6 +59,7 @@ private:
     }
   }
 
+  // TODO: use ciruclar buffer
   static volatile uint8_t head;
   static volatile uint8_t tail;
   static volatile IREvent buffer[16];

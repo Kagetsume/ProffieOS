@@ -65,7 +65,7 @@ public:
   void TestFile(const char* filename) {
     uint8_t block[512];
     uint32_t start_open = micros();
-    File f = LSFS::Open(filename);
+    LSFS::LSFILE f = LSFS::Open(filename);
     if (!f) {
       STDOUT << "Failed to open!";
     }
@@ -73,15 +73,16 @@ public:
 
     int cnt = 0;
     uint32_t block_start = micros();
-    while (f.available()) {
+    while (true) {
       uint32_t start = micros();
-      f.read(block, 512);
+      uint32_t bytes_read = f.read(block, 512);
       uint32_t end = micros();
+      if (bytes_read < 512) break;
       histogram.count(end - start);
       if (++cnt == 128) {
         cnt = 0;
         uint32_t block_time = micros() - block_start;
-	int streams = (int)((64.0 / 88.2) / (block_time * 0.000001));
+	int streams = (int)((512 * 128 / 2 / 44100.0) / (block_time * 0.000001));
 	if (streams < 10) STDOUT << (char)('0' + streams);
 	else if (streams < 36) STDOUT << (char)('A' + streams - 10);
 	else STDOUT << '!';

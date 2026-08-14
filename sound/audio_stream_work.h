@@ -33,19 +33,23 @@ public:
 
 #ifdef ESP32
 
+  static TaskHandle_t fillBufferHandle;
+  static POAtomic<bool> task_created_;
+
   static void FillBufferTask(void* unused) {
     while (true) {
       ProcessAudioStreams();
+      vTaskSuspend(fillBufferHandle);
     }
   }
 
-  static POAtomic<bool> task_created_;
   static void scheduleFillBuffer() {
     if (!task_created_.exchange(true)) {
-      TaskHandle_t xHandle = NULL;
-      xTaskCreatePinnedToCore(FillBufferTask, "SDReadTask", 20000, nullptr, tskIDLE_PRIORITY, &xHandle, 0);
+      // Does this need to move somewhere that is not an interrupt?
+      xTaskCreatePinnedToCore(FillBufferTask, "SDReadTask", 20000, nullptr, tskIDLE_PRIORITY + 10, &fillBufferHandle, 0);
     }
     fill_buffers_pending_.set(true);
+    xTaskResumeFromISR(fillBufferHandle);
   }
 
 #else
@@ -147,6 +151,7 @@ POAtomic<bool> AudioStreamWork::fill_buffers_pending_(false);
 
 #ifdef ESP32
 POAtomic<bool> AudioStreamWork::task_created_ (false);
+TaskHandle_t AudioStreamWork::fillBufferHandle = nullptr;
 #endif
 
 #endif

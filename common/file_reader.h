@@ -110,7 +110,7 @@ public:
     }
 #endif
 #ifdef ENABLE_SD
-    new (&sd_file_) File;
+    new (&sd_file_) LSFS::LSFILE;
     type_ = TYPE_SD;
     sd_file_ = LSFS::Open(filename);
     if (sd_file_) {
@@ -135,7 +135,7 @@ public:
     }
 #endif
 #ifdef ENABLE_SD
-    new (&sd_file_) File;
+    new (&sd_file_) LSFS::LSFILE;
     type_ = TYPE_SD;
     sd_file_ = LSFS::OpenFast(filename);
     if (sd_file_) {
@@ -149,7 +149,7 @@ public:
   bool Create(const char* filename) {
     Close();
 #ifdef ENABLE_SD
-    new (&sd_file_) File;
+    new (&sd_file_) LSFS::LSFILE;
     sd_file_ = LSFS::OpenForWrite(filename);
     if (sd_file_) {
       type_ = TYPE_SD;
@@ -161,7 +161,7 @@ public:
   bool OpenRW(const char* filename) {
     Close();
 #ifdef ENABLE_SD
-    new (&sd_file_) File;
+    new (&sd_file_) LSFS::LSFILE;
     sd_file_ = LSFS::OpenRW(filename);
     if (sd_file_) {
       type_ = TYPE_SD;
@@ -494,7 +494,7 @@ private:
     TYPE_MEM
   } type_;
   union {
-    IF_SD(File sd_file_;)
+    IF_SD(LSFS::LSFILE sd_file_;)
     IF_SF(SerialFlashFile sf_file_;)
     MemFile mem_file_;
   };

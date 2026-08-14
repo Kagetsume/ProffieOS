@@ -39,6 +39,9 @@ public:
   void set(T value) {
     value_.store(value, std::memory_order_release);
   }
+  void operator=(T value) {
+    value_.store(value, std::memory_order_release);
+  }
   T exchange(T value) {
     return value_.exchange(value, std::memory_order_release);
   }
