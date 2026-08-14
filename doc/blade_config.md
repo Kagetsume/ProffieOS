@@ -13,7 +13,13 @@ INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank
 
 - **`blade=N`** – Start definition for blade index **N** (0-based). The following lines apply to this blade until the next `blade=M` or `end`.
 - **`data_pin=P`** – Data line (GPIO pin number or name) that drives this blade’s LED data.
-- **`pixels=N`** – Number of LEDs (pixels) in this blade (1–65535).
+- **`pixels=N`** – Number of LEDs (pixels) in this blade (1–65535). Not used for **simple** PWM blades.
+- **`type=ws2811`** – NeoPixel / WS2811 strip (default when `pixels=` is set).
+- **`type=simple`** – PWM LED star or single accent LED (uses `data_pin=` / `pin1=`…`pin4=` and `led=` / `led1=`…`led4=`; omit `pixels=`).
+- **`pin=P`** or **`pin1=P`** … **`pin4=P`** – PWM GPIO pin(s) for a **simple** blade. `data_pin=` can be used instead of `pin1=` for a single LED.
+- **`led=NAME`** or **`led1=NAME`** … **`led4=NAME`** – LED circuit type for each simple channel (see list below). Defaults to **CreeXPE2White** when a pin is set but `led=` is omitted.
+- **`active_state=high|low`** – On-state pin level for all simple pins (`high` = pin HIGH when on, for N-FET gates / GPIO→load→GND; `low` = inverted). Default **high**.
+- **`active_state1=high|low`** … **`active_state4=high|low`** – Per-pin on-state level. **`active_high=`** / **`active_high1=`**…**`active_high4=`** are accepted aliases.
 - **`power_pin=P`** – Single FET/power pin for this blade. Can appear multiple times; each value is assigned to the next power slot (power_pin1, power_pin2, …).
 - **`power_pin1=P`** … **`power_pin6=P`** – Explicit FET/power pins 1–6 for this blade. Use -1 or omit for unused.
 - **`end`** – End of the file (optional; end of file also stops parsing).
@@ -21,7 +27,11 @@ INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank
 **Pin values** for `data_pin` and `power_pin` / `power_pin1`–`power_pin6` can be:
 
 - **Numeric** – GPIO pin number (e.g. `20`, `21`).
-- **Text constants** – Board pin names from your config’s pin map, for easier mapping. Examples: `bladePin`, `blade2Pin`, `bladePowerPin1`, `bladePowerPin2`, … `bladePowerPin11`, `bladeIdentifyPin`, `blade3Pin` … `blade9Pin`. Names are case-sensitive and must match the C enum names in your board config. Unknown names are ignored (no crash).
+- **Text constants** – Board pin names from your config’s pin map, for easier mapping. Examples: `bladePin`, `blade2Pin`, `blade5Pin`, `bladePowerPin1`, `bladePowerPin2`, … `bladePowerPin11`, `bladeIdentifyPin`, `blade3Pin` … `blade9Pin`. Names are case-sensitive and must match the C enum names in your board config. Unknown names are ignored (no crash).
+
+**Simple LED type names** for `led=` / `led1=`…`led4=` (must match exactly):
+
+`NoLED`, `CreeXPE2White`, `CreeXPE2Blue`, `CreeXPE2Green`, `CreeXPE2Red`, `CreeXPE2Amber`, `CreeXPE2PCAmber`, `CreeXPE2RedOrange`, `CreeXPL`, `Blue3mmLED`, `Red8mmLED100`, `Blue8mmLED100`, `CH1LED`, `CH2LED`, `CH3LED`, `ServoSelector`
 
 ## Example `config/blades.ini`
 
@@ -76,12 +86,37 @@ power_pin=22
 end
 ```
 
+### Simple PWM LED (accent or LED star)
+
+Single white accent on Free1:
+
+```ini
+blade=2
+type=simple
+data_pin=blade5Pin
+led=CreeXPE2White
+active_state=high
+```
+
+RGB LED star (three channels, one logical LED):
+
+```ini
+blade=0
+type=simple
+pin1=bladePowerPin1
+led1=CreeXPE2White
+pin2=bladePowerPin2
+led2=CreeXPE2Blue
+pin3=bladePowerPin3
+led3=CreeXPE2Blue
+```
+
 ## How it is used
 
-- **Loading:** At startup (when SD is present), the firmware tries to open **`config/blades.ini`**. If the file exists and parses correctly, blade definitions are stored (up to 16 blades, up to 6 power pins per blade).
-- **When the file is present:** If **`config/blades.ini`** is present and valid, it **replaces** the compiled blade configuration. The firmware creates blade drivers from the file (data pin, pixel count, power pins) and uses them instead of the blades defined in your `CONFIG_FILE`. Presets and save_dir still come from the first compiled config.
+- **Loading:** At startup (when SD is present), the firmware tries to open **`config/blades.ini`**. If the file exists and parses correctly, blade definitions are stored (up to 16 blades, up to 6 power pins per NeoPixel blade).
+- **When the file is present:** If **`config/blades.ini`** is present and valid, it **replaces** the compiled blade configuration. The firmware creates blade drivers from the file (NeoPixel or simple PWM) and uses them instead of the blades defined in your `CONFIG_FILE`. Presets and save_dir still come from the first compiled config. Blade indices omitted from the file keep their **compiled** drivers.
 - **When the file is absent:** Blade hardware is determined by the **compiled config** (your `CONFIG_FILE`) as before.
-- **Platform:** Runtime blade creation from the file is implemented for **Proffieboard (STM32)** with **WS2811** enabled. On other boards or without WS2811, the file is loaded for reference but compiled blades are still used.
+- **Platform:** Runtime blade creation from the file is implemented for **Proffieboard (STM32)**. NeoPixel blades require **ENABLE_WS2811**; simple PWM blades work whenever SD blade config is enabled on Proffieboard.
 
 ## Sub-blades
 

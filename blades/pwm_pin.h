@@ -182,6 +182,12 @@ void LSanalogWrite(uint32_t pin, int value) {
 }
 #endif
 
+// SimpleBlade PWM polarity: active_high=true is direct; false inverts (active-low load).
+static inline int ApplySimplePWMPolarity(int pwm, bool active_high) {
+  if (active_high) return pwm;
+  return 65535 - pwm;
+}
+
 class PWMPinInterface {
 public:
   virtual void Activate() = 0;

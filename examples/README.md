@@ -7,13 +7,13 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-The examples assume **`NUM_BLADES` 2** (see `config/config-files-config.h`): `blades.ini` defines blade 0 and 1, and `presets.ini` has **two** `style =` lines per preset. If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
+The examples assume **`NUM_BLADES` 3** (see `config/config-files-config.h`): `blades.ini` defines NeoPixel blades 0–1 plus a **simple PWM** accent on blade 2 (`type=simple`), and `presets.ini` has **three** `style =` lines per preset (third is `accent_pulse`). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
 | File | Purpose |
 |------|---------|
 | **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
 | **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
-| **blades.ini** | Blade wiring: data pin, pixel count, power pins per blade. Replaces compiled blade config when present (platform-dependent). |
+| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). |
 | **blade_styles.ini** | Named style "recipes" as layers. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |

@@ -220,6 +220,11 @@ NamedStyle named_styles[] = {
     "Blast overlay layer: blast color only (fade/wave timing fixed at 200/100/400 ms in template). Mostly transparent until a blast — use an opaque base layer first"
   },
   { "charging", &style_charging, "Charging style" },
+  // Simple accent: slow pulse while saber is on, off when retracted.
+  { "accent_pulse",
+    StylePtr<InOutHelper<Pulsing<Black, White, 3000>, 0, 0> >(),
+    "GPIO accent: slow white pulse when saber is on, off when saber is off (no arguments)"
+  },
   { "pixel_sequence", &pixel_sequencer_factory,
     "Pixel sequencer: config = steps separated by |, each step pixel,r,g,b,brightness,ms; repeating pattern (pixel 0..N-1 or 255=all)",
   },

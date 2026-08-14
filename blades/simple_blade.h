@@ -3,23 +3,43 @@
 
 #include "abstract_blade.h"
 
-template<int PIN, class LED>
+// Pin polarity for SimpleBlade PWM outputs.
+// active_high=true:  full brightness drives the pin HIGH (direct GPIO -> LED -> GND).
+// active_high=false: inverted PWM (typical for bladePowerPin FET outputs).
+template<int PIN, bool ACTIVE_HIGH = false>
+struct SimplePin {
+  static constexpr int pin = PIN;
+  static constexpr bool active_high = ACTIVE_HIGH;
+};
+
+template<int PIN>
+using ActiveHighPIN = SimplePin<PIN, true>;
+
+template<int PIN>
+using ActiveLowPIN = SimplePin<PIN, false>;
+
+#include "pwm_pin.h"
+
+template<typename PinT, class LED>
 class PWMPin : public PWMPinInterface {
 public:
+  static constexpr int PIN = PinT::pin;
+  static constexpr bool ACTIVE_HIGH = PinT::active_high;
+
   void Activate() override {
     static_assert(PIN >= 0, "PIN is negative?");
     static_assert(IsPWMPin(PIN), "Not a PWM-capable pin.");
     LSanalogWriteSetup(PIN);
-    LSanalogWrite(PIN, 0);  // make it black
+    LSanalogWrite(PIN, ApplySimplePWMPolarity(0, ACTIVE_HIGH));
   }
   void Deactivate() override {
     LSanalogWriteTeardown(PIN);
   }
   void set(const Color16& c) override {
-    LSanalogWrite(PIN, led_.PWM(c));
+    LSanalogWrite(PIN, ApplySimplePWMPolarity(led_.PWM(c), ACTIVE_HIGH));
   }
   void set_overdrive(const Color16& c) override {
-    LSanalogWrite(PIN, led_.PWM_overdrive(c));
+    LSanalogWrite(PIN, ApplySimplePWMPolarity(led_.PWM_overdrive(c), ACTIVE_HIGH));
   }
 
   Color8 getColor8() const { return led_.getColor8(); }
@@ -27,19 +47,19 @@ public:
   PONUA DriveLogic<LED> led_;
 };
 
-template<int PIN, class LED>
-class ServoPWMPin : public PWMPin<PIN, LED> {
+template<typename PinT, class LED>
+class ServoPWMPin : public PWMPin<PinT, LED> {
 public:
   void Activate() override {
-    static_assert(PIN >= 0, "PIN is negative?");
-    static_assert(IsPWMPin(PIN), "Not a PWM-capable pin.");
-    LSanalogWriteSetup(PIN, PWM_USECASE::SERVO);
-    LSanalogWrite(PIN, 0);  // make it black
+    static_assert(PinT::pin >= 0, "PIN is negative?");
+    static_assert(IsPWMPin(PinT::pin), "Not a PWM-capable pin.");
+    LSanalogWriteSetup(PinT::pin, PWM_USECASE::SERVO);
+    LSanalogWrite(PinT::pin, ApplySimplePWMPolarity(0, PinT::active_high));
   }
 };
 
 template<class LED>
-class PWMPin<-1, LED> : PWMPinInterface {
+class PWMPin<SimplePin<-1, false>, LED> : public PWMPinInterface {
 public:
   void Activate() override {}
   void Deactivate() override {}
@@ -47,8 +67,17 @@ public:
   void set_overdrive(const Color16& c) override {}
 };
 
-template<int PIN>
-class PWMPin<PIN, NoLED> : PWMPinInterface {
+template<class LED>
+class PWMPin<SimplePin<-1, true>, LED> : public PWMPinInterface {
+public:
+  void Activate() override {}
+  void Deactivate() override {}
+  void set(const Color16& c) override {}
+  void set_overdrive(const Color16& c) override {}
+};
+
+template<typename PinT>
+class PWMPin<PinT, NoLED> : public PWMPinInterface {
 public:
   void Activate() override {}
   void Deactivate() override {}
@@ -58,7 +87,7 @@ public:
 };
 
 template<>
-class PWMPin<-1, NoLED> : PWMPinInterface {
+class PWMPin<SimplePin<-1, false>, NoLED> : public PWMPinInterface {
 public:
   void Activate() override {}
   void Deactivate() override {}
@@ -280,20 +309,29 @@ private:
 };
 
 template<class LED1, class LED2, class LED3, class LED4,
-          int pin1 = bladePowerPin1,
-          int pin2 = bladePowerPin2,
-          int pin3 = bladePowerPin3,
-          int pin4 = bladePin>
+         typename P1, typename P2, typename P3, typename P4>
 class BladeBase *SimpleBladePtr() {
   static Simple_Blade<
     MultiChannelLED<
-      PWMPin<pin1, LED1>,
-      PWMPin<pin2, LED2>,
-      PWMPin<pin3, LED3>,
-      PWMPin<pin4, LED4>
+      PWMPin<P1, LED1>,
+      PWMPin<P2, LED2>,
+      PWMPin<P3, LED3>,
+      PWMPin<P4, LED4>
     >
   > blade;
   return &blade;
+}
+
+// Backward compatible int-pin overload (direct PWM, same as pre-ActiveHighPIN behavior).
+template<class LED1, class LED2, class LED3, class LED4,
+         int pin1 = bladePowerPin1,
+         int pin2 = bladePowerPin2,
+         int pin3 = bladePowerPin3,
+         int pin4 = bladePin>
+class BladeBase *SimpleBladePtr() {
+  return SimpleBladePtr<LED1, LED2, LED3, LED4,
+    SimplePin<pin1, true>, SimplePin<pin2, true>,
+    SimplePin<pin3, true>, SimplePin<pin4, true> >();
 }
 
 #if VERSION_MAJOR >= 2
@@ -301,22 +339,28 @@ class BladeBase *SimpleBladePtr() {
 template<class LED, int CLASH_PIN = -1, class CLASH_LED = NoLED>
 class BladeBase *StringBladePtr() {
   static Simple_Blade<
-    MultiChannelLED<PWMPin<bladePowerPin1, LED>,
-                    PWMPin<CLASH_PIN, CLASH_LED> >,
-    PWMPin<bladePowerPin2, LED>,
-    PWMPin<bladePowerPin3, LED>,
-    PWMPin<bladePowerPin4, LED>,
-    PWMPin<bladePowerPin5, LED>,
-    PWMPin<bladePowerPin6, LED>
+    MultiChannelLED<PWMPin<SimplePin<bladePowerPin1, false>, LED>,
+                    PWMPin<SimplePin<CLASH_PIN, false>, CLASH_LED> >,
+    PWMPin<SimplePin<bladePowerPin2, false>, LED>,
+    PWMPin<SimplePin<bladePowerPin3, false>, LED>,
+    PWMPin<SimplePin<bladePowerPin4, false>, LED>,
+    PWMPin<SimplePin<bladePowerPin5, false>, LED>,
+    PWMPin<SimplePin<bladePowerPin6, false>, LED>
   > blade;
   return &blade;
 }
 #endif
 
+template<typename PinT, class LED = ServoSelector>
+class BladeBase *ServoBladePtr() {
+  static Simple_Blade< ServoPWMPin<PinT, LED>  > blade;
+  return &blade;
+}
+
+// Backward compatible ServoBladePtr(int pin).
 template<int pin, class LED = ServoSelector>
 class BladeBase *ServoBladePtr() {
-  static Simple_Blade< ServoPWMPin<pin, LED>  > blade;
-  return &blade;
+  return ServoBladePtr<SimplePin<pin, false>, LED>();
 }
 
 #endif

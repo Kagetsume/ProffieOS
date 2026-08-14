@@ -18,14 +18,46 @@
 #define SD_MAX_BLADE_DEFS 16
 #define SD_MAX_POWER_PINS_PER_BLADE 6
 #define SD_MAX_SUB_BLADES_PER_BLADE 8
+#define SD_MAX_SIMPLE_PINS 4
+
+enum SDBladeDriverType : uint8_t {
+  SD_BLADE_DRIVER_WS2811 = 0,
+  SD_BLADE_DRIVER_SIMPLE = 1,
+};
+
+enum SDBladeLEDType : uint8_t {
+  SD_BLADE_LED_UNKNOWN = 0,
+  SD_BLADE_LED_NOLED,
+  SD_BLADE_LED_CreeXPE2White,
+  SD_BLADE_LED_CreeXPE2Blue,
+  SD_BLADE_LED_CreeXPE2Green,
+  SD_BLADE_LED_CreeXPE2Red,
+  SD_BLADE_LED_CreeXPE2Amber,
+  SD_BLADE_LED_CreeXPE2PCAmber,
+  SD_BLADE_LED_CreeXPE2RedOrange,
+  SD_BLADE_LED_CreeXPL,
+  SD_BLADE_LED_Blue3mmLED,
+  SD_BLADE_LED_Red8mmLED100,
+  SD_BLADE_LED_Blue8mmLED100,
+  SD_BLADE_LED_CH1LED,
+  SD_BLADE_LED_CH2LED,
+  SD_BLADE_LED_CH3LED,
+  SD_BLADE_LED_ServoSelector,
+};
 
 struct SDBladeDef {
-  int data_pin;       // -1 = not set
+  SDBladeDriverType driver;  // WS2811 (default) or simple PWM LED
+  int data_pin;       // -1 = not set; for simple blades also used as pin1 when pin1 omitted
   int pixels;         // 0 = not set
   int power_pin[SD_MAX_POWER_PINS_PER_BLADE];  // -1 = unused
   int sub_blade_first[SD_MAX_SUB_BLADES_PER_BLADE];  // -1 = unused
   int sub_blade_last[SD_MAX_SUB_BLADES_PER_BLADE];   // -1 = unused
   int sub_blade_count;  // 0 = use full strip; >0 = SubBlade ranges
+  int simple_pin[SD_MAX_SIMPLE_PINS];  // PWM pins for type=simple (-1 unused)
+  SDBladeLEDType simple_led[SD_MAX_SIMPLE_PINS];  // LED circuit per simple pin
+  bool simple_active_high[SD_MAX_SIMPLE_PINS];  // true = active_state high (direct PWM)
+  bool simple_active_high_default;  // from active_state= blade-wide default
+  bool simple_active_high_default_set;
 };
 
 extern SDBladeDef sd_blade_defs[SD_MAX_BLADE_DEFS];
@@ -72,13 +104,109 @@ static inline int ReadPinValueFromFile(FileReader& f) {
   return ParseBladeConfigPinValue(word);
 }
 
+// Parse LED type name from blades.ini (e.g. CreeXPE2White, NoLED).
+inline SDBladeLEDType ParseBladeConfigLEDType(const char* str) {
+  if (!str || !*str) return SD_BLADE_LED_UNKNOWN;
+  if (!strcmp(str, "NoLED")) return SD_BLADE_LED_NOLED;
+  if (!strcmp(str, "CreeXPE2White")) return SD_BLADE_LED_CreeXPE2White;
+  if (!strcmp(str, "CreeXPE2Blue")) return SD_BLADE_LED_CreeXPE2Blue;
+  if (!strcmp(str, "CreeXPE2Green")) return SD_BLADE_LED_CreeXPE2Green;
+  if (!strcmp(str, "CreeXPE2Red")) return SD_BLADE_LED_CreeXPE2Red;
+  if (!strcmp(str, "CreeXPE2Amber")) return SD_BLADE_LED_CreeXPE2Amber;
+  if (!strcmp(str, "CreeXPE2PCAmber")) return SD_BLADE_LED_CreeXPE2PCAmber;
+  if (!strcmp(str, "CreeXPE2RedOrange")) return SD_BLADE_LED_CreeXPE2RedOrange;
+  if (!strcmp(str, "CreeXPL")) return SD_BLADE_LED_CreeXPL;
+  if (!strcmp(str, "Blue3mmLED")) return SD_BLADE_LED_Blue3mmLED;
+  if (!strcmp(str, "Red8mmLED100")) return SD_BLADE_LED_Red8mmLED100;
+  if (!strcmp(str, "Blue8mmLED100")) return SD_BLADE_LED_Blue8mmLED100;
+  if (!strcmp(str, "CH1LED")) return SD_BLADE_LED_CH1LED;
+  if (!strcmp(str, "CH2LED")) return SD_BLADE_LED_CH2LED;
+  if (!strcmp(str, "CH3LED")) return SD_BLADE_LED_CH3LED;
+  if (!strcmp(str, "ServoSelector")) return SD_BLADE_LED_ServoSelector;
+  return SD_BLADE_LED_UNKNOWN;
+}
+
+static inline SDBladeLEDType ReadLEDTypeFromFile(FileReader& f) {
+  f.skipwhite();
+  if (!f.Available()) return SD_BLADE_LED_UNKNOWN;
+  char word[33];
+  int i = 0;
+  while (f.Available() && i < 32) {
+    int c = f.Peek();
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')
+      word[i++] = (char)f.Read();
+    else
+      break;
+  }
+  word[i] = 0;
+  return ParseBladeConfigLEDType(word);
+}
+
+static inline bool ReadActiveStateFromFile(FileReader& f, bool* out) {
+  f.skipwhite();
+  if (!f.Available()) return false;
+  char word[33];
+  int i = 0;
+  while (f.Available() && i < 32) {
+    int c = f.Peek();
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')
+      word[i++] = (char)f.Read();
+    else
+      break;
+  }
+  word[i] = 0;
+  if (!strcmp(word, "high") || !strcmp(word, "1") || !strcmp(word, "true")) {
+    *out = true;
+    return true;
+  }
+  if (!strcmp(word, "low") || !strcmp(word, "0") || !strcmp(word, "false")) {
+    *out = false;
+    return true;
+  }
+  return false;
+}
+
+static inline void FinalizeSDBladeDef(SDBladeDef& def) {
+  // Infer simple PWM when type=simple, led=, or pin1= without a NeoPixel pixel count.
+  if (def.driver != SD_BLADE_DRIVER_SIMPLE && def.pixels <= 0) {
+    for (int i = 0; i < SD_MAX_SIMPLE_PINS; i++) {
+      if (def.simple_pin[i] >= 0 ||
+          (def.simple_led[i] != SD_BLADE_LED_UNKNOWN &&
+           def.simple_led[i] != SD_BLADE_LED_NOLED)) {
+        def.driver = SD_BLADE_DRIVER_SIMPLE;
+        break;
+      }
+    }
+  }
+  if (def.driver != SD_BLADE_DRIVER_SIMPLE) return;
+  if (def.simple_pin[0] < 0 && def.data_pin >= 0)
+    def.simple_pin[0] = def.data_pin;
+  for (int i = 0; i < SD_MAX_SIMPLE_PINS; i++) {
+    if (def.simple_pin[i] >= 0 && def.simple_led[i] == SD_BLADE_LED_UNKNOWN)
+      def.simple_led[i] = SD_BLADE_LED_CreeXPE2White;
+  }
+}
+
+static inline bool SDBladeDefIsPopulated(SDBladeDef& def) {
+  FinalizeSDBladeDef(def);
+  if (def.driver == SD_BLADE_DRIVER_SIMPLE) {
+    for (int i = 0; i < SD_MAX_SIMPLE_PINS; i++)
+      if (def.simple_pin[i] >= 0) return true;
+    return false;
+  }
+  return def.data_pin >= 0 && def.pixels > 0;
+}
+
 // Load blade definitions from SD config/blades.ini if present.
 // Format: blade=0 then data_pin=, pixels=, power_pin= (or power_pin1..6), optional sub_blade=first,last, end.
+// Simple PWM LED: type=simple, data_pin= or pin1=..pin4=, led= or led1=..led4=,
+// active_state= or active_state1=..active_state4= (high|low; default high). active_high= is an alias.
 // Does not crash on malformed input; invalid lines are skipped.
 inline void LoadBladeConfigFile() {
 #ifdef ENABLE_SD
   sd_blade_def_count = 0;
   for (size_t i = 0; i < SD_MAX_BLADE_DEFS; i++) {
+    sd_blade_defs[i].driver = SD_BLADE_DRIVER_WS2811;
     sd_blade_defs[i].data_pin = -1;
     sd_blade_defs[i].pixels = 0;
     for (int j = 0; j < SD_MAX_POWER_PINS_PER_BLADE; j++)
@@ -88,6 +216,13 @@ inline void LoadBladeConfigFile() {
       sd_blade_defs[i].sub_blade_first[j] = -1;
       sd_blade_defs[i].sub_blade_last[j] = -1;
     }
+    for (int j = 0; j < SD_MAX_SIMPLE_PINS; j++) {
+      sd_blade_defs[i].simple_pin[j] = -1;
+      sd_blade_defs[i].simple_led[j] = SD_BLADE_LED_UNKNOWN;
+      sd_blade_defs[i].simple_active_high[j] = true;
+    }
+    sd_blade_defs[i].simple_active_high_default = true;
+    sd_blade_defs[i].simple_active_high_default_set = false;
   }
   LOCK_SD(true);
   FileReader f;
@@ -118,12 +253,18 @@ inline void LoadBladeConfigFile() {
         if (f.Peek() >= '0' && f.Peek() <= '9') idx = idx * 10 + (f.Read() - '0');
       }
       if (idx >= 0 && idx < (int)SD_MAX_BLADE_DEFS) {
-        if (current_blade >= 0 && current_blade < (int)SD_MAX_BLADE_DEFS &&
-            (sd_blade_defs[current_blade].data_pin >= 0 || sd_blade_defs[current_blade].pixels > 0)) {
-          if (sd_blade_def_count < (size_t)(current_blade + 1))
-            sd_blade_def_count = (size_t)(current_blade + 1);
+        if (current_blade >= 0 && current_blade < (int)SD_MAX_BLADE_DEFS) {
+          FinalizeSDBladeDef(sd_blade_defs[current_blade]);
+          if (SDBladeDefIsPopulated(sd_blade_defs[current_blade])) {
+            if (sd_blade_def_count < (size_t)(current_blade + 1))
+              sd_blade_def_count = (size_t)(current_blade + 1);
+          }
         }
         current_blade = idx;
+        sd_blade_defs[idx].simple_active_high_default = true;
+        sd_blade_defs[idx].simple_active_high_default_set = false;
+        for (int j = 0; j < SD_MAX_SIMPLE_PINS; j++)
+          sd_blade_defs[idx].simple_active_high[j] = true;
       }
       f.skipline();
       line_count++;
@@ -131,7 +272,20 @@ inline void LoadBladeConfigFile() {
     }
     if (current_blade < 0 || current_blade >= (int)SD_MAX_BLADE_DEFS) { f.skipline(); line_count++; continue; }
     SDBladeDef& def = sd_blade_defs[current_blade];
-    if (!strcmp(variable, "data_pin")) {
+    if (!strcmp(variable, "type") || !strcmp(variable, "driver")) {
+      char word[33];
+      int i = 0;
+      while (f.Available() && i < 32) {
+        int c = f.Peek();
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')
+          word[i++] = (char)f.Read();
+        else
+          break;
+      }
+      word[i] = 0;
+      if (!strcmp(word, "simple")) def.driver = SD_BLADE_DRIVER_SIMPLE;
+      else if (!strcmp(word, "ws2811")) def.driver = SD_BLADE_DRIVER_WS2811;
+    } else if (!strcmp(variable, "data_pin")) {
       def.data_pin = ReadPinValueFromFile(f);
       if (def.data_pin < 0) def.data_pin = -1;
     } else if (!strcmp(variable, "pixels")) {
@@ -165,6 +319,45 @@ inline void LoadBladeConfigFile() {
     } else if (!strcmp(variable, "power_pin6")) {
       def.power_pin[5] = ReadPinValueFromFile(f);
       if (def.power_pin[5] < 0) def.power_pin[5] = -1;
+    } else if (!strcmp(variable, "pin") || !strcmp(variable, "pin1")) {
+      def.simple_pin[0] = ReadPinValueFromFile(f);
+      if (def.simple_pin[0] < 0) def.simple_pin[0] = -1;
+    } else if (!strcmp(variable, "pin2")) {
+      def.simple_pin[1] = ReadPinValueFromFile(f);
+      if (def.simple_pin[1] < 0) def.simple_pin[1] = -1;
+    } else if (!strcmp(variable, "pin3")) {
+      def.simple_pin[2] = ReadPinValueFromFile(f);
+      if (def.simple_pin[2] < 0) def.simple_pin[2] = -1;
+    } else if (!strcmp(variable, "pin4")) {
+      def.simple_pin[3] = ReadPinValueFromFile(f);
+      if (def.simple_pin[3] < 0) def.simple_pin[3] = -1;
+    } else if (!strcmp(variable, "led") || !strcmp(variable, "led1")) {
+      def.simple_led[0] = ReadLEDTypeFromFile(f);
+    } else if (!strcmp(variable, "led2")) {
+      def.simple_led[1] = ReadLEDTypeFromFile(f);
+    } else if (!strcmp(variable, "led3")) {
+      def.simple_led[2] = ReadLEDTypeFromFile(f);
+    } else if (!strcmp(variable, "led4")) {
+      def.simple_led[3] = ReadLEDTypeFromFile(f);
+    } else if (!strcmp(variable, "active_state") || !strcmp(variable, "active_high")) {
+      bool v = true;
+      if (ReadActiveStateFromFile(f, &v)) {
+        def.simple_active_high_default = v;
+        def.simple_active_high_default_set = true;
+        for (int j = 0; j < SD_MAX_SIMPLE_PINS; j++) def.simple_active_high[j] = v;
+      }
+    } else if (!strcmp(variable, "active_state1") || !strcmp(variable, "active_high1")) {
+      bool v = true;
+      if (ReadActiveStateFromFile(f, &v)) def.simple_active_high[0] = v;
+    } else if (!strcmp(variable, "active_state2") || !strcmp(variable, "active_high2")) {
+      bool v = true;
+      if (ReadActiveStateFromFile(f, &v)) def.simple_active_high[1] = v;
+    } else if (!strcmp(variable, "active_state3") || !strcmp(variable, "active_high3")) {
+      bool v = true;
+      if (ReadActiveStateFromFile(f, &v)) def.simple_active_high[2] = v;
+    } else if (!strcmp(variable, "active_state4") || !strcmp(variable, "active_high4")) {
+      bool v = true;
+      if (ReadActiveStateFromFile(f, &v)) def.simple_active_high[3] = v;
     } else if (!strcmp(variable, "sub_blade") && def.sub_blade_count < SD_MAX_SUB_BLADES_PER_BLADE) {
       // sub_blade = first, last (two integers, comma-separated; max 5 digits each)
       int first = -1, last = -1;
@@ -187,11 +380,15 @@ inline void LoadBladeConfigFile() {
     f.skipline();
     line_count++;
   }
-  if (current_blade >= 0 && current_blade < (int)SD_MAX_BLADE_DEFS &&
-      (sd_blade_defs[current_blade].data_pin >= 0 || sd_blade_defs[current_blade].pixels > 0)) {
-    if (sd_blade_def_count < (size_t)(current_blade + 1))
-      sd_blade_def_count = (size_t)(current_blade + 1);
+  if (current_blade >= 0 && current_blade < (int)SD_MAX_BLADE_DEFS) {
+    FinalizeSDBladeDef(sd_blade_defs[current_blade]);
+    if (SDBladeDefIsPopulated(sd_blade_defs[current_blade])) {
+      if (sd_blade_def_count < (size_t)(current_blade + 1))
+        sd_blade_def_count = (size_t)(current_blade + 1);
+    }
   }
+  for (size_t i = 0; i < sd_blade_def_count; i++)
+    FinalizeSDBladeDef(sd_blade_defs[i]);
   f.Close();
   LOCK_SD(false);
   if (sd_blade_def_count > 0) {
