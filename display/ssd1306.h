@@ -512,6 +512,8 @@ public:
   void SB_On2(EffectLocation location) override {
     if (img_.IMG_out) {
       ShowFileWithSoundLength(&img_.IMG_out, font_config.ProffieOSOutImageDuration);
+    } else {
+      ShowDefault();
     }
   }
 
@@ -783,6 +785,7 @@ public:
         layout_ = LAYOUT_LANDSCAPE;
         looped_frames_ = height / HEIGHT;
       } else {
+        layout_ = LAYOUT_PORTRAIT;
         looped_frames_ = height / WIDTH;
       }
       if (current_effect_ == &img_.IMG_on) {
