@@ -38,12 +38,15 @@ public:
   }
 
   static bool IsValidStyleString(const char* s) {
-    if (strlen(s) < 5) return false;
-    // First word: style name (standard, config, fire, …) — lowercase letters only.
-    for (; *s != ' '; s++) {
+    if (!s || !s[0]) return false;
+    const char* first = s;
+    // First word: style name (standard, accent_pulse, config, …).
+    for (; *s && *s != ' '; s++) {
       if (*s >= 'a' && *s <= 'z') continue;
+      if (*s == '_') continue;
       return false;
     }
+    if (s == first) return false;
     // Rest: full style line (colors, numbers, config section names, key=value overrides).
     // Previously only digits/space/comma were allowed, which rejected every normal preset style.
     for (; *s; s++) {
@@ -52,6 +55,17 @@ public:
       if (c < 32 || c > 126) return false;
     }
     return true;
+  }
+
+  // Default GPIO accent styles for config-files-config.h NUM_BLADES 5 layout
+  // (indices 2–4 = Free1/Free2/Free3). Used when presets.ini omits accent style lines.
+  static const char* DefaultAccentStyleForBladeIndex(size_t blade_index) {
+#if NUM_BLADES >= 5
+    if (blade_index == 2) return "accent_pulse 1500";
+    if (blade_index == 3) return "accent_on";
+    if (blade_index == 4) return "accent_glow";
+#endif
+    return nullptr;
   }
 
   static const char* ValidateStyleStringF(const char* s, const char* file, int line) {
@@ -109,12 +123,16 @@ public:
 #if NUM_BLADES > 0
     for (size_t N = 0; N < NUM_BLADES; N++)
       current_style_[N] = (p->style[N].get() && p->style[N].get()[0]) ? ValidateStyleString(mkstr(StringPiece(p->style[N].get()))) : "";
-    // If presets.ini has fewer style= lines than NUM_BLADES, mirror blade 0 (common oversight).
+    // If presets.ini has fewer style= lines than NUM_BLADES, fill gaps:
+    // - blade index 1: duplicate strip 0 (common 2-strip oversight)
+    // - accent indices (2+ on NUM_BLADES 5): accent_* defaults, not the NeoPixel style
     for (size_t N = 1; N < NUM_BLADES; N++) {
-      if ((!current_style_[N].get() || !current_style_[N].get()[0]) &&
-          current_style_[0].get() && current_style_[0].get()[0]) {
-        current_style_[N] = ValidateStyleString(mkstr(StringPiece(current_style_[0].get())));
-      }
+      if (current_style_[N].get() && current_style_[N].get()[0]) continue;
+      const char* fill = DefaultAccentStyleForBladeIndex(N);
+      if (!fill && N == 1 && current_style_[0].get() && current_style_[0].get()[0])
+        fill = current_style_[0].get();
+      if (fill)
+        current_style_[N] = ValidateStyleString(mkstr(StringPiece(fill)));
     }
 #endif
   }

@@ -393,7 +393,23 @@ public:
 #define WRAP_BLADE_SHORTERNER(N)
 #endif
 #define SET_BLADE_STYLE(N) do {                                           \
-      BladeStyle* tmp = style_parser.Parse(current_preset_.GetStyle(N));  \
+      const char* style_str = current_preset_.GetStyle(N);                \
+      BladeStyle* tmp = style_parser.Parse(style_str);                    \
+      if (!tmp && style_str && style_str[0]) {                            \
+        PVLOG_STATUS << "Blade " << N << ": failed to parse style \""     \
+                     << style_str << "\"\n";                              \
+        /* Accent blades: fall back to compiled preset-0 style for slot N. */ \
+        if (current_config && current_config->presets &&                  \
+            current_config->num_presets > 0) {                            \
+          char builtin_buf[24];                                           \
+          snprintf(builtin_buf, sizeof(builtin_buf), "builtin 0 %d", N); \
+          tmp = style_parser.Parse(builtin_buf);                          \
+          if (tmp) {                                                      \
+            PVLOG_STATUS << "Blade " << N << ": using compiled fallback " \
+                         << builtin_buf << "\n";                          \
+          }                                                               \
+        }                                                                 \
+      }                                                                   \
     WRAP_BLADE_SHORTERNER(N)                                              \
     if (current_config->blade##N) current_config->blade##N->SetStyle(tmp); \
   } while (0);
@@ -667,8 +683,10 @@ public:
 #ifdef ENABLE_SD
     if (UseBladeConfigFile() && GetSDBladeConfig()) {
       current_config = GetSDBladeConfig();
-      PVLOG_STATUS << "blade = SD config (" << sd_blade_def_count << " blades)\n";
-      for (int i = 1; i <= (int)sd_blade_def_count && i <= NUM_BLADES; i++) {
+      PVLOG_STATUS << "blade = SD config (" << sd_blade_def_count << " blade defs, "
+                   << NUM_BLADES << " slots)\n";
+      // Activate every blade slot (compiled fallback may fill indices omitted from blades.ini).
+      for (int i = 1; i <= (int)NUM_BLADES; i++) {
         BladeBase* b = GetBladeByNumber(i);
         if (b) b->Activate(i);
       }

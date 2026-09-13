@@ -1,6 +1,6 @@
 # Blade style config — README and examples
 
-Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc.) using **`config/blade_styles.ini`** on the SD card. No recompile needed—edit the file to change colors, patterns, and layering.
+Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc.) using **`config/blade_styles.ini`** on the SD card. **INI recipes** can be edited on the SD card without recompiling. **New firmware named styles** (e.g. **`water_flow`**, **`fallen_order`**) need a one-time reflash; colors and overlays remain SD-editable afterward.
 
 **Use in presets:** set the style to **`config <effect_name>`** where `effect_name` is a section name in the config file. Optional **`key=value`** tokens after the section name override **`{{name}}`** for that preset only (up to 16 pairs).
 
@@ -37,8 +37,14 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **cycle** | start color, base color, flicker color, blast color, lockup color | `cycle blue blue cyan red cyan` |
 | **advanced** | hilt color, middle color, tip color, onspark color, onspark time, blast color, lockup color, clash color, extension ms, retraction ms, spark tip color | `advanced red blue green white 10 white magenta white 300 800 white` |
 | **unstable** | warm, warmer, hot, sparks, extension ms, retraction ms | `unstable red orange yellow 100 200` |
+| **water_flow** | base, clash, extend ms, retract ms | `water_flow blue white 300 800` |
+| **darksaber** | base, clash, extend ms, retract ms | `darksaber silver white 300 800` |
+| **static_electricity** | base, clash, extend ms, retract ms | `static_electricity deepskyblue white 300 800` |
+| **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
+| **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
+| **fallen_order** | base, clash, extend ms, retract ms | `fallen_order silver white 300 800` |
 | **charging** | (no args) | `charging` |
-| **blast** | (use inside styles that support it, or via **standard**/ **advanced**; **standard** includes blast) | — |
+| **blast** | blast color only (overlay; timing fixed in template) | `blast white` |
 | **config** | section name (nested) | `config other_effect` |
 | **builtin** | preset index, blade index, … | `builtin 0 1` |
 
@@ -61,7 +67,7 @@ layer = fire red yellow
 layer = standard cyan white 300 800
 ```
 
-**In preset:** `style1 = config plain_rainbow`
+**In preset:** `style = config plain_rainbow`
 
 ---
 
@@ -79,7 +85,7 @@ layer = fire red yellow
 layer = standard cyan white 300 800
 ```
 
-**In preset:** `style1 = config rainbow_strobe`
+**In preset:** `style = config rainbow_strobe`
 
 ---
 
@@ -90,18 +96,18 @@ Blast layer on top of a base (rainbow, fire, or standard). Blast shows when a bl
 ```ini
 [rainbow_blast]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 
 [fire_blast]
 layer = fire red yellow
-layer = blast white 200 100 400
+layer = blast white
 
 [cyan_blast]
 layer = standard cyan white 300 800
-layer = blast white 200 100 400
+layer = blast white
 ```
 
-**In preset:** `style1 = config fire_blast`
+**In preset:** `style = config fire_blast`
 
 ---
 
@@ -132,17 +138,17 @@ Base, then blast, then strobe. Order matters: later layers draw on top.
 ```ini
 [rainbow_blast_strobe]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black cyan 20 1 300 800
 
 [fire_blast_strobe]
 layer = fire red yellow
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black white 15 1 300 800
 
 [full_effects]
 layer = standard cyan white 300 800
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black white 20 1 300 800
 ```
 
@@ -155,7 +161,7 @@ Many layers; cycle adds color-cycling with its own blast/lockup. Composites can 
 ```ini
 [rainbow_blast_strobe_cycle]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black magenta 18 1 300 800
 layer = cycle blue blue cyan red cyan
 ```
@@ -169,7 +175,7 @@ Use **advanced** for gradient (hilt → middle → tip) and onspark/blast/lockup
 ```ini
 [advanced_white_blast]
 layer = advanced red blue green white 10 white magenta white 300 800 white
-layer = blast white 200 100 400
+layer = blast white
 ```
 
 ---
@@ -185,7 +191,7 @@ layer = fire orange red
 
 [unstable_blast]
 layer = unstable red orange yellow 100 200
-layer = blast white 200 100 400
+layer = blast white
 ```
 
 ---
@@ -197,7 +203,7 @@ One section can reuse another by using **config other_section** as a layer. Keep
 ```ini
 [base_rainbow_blast]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 
 [base_rainbow_blast_strobe]
 layer = config base_rainbow_blast
@@ -208,7 +214,7 @@ layer = config base_rainbow_blast_strobe
 layer = strobe black cyan 30 2 300 800
 ```
 
-**In preset:** `style1 = config base_rainbow_blast_strobe_fast`
+**In preset:** `style = config base_rainbow_blast_strobe_fast`
 
 ---
 
@@ -219,7 +225,7 @@ You can use up to 16 layers per section. Example with a clear base, multiple eff
 ```ini
 [max_layers_demo]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black white 15 1 300 800
 layer = standard blue cyan 300 800
 layer = strobe black yellow 25 2 300 800
@@ -250,7 +256,7 @@ You can layer a builtin preset style with other styles. **builtin** takes preset
 ```ini
 [builtin_plus_blast]
 layer = builtin 0 1
-layer = blast white 200 100 400
+layer = blast white
 ```
 
 ---
@@ -265,22 +271,22 @@ Whitespace and comments are ignored; you can document sections and tweak values 
 # Base: smooth rainbow
 layer = rainbow 300 800
 # Blast: white pulse on hit
-layer = blast white 200 100 400
+layer = blast white
 # Top: subtle strobe
 layer = strobe black white 15 1 300 800
 
 ; === Sith-style red with white flash ===
 [sith]
 layer = fire red yellow
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black white 20 1 300 800
 ```
 
 **In presets:**
 
 ```ini
-style1 = config main
-style2 = config sith
+style = config main
+style = config sith
 ```
 
 ---
@@ -290,10 +296,12 @@ style2 = config sith
 In **`config/presets.ini`** (or wherever presets are defined), set the style field to **`config <effect_name>`**:
 
 ```ini
-style1 = config rainbow_strobe
-style2 = config fire_blast
-style3 = config base_rainbow_blast_strobe
+style = config rainbow_strobe
+style = config fire_blast
+style = config base_rainbow_blast_strobe
 ```
+
+Use one **`style =`** line per blade (same section name repeated if all blades should match).
 
 If the file or section is missing, **config &lt;name&gt;** will not create a style (the preset may fall back or show nothing for that blade). SD must be enabled and the file present.
 
@@ -333,8 +341,26 @@ The parser is tolerant and safe:
 
 ---
 
+## Fett263 OS7 approximations
+
+Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) compiled styles:
+
+| Section | Preset example | Notes |
+|---------|----------------|-------|
+| `[smoke_blade]` / `[smoke_laser]` | Smoke Blade | Pure SD layers (no firmware change) |
+| `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
+| `[darksaber_blade]` | Dark Saber | Needs **`darksaber`** in firmware |
+| `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |
+| `[power_wave_blade]` | Power Wave | Needs **`power_wave`** in firmware |
+| `[unstable_blades]` | Unstable Blades | Needs **`unstable_blades`** (not **`unstable`**) |
+| `[fallen_order_blade]` | Fallen Order | Needs **`fallen_order`** in firmware |
+
+Use **`style = config <section>`** or direct named styles. Override base color with **`base=`** tokens or section variables. Full fidelity notes: **blade_styles_config.md** (Fett263 section).
+
+---
+
 ## See also
 
-- **blade_styles_config.md** — Format, “what you can layer”, opacity/blend/structured syntax, limits, and pointers to **`examples/config/`**.
+- **blade_styles_config.md** — Format, “what you can layer”, opacity/blend/structured syntax, Fett263 approximations, limits, and pointers to **`examples/config/`**.
 - **blade_config.md** — Blade hardware config (pins, blades) on the SD card.
 - **examples/config/** — Copy-ready SD layout; **`blade_styles.ini`** documents each feature inline.

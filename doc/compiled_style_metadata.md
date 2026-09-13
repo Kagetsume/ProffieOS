@@ -80,7 +80,7 @@ To **run** a style on the saber, use a preset style string (e.g. `rainbow 300 80
 A separate header **`common/compiled_style_to_config.h`** converts the parsed comment metadata into the **config blade style** format (the same format as **`config/blade_styles.ini`**): `[section_name]` and `layer = <style string>` lines.
 
 - **ConvertCompiledStyleToConfigBladeStyle(meta, out_buf, out_max)**  
-  Takes a filled **CompiledStyleMetadata** and writes an INI block into `out_buf` (e.g. `# Converted from compiled style\n[customblade]\nlayer = rainbow 300 800\nlayer = blast white 200 100 400\n`). Returns length written.
+  Takes a filled **CompiledStyleMetadata** and writes an INI block into `out_buf` (e.g. `# Converted from compiled style\n[customblade]\nlayer = rainbow 300 800\nlayer = blast white\n`). Returns length written.
 
 - **CompiledStyleDefinitionToConfigBladeStyle(full_definition, out_buf, out_max)**  
   One-shot: parses the full definition (comment + template) then converts to the config format.
@@ -91,7 +91,7 @@ A separate header **`common/compiled_style_to_config.h`** converts the parsed co
 **Heuristics:** The converter uses the comment text (title + effects section) to choose layers with default parameters:
 
 - **Base layer:** If "Unstable" or "Rage" → `unstable red orange yellow 100 200`; else if "Fire" → `fire red yellow`; else if "Cycle" → `cycle blue blue cyan red cyan`; else if "Standard" or "Clash" (and not "Rainbow") → `standard cyan white 300 800`; else → `rainbow 300 800`.
-- **Blast:** If "Blast" appears in effects → add `layer = blast white 200 100 400`.
+- **Blast:** If "Blast" appears in effects → add `layer = blast white` (color only; timing is fixed in the **`blast`** named style template).
 - **Strobe:** If "Strobe" or "Strobing" appears → add `layer = strobe black white 15 1 300 800`.
 
 The C++ template is not parsed, so exact colors/timings are not available; the output is an approximation you can paste into **`config/blade_styles.ini`** and then edit. Use in presets as **`config <section_name>`** (e.g. `config customblade`).

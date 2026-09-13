@@ -46,16 +46,19 @@ installed=Dec 25 2024 12:00:00
 
 Use the same style names and arguments as in the serial/editor:
 
-- **standard** – e.g. `standard cyan white 300 800` (color, clash, extension ms, retraction ms).
+- **standard** – e.g. `standard cyan white 300 800` (base, clash, extension ms, retraction ms).
 - **fire** – e.g. `fire red yellow`.
 - **rainbow** – e.g. `rainbow 300 800`.
-- **strobe**, **cycle**, **unstable**, **advanced**, etc.
+- **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
+- **strobe**, **cycle**, **unstable**, **advanced**.
+- **Fett263 OS7 base styles** (firmware): **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`** — each takes **`base clash extend retract`** (e.g. `fallen_order cyan white 300 800`). Distinct from built-in **`unstable`**.
+- **GPIO accents** (simple PWM blades): **`accent_pulse`**, **`accent_on`**, **`accent_audio_flicker`**, etc. — see **`examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.
 
 ### Config-driven layered styles (`config/blade_styles.ini`)
 
-You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style=config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution). See **blade_styles_config.md** and **README_blade_styles_config.md**. Annotated examples ship under **`examples/config/blade_styles.ini`** and **`examples/config/presets.ini`**.
+You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). See **blade_styles_config.md** and **README_blade_styles_config.md**. Shipped Fett263 OS7 approximations include **`[smoke_blade]`**, **`[water_blade]`**, **`[darksaber_blade]`**, **`[static_electricity_blade]`**, **`[power_wave_blade]`**, **`[unstable_blades]`**, and **`[fallen_order_blade]`** in **`examples/config/blade_styles.ini`**, with matching presets in **`examples/config/presets.ini`**.
 
 ## Behavior
 

@@ -267,6 +267,7 @@ public:
   DefaultArgumentParserWrapper(ArgParserInterface* ap, const char* defs) : argParser_(ap), defaults_(defs) {}
   const char* GetArg(int arg_num, const char* name, const char* default_value) override {
     const char* d = defaults_.GetArg(arg_num, name, default_value);
+    if (!argParser_) return d;
     return argParser_->GetArg(arg_num, name, d);
   }
   void Shift(int words) override {

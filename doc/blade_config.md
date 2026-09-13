@@ -111,6 +111,8 @@ pin3=bladePowerPin3
 led3=CreeXPE2Blue
 ```
 
+Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.g. `accent_on`, `accent_pulse 1500`, `accent_glow`, `accent_clash`, `accent_strobe`, `accent_flicker`, `accent_color`, `accent_pulse_color`, `accent_audio_flicker`). See `examples/README.md` for a full list.
+
 ## How it is used
 
 - **Loading:** At startup (when SD is present), the firmware tries to open **`config/blades.ini`**. If the file exists and parses correctly, blade definitions are stored (up to 16 blades, up to 6 power pins per NeoPixel blade).

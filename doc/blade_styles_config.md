@@ -1,6 +1,16 @@
 # Blade style config file
 
-A **blade style config file** on the SD card lets you build blade effects from **layers** of existing styles (rainbow, fire, strobe, blast, etc.) using a simple INI file. No recompile needed—edit the file to change colors, patterns, and layering.
+A **blade style config file** on the SD card lets you build blade effects from **layers** of existing styles (rainbow, fire, strobe, blast, pulse, clash, etc.) using a simple INI file. **Layer recipes** (`config/blade_styles.ini` and `config/presets.ini`) can be edited on the SD card without recompiling. **New named styles** in firmware (e.g. **`water_flow`**, **`fallen_order`**) require a one-time reflash; after that, colors and overlays stay SD-editable.
+
+### Named style catalog (firmware)
+
+**Full pixel blades** (opaque; typically the bottom `layer =` line): `standard`, `fire`, `rainbow`, `gradient`, `audio`, `flicker`, `sparktip`, `sparkle_blade`, `cylon`, `pulse_blade`, `water_flow`, `darksaber`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, plus `unstable`, `strobe`, `cycle`, `advanced`.
+
+**Overlay layers** (stack above a base; many are transparent until an event): `blast`, `clash`, `localized_clash`, `lockup`, `sparkle`, `pulse`, `swing`, `drag`, `melt`, `lb`, and all `preon_*` / `postoff_*` styles.
+
+**GPIO accents** (simple PWM in `blades.ini`): `accent_on`, `accent_pulse`, `accent_color`, `accent_audio_flicker`, and other `accent_*` styles — see `examples/README.md`.
+
+Argument order and examples: **`examples/config/blade_styles.ini`** (header comments + sections such as `[rainbow_pulse]`, `[standard_swing_sparkle]`, and Fett263 recipes `[smoke_blade]`, `[water_blade]`, `[fallen_order_blade]`, etc.).
 
 ## Location and name
 
@@ -47,12 +57,12 @@ layer = strobe black white 15 1 300 800
 # Fire with a white blast overlay
 [fire_blast]
 layer = fire red yellow
-layer = blast white 200 100 400
+layer = blast white
 
 # Multiple layers: base, then effects
 [complex]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 layer = strobe black cyan 20 1 300 800
 
 # Shared palette + effect (palette id = name after "palette_")
@@ -69,7 +79,7 @@ layer = standard {{base}} {{clash}} {{ext}} {{ret}}
 # Nested: reuse another section as one layer (expands its layers)
 [base_only]
 layer = rainbow 300 800
-layer = blast white 200 100 400
+layer = blast white
 
 [stacked]
 layer = config base_only
@@ -83,7 +93,7 @@ In **`config/presets.ini`** (or in a preset’s style field), set the style to *
 Example preset style string:
 
 ```ini
-style1 = config rainbow_strobe
+style = config rainbow_strobe
 ```
 
 So the blade will use the **rainbow_strobe** effect (rainbow base + strobe layer) from the config file.
@@ -98,6 +108,8 @@ Example (section **`[with_vars]`** defines **`base`**, **`clash`**, etc.; preset
 style = config with_vars base=magenta
 ```
 
+**Base color on Fett263-style blades:** Named styles such as **`fallen_order`**, **`water_flow`**, and **`darksaber`** take **`base clash extend retract`** as their first four arguments. Set the beam color by (1) direct preset — `style = fallen_order cyan white 300 800`; (2) section variables — `base = cyan` and `layer = fallen_order {{base}} {{clash}} {{ext}} {{ret}}`; or (3) preset override — `style = config fallen_order_blade base=cyan`. Use **`silver`**, **`deepskyblue`**, or any name from **`styles/rgb_arg.h`**.
+
 ### Tooling note
 
 An **offline expander** (resolve **`include`**, **`palette`**, and **`{{name}}`** into one flat INI) is useful for debugging on a PC; it is **not** built into ProffieOS. You can maintain a flattened copy by hand or use a small script if you need it.
@@ -106,8 +118,10 @@ An **offline expander** (resolve **`include`**, **`palette`**, and **`{{name}}`*
 
 The config can compose **all** available blade styles. Any **named style** that the parser knows can be used in a `layer = ...` line:
 
-- **standard**, **rainbow**, **fire**, **strobe**, **cycle**, **advanced**, **unstable**
+- **standard**, **rainbow**, **fire**, **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**, **strobe**, **cycle**, **advanced**, **unstable**
+- **water_flow**, **darksaber**, **static_electricity**, **power_wave**, **unstable_blades**, **fallen_order** (Fett263 OS7 base templates; see below)
 - **charging**, **pixel_sequence**
+- **blast**, **clash**, **lockup**, **sparkle**, **pulse**, **swing**, **drag**, **melt**, **lb**, **preon_***, **postoff_***
 - **builtin** (preset styles)
 - **config** (another section name)—e.g. `layer = config other_effect` nests that section’s layers
 
@@ -116,14 +130,14 @@ Use the same syntax as in a preset: style name followed by arguments (colors, ti
 - `layer = rainbow 300 800` — extension/retraction times
 - `layer = fire red yellow` — warm and hot colors
 - `layer = strobe black white 15 1` — standby, flash, frequency, width
-- `layer = blast white 200 100 400` — blast color and timing
+- `layer = blast white` — blast overlay (color only; fade timing is fixed in the template)
 - `layer = standard cyan white 300 800` — base, clash, times
 
 Layers are composited in order (first = bottom, last = top), like the compile-time `Layers<>` template.
 
 ## Effects (clash, lockup, blast, etc.)
 
-All effects are handled by the underlying layers. If any layer handles a feature (clash, lockup, blast, stab, drag, etc.), the composite style reports that it handles it and that layer’s effect runs. You do not need special config for effects—use the same style strings as in presets (e.g. `blast white 200 100 400`, clash colors in **standard**, etc.).
+All effects are handled by the underlying layers. If any layer handles a feature (clash, lockup, blast, stab, drag, etc.), the composite style reports that it handles it and that layer’s effect runs. You do not need special config for effects—use the same style strings as in presets (e.g. `blast white`, clash colors in **standard**, **`drag orange`**, etc.).
 
 ## Parser hardening
 
@@ -161,7 +175,7 @@ This scales how strongly that layer is painted over the layers below.
 ```ini
 layer = rainbow 300 800
 layer = multiply opacity 20000 strobe black white 15 1 300 800
-layer = screen opacity 24000 blast white 200 100 400
+layer = screen opacity 24000 blast white
 ```
 
 If the first word of a sub-style could be confused with a blend keyword (rare), put **`normal`** first or reorder so the nested style does not start with **`multiply`**, **`screen`**, **`add`**, or **`normal`**.
@@ -173,6 +187,28 @@ Instead of a single **`layer = standard cyan white 300 800`** line, you can set 
 - **Pattern:** **`layer.<style_name>.<slot> = value`** (e.g. **`layer.standard.base = cyan`**, **`layer.strobe.freq = 20`**).
 - **Supported styles:** **`standard`**, **`fire`**, **`rainbow`**, **`strobe`**, **`cycle`**, **`unstable`**, **`advanced`**. Slot names match the style’s preset argument order (see **`style_parser.h`** descriptions). Aliases include **`ext`** / **`extension`**, **`ret`** / **`retraction`** where applicable.
 - **Order:** Lines can appear in any order; they merge into **one** layer string for that style. Starting a **different** style’s **`layer.<other>.*`** line, a plain **`layer = …`**, **`palette`**, **`include`**, or leaving the section **flushes** the pending structured layer.
+
+## Fett263 OS7 compiled style approximations
+
+Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) styles are too complex for a single named style, but **most of the look** can be built from layered **`config/blade_styles.ini`** sections. Shipped recipes live in **`examples/config/blade_styles.ini`**; each section’s comments list what matches the OS7 original and what still needs compiled C++.
+
+| OS7 style | INI section | Key SD techniques |
+|-----------|-------------|-------------------|
+| SmokeBlade | `[smoke_blade]` / `[smoke_laser]` | `standard` base + `fire` multiply masks + warm `screen` + `swing` / `drag` / `melt` / `lb` (pure SD; green variant in `[smoke_laser]`) |
+| WaterBlade | `[water_blade]` | **`water_flow`** (StripesX + BladeAngle + swing reversal) + optional `audio` / `pulse` / `sparkle` + lockup overlays |
+| DarkSaber | `[darksaber_blade]` | **`darksaber`** (Stripes + BrownNoiseFlicker + AudioFlicker + SwingSpeed gleam) + drag/melt/lb overlays |
+| StaticElectricity | `[static_electricity_blade]` | **`static_electricity`** (ColorSelect charge: swing builds, clash dissipates) + drag/melt/lb overlays |
+| PowerWave | `[power_wave_blade]` | **`power_wave`** (Stripes 12000/-1800) + drag/melt/lb overlays |
+| UnstableBlades | `[unstable_blades]` | **`unstable_blades`** (StripesX + SlowNoise speed + flicker/noise) + drag/melt/lb overlays |
+| FallenOrder | `[fallen_order_blade]` | **`fallen_order`** (Stripes + Pulsing mid-band 800ms) + drag/melt/lb overlays |
+
+**Fett263 base-style fidelity notes:** Named styles **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, and **`fallen_order`** bake in OS7 base-layer templates (one firmware reflash). SD sections stack optional layers and lockup overlays. Still simpler than full OS7 for lockup/clash (no Real Clash V1 dual-path or Bump lockup zones). Each section documents an SD-only fallback if firmware is not updated yet.
+
+**`unstable_blades` vs `unstable`:** The Fett263 **UnstableBlades** OS7 style uses **`unstable_blades`** (silver StripesX + SlowNoise). The older built-in **`unstable`** named style is a different red crackle/strobe blade (see **`[chaos_inferno]`**).
+
+**Usage in presets:** `style = config fallen_order_blade`, `style = fallen_order silver white 300 800`, `style = config unstable_blades`, `style = unstable_blades silver white 300 800`, etc. Colors: **`silver`** = Rgb&lt;100,100,150&gt;; **`deepskyblue`** = Rgb&lt;0,135,255&gt;.
+
+When you receive another compiled OS7 style, compare its **base layer** (stripes, fire, gradient, etc.) to the named style catalog above and stack **overlay layers** for blast/clash/lockup/drag/melt/LB. Document gaps in the section comments the same way.
 
 ## Notes
 

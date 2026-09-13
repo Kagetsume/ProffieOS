@@ -131,7 +131,12 @@ public:
   bool is_powered() const override { return power_; }
   void set(int led, Color16 c) override { multi_.set(c); }
   void set_overdrive(int led, Color16 c) override { multi_.set_overdrive(c); }
-  void allow_disable() override { if (!on_) Power(false); }
+  void allow_disable() override {
+    // Match Simple_Blade: only drop power when this blade is logically off.
+    // Do not gate on SaberBase::IsOn() here — SB_On2 sets on_ when ignition
+    // reaches this blade; accent styles must keep looping after global TurnOn.
+    if (!on_) Power(false);
+  }
   virtual void SetStyle(BladeStyle* style) {
     Power(true);
     AbstractBlade::SetStyle(style);

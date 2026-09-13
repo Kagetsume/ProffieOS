@@ -38,6 +38,7 @@ inline bool ParseColorName(const char* name, Color16* out) {
     {"fuchsia",   255,   0, 255},
     {"springgreen", 0, 255,  55},
     {"steelblue",  14,  57, 118},
+    {"silver",    100, 100, 150},
     {"greenyellow",108, 255,   6},
     {"chartreuse", 55, 255,   0},
   };
