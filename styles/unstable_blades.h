@@ -7,7 +7,8 @@
 //
 // Base Style: Unstable Pulse (StripesX + SlowNoise speed + flicker/noise stripe colors).
 // This file contains the OS7 base-layer template only; clash/lockup/blast/in-out
-// are provided by the "unstable_blades" named style wrapper in style_parser.h.
+// are provided by the "unstable_blades" named style wrapper in style_parser.h
+// (Os7BladeWithBendInOut — BendTimePow extend/retract).
 // Note: distinct from the built-in "unstable" named style (red crackle/strobe blade).
 
 #include "brown_noise_flicker.h"

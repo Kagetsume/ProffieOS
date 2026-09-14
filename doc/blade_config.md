@@ -111,7 +111,7 @@ pin3=bladePowerPin3
 led3=CreeXPE2Blue
 ```
 
-Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.g. `accent_on`, `accent_pulse 1500`, `accent_glow`, `accent_clash`, `accent_strobe`, `accent_flicker`, `accent_color`, `accent_pulse_color`, `accent_audio_flicker`). See `examples/README.md` for a full list.
+Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.g. `accent_sound_on`, `accent_on`, `accent_glow`, `accent_clash`, `accent_blast`, `accent_lockup`, `accent_swing`, `accent_drag`, `accent_melt`, `accent_blink`, `accent_sequence`, `accent_battery`, `accent_sparkle`, `accent_preon`, `accent_postoff`, …). Layered accents: **`style = config accent_combat`** from `blade_styles.ini`. See `examples/README.md` for a full list.
 
 ## How it is used
 

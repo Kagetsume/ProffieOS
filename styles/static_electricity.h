@@ -7,7 +7,8 @@
 //
 // Base Style: Interactive Static Electricity Blade — swing to build charge, clash to dissipate.
 // This file contains the OS7 base-layer template only; clash/lockup/blast/in-out
-// are provided by the "static_electricity" named style wrapper in style_parser.h.
+// are provided by the "static_electricity" named style wrapper in style_parser.h
+// (Os7BladeWithBendInOut — BendTimePow extend/retract).
 
 #include "audio_flicker.h"
 #include "color_select.h"

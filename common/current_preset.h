@@ -62,7 +62,7 @@ public:
   static const char* DefaultAccentStyleForBladeIndex(size_t blade_index) {
 #if NUM_BLADES >= 5
     if (blade_index == 2) return "accent_pulse 1500";
-    if (blade_index == 3) return "accent_on";
+    if (blade_index == 3) return "accent_sound_on white 4096";
     if (blade_index == 4) return "accent_glow";
 #endif
     return nullptr;

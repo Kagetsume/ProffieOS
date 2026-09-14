@@ -7,7 +7,7 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `blades.ini` defines NeoPixel strips on **blade indices 0–1**, plus **simple PWM** accents on **index 2** (Blade 3 / Free1 / `accent_pulse 1500`), **index 3** (Blade 4 / Free2 / `accent_on`), and **index 4** (Blade 5 / Free3 / `accent_glow`). `presets.ini` has **five** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
+The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `blades.ini` defines NeoPixel strips on **blade indices 0–1**, plus **simple PWM** accents on **index 2** (Blade 3 / Free1 / `accent_pulse 1500`), **index 3** (Blade 4 / Free2 / `accent_sound_on white 4096`), and **index 4** (Blade 5 / Free3 / `accent_glow`). `presets.ini` has **five** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
 | File | Purpose |
 |------|---------|
@@ -26,15 +26,16 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 **SD config checklist (accents dark but main blades work):**
 
 1. **`config/blades.ini`** — define **every** accent blade index (`blade = 2` … `blade = 4` for Free1–Free3). Wiring alone is not enough; missing indices are not activated at boot.
-2. **`config/presets.ini`** — **five** `style =` lines per preset when `NUM_BLADES` is 5 (lines 3–5: `accent_pulse 1500`, `accent_on`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
-3. **Firmware** — `accent_*` styles must exist in `named_styles[]` (reflash after adding them). Over serial, `list_named_styles` should list `accent_pulse`, `accent_on`, etc. A failed parse logs `Blade N: failed to parse style "…"`.
+2. **`config/presets.ini`** — **five** `style =` lines per preset when `NUM_BLADES` is 5 (lines 3–5: `accent_pulse 1500`, `accent_sound_on white 4096`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
+3. **Firmware** — `accent_*` styles must exist in `named_styles[]` (reflash after adding them). Over serial, `list_named_styles` should list `accent_pulse`, `accent_sound_on`, etc. A failed parse logs `Blade N: failed to parse style "…"`.
 4. **Compiled fallback** — without `presets.ini`, accents use `builtin <preset> <blade>` from compiled `config-files-config.h` (always works after flash). With `presets.ini`, styles come from the SD strings above.
 
 **Polarity (`active_state`) vs “renders off”:** If accents work **without** `config/presets.ini` (compiled presets) but not with SD presets, polarity is usually **not** the cause — compiled `ActiveHighPIN` and SD `active_state=high` are the same. If accents work **without** `config/blades.ini` but fail **with** it, the SD runtime driver path differs (check serial for `Simple Blade (SD config)` and `failed to parse style`). Try `active_state=low` on one accent **only** if that pin drives an **N-FET** (external MOSFET), not a direct LED. Over serial while ignited: `blade 3 on` / `blade 4 on` / `blade 5 on` should force that accent on regardless of preset style.
 
 | Style | Example | Notes |
 |-------|---------|-------|
-| `accent_on` | `style = accent_on` | Solid on (motor drive, indicators) |
+| `accent_on` | `style = accent_on` | Solid on while blade is out (motor / indicators) |
+| `accent_sound_on` | `style = accent_sound_on white 4096` | Full on while audio above threshold; off when quiet (motors through postoff tail) |
 | `accent_pulse` | `style = accent_pulse 1500` | Smooth pulse; optional `pulse_ms` (default 3000) |
 | `accent_color` | `style = accent_color amber` | Solid color |
 | `accent_pulse_color` | `style = accent_pulse_color red 2000` | Pulse black → color |
@@ -43,6 +44,35 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 | `accent_audio_flicker` | `style = accent_audio_flicker` | Jittery hum-reactive flicker |
 | `accent_glow` | `style = accent_glow white` | Smooth hum-reactive brightness |
 | `accent_clash` | `style = accent_clash` | Idle glow + bright flash on clash |
+| `accent_blink` | `style = accent_blink white 200 800` | Square on/off; `color on_ms off_ms` |
+| `accent_sequence` | `style = accent_sequence 0,255,255,255,100,100\|0,0,0,0,0,400` | Timed steps (Morse, patterns); off when retracted |
+| `accent_lockup` | `style = accent_lockup` | Idle dim + bright on lockup/drag |
+| `accent_swing` | `style = accent_swing white 300` | Brightens when swinging |
+| `accent_blast` | `style = accent_blast` | Idle dim + flash on blast |
+| `accent_drag` | `style = accent_drag orange` | On during drag lockup; twist-responsive |
+| `accent_melt` | `style = accent_melt` | On during melt lockup; twist-responsive |
+| `accent_battery` | `style = accent_battery green` | Brightness = battery level |
+| `accent_sparkle` | `style = accent_sparkle white` | Random twinkle |
+| `accent_preon` | `style = accent_preon white` | Glows during preon only (follows preon sound) |
+| `accent_postoff` | `style = accent_postoff red` | Glows during postoff only (follows postoff sound) |
+
+### Layered accents (`config` on PWM blades)
+
+Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `lockup`, `swing`, `blast`, …). See **`examples/config/blade_styles.ini`** sections **`accent_glow_clash`**, **`accent_glow_lockup`**, and **`accent_reactive`**.
+
+Example preset line (Blade 5):
+
+```ini
+style = config accent_reactive
+```
+
+Or a Morse-style timed pattern:
+
+```ini
+style = accent_sequence 0,255,255,255,100,100|0,0,0,0,0,100|0,255,255,255,100,100|0,0,0,0,0,100|0,255,255,255,100,300|0,255,255,255,100,300|0,255,255,255,100,300|0,0,0,0,0,300|0,255,255,255,100,100|0,0,0,0,0,100|0,255,255,255,100,100|0,0,0,0,0,700
+```
+
+(Keep RGB at `255,255,255` on white Cree accents; use **brightness** 0–100 and **ms** for timing. Up to 16 steps per sequence.)
 
 ## Pixel blade named styles
 
@@ -68,25 +98,51 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `power_wave` | `power_wave silver white 300 800` | Wide slow reverse stripes (Fett263 PowerWave base) |
 | `unstable_blades` | `unstable_blades silver white 300 800` | Crackling StripesX (Fett263 UnstableBlades — **not** `unstable`) |
 | `fallen_order` | `fallen_order silver white 300 800` | Pulsing stripe mid-band (Fett263 FallenOrder base) |
+| `thunder_loop` | `thunder_loop blue white 300 800` | TransitionLoop thunder bands (Fett263 ThunderStorm idle base) |
+| `thunder_loop_layer` | `multiply opacity 20000 thunder_loop_layer blue` | Loop texture only — stack over another base |
+| `responsive_flame` | `responsive_flame red white 300 800` | Angle-responsive dual StaticFire (Fett263 ResponsiveFlame idle base) |
+| `responsive_flame_layer` | `multiply opacity 22000 responsive_flame_layer orange` | Flame texture only — stack over another base |
+| `shimmer_blade` | `shimmer_blade cyan white 300 800` | Swing-driven stripe shimmer (Fett263 ShimmerBlade) |
+| `rotoscope` | `rotoscope silver white 300 800` | Hyper responsive OT rotoscope (Fett263 Rotoscope; default base silver) |
+| `pulse_stripes` | `pulse_stripes blue white 300 800` | Ignition-surge stripes + pulsing band (Fett263 OS7; default base blue) |
+| `kinetic_charge` | `kinetic_charge blue purple white 300 800` | Clash/lockup kinetic charge; swing release (Fett263 BlackPanther OS7 base) |
+| `rotating_pulse` | `rotating_pulse blue white 300 800` | Wide stripes, Saw-modulated reverse (Fett263 EnergyBlade Rotating Pulse) |
+| `trickle_blade` | `trickle_blade green white 300 800` | Energy trickle: angle stripes + tip flame + swing bands (Fett263 OS7) |
 | `unstable`, `strobe`, `cycle`, `advanced` | (see `blade_styles.ini` header) | Existing complex styles |
 
 ### Overlay layers (stack on a base — many transparent until triggered)
 
 | Style | Example | Blend tip |
 |-------|---------|-----------|
-| `blast` | `blast white` | Transparent until blast (no blend needed) |
+| `blast` | `blast white` | Transparent until blast (fixed wave timing) |
+| `blast_wave_random` | `blast_wave_random white` | Random wave position/duration (OS7-style; use instead of `blast`) |
 | `clash` | `clash white` | Transparent until clash |
 | `localized_clash` | `localized_clash white` | Positioned clash band |
+| `real_clash` | `real_clash white 16000` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
 | `lockup` | `lockup cyan` | Lockup / drag / melt tint |
 | `sparkle` | `add opacity 8000 sparkle white` | Random sparkles |
 | `pulse` | `multiply opacity 24000 pulse white 3000` | Breathing brightness |
 | `swing` | `add opacity 12000 swing white 200` | Brightens when swinging |
 | `drag` / `melt` / `lb` | `drag orange` | Responsive lockup variants |
 | `preon_*` / `postoff_*` | `preon_glow blue` | Transparent until preon/postoff |
+| `force_glow` | `add opacity 14000 force_glow white` | Glow on Force effect (font + button required) |
+| `ignition_flash` | `ignition_flash white 300 600` | Full-blade flash during ignition extension |
+| `standard_bend` | `standard_bend cyan white 300 800` | Like `standard` with OS7 BendTimePow in/out |
+
+### Texture overlays (masks — stack with multiply / screen / add)
+
+| Style | Example | Notes |
+|-------|---------|-------|
+| `fire_mask` | `multiply opacity 20000 fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
+| `stripes` | `add opacity 10000 stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
+| `hard_stripes` | `multiply opacity 18000 hard_stripes 1200 -4000 black white` | Hard-edged bands |
+| `noise_flicker` | `multiply opacity 8000 noise_flicker black white` | Organic crackle texture |
+| `unstable_stripes` | `multiply opacity 16000 unstable_stripes silver` | UnstableBlades band only (not full `unstable_blades`) |
+| `pixel_sequence` | `pixel_sequence config 0,255,0,0,80,100\|…` | Timed chase / segment pattern as a layer |
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
 
-Example sections in `examples/config/blade_styles.ini`: `[rainbow_pulse]`, `[standard_swing_sparkle]`, `[gradient_standard]`, `[preon_rainbow_pulse]`, `[smoke_blade]`, `[smoke_laser]`, `[water_blade]`, `[darksaber_blade]`, `[static_electricity_blade]`, `[power_wave_blade]`, `[unstable_blades]`, `[fallen_order_blade]`.
+Example sections in `examples/config/blade_styles.ini`: `[rainbow_pulse]`, `[standard_swing_sparkle]`, `[smoke_blade]`, `[greyscale_mercenary]`, `[greyscale_coda]`, `[water_blade]`, `[energy_blade]`, `[rolling_surge]`, `[pulse_stripes]`, `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]`, plus Fett263 bases `[darksaber_blade]`, `[fallen_order_blade]`, etc.
 
 ### Fett263 OS7 style approximations
 
@@ -95,14 +151,25 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | OS7 style | SD section | Preset | Approximates well | Cannot replicate |
 |-----------|------------|--------|-------------------|------------------|
 | [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade | Rolling smoke masks, warm scatter, drag/melt/LB | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
-| [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `water_blade` | Water Blade | **`water_flow`** angle-reactive stripes + swing reversal, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones, BendTimePow ignition |
-| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `darksaber_blade` | Dark Saber | **`darksaber`** stripes + brown-noise + audio + swing gleam, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones, BendTimePow ignition |
-| [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `static_electricity_blade` | Static Electricity | **`static_electricity`** swing charge + clash dissipate, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones, BendTimePow ignition |
-| [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `power_wave_blade` | Power Wave | **`power_wave`** wide slow reverse stripes, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones, BendTimePow ignition |
-| [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `unstable_blades` | Unstable Blades | **`unstable_blades`** crackling StripesX + SlowNoise speed | OS7 Real Clash V1, Bump lockup zones; **not** named style `unstable` |
-| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `fallen_order_blade` | Fallen Order | **`fallen_order`** pulsing stripe mid-band (800ms) on wide stripes | OS7 Real Clash V1, Bump lockup zones |
+| [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `water_blade` | Water Blade | **`water_flow`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
+| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `darksaber_blade` | Dark Saber | **`darksaber`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
+| [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `static_electricity_blade` | Static Electricity | **`static_electricity`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
+| [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `power_wave_blade` | Power Wave | **`power_wave`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
+| [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `unstable_blades` | Unstable Blades | **`unstable_blades`** + BendTimePow in/out | OS7 Real Clash V1, Bump lockup zones; **not** named style `unstable` |
+| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `fallen_order_blade` | Fallen Order | **`fallen_order`** + BendTimePow in/out | OS7 Real Clash V1, Bump lockup zones |
+| [EnergyBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#EnergyBlade) | `energy_blade` / `rotating_pulse_sd` / `energy_core` | Energy / Rotating / Core | **Surging:** SD stripes; **Rotating:** **`rotating_pulse`** firmware; **Core:** SD stripes + fire_mask + noise_flicker | Flickering core SD-only as `energy_core` (~70–80%) |
+| Rolling surge | `rolling_surge` | Rolling Surge | **Pure SD:** slow `stripes` 22000/-1400 + `audio` screen (~80–85%); [Fett263 OS7 Master Sol option](https://www.fett263.com/fett263-proffieOS7-style-library.html#Acolyte) | Five-band Mix stripe shading, exact AudioFlicker mix |
+| Pulse stripes | `pulse_stripes` / `pulse_stripes_sd` | Pulse Stripes | **`pulse_stripes`** HoldPeakF on ignition/alt-sound + StripesX + Pulsing 1400 ms; [Fett263 OS7 ignition-surge option](https://www.fett263.com/fett263-proffieOS7-style-library.html#JediSurvivor) | Full OS7 lockup absorb shapes |
+| [Greyscale](https://www.fett263.com/fett263-proffieOS7-style-library.html#Greyscale) | `greyscale_mercenary` / `greyscale_coda` | Greyscale | **Mercenary:** smoke + stripes + swing; **CODA:** pulse + stripes + sparkle (SD only) | OS7 `STYLE_OPTION` switch; Sin-driven StripesX on CODA |
+| [ShimmerBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#ShimmerBlade) | `shimmer_blade` / `shimmer_blade_sd` | Shimmer Blade | **`shimmer_blade`** HoldPeakF swing shimmer + BendTimePow in/out | Full OS7 lockup absorb shapes |
+| [Rotoscope](https://www.fett263.com/fett263-proffieOS7-style-library.html#Rotoscope) | `rotoscope` / `rotoscope_sd` | Rotoscope | **`rotoscope`** SwingAcceleration + HoldPeakF rotoscope bands + BendTimePow in/out | Full OS7 lockup absorb shapes (Bump zones, melt twist) |
+| [BlackPanther](https://www.fett263.com/fett263-proffieOS7-style-library.html#BlackPanther) | `kinetic_charge` / `kinetic_charge_sd` | Kinetic Charge | **`kinetic_charge`** clash/lockup charge + configurable kinetic color | Full OS7 lockup absorb shapes; inverse of StaticElectricity |
+| [ThunderStorm](https://www.fett263.com/fett263-proffieOS7-style-library.html#ThunderStorm) | `thunder_storm` / `thunder_storm_sd` | Thunder Storm | **`thunder_loop`** + BendTimePow in/out; optional **`real_clash`** + **`blast_wave_random`** | Full OS7 lockup/drag/melt/LB shapes |
+| [ResponsiveFlame](https://www.fett263.com/fett263-proffieOS7-style-library.html#ResponsiveFlame) | `responsive_flame` / `responsive_flame_sd` | Responsive Flame | **`responsive_flame`** + BendTimePow in/out; optional **`real_clash`** + **`blast_wave_random`** | Full OS7 lockup absorb shapes, Remap-wrapped combat |
+| [Trickle blade](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ahsoka) | `trickle_blade` / `trickle_blade_sd` | Trickle Blade | **`trickle_blade`** StaticFire + BladeAngle StripesX + HoldPeakF swing | Fett263 OS7 energy-trickle idle base |
+| [Ghostbusters](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ghostbusters) | `particle_beam` | Particle Beam | **Pure SD:** silver stripes + blue stream bands + fire scroll (~70–85%) | Nested Stripe mix, SmoothStep core weight, exact StaticFire tuning |
 
-**Usage:** `style = config fallen_order_blade`, or direct: `style = fallen_order silver white 300 800`. Also: `config unstable_blades`, `config power_wave_blade`, `config smoke_blade`. Red crackle variant: **`config chaos_inferno`**.
+**Usage:** `style = config fallen_order_blade`, or direct: `style = fallen_order silver white 300 800`. ThunderStorm: **`style = thunder_loop blue white 300 800`** or **`style = config thunder_storm_sd`**. ResponsiveFlame: **`style = responsive_flame orange white 300 800`** or **`style = config responsive_flame_sd`**. Greyscale: **`style = config greyscale_mercenary`** or **`style = config greyscale_coda`**. ShimmerBlade: **`style = shimmer_blade cyan white 300 800`** or **`style = config shimmer_blade_sd`**. Rotoscope: **`style = rotoscope silver white 300 800`** or **`style = config rotoscope_sd`**. Kinetic charge: **`style = kinetic_charge blue purple white 300 800`** or **`style = config kinetic_charge kinetic=gold`**. EnergyBlade surging (SD-only): **`style = config energy_blade`**. Rolling surge (SD-only): **`style = config rolling_surge`**. Pulse stripes: **`style = pulse_stripes blue white 300 800`** or **`style = config pulse_stripes_sd`**. Rotating Pulse: **`style = rotating_pulse blue white 300 800`** or **`style = config rotating_pulse_sd`**. Energy core (SD-only): **`style = config energy_core`**. Particle beam (SD-only): **`style = config particle_beam`**. Trickle blade: **`style = trickle_blade green white 300 800`** or **`style = config trickle_blade_sd`**. Also: `config smoke_blade`. Red crackle variant: **`config chaos_inferno`**.
 
 **Base color:** Fett named styles take **`base clash extend retract`** as the first four args. Change the beam color with a direct preset (`style = fallen_order cyan white 300 800`), section variables (`base = cyan` + `layer = fallen_order {{base}} …`), or a preset override (`style = config fallen_order_blade base=cyan`). Named colors include **`silver`** (Rgb&lt;100,100,150&gt;) and **`deepskyblue`** (Rgb&lt;0,135,255&gt;); see `styles/rgb_arg.h` for the full list.
 
@@ -112,6 +179,8 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 |---------|-------------|
 | **Layer styles** | Full blades (`standard`, `fire`, `rainbow`, `gradient`, `audio`, …) plus overlay layers (`blast`, `clash`, `pulse`, `sparkle`, `swing`, …). |
 | **Preon/postoff** | `preon_glow`, `preon_wipe`, `preon_sputter`, `postoff_glow`, `postoff_wipe`, `postoff_sputter` -- transparent transition layers that play before ignition or after retraction, with duration and intensity driven by sound files. See section below. |
+| **Ignition flash** | `ignition_flash` -- full-blade color flash during `EFFECT_IGNITION` (SeismicCharge OS7). Args: `color extend_ms fade_ms`. |
+| **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`** (linear **`standard`** unchanged). |
 | **Blend modes** | `normal`, `multiply`, `screen`, `add` -- control how layers combine. |
 | **Opacity** | `opacity <0-32768>` -- per-layer transparency control. |
 | **Variables** | `name = value` + `{{name}}` -- section-local variables with preset overrides (`config section key=value`). |
@@ -228,6 +297,9 @@ layer = postoff_wipe red
 | `postoff_glow` | EFFECT_POSTOFF | Uniform blade glow, brightness ≈ sound envelope | `<color>` |
 | `postoff_wipe` | EFFECT_POSTOFF | Wipe color tip-to-hilt over sound duration | `<color>` |
 | `postoff_sputter` | EFFECT_POSTOFF | Lit length from hilt follows sound envelope | `<color>` |
+| `force_glow` | EFFECT_FORCE | Full-blade glow while on; brightness ≈ force sound | `<color>` (stack with `add`) |
+
+**Force:** Unlike preon/postoff, `force_glow` runs while the blade is **already ignited**. Needs `force/` sounds in the font and a prop that triggers Force. Example section: **`[force_glow_demo]`**.
 
 ### End-to-end timeline
 

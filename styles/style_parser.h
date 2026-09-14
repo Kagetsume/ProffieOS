@@ -26,6 +26,19 @@ inline void StyleParserCopyArgBounded(char* output, size_t output_max, const cha
 #include "../functions/int_arg.h"
 #include "config_layers_style.h"
 #include "pixel_sequencer.h"
+#include "accent_blink.h"
+#include "texture_layers.h"
+#include "real_clash.h"
+#include "thunder_loop.h"
+#include "responsive_flame.h"
+#include "shimmer_blade.h"
+#include "rotoscope.h"
+#include "pulse_stripes.h"
+#include "kinetic_charge.h"
+#include "rotating_pulse.h"
+#include "trickle_blade.h"
+#include "bend_inout.h"
+#include "ignition_effects.h"
 
 class NamedStyle {
 public:
@@ -163,6 +176,10 @@ NamedStyle named_styles[] = {
 #ifndef DISABLE_BASIC_PARSER_STYLES
   { "standard", StyleNormalPtrX<RgbArg<1, CYAN>, RgbArg<2, WHITE>, IntArg<3, 300>, IntArg<4, 800>, RgbArg<5, WHITE>, RgbArg<6, WHITE>>(),
     "Standard blade: base_color clash_color extend_ms retract_ms lockup_color blast_color",
+  },
+  { "standard_bend",
+    StyleNormalBendPtrX<RgbArg<1, CYAN>, RgbArg<2, WHITE>, IntArg<3, 300>, IntArg<4, 800>, RgbArg<5, WHITE>, RgbArg<6, WHITE>>(),
+    "Standard blade with OS7 BendTimePow in/out: base_color clash_color extend_ms retract_ms lockup_color blast_color"
   },
   // Combine onspark, inoutsparktip, gradient, customizable blast/clash/lockup colors
   { "advanced",
@@ -304,112 +321,172 @@ NamedStyle named_styles[] = {
     "Pulsing blade: off_color on_color pulse_ms extend_ms retract_ms"
   },
   { "water_flow",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            WaterFlowStripesBase<RgbArg<1, Blue>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<WaterFlowStripesBase<RgbArg<1, Blue>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      WaterFlowStripesBase<RgbArg<1, Blue>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Interactive water-flow blade (Fett263 WaterBlade stripes): base_color clash_color extend_ms retract_ms. "
-    "Stripe speed/direction follows blade angle; hard upward swing can reverse flow."
+    "Stripe speed/direction follows blade angle; hard upward swing can reverse flow. OS7 BendTimePow in/out."
   },
   { "darksaber",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            DarkSaberFlickerBase<RgbArg<1, Rgb<100, 100, 150>>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<DarkSaberFlickerBase<RgbArg<1, Rgb<100, 100, 150>>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      DarkSaberFlickerBase<RgbArg<1, Rgb<100, 100, 150>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Clone Wars DarkSaber blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
-    "Metallic stripes, brown-noise texture, audio flicker, swing brightening to white."
+    "Metallic stripes, brown-noise texture, audio flicker, swing brightening to white. OS7 BendTimePow in/out."
   },
   { "static_electricity",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            StaticElectricityBladeBase<RgbArg<1, Rgb<0, 135, 255>>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<StaticElectricityBladeBase<RgbArg<1, Rgb<0, 135, 255>>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      StaticElectricityBladeBase<RgbArg<1, Rgb<0, 135, 255>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Interactive static electricity blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
-    "Swing to build charge; clash or lockup dissipates. Default base Rgb<0,135,255> (deepskyblue)."
+    "Swing to build charge; clash or lockup dissipates. Default base Rgb<0,135,255> (deepskyblue). OS7 BendTimePow in/out."
   },
   { "power_wave",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            PowerWaveStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<PowerWaveStripesBase<RgbArg<1, Rgb<100, 100, 150>>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      PowerWaveStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Power Wave blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
-    "Wide slow reverse stripes; default base Rgb<100,100,150> (silver)."
+    "Wide slow reverse stripes; default base Rgb<100,100,150> (silver). OS7 BendTimePow in/out."
   },
   { "unstable_blades",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            UnstableBladesStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<UnstableBladesStripesBase<RgbArg<1, Rgb<100, 100, 150>>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      UnstableBladesStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Unstable Pulse blade (Fett263 UnstableBlades OS7): base_color clash_color extend_ms retract_ms. "
-    "Crackling stripes with SlowNoise-driven speed; default base silver. Not the same as named style \"unstable\"."
+    "Crackling stripes with SlowNoise-driven speed; default base silver. Not the same as named style \"unstable\". OS7 BendTimePow in/out."
   },
   { "fallen_order",
-    StylePtr<InOutHelperX<
-      SimpleClash<
-        Lockup<
-          Blast<
-            FallenOrderStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
-            RgbArg<2, White>
-          >,
-          AudioFlicker<FallenOrderStripesBase<RgbArg<1, Rgb<100, 100, 150>>>, White>
-        >,
-        RgbArg<2, White>
-      >,
-      InOutFuncX<IntArg<3, 300>, IntArg<4, 800>>
+    StylePtr<Os7BladeWithBendInOut<
+      FallenOrderStripesBase<RgbArg<1, Rgb<100, 100, 150>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
     >>(),
     "Fallen Order blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
-    "Wide stripes with pulsing mid-band (800ms); default base Rgb<100,100,150> (silver)."
+    "Wide stripes with pulsing mid-band (800ms); default base Rgb<100,100,150> (silver). OS7 BendTimePow in/out."
+  },
+  { "thunder_loop",
+    StylePtr<Os7BladeWithBendInOut<
+      ThunderLoopBlade<RgbArg<1, Blue>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Thunderstorm idle loop (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
+    "TransitionLoop TrBoing + rolling stripes + SlowNoise delay; default base blue. OS7 BendTimePow in/out."
+  },
+  { "thunder_loop_layer",
+    StylePtr<ThunderLoopConfigL<RgbArg<1, Blue>> >(),
+    "Thunderstorm loop texture only (Fett263 OS7): base_color (default blue). "
+    "Use multiply/screen over an opaque base; does not include clash/lockup/blast."
+  },
+  { "responsive_flame",
+    StylePtr<Os7BladeWithBendInOut<
+      ResponsiveFlameBlade<RgbArg<1, Red>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Responsive Flame blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
+    "Angle-responsive dual StaticFire gradient; default base red. OS7 BendTimePow in/out."
+  },
+  { "responsive_flame_layer",
+    StylePtr<ResponsiveFlameInner<RgbArg<1, Red>> >(),
+    "Responsive Flame texture only (Fett263 OS7): base_color (default red). "
+    "Use multiply/screen over an opaque base; does not include clash/lockup/blast."
+  },
+  { "shimmer_blade",
+    StylePtr<Os7BladeWithBendInOut<
+      ShimmerBladeBase<RgbArg<1, Cyan>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Interactive Shimmer blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
+    "Swing harder for faster, longer stripe shimmer (HoldPeakF + RandomFlicker). OS7 BendTimePow in/out."
+  },
+  { "rotoscope",
+    StylePtr<Os7BladeWithBendInOut<
+      RotoscopeBladeBase<RgbArg<1, Rgb<100, 100, 150>>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Hyper responsive rotoscope blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
+    "SwingAcceleration drives HoldPeakF stripe speed and mix (OT-style RandomFlicker bands). Default base silver. OS7 BendTimePow in/out."
+  },
+  { "pulse_stripes",
+    StylePtr<Os7BladeWithBendInOut<
+      PulseStripesBladeBase<RgbArg<1, Blue>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Ignition-surge pulse stripes (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
+    "HoldPeakF on ignition/alt-sound drives StripesX width and speed; Pulsing mid-band 1400 ms. Default base blue. OS7 BendTimePow in/out."
+  },
+  { "kinetic_charge",
+    StylePtr<Os7BladeWithBendInOut<
+      KineticChargeBladeBase<
+        RgbArg<1, Blue>,
+        RgbArg<2, Rgb<118, 0, 194>>>,
+      RgbArg<3, White>,
+      IntArg<4, 300>,
+      IntArg<5, 800>
+    >>(),
+    "Interactive kinetic charge blade (Fett263 OS7 BlackPanther idle base): base_color kinetic_color clash_color extend_ms retract_ms. "
+    "Clash/lockup build kinetic stripes; long swing decay releases. Default kinetic Rgb<118,0,194>. OS7 BendTimePow in/out."
+  },
+  { "rotating_pulse",
+    StylePtr<Os7BladeWithBendInOut<
+      RotatingPulseStripesBase<RgbArg<1, Blue>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Rotating pulse blade (Fett263 OS7 EnergyBlade Rotating Pulse): base_color clash_color extend_ms retract_ms. "
+    "Wide StripesX with Saw-modulated speed (direction reverses). Default base blue. OS7 BendTimePow in/out."
+  },
+  { "trickle_blade",
+    StylePtr<Os7BladeWithBendInOut<
+      TrickleBladeBase<RgbArg<1, Green>>,
+      RgbArg<2, White>,
+      IntArg<3, 300>,
+      IntArg<4, 800>
+    >>(),
+    "Energy trickle blade (Fett263 OS7 idle base): base_color clash_color extend_ms retract_ms. "
+    "StaticFire + angle StripesX + HoldPeakF swing bands + tip-weighted flame. Default base green. OS7 BendTimePow in/out."
   },
   // Overlay layers for config/blade_styles.ini (transparent or blend-friendly; stack on a base layer).
   // BlastL returns RGBA_um_nod; Style<> + getLayerColor() preserve alpha for ConfigLayersStyle (see style_ptr.h).
   { "blast",
     StylePtr<BlastL<RgbArg<1, White>>>(),
     "Blast overlay layer: blast color only (fade/wave timing fixed at 200/100/400 ms in template). Mostly transparent until a blast — use an opaque base layer first"
+  },
+  { "blast_wave_random",
+    StylePtr<TransitionEffectConfigL<
+      TrWaveX<RgbArg<1, White>,
+              Scale<EffectRandomF<EFFECT_BLAST>, Int<100>, Int<400>>,
+              Int<100>,
+              Scale<EffectPosition<EFFECT_BLAST>, Int<100>, Int<400>>,
+              Scale<EffectPosition<EFFECT_BLAST>, Int<28000>, Int<8000>>>,
+      EFFECT_BLAST>>(),
+    "Blast overlay: OS7-style random wave (TrWaveX + EffectRandomF + EffectPosition); flash_color (default white). Transparent until blast"
   },
   { "clash",
     StylePtr<SimpleClashL<RgbArg<1, White>> >(),
@@ -418,6 +495,10 @@ NamedStyle named_styles[] = {
   { "localized_clash",
     StylePtr<LocalizedClashL<RgbArg<1, White>> >(),
     "Localized clash overlay: flash_color (positioned band; transparent until clash)"
+  },
+  { "real_clash",
+    StylePtr<RealClashConfigL<RgbArg<1, White>, IntArg<2, 16000>> >(),
+    "Real Clash V1 overlay (OS7): clash_color lockup_position (default white 16000). Impact strength picks bump/wave/spark/fade path; uses GetClashStrength"
   },
   { "lockup",
     StylePtr<LockupL<RgbArg<1, White>> >(),
@@ -447,6 +528,27 @@ NamedStyle named_styles[] = {
     StylePtr<ResponsiveLightningBlockL<RgbArg<1, White>> >(),
     "Responsive lightning-block overlay: block_color"
   },
+  // Texture overlays — rolling masks, stripes, noise (stack with multiply/screen/add over opaque base).
+  { "fire_mask",
+    StylePtr<FireMaskLayer<RgbArg<1, Black>, RgbArg<2, White>> >(),
+    "Rolling heat mask for layering; warm_color hot_color (default black white). Use multiply opacity ~20000 over a base"
+  },
+  { "stripes",
+    StylePtr<StripesLayer<IntArg<1, 1000>, IntArg<2, -2000>, RgbArg<3, Blue>, RgbArg<4, Cyan>> >(),
+    "Moving soft stripes texture; width speed color1 color2 (default 1000 -2000 blue cyan). Use multiply or add blend"
+  },
+  { "hard_stripes",
+    StylePtr<HardStripesLayer<IntArg<1, 1000>, IntArg<2, -3000>, RgbArg<3, Black>, RgbArg<4, White>> >(),
+    "Hard-edged stripes texture; width speed color1 color2 (default 1000 -3000 black white)"
+  },
+  { "noise_flicker",
+    StylePtr<BrownNoiseFlicker<RgbArg<1, Black>, RgbArg<2, White>, 100> >(),
+    "Organic flicker texture; base_color flicker_color (default black white). Use multiply over base"
+  },
+  { "unstable_stripes",
+    StylePtr<UnstableStripesLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
+    "Crackling UnstableBlades stripe band texture; base_color (default silver). Use multiply/add over opaque base"
+  },
   { "charging", &style_charging, "Charging style" },
   // Simple accent: pulse while saber is on, off when retracted.
   { "accent_pulse",
@@ -456,6 +558,11 @@ NamedStyle named_styles[] = {
   { "accent_on",
     StylePtr<InOutHelper<WHITE, 0, 0> >(),
     "GPIO accent: solid on when saber is on, off when saber is off (no arguments)"
+  },
+  { "accent_sound_on",
+    StylePtr<AlphaL<RgbArg<1, White>, IsGreaterThan<SmoothSoundLevel, IntArg<2, 4096>>> >(),
+    "GPIO accent: full on while audio above threshold, off when quiet (not blade-state gated); "
+    "color threshold_0_to_32768 (default white 4096). Motors: runs through postoff tail; use accent_on if you want blade-on only"
   },
   { "accent_audio_flicker",
     StylePtr<InOutHelper<AudioFlicker<RgbArg<1, Black>, RgbArg<2, White>>, 0, 0> >(),
@@ -485,8 +592,67 @@ NamedStyle named_styles[] = {
     StylePtr<InOutHelper<BrownNoiseFlicker<RgbArg<1, Black>, RgbArg<2, White>, 100>, 0, 0> >(),
     "GPIO accent: organic flicker when saber is on; base_color flicker_color (default black white)"
   },
+  { "accent_blink", &accent_blink_factory,
+    "GPIO accent: square blink when saber is on; color on_ms off_ms (default white 500 500)"
+  },
+  { "accent_sequence", &accent_sequence_factory,
+    "GPIO accent: repeating timed steps when saber is on; config = pixel,r,g,b,brightness,ms steps separated by | (default white 100ms on/off)"
+  },
+  { "accent_lockup",
+    StylePtr<InOutHelper<Layers<RgbArg<1, Rgb<128, 128, 128>>, LockupL<RgbArg<2, White>>>, 0, 0> >(),
+    "GPIO accent: idle color with lockup/drag color when locked; idle_color lockup_color (default dim_white white)"
+  },
+  { "accent_swing",
+    StylePtr<InOutHelper<Layers<Black, AlphaL<RgbArg<1, White>, SwingSpeedX<IntArg<2, 200>>>>, 0, 0> >(),
+    "GPIO accent: brightens when swinging; color speed_threshold (default white 200)"
+  },
+  { "accent_blast",
+    StylePtr<InOutHelper<Layers<RgbArg<1, Rgb<128, 128, 128>>, BlastL<RgbArg<2, White>>>, 0, 0> >(),
+    "GPIO accent: idle color with blast flash when saber is on; idle_color flash_color (default dim_white white)"
+  },
+  { "accent_drag",
+    StylePtr<InOutHelper<Layers<Black, ResponsiveDragL<RgbArg<1, Orange>>>, 0, 0> >(),
+    "GPIO accent: off until drag lockup, then twist-responsive color; color (default orange)"
+  },
+  { "accent_melt",
+    StylePtr<InOutHelper<Layers<Black, ResponsiveMeltL<RgbArg<1, OrangeRed>>>, 0, 0> >(),
+    "GPIO accent: off until melt lockup, then twist-responsive color; color (default orange_red)"
+  },
+  { "accent_battery",
+    StylePtr<InOutHelper<AlphaL<RgbArg<1, Green>, BatteryLevel>, 0, 0> >(),
+    "GPIO accent: brightness follows battery level when saber is on; color (default green)"
+  },
+  { "accent_sparkle",
+    StylePtr<InOutHelper<Layers<Black, SparkleL<RgbArg<1, White>, 300, 1024>>, 0, 0> >(),
+    "GPIO accent: random sparkle twinkle when saber is on; color (default white)"
+  },
+  { "accent_preon",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<Int<1>>,
+              AlphaL<RgbArg<1, White>, SmoothSoundLevel>,
+              TrDelayX<WavLen<EFFECT_PREON>>>,
+      EFFECT_PREON>>(),
+    "GPIO accent: glows during preon only (audio-reactive); color (default white)"
+  },
+  { "accent_postoff",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<Int<1>>,
+              AlphaL<RgbArg<1, Red>, SmoothSoundLevel>,
+              TrDelayX<WavLen<EFFECT_POSTOFF>>>,
+      EFFECT_POSTOFF>>(),
+    "GPIO accent: glows during postoff only (audio-reactive); color (default red)"
+  },
   { "pixel_sequence", &pixel_sequencer_factory,
     "Pixel sequencer: config = steps separated by |, each step pixel,r,g,b,brightness,ms; repeating pattern (pixel 0..N-1 or 255=all)",
+  },
+  // Ignition overlay — transparent when idle, triggered by EFFECT_IGNITION (during blade extension).
+  // Uses TransitionEffectConfigL so the blade stays powered while the flash runs (same as preon/postoff).
+  { "ignition_flash",
+    StylePtr<TransitionEffectConfigL<
+      IgnitionFlashTransition<RgbArg<1, White>, IntArg<2, 300>, IntArg<3, 600>>,
+      EFFECT_IGNITION>>(),
+    "Ignition flash overlay (Fett263 OS7 SeismicCharge): flash_color extend_ms fade_ms. "
+    "Full-blade flash during ignition; held for extend_ms then fades (default white 300 600)"
   },
   // Preon/Postoff layers — transparent when idle, triggered by EFFECT_PREON / EFFECT_POSTOFF.
   // Uses TransitionEffectConfigL (not TransitionEffectL) so that:
@@ -576,6 +742,17 @@ NamedStyle named_styles[] = {
               TrDelayX<WavLen<EFFECT_POSTOFF>>>,
       EFFECT_POSTOFF>>(),
     "Postoff sputter: color. Blade length follows postoff sound volume, duration matches postoff sound file"
+  },
+  // Force overlay — transparent when idle, triggered by EFFECT_FORCE while blade is on.
+  // Same audio-reactive glow pattern as preon_glow; duration = force sound file (WavLen).
+  // Requires font force/ (or mpush) sounds and a prop that calls DoEffect(EFFECT_FORCE).
+  { "force_glow",
+    StylePtr<TransitionEffectConfigL<
+      TrConcat<TrFadeX<Int<1>>,\
+              AlphaL<RgbArg<1, White>, SmoothSoundLevel>,\
+              TrDelayX<WavLen<EFFECT_FORCE>>>,
+      EFFECT_FORCE>>(),
+    "Force glow overlay: color. Full-blade glow on Force effect; brightness follows force sound volume, duration matches force sound file"
   },
 #endif
   { "config", &config_style_factory,

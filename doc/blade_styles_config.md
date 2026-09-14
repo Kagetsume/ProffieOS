@@ -4,11 +4,15 @@ A **blade style config file** on the SD card lets you build blade effects from *
 
 ### Named style catalog (firmware)
 
-**Full pixel blades** (opaque; typically the bottom `layer =` line): `standard`, `fire`, `rainbow`, `gradient`, `audio`, `flicker`, `sparktip`, `sparkle_blade`, `cylon`, `pulse_blade`, `water_flow`, `darksaber`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, plus `unstable`, `strobe`, `cycle`, `advanced`.
+**Full pixel blades** (opaque; typically the bottom `layer =` line): `standard`, `fire`, `rainbow`, `gradient`, `audio`, `flicker`, `sparktip`, `sparkle_blade`, `cylon`, `pulse_blade`, `water_flow`, `darksaber`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, **`thunder_loop`** (Fett263 ThunderStorm idle loop), **`responsive_flame`** (Fett263 ResponsiveFlame angle-responsive fire), **`shimmer_blade`** (Fett263 ShimmerBlade interactive swing shimmer), **`rotoscope`** (Fett263 Rotoscope hyper responsive OT rotoscope — SwingAcceleration + HoldPeakF), **`pulse_stripes`** (ignition/alt-sound HoldPeakF StripesX + Pulsing mid-band; Fett263 OS7 ignition-surge option), **`kinetic_charge`** (clash/lockup kinetic charge — `base` + `kinetic` colors; Fett263 BlackPanther OS7 idle base), **`rotating_pulse`** (Fett263 EnergyBlade Rotating Pulse — Saw-modulated StripesX), **`trickle_blade`** (energy trickle — StaticFire + angle StripesX + HoldPeakF swing; Fett263 OS7 idle base), plus `unstable`, `strobe`, `cycle`, `advanced`. Texture-only: **`thunder_loop_layer`**, **`responsive_flame_layer`** (stack with multiply/screen).
 
-**Overlay layers** (stack above a base; many are transparent until an event): `blast`, `clash`, `localized_clash`, `lockup`, `sparkle`, `pulse`, `swing`, `drag`, `melt`, `lb`, and all `preon_*` / `postoff_*` styles.
+**Overlay layers** (stack above a base; many are transparent until an event): `blast`, **`blast_wave_random`** (OS7-style random wave), `clash`, `localized_clash`, **`real_clash`** (OS7 Real Clash V1), `lockup`, `sparkle`, `pulse`, `swing`, `drag`, `melt`, `lb`, **`ignition_flash`** (full-blade flash during extension), all `preon_*` / `postoff_*` styles, **`force_glow`** (audio-reactive glow on `EFFECT_FORCE` while blade is on), and **texture masks** `fire_mask`, `stripes`, `hard_stripes`, `noise_flicker`, `unstable_stripes`, `pixel_sequence`.
 
-**GPIO accents** (simple PWM in `blades.ini`): `accent_on`, `accent_pulse`, `accent_color`, `accent_audio_flicker`, and other `accent_*` styles — see `examples/README.md`.
+**In/out:** Fett263 OS7 full blades (`water_flow`, `darksaber`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`) use **BendTimePow** extend/retract via **`Os7BladeWithBendInOut`**. Generic linear in/out: **`standard`**. Same with bend curves: **`standard_bend`**. Stack **`ignition_flash`** for SeismicCharge-style ignition overlay.
+
+**Texture recipes** in **`examples/config/blade_styles.ini`**: `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]` — opaque base + multiply/screen/add textures.
+
+**GPIO accents** (simple PWM in `blades.ini`): `accent_sound_on`, `accent_on`, `accent_pulse`, `accent_color`, `accent_audio_flicker`, and other `accent_*` styles — see `examples/README.md`.
 
 Argument order and examples: **`examples/config/blade_styles.ini`** (header comments + sections such as `[rainbow_pulse]`, `[standard_swing_sparkle]`, and Fett263 recipes `[smoke_blade]`, `[water_blade]`, `[fallen_order_blade]`, etc.).
 
@@ -201,6 +205,13 @@ Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html
 | PowerWave | `[power_wave_blade]` | **`power_wave`** (Stripes 12000/-1800) + drag/melt/lb overlays |
 | UnstableBlades | `[unstable_blades]` | **`unstable_blades`** (StripesX + SlowNoise speed + flicker/noise) + drag/melt/lb overlays |
 | FallenOrder | `[fallen_order_blade]` | **`fallen_order`** (Stripes + Pulsing mid-band 800ms) + drag/melt/lb overlays |
+| EnergyBlade (Surging Pulse) | `[energy_blade]` | **Pure SD:** `standard_bend` + `stripes` 6000/-3000 multiply + `real_clash` / `blast_wave_random` / drag/melt/lb (no firmware style) |
+| Rolling surge (slow stripes + audio) | `[rolling_surge]` | **Pure SD:** `standard_bend` + `stripes` 22000/-1400 + `audio` screen + combat overlays (~80–85%); [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html#Acolyte) Master Sol option |
+| Pulse stripes (wide bands + pulse) | `pulse_stripes` / `[pulse_stripes_sd]` | **`pulse_stripes`** HoldPeakF on ignition/alt-sound + StripesX + Pulsing 1400 ms + BendTimePow in/out; [Fett263 OS7 ignition-surge option](https://www.fett263.com/fett263-proffieOS7-style-library.html#JediSurvivor) |
+| EnergyBlade (Rotating Pulse) | `[rotating_pulse_sd]` | **`rotating_pulse`** (StripesX 12000 + Saw speed) + `real_clash` / `blast_wave_random` / drag/melt/lb |
+| EnergyBlade (flickering core option) | `[energy_core]` | **Pure SD:** `standard_bend` + `stripes` 12000/-2200 + `fire_mask` + `noise_flicker` + `pulse` + combat overlays (~70–80%) |
+| Ghostbusters (Particle Beam) | `[particle_beam]` | **Pure SD:** `standard_bend` + wide/fast `stripes` + `fire_mask`/`fire` blue scroll + combat overlays (~70–85%) |
+| Trickle blade (energy trickle) | `[trickle_blade_sd]` | **`trickle_blade`** (StaticFire + BladeAngle StripesX + HoldPeakF) + `real_clash` / `blast_wave_random` / drag/melt/lb — inspired by [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ahsoka) |
 
 **Fett263 base-style fidelity notes:** Named styles **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, and **`fallen_order`** bake in OS7 base-layer templates (one firmware reflash). SD sections stack optional layers and lockup overlays. Still simpler than full OS7 for lockup/clash (no Real Clash V1 dual-path or Bump lockup zones). Each section documents an SD-only fallback if firmware is not updated yet.
 

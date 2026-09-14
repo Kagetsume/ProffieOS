@@ -157,4 +157,33 @@ public:
 
 static PixelSequencerFactory pixel_sequencer_factory;
 
+// GPIO accent: same as pixel_sequence but off when saber is retracted.
+class AccentPixelSequencer : public PixelSequencer {
+public:
+  void run(BladeBase* blade) override {
+    if (!blade || !blade->is_on()) {
+      if (blade) {
+        blade->clear();
+        blade->allow_disable();
+      }
+      return;
+    }
+    PixelSequencer::run(blade);
+  }
+};
+
+class AccentPixelSequencerFactory : public StyleFactory {
+public:
+  BladeStyle* make() override {
+    AccentPixelSequencer* s = new AccentPixelSequencer();
+    const char* arg = CurrentArgParser->GetArg(1, "SEQ",
+        "0,255,255,255,100,100|0,0,0,0,0,100");
+    if (arg) s->ParseConfig(arg);
+    CurrentArgParser->Shift(1);
+    return s;
+  }
+};
+
+static AccentPixelSequencerFactory accent_sequence_factory;
+
 #endif  // STYLES_PIXEL_SEQUENCER_H

@@ -24,7 +24,7 @@
  * in config/blades.ini when you use SD blade wiring.
  *
  * Blade 3 — simple accent on Free1 (blade5Pin), accent_pulse 1500.
- * Blade 4 — simple accent on Free2 (blade6Pin), solid on style (accent_on).
+ * Blade 4 — simple accent on Free2 (blade6Pin), accent_sound_on (motor while audio plays).
  * Blade 5 — simple accent on Free3 (blade7Pin), accent_glow.
  * Simple accents can be defined in config/blades.ini with type=simple (see examples/config/blades.ini).
  */
@@ -47,7 +47,7 @@ const unsigned int maxLedsPerStrip = 144;
 //   Blade 1 — 144 px NeoPixel on bladePin, FET bladePowerPin1
 //   Blade 2 —  60 px NeoPixel on blade2Pin, FET bladePowerPin2 + bladePowerPin3
 //   Blade 3 —  accent on blade5Pin (Free1 / PB3), SimpleBladePtr, accent_pulse 1500
-//   Blade 4 —  accent on blade6Pin (Free2 / PB10), SimpleBladePtr, accent_on
+//   Blade 4 —  accent on blade6Pin (Free2 / PB10), SimpleBladePtr, accent_sound_on
 //   Blade 5 —  accent on blade7Pin (Free3 / PB11), SimpleBladePtr, accent_glow
 #endif
 
@@ -55,7 +55,7 @@ const unsigned int maxLedsPerStrip = 144;
 // Same named style as SD presets.ini: accent_pulse [pulse_ms] (default 3000).
 #define ACCENT_PULSE(MS) StylePtr<InOutHelper<PulsingX<BLACK, WHITE, IntArg<1, 3000>>, 0, 0>>(#MS)
 StyleAllocator accent_pulse_fast_style = ACCENT_PULSE(1500);
-StyleAllocator accent_on_style = StylePtr<InOutHelper<WHITE, 0, 0> >();
+StyleAllocator accent_sound_on_style = StylePtr<AlphaL<WHITE, IsGreaterThan<SmoothSoundLevel, Int<4096>>> >();
 StyleAllocator accent_glow_style = StylePtr<InOutHelper<AlphaL<WHITE, SmoothSoundLevel>, 0, 0> >();
 
 Preset presets[] = {
@@ -63,85 +63,85 @@ Preset presets[] = {
     StyleNormalPtr<CYAN, WHITE, 300, 800>(),
     StyleNormalPtr<CYAN, WHITE, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "cyan"},
    { "SmthJedi", "tracks/mars.wav",
     StylePtr<InOutSparkTip<EASYBLADE(BLUE, WHITE), 300, 800> >(),
     StylePtr<InOutSparkTip<EASYBLADE(BLUE, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "blue"},
    { "SmthGrey", "tracks/mercury.wav",
     StyleFirePtr<RED, YELLOW>(),
     StyleFirePtr<RED, YELLOW>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "fire"},
    { "SmthFuzz", "tracks/uranus.wav",
     StyleNormalPtr<RED, WHITE, 300, 800>(),
     StyleNormalPtr<RED, WHITE, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "red"},
    { "RgueCmdr", "tracks/venus.wav",
     StyleFirePtr<BLUE, CYAN>(),
     StyleFirePtr<BLUE, CYAN>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "blue fire"},
    { "TthCrstl", "tracks/mars.wav",
     StylePtr<InOutHelper<EASYBLADE(OnSpark<GREEN>, WHITE), 300, 800> >(),
     StylePtr<InOutHelper<EASYBLADE(OnSpark<GREEN>, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "green"},
    { "TeensySF", "tracks/mercury.wav",
     StyleNormalPtr<WHITE, RED, 300, 800, RED>(),
     StyleNormalPtr<WHITE, RED, 300, 800, RED>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "white"},
    { "SmthJedi", "tracks/uranus.wav",
     StyleNormalPtr<AudioFlicker<YELLOW, WHITE>, BLUE, 300, 800>(),
     StyleNormalPtr<AudioFlicker<YELLOW, WHITE>, BLUE, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "yellow"},
    { "SmthGrey", "tracks/venus.wav",
     StylePtr<InOutSparkTip<EASYBLADE(MAGENTA, WHITE), 300, 800> >(),
     StylePtr<InOutSparkTip<EASYBLADE(MAGENTA, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "magenta"},
    { "SmthFuzz", "tracks/mars.wav",
     StyleNormalPtr<Gradient<RED, BLUE>, Gradient<CYAN, YELLOW>, 300, 800>(),
     StyleNormalPtr<Gradient<RED, BLUE>, Gradient<CYAN, YELLOW>, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "gradient"},
    { "RgueCmdr", "tracks/mercury.wav",
     StyleRainbowPtr<300, 800>(),
     StyleRainbowPtr<300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "rainbow"},
    { "TthCrstl", "tracks/uranus.wav",
     StyleStrobePtr<WHITE, Rainbow, 15, 300, 800>(),
     StyleStrobePtr<WHITE, Rainbow, 15, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "strobe"},
    { "TeensySF", "tracks/venus.wav",
     &style_pov,
     StyleNormalPtr<BLACK, BLACK, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "POV"},
    { "SmthJedi", "tracks/mars.wav",
     &style_charging,
     StyleNormalPtr<BLACK, BLACK, 300, 800>(),
     accent_pulse_fast_style,
-    accent_on_style,
+    accent_sound_on_style,
     accent_glow_style, "Battery\nLevel"}
 };
 // Blade 1–2: NeoPixel strips. Blade 3–5: simple accents on Free1 / Free2 / Free3 (active-high FET gate).

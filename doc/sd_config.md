@@ -52,13 +52,13 @@ Use the same style names and arguments as in the serial/editor:
 - **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
 - **strobe**, **cycle**, **unstable**, **advanced**.
 - **Fett263 OS7 base styles** (firmware): **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`** — each takes **`base clash extend retract`** (e.g. `fallen_order cyan white 300 800`). Distinct from built-in **`unstable`**.
-- **GPIO accents** (simple PWM blades): **`accent_pulse`**, **`accent_on`**, **`accent_audio_flicker`**, etc. — see **`examples/README.md`**.
+- **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.
 
 ### Config-driven layered styles (`config/blade_styles.ini`)
 
-You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). See **blade_styles_config.md** and **README_blade_styles_config.md**. Shipped Fett263 OS7 approximations include **`[smoke_blade]`**, **`[water_blade]`**, **`[darksaber_blade]`**, **`[static_electricity_blade]`**, **`[power_wave_blade]`**, **`[unstable_blades]`**, and **`[fallen_order_blade]`** in **`examples/config/blade_styles.ini`**, with matching presets in **`examples/config/presets.ini`**.
+You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Texture overlays **`fire_mask`**, **`stripes`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** over an opaque base. See **blade_styles_config.md** and **README_blade_styles_config.md**. Shipped recipes include **`[smoke_blade]`**, **`[solid_lava]`**, **`[solid_unstable]`**, **`[solid_chase]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
 
 ## Behavior
 

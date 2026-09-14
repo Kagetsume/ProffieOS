@@ -7,7 +7,8 @@
 //
 // Base Style: Interactive Water Blade (StripesX + BladeAngle + swing reversal).
 // This file contains the OS7 base-layer template only; clash/lockup/blast/in-out
-// are provided by the "water_flow" named style wrapper in style_parser.h.
+// are provided by the "water_flow" named style wrapper in style_parser.h
+// (Os7BladeWithBendInOut — BendTimePow extend/retract).
 
 #include "stripes.h"
 #include "mix.h"

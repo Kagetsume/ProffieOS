@@ -7,7 +7,8 @@
 //
 // Base Style: Power Wave High (wide slow-moving Stripes on silver base).
 // This file contains the OS7 base-layer template only; clash/lockup/blast/in-out
-// are provided by the "power_wave" named style wrapper in style_parser.h.
+// are provided by the "power_wave" named style wrapper in style_parser.h
+// (Os7BladeWithBendInOut — BendTimePow extend/retract).
 
 #include "mix.h"
 #include "stripes.h"
