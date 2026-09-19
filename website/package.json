@@ -1,0 +1,25 @@
+{
+  "name": "proffieos-config-editor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Frontend-only SD config editor for ProffieOS (no React)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@awesome.me/webawesome": "^3.4.0",
+    "effector": "^23.4.4",
+    "lit": "^3.2.1"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4"
+  }
+}
