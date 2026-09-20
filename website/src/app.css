@@ -177,6 +177,14 @@ po-wiring-page {
   max-width: 22rem;
 }
 
+.form-grid label.comment-field {
+  max-width: 42rem;
+}
+
+.form-grid label.comment-field wa-input {
+  max-width: 42rem;
+}
+
 .form-grid po-power-pin-editor,
 .form-grid .span-2 {
   grid-column: 1 / -1;

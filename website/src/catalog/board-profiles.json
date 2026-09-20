@@ -11,7 +11,7 @@
           "dataPin": "bladePin",
           "pixels": 144,
           "powerPins": ["bladePowerPin1"],
-          "label": "Main blade"
+          "comment": "Main blade"
         },
         {
           "index": 1,
@@ -19,7 +19,7 @@
           "dataPin": "blade2Pin",
           "pixels": 60,
           "powerPins": ["bladePowerPin2", "bladePowerPin3"],
-          "label": "Second strip"
+          "comment": "Second strip"
         },
         {
           "index": 2,
@@ -27,7 +27,7 @@
           "dataPin": "blade5Pin",
           "led": "CreeXPE2White",
           "activeState": "high",
-          "label": "Accent (Free1 / accent_pulse)"
+          "comment": "Accent — accent_pulse style"
         },
         {
           "index": 3,
@@ -35,7 +35,7 @@
           "dataPin": "blade6Pin",
           "led": "CreeXPE2White",
           "activeState": "high",
-          "label": "Accent (Free2 / accent_sound_on)"
+          "comment": "Accent — accent_sound_on style"
         },
         {
           "index": 4,
@@ -43,7 +43,7 @@
           "dataPin": "blade7Pin",
           "led": "CreeXPE2White",
           "activeState": "high",
-          "label": "Accent (Free3 / accent_glow)"
+          "comment": "Accent — accent_glow style"
         }
       ]
     }

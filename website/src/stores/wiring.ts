@@ -49,7 +49,6 @@ export const $wiring = createStore<BladeDefinition[]>(getProfileBlades('proffie_
         dataPin: 'bladePin',
         pixels: 144,
         powerPins: [''],
-        label: `Blade ${nextIndex}`,
       },
     ];
   });

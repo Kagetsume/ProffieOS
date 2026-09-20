@@ -13,6 +13,15 @@ import { boardPinReferenceLabel } from '../model/data-pins';
 import { exportablePowerPins } from '../model/power-pins';
 import { blankLine, iniHeader } from './format';
 
+/** One optional `# …` line from user note text (empty / whitespace-only → omit). */
+function exportUserCommentLine(comment: string | undefined): string | null {
+  const trimmed = comment?.trim();
+  if (!trimmed) {
+    return null;
+  }
+  return `# ${trimmed.replace(/\r?\n/g, ' ')}`;
+}
+
 /** Build INI lines for one `blade = N` … block (without trailing blank line). */
 function serializeBladeBlock(blade: BladeDefinition): string[] {
   const lines: string[] = [];
@@ -20,6 +29,11 @@ function serializeBladeBlock(blade: BladeDefinition): string[] {
   const boardLabel = boardPinReferenceLabel(blade.dataPin);
   if (boardLabel) {
     lines.push(`# ---- ${boardLabel} ----`);
+  }
+
+  const userComment = exportUserCommentLine(blade.comment);
+  if (userComment) {
+    lines.push(userComment);
   }
 
   lines.push(`blade = ${blade.index}`);

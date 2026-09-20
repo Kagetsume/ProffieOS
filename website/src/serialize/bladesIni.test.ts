@@ -12,7 +12,6 @@ describe('serializeBladesIni power pins', () => {
     dataPin: 'bladePin',
     pixels: 144,
     powerPins,
-    label: 'Main blade',
   });
 
   it('writes a single power_pin field', () => {
@@ -31,5 +30,22 @@ describe('serializeBladesIni power pins', () => {
     const ini = serializeBladesIni([neoBlade(['bladePowerPin1', ''])]);
     expect(ini).toContain('power_pin = bladePowerPin1');
     expect(ini).not.toContain('power_pin2');
+  });
+
+  it('exports board pin header and optional user comment', () => {
+    const ini = serializeBladesIni([
+      {
+        ...neoBlade(['bladePowerPin1']),
+        comment: 'Crystal chamber accent',
+      },
+    ]);
+    expect(ini).toContain('# ---- Main blade data (bladePin) ----');
+    expect(ini).toContain('# Crystal chamber accent');
+  });
+
+  it('omits user comment when empty', () => {
+    const ini = serializeBladesIni([neoBlade(['bladePowerPin1'])]);
+    expect(ini).toContain('# ---- Main blade data (bladePin) ----');
+    expect(ini).not.toMatch(/# Crystal/);
   });
 });

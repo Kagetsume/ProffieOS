@@ -32,8 +32,8 @@ export type BladeDefinition = {
   led?: string;
   /** GPIO polarity for simple accents (simple only). */
   activeState?: ActiveState;
-  /** Optional comment label exported above the blade block. */
-  label?: string;
+  /** Optional user note exported as a `#` comment in `blades.ini`. */
+  comment?: string;
 };
 
 /**

@@ -74,6 +74,14 @@ export class PoBladeCard extends LitElement {
               readonly
             ></wa-input>
           </label>
+          <label class="comment-field span-2">
+            Note (optional)
+            <wa-input
+              .value=${blade.comment ?? ''}
+              placeholder="e.g. Crystal chamber accent"
+              @wa-input=${this.onCommentInput}
+            ></wa-input>
+          </label>
           ${isSimple
             ? html`
                 <label>
@@ -159,6 +167,10 @@ export class PoBladeCard extends LitElement {
 
   private onDataPinChange = (event: CustomEvent<{ value: string }>): void => {
     this.patch({ dataPin: event.detail.value });
+  };
+
+  private onCommentInput = (event: Event): void => {
+    this.patch({ comment: (event.target as HTMLInputElement).value });
   };
 
   private onLedInput = (event: Event): void => {
