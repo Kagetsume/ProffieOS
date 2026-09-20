@@ -1,8 +1,8 @@
 /**
- * Single power pin picker — Web Awesome `wa-select` + optional custom input.
+ * Board pin picker — Web Awesome `wa-select` + optional custom input.
  *
- * Uses Light DOM so `wa-option` children behave per Web Awesome docs.
- * Options are created once; disabled state toggles via property updates.
+ * Supports power FET pins (`mode=power`) and blade data/Free pins (`mode=data`).
+ * Options are rendered declaratively so Lit re-renders keep selection + disabled state.
  *
  * @fires pin-change - `{ value: string }` when the committed pin changes
  */
@@ -10,108 +10,116 @@ import { LitElement, html } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
+import { registerPowerPinEditorRefresh } from '../../stores/power-pin-usage';
 import {
   CUSTOM_PIN_VALUE,
-  initPinSelectOptions,
+  isPresetPinForMode,
+  pinCatalogForMode,
+  placeholderForMode,
   selectValueForPin,
+  type PinPickerMode,
 } from './pin-picker-utils';
-import { isPresetPowerPin } from '../../model/power-pins';
-
-type WaSelectElement = HTMLElement & { value: string };
-type WaInputElement = HTMLElement & { value: string };
 
 export class PoPinPicker extends LitElement {
   static properties = {
     value: { type: String },
     usedPresets: { attribute: false },
+    mode: { type: String, attribute: 'mode' },
   };
 
   value = '';
   usedPresets: ReadonlySet<string> = new Set();
+  mode: PinPickerMode = 'power';
 
-  private committed = '';
-  private bound = false;
+  private unwatchWiring?: () => void;
 
   /** Light DOM — required for Web Awesome form controls. */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.unwatchWiring = registerPowerPinEditorRefresh(() => {
+      this.requestUpdate();
+    });
+  }
+
+  override disconnectedCallback(): void {
+    this.unwatchWiring?.();
+    this.unwatchWiring = undefined;
+    super.disconnectedCallback();
+  }
+
   render() {
+    const stored = this.value.trim();
+    const selectValue = selectValueForPin(stored, this.mode);
+    const showCustom = selectValue === CUSTOM_PIN_VALUE;
+    const catalog = pinCatalogForMode(this.mode);
+
     return html`
       <div class="pin-picker">
         <wa-select
           class="pin-picker-select"
-          placeholder="Select power pin…"
-        ></wa-select>
+          .value=${selectValue}
+          placeholder=${placeholderForMode(this.mode)}
+          @wa-change=${this.onSelectChange}
+          @change=${this.onSelectChange}
+        >
+          ${catalog.map(
+            (entry) => html`
+              <wa-option
+                value=${entry.id}
+                ?disabled=${this.usedPresets.has(entry.id)}
+              >
+                ${this.usedPresets.has(entry.id)
+                  ? `${entry.label} (in use)`
+                  : entry.label}
+              </wa-option>
+            `,
+          )}
+          <wa-option value=${CUSTOM_PIN_VALUE}
+            >Custom (type pin name or number)</wa-option
+          >
+        </wa-select>
         <wa-input
-          class="pin-picker-custom pin-picker-custom--hidden"
+          class="pin-picker-custom ${showCustom ? '' : 'pin-picker-custom--hidden'}"
+          .value=${showCustom ? stored : ''}
           placeholder="e.g. 20 or bladePin"
+          @wa-input=${this.onCustomInput}
         ></wa-input>
       </div>
     `;
   }
 
-  override updated(changed: Map<string, unknown>): void {
-    if (!this.bound) {
-      this.bindControls();
-      this.bound = true;
-    }
-
-    if (changed.has('value')) {
-      this.committed = this.value.trim();
-      this.syncControls();
-    }
-
-    if (changed.has('usedPresets') || changed.has('value')) {
-      this.refreshOptions();
-    }
-  }
-
-  private get select(): WaSelectElement {
-    return this.querySelector('wa-select.pin-picker-select')!;
-  }
-
-  private get custom(): WaInputElement {
-    return this.querySelector('.pin-picker-custom')!;
-  }
-
-  private refreshOptions(): void {
-    initPinSelectOptions(
-      this.select as WaSelectElement & { placeholder: string; dataset: DOMStringMap },
-      this.usedPresets,
-    );
-  }
-
-  private setCustomVisible(visible: boolean): void {
-    this.custom.classList.toggle('pin-picker-custom--hidden', !visible);
-  }
-
-  private syncControls(): void {
-    if (!this.select) {
+  private onSelectChange = (event: Event): void => {
+    const chosen = (event.target as HTMLSelectElement & { value: string }).value;
+    if (chosen === CUSTOM_PIN_VALUE) {
+      this.emit(isPresetPinForMode(storedValue(this), this.mode) ? '' : storedValue(this));
       return;
     }
-    const expected = selectValueForPin(this.committed);
-    if (this.select.value !== expected) {
-      this.select.value = expected;
-    }
-    this.setCustomVisible(expected === CUSTOM_PIN_VALUE);
-    if (expected === CUSTOM_PIN_VALUE) {
-      this.custom.value = this.committed;
-    }
-  }
+    this.emit(chosen);
+  };
 
-  private commit(next: string): void {
+  private onCustomInput = (event: Event): void => {
+    if (selectValueForPin(storedValue(this), this.mode) !== CUSTOM_PIN_VALUE) {
+      return;
+    }
+    this.emit((event.target as HTMLInputElement).value);
+  };
+
+  private emit(next: string): void {
     const trimmed = next.trim();
-    if (trimmed === this.committed) {
-      this.syncControls();
+    if (trimmed === storedValue(this)) {
       return;
     }
-    if (trimmed !== '' && isPresetPowerPin(trimmed) && this.usedPresets.has(trimmed)) {
-      this.syncControls();
+    if (
+      trimmed !== '' &&
+      isPresetPinForMode(trimmed, this.mode) &&
+      this.usedPresets.has(trimmed)
+    ) {
       return;
     }
-    this.committed = trimmed;
     this.dispatchEvent(
       new CustomEvent('pin-change', {
         detail: { value: trimmed },
@@ -120,34 +128,10 @@ export class PoPinPicker extends LitElement {
       }),
     );
   }
+}
 
-  private bindControls(): void {
-    this.committed = this.value.trim();
-    this.refreshOptions();
-    this.syncControls();
-
-    this.select.addEventListener('wa-show', () => {
-      this.refreshOptions();
-    });
-
-    this.select.addEventListener('change', () => {
-      const chosen = this.select.value;
-      if (chosen === CUSTOM_PIN_VALUE) {
-        this.setCustomVisible(true);
-        this.commit(this.custom.value);
-        this.custom.focus();
-        return;
-      }
-      this.setCustomVisible(false);
-      this.commit(chosen);
-    });
-
-    this.custom.addEventListener('wa-input', () => {
-      if (this.select.value === CUSTOM_PIN_VALUE) {
-        this.commit(this.custom.value);
-      }
-    });
-  }
+function storedValue(picker: PoPinPicker): string {
+  return picker.value.trim();
 }
 
 customElements.define('po-pin-picker', PoPinPicker);

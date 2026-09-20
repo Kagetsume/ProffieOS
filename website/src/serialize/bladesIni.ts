@@ -9,6 +9,7 @@
  * @module serialize/bladesIni
  */
 import type { BladeDefinition } from '../model/blades';
+import { boardPinReferenceLabel } from '../model/data-pins';
 import { exportablePowerPins } from '../model/power-pins';
 import { blankLine, iniHeader } from './format';
 
@@ -16,8 +17,9 @@ import { blankLine, iniHeader } from './format';
 function serializeBladeBlock(blade: BladeDefinition): string[] {
   const lines: string[] = [];
 
-  if (blade.label) {
-    lines.push(`# ---- ${blade.label} ----`);
+  const boardLabel = boardPinReferenceLabel(blade.dataPin);
+  if (boardLabel) {
+    lines.push(`# ---- ${boardLabel} ----`);
   }
 
   lines.push(`blade = ${blade.index}`);

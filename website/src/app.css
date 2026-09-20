@@ -162,6 +162,21 @@ po-wiring-page {
   font-weight: normal;
 }
 
+.form-grid wa-input.readonly-field {
+  opacity: 0.85;
+  cursor: default;
+}
+
+.form-grid label.data-pin-field,
+.form-grid label.board-pin-field {
+  max-width: 22rem;
+}
+
+.form-grid label.data-pin-field po-pin-picker,
+.form-grid label.board-pin-field wa-input {
+  max-width: 22rem;
+}
+
 .form-grid po-power-pin-editor,
 .form-grid .span-2 {
   grid-column: 1 / -1;

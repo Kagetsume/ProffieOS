@@ -11,7 +11,10 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import type { BladeDefinition, BladeType } from '../../model/blades';
+import { boardPinReferenceLabel } from '../../model/data-pins';
 import { effectivePowerPins } from '../../model/power-pins';
+import { getUsedDataPinsForPicker } from '../../stores/data-pin-usage';
+import './po-pin-picker.js';
 import './po-power-pin-editor.js';
 
 export class PoBladeCard extends LitElement {
@@ -30,13 +33,15 @@ export class PoBladeCard extends LitElement {
   render() {
     const blade = this.blade;
     const isSimple = blade.type === 'simple';
+    const usedDataPins = getUsedDataPinsForPicker(blade.index, this.blades);
+    const boardPinLabel = boardPinReferenceLabel(blade.dataPin);
 
     return html`
       <wa-card class="blade-card" data-blade-index="${blade.index}">
         <div slot="header" class="blade-card-header">
           <strong>Blade ${blade.index}</strong>
-          ${blade.label
-            ? html`<span class="blade-label">${blade.label}</span>`
+          ${boardPinLabel
+            ? html`<span class="blade-label">${boardPinLabel}</span>`
             : nothing}
           <wa-button size="small" variant="danger" @click=${this.onRemove}>Remove</wa-button>
         </div>
@@ -51,17 +56,23 @@ export class PoBladeCard extends LitElement {
               <wa-option value="simple">Simple PWM LED</wa-option>
             </wa-select>
           </label>
-          <label>
-            Label (comment)
-            <wa-input
-              .value=${blade.label ?? ''}
-              placeholder="Main blade"
-              @wa-input=${this.onLabelInput}
-            ></wa-input>
-          </label>
-          <label>
+          <label class="data-pin-field">
             data_pin
-            <wa-input .value=${blade.dataPin} @wa-input=${this.onDataPinInput}></wa-input>
+            <po-pin-picker
+              .mode=${'data'}
+              .value=${blade.dataPin}
+              .usedPresets=${usedDataPins}
+              @pin-change=${this.onDataPinChange}
+            ></po-pin-picker>
+          </label>
+          <label class="board-pin-field">
+            Board pin (silkscreen)
+            <wa-input
+              class="readonly-field"
+              .value=${boardPinLabel}
+              placeholder="Select a data pin…"
+              readonly
+            ></wa-input>
           </label>
           ${isSimple
             ? html`
@@ -146,12 +157,8 @@ export class PoBladeCard extends LitElement {
     }
   };
 
-  private onLabelInput = (event: Event): void => {
-    this.patch({ label: (event.target as HTMLInputElement).value });
-  };
-
-  private onDataPinInput = (event: Event): void => {
-    this.patch({ dataPin: (event.target as HTMLInputElement).value });
+  private onDataPinChange = (event: CustomEvent<{ value: string }>): void => {
+    this.patch({ dataPin: event.detail.value });
   };
 
   private onLedInput = (event: Event): void => {

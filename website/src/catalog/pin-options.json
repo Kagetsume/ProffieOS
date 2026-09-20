@@ -6,5 +6,17 @@
     "bladePowerPin4",
     "bladePowerPin5",
     "bladePowerPin6"
+  ],
+  "dataPins": [
+    { "id": "bladePin", "label": "Main blade data (bladePin)" },
+    { "id": "blade2Pin", "label": "Data 2 (blade2Pin)" },
+    { "id": "blade3Pin", "label": "Data 3 (blade3Pin)" },
+    { "id": "blade4Pin", "label": "Data 4 (blade4Pin)" },
+    { "id": "blade5Pin", "label": "Free 1 / accent PWM (blade5Pin)" },
+    { "id": "blade6Pin", "label": "Free 2 / accent PWM (blade6Pin)" },
+    { "id": "blade7Pin", "label": "Free 3 / accent PWM (blade7Pin)" },
+    { "id": "blade8Pin", "label": "Free 4 / UART (blade8Pin)" },
+    { "id": "blade9Pin", "label": "Free 5 / UART (blade9Pin)" },
+    { "id": "bladeIdentifyPin", "label": "Blade ID input (bladeIdentifyPin)" }
   ]
 }
