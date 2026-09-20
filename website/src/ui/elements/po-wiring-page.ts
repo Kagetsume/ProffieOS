@@ -59,7 +59,7 @@ export class PoWiringPage extends LitElement {
 
     return html`
       <section class="page">
-        <h2>Wiring — ${profileName}</h2>
+        <h2>Blades — ${profileName}</h2>
         <p>
           Edit blade definitions for <code>config/blades.ini</code>. No server — changes stay in
           the browser until you export.

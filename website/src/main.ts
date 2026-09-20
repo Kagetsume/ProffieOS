@@ -11,14 +11,34 @@ import '@awesome.me/webawesome/dist/components/button/button.js';
 
 import './app.css';
 import './ui/elements/index.js';
+import { ROUTE_CATALOG, type RouteId } from './route-config';
 import { registerRoute, startRouter } from './router';
+import { mountHomePage } from './ui/pages/home-page';
+import { mountBoardPage } from './ui/pages/board-page';
 import { mountExportPage } from './ui/pages/export-page';
+import { mountFeaturesPage } from './ui/pages/features-page';
+import { mountPresetsPage } from './ui/pages/presets-page';
+import { mountStylesPage } from './ui/pages/styles-page';
 import { mountWiringPage } from './ui/pages/wiring-page';
 
-registerRoute({ id: 'wiring', hash: '#/wiring', label: 'Wiring', mount: mountWiringPage });
-registerRoute({ id: 'export', hash: '#/export', label: 'Export', mount: mountExportPage });
+const PAGE_MOUNTS: Record<RouteId, (root: HTMLElement) => () => void> = {
+  home: mountHomePage,
+  board: mountBoardPage,
+  features: mountFeaturesPage,
+  blades: mountWiringPage,
+  presets: mountPresetsPage,
+  styles: mountStylesPage,
+  export: mountExportPage,
+};
+
+for (const meta of ROUTE_CATALOG) {
+  registerRoute({
+    id: meta.id,
+    label: meta.label,
+    mount: PAGE_MOUNTS[meta.id],
+  });
+}
 
 const pageRoot = document.querySelector<HTMLElement>('#page-root')!;
-const navRoot = document.querySelector<HTMLElement>('#nav')!;
 
-startRouter(pageRoot, navRoot);
+startRouter(pageRoot);

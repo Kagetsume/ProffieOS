@@ -1,13 +1,12 @@
 /**
  * Export route — live preview of generated INI files.
  *
- * Subscribes to `$export` and refreshes {@link mountCopyPanel} when wiring changes.
- * Phase 1: `blades.ini` only.
- *
  * @module ui/pages/export-page
  */
 import { $export } from '../../stores/export';
 import { mountCopyPanel } from '../copy-panel';
+
+type ExportFiles = ReturnType<typeof $export.getState>;
 
 /**
  * Mount the Export page into `root`.
@@ -18,26 +17,55 @@ export function mountExportPage(root: HTMLElement): () => void {
   root.innerHTML = `
     <section class="page">
       <h2>Export</h2>
-      <p>Copy or download generated INI files. Phase 1 exports <code>blades.ini</code> only; presets and styles come in later phases.</p>
-      <div id="export-blades"></div>
+      <p>Copy or download generated INI files. Presets export is still a stub.</p>
+      <div class="export-panels">
+        <div id="export-blades"></div>
+        <div id="export-blade-styles"></div>
+        <div id="export-board"></div>
+        <div id="export-features"></div>
+      </div>
     </section>
   `;
 
-  const panelRoot = root.querySelector('#export-blades')!;
-  let refreshPanel: ((content: string) => void) | null = null;
-  let latest = '';
+  let latest: ExportFiles = $export.getState();
+  const refreshers: Array<(content: string) => void> = [];
+
+  const mount = (
+    selector: string,
+    title: string,
+    filename: string,
+    pick: (files: ExportFiles) => string,
+  ) => {
+    const panelRoot = root.querySelector(selector) as HTMLElement;
+    const refresh = mountCopyPanel(panelRoot, {
+      title,
+      filename,
+      getContent: () => pick(latest),
+    });
+    refreshers.push(refresh);
+  };
+
+  mount('#export-blades', 'blades.ini', 'blades.ini', (files) => files.bladesIni);
+  mount(
+    '#export-blade-styles',
+    'blade_styles.ini',
+    'blade_styles.ini',
+    (files) => files.bladeStylesIni,
+  );
+  mount('#export-board', 'board.ini', 'board.ini', (files) => files.boardIni);
+  mount('#export-features', 'features.ini', 'features.ini', (files) => files.featuresIni);
 
   const unwatch = $export.watch((files) => {
-    latest = files.bladesIni;
-    if (refreshPanel) {
-      refreshPanel(latest);
-    }
-  });
-
-  refreshPanel = mountCopyPanel(panelRoot, {
-    title: 'blades.ini',
-    filename: 'blades.ini',
-    getContent: () => latest,
+    latest = files;
+    refreshers.forEach((refresh, index) => {
+      const keys: (keyof ExportFiles)[] = [
+        'bladesIni',
+        'bladeStylesIni',
+        'boardIni',
+        'featuresIni',
+      ];
+      refresh(files[keys[index]!]);
+    });
   });
 
   return () => {

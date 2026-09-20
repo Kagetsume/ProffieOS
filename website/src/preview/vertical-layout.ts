@@ -1,0 +1,119 @@
+/**
+ * Upward-facing saber preview layout (hilt rotated −90°, blade above emitter).
+ *
+ * @module preview/vertical-layout
+ */
+
+/** Blade width as a fraction of the hilt’s displayed width. */
+export const BLADE_WIDTH_RATIO = 0.15;
+
+/** Blade height as a multiple of the hilt’s displayed height. */
+export const BLADE_HEIGHT_TO_HILT_RATIO = 3;
+
+/** Source SVG pixel dimensions (saber-hilt.svg.svg). */
+export const HILT_SVG_NATURAL_WIDTH = 2089;
+export const HILT_SVG_NATURAL_HEIGHT = 753;
+
+export type VerticalSaberLayout = {
+  hiltCssWidth: number;
+  hiltCssHeight: number;
+  bladeCssWidth: number;
+  bladeCssHeight: number;
+  bladeTipRadius: number;
+  bladeBackingWidth: number;
+  bladeBackingHeight: number;
+  devicePixelRatio: number;
+  pixelCssHeight: number;
+};
+
+export type MeasureVerticalSaberLayoutOptions = {
+  /** Hilt visual width after −90° rotation (narrow dimension). */
+  hiltDisplayWidth: number;
+  /** Hilt visual height after −90° rotation (long dimension, points up). */
+  hiltDisplayHeight: number;
+  /** LED count from wiring (simulation). */
+  pixelCount: number;
+  devicePixelRatio?: number;
+};
+
+/**
+ * Blade sits above the hilt, centered.
+ * Width = 15% of hilt width; height = 3× hilt height; rounded cap at the tip (top).
+ */
+export function measureVerticalSaberLayout(
+  options: MeasureVerticalSaberLayoutOptions,
+): VerticalSaberLayout {
+  const { hiltDisplayWidth, hiltDisplayHeight, pixelCount, devicePixelRatio = 1 } = options;
+
+  const hiltCssWidth = Math.max(0, hiltDisplayWidth);
+  const hiltCssHeight = Math.max(0, hiltDisplayHeight);
+
+  const bladeCssWidth = Math.max(2, hiltCssWidth * BLADE_WIDTH_RATIO);
+  const bladeCssHeight = Math.max(bladeCssWidth, hiltCssHeight * BLADE_HEIGHT_TO_HILT_RATIO);
+  const bladeTipRadius = bladeCssWidth / 2;
+
+  const pixelCssHeight =
+    pixelCount > 0 ? Math.max(1, bladeCssHeight / pixelCount) : bladeCssHeight;
+
+  const bladeBackingWidth = Math.max(1, Math.round(bladeCssWidth * devicePixelRatio));
+  const bladeBackingHeight = Math.max(1, Math.round(bladeCssHeight * devicePixelRatio));
+
+  return {
+    hiltCssWidth,
+    hiltCssHeight,
+    bladeCssWidth,
+    bladeCssHeight,
+    bladeTipRadius,
+    bladeBackingWidth,
+    bladeBackingHeight,
+    devicePixelRatio,
+    pixelCssHeight,
+  };
+}
+
+/** Visual hilt box from rotator CSS width (before rotation math). */
+export function hiltVisualBoxFromRotatorWidth(rotatorCssWidth: number): {
+  width: number;
+  height: number;
+} {
+  const aspect = HILT_SVG_NATURAL_HEIGHT / HILT_SVG_NATURAL_WIDTH;
+  return {
+    width: rotatorCssWidth * aspect,
+    height: rotatorCssWidth,
+  };
+}
+
+/** Apply backing-store size and DPR transform for a vertical blade canvas. */
+export function applyVerticalBladeCanvas(
+  canvas: HTMLCanvasElement,
+  layout: VerticalSaberLayout,
+): CanvasRenderingContext2D {
+  canvas.style.width = `${layout.bladeCssWidth}px`;
+  canvas.style.height = `${layout.bladeCssHeight}px`;
+  canvas.width = layout.bladeBackingWidth;
+  canvas.height = layout.bladeBackingHeight;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('2d context unavailable');
+  }
+  ctx.setTransform(layout.devicePixelRatio, 0, 0, layout.devicePixelRatio, 0, 0);
+  return ctx;
+}
+
+/** Clip to a blade shape: semicircular tip at top (y = 0), square base at bottom. */
+export function clipBladeSilhouette(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  tipRadius: number,
+): void {
+  const r = Math.min(tipRadius, width / 2, height);
+  ctx.beginPath();
+  ctx.moveTo(0, r);
+  ctx.arc(r, r, r, Math.PI, 0);
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
+  ctx.clip();
+}

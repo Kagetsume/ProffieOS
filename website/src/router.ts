@@ -1,21 +1,21 @@
 /**
  * Hash-based client router for static hosting.
  *
- * Routes use `location.hash` (`#/wiring`, `#/export`) so no server rewrite rules
- * are needed. Each route provides a `mount` function that returns cleanup.
+ * Routes use `location.hash` (`#/board`, `#/blades`, …). Sidebar navigation is
+ * handled by {@link PoSidebarNav}; this module mounts page content into `#page-root`.
  *
  * @module router
  */
-
-/** Known application routes (Phase 1). */
-export type RouteId = 'wiring' | 'export';
+import {
+  DEFAULT_ROUTE_ID,
+  ROUTE_ALIASES,
+  type RouteId,
+} from './route-config';
 
 /** Internal route registration record. */
 type Route = {
   id: RouteId;
-  hash: string;
   label: string;
-  /** Mount page into `root`; return function to unsubscribe/remove listeners. */
   mount: (root: HTMLElement) => () => void;
 };
 
@@ -34,12 +34,13 @@ export function getRoutes(): readonly Route[] {
 }
 
 /**
- * Parse the current hash into a route id. Defaults to `wiring`.
+ * Parse the current hash into a route id. Defaults to {@link DEFAULT_ROUTE_ID}.
  */
 export function parseRoute(): RouteId {
-  const hash = location.hash.replace(/^#\/?/, '') || 'wiring';
-  const match = routes.find((r) => r.id === hash);
-  return match?.id ?? 'wiring';
+  const segment = location.hash.replace(/^#\/?/, '').split('/')[0] || DEFAULT_ROUTE_ID;
+  const resolved = (ROUTE_ALIASES[segment] ?? segment) as RouteId;
+  const match = routes.find((route) => route.id === resolved);
+  return match?.id ?? DEFAULT_ROUTE_ID;
 }
 
 /** Navigate programmatically by setting the hash. */
@@ -48,36 +49,20 @@ export function navigate(id: RouteId): void {
 }
 
 /**
- * Wire up hash navigation, top nav buttons, and page mounting.
+ * Wire up hash navigation and page mounting.
  *
  * @param pageRoot - `#page-root` element where pages render
- * @param navRoot - `#nav` element for route buttons
  * @returns Cleanup function (remove hash listener, unmount active page)
  */
-export function startRouter(pageRoot: HTMLElement, navRoot: HTMLElement): () => void {
+export function startRouter(pageRoot: HTMLElement): () => void {
   let cleanup: (() => void) | null = null;
-
-  const renderNav = (activeId: RouteId) => {
-    navRoot.innerHTML = routes
-      .map(
-        (r) =>
-          `<wa-button variant="${r.id === activeId ? 'brand' : 'neutral'}" data-route="${r.id}">${r.label}</wa-button>`,
-      )
-      .join('');
-
-    navRoot.querySelectorAll('[data-route]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        navigate(btn.getAttribute('data-route') as RouteId);
-      });
-    });
-  };
 
   const renderPage = () => {
     const id = parseRoute();
     cleanup?.();
-    renderNav(id);
     const route = routes.find((r) => r.id === id) ?? routes[0]!;
     cleanup = route.mount(pageRoot);
+    document.dispatchEvent(new CustomEvent('po-route-change', { detail: { id } }));
   };
 
   window.addEventListener('hashchange', renderPage);

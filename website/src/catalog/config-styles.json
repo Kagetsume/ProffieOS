@@ -1,0 +1,326 @@
+{
+  "styles": [
+    {
+      "id": "fire_blast",
+      "label": "fire_blast",
+      "description": "Simple fire base with blast overlay — minimal blade_styles.ini example.",
+      "vars": {},
+      "layers": [
+        { "styleName": "fire", "args": ["red", "yellow"] },
+        { "styleName": "blast", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "with_vars",
+      "label": "with_vars",
+      "description": "Section variables (`base`, `clash`, …) referenced in layer args via `{{name}}`.",
+      "vars": {
+        "base": "cyan",
+        "ext": "300",
+        "ret": "800"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "clash", "args": ["white"] },
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "responsive_lockup", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "smoke_blade",
+      "label": "smoke_blade",
+      "description": "Blue solid base through rolling smoke masks + composable clash/blast/lockup overlays (Fett263 SmokeBlade-style SD recipe).",
+      "vars": {
+        "base": "blue",
+        "ext": "300",
+        "ret": "800"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "fire", "args": ["white", "white"], "blend": "multiply", "opacity": 20000 },
+        { "styleName": "fire", "args": ["white", "white"], "blend": "multiply", "opacity": 12000 },
+        { "styleName": "fire", "args": ["orange", "yellow"], "blend": "screen", "opacity": 3000 },
+        { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "clash", "args": ["white"] },
+        { "styleName": "responsive_lockup", "args": ["white"] },
+        { "styleName": "drag", "args": ["white"] },
+        { "styleName": "melt", "args": ["orange"] },
+        { "styleName": "lb", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "greyscale_mercenary",
+      "label": "greyscale_mercenary",
+      "description": "Fett263 Greyscale OS7 Mercenary — smoke masks, stripes, swing, and OS7 combat overlays.",
+      "vars": {
+        "base": "silver",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "fire_mask", "args": ["{{base}}", "{{base}}"], "blend": "multiply", "opacity": 10000 },
+        { "styleName": "fire_mask", "args": ["white", "white"], "blend": "multiply", "opacity": 12000 },
+        {
+          "styleName": "stripes",
+          "args": ["2500", "-3000", "{{base}}", "black"],
+          "blend": "multiply",
+          "opacity": 14000
+        },
+        { "styleName": "swing", "args": ["white", "375"], "blend": "add", "opacity": 7000 },
+        {
+          "styleName": "audio",
+          "args": ["{{base}}", "white", "{{ext}}", "{{ret}}"],
+          "blend": "add",
+          "opacity": 5000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "water_blade",
+      "label": "water_blade",
+      "description": "Flowing water base with audio shimmer, pulse tip glow, and combat overlays.",
+      "vars": {
+        "base": "blue",
+        "tip": "cyan",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "pulse_ms": "5000",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "water_flow", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "audio",
+          "args": ["{{base}}", "{{tip}}", "{{clash}}", "{{ext}}", "{{ret}}"],
+          "blend": "screen",
+          "opacity": 8000
+        },
+        { "styleName": "pulse", "args": ["{{tip}}", "{{pulse_ms}}"], "blend": "multiply", "opacity": 12000 },
+        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 3000 },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "energy_blade",
+      "label": "energy_blade",
+      "description": "Striped energy core with OS7 real clash and blast wave overlays.",
+      "vars": {
+        "base": "blue",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "stripes",
+          "args": ["6000", "-3000", "{{base}}", "black"],
+          "blend": "multiply",
+          "opacity": 16000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "rolling_surge",
+      "label": "rolling_surge",
+      "description": "Slow wide rolling bands with hum-reactive audio shimmer.",
+      "vars": {
+        "base": "blue",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "stripes",
+          "args": ["22000", "-1400", "{{base}}", "black"],
+          "blend": "multiply",
+          "opacity": 16000
+        },
+        {
+          "styleName": "audio",
+          "args": ["{{base}}", "{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"],
+          "blend": "screen",
+          "opacity": 10000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "darksaber_blade",
+      "label": "darksaber_blade",
+      "description": "DarkSaber config style with drag, melt, and lightning-block layer lines.",
+      "vars": {
+        "base": "silver",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "darksaber", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "static_electricity_blade",
+      "label": "static_electricity_blade",
+      "description": "Interactive static charge — swing to build stripes and sparks; clash resets idle flicker.",
+      "vars": {
+        "base": "deepskyblue",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "static_electricity", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "shimmer_blade_sd",
+      "label": "shimmer_blade_sd",
+      "description": "ShimmerBlade config style plus real clash, blast wave, drag, melt, and lb layers.",
+      "vars": {
+        "base": "cyan",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "shimmer_blade", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "rotoscope_sd",
+      "label": "rotoscope_sd",
+      "description": "Fett263 Rotoscope swing-acceleration stripes plus OS7 combat overlays.",
+      "vars": {
+        "base": "silver",
+        "clash": "white",
+        "ext": "300",
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "rotoscope", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "chaos_inferno",
+      "label": "chaos_inferno",
+      "description": "Unstable crackling base with fire, rainbow tint, strobe pulses, and audio shimmer.",
+      "vars": {},
+      "layers": [
+        { "styleName": "unstable", "args": ["red", "red", "orange", "yellow", "300", "800"] },
+        { "styleName": "fire", "args": ["red", "yellow"], "blend": "screen", "opacity": 10000 },
+        { "styleName": "rainbow", "args": ["300", "800"], "blend": "screen", "opacity": 6000 },
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "strobe", "args": ["black", "cyan", "18", "1", "300", "800"], "blend": "add", "opacity": 5000 },
+        {
+          "styleName": "solid",
+          "args": ["blue", "300", "800"],
+          "blend": "add",
+          "opacity": 4000
+        }
+      ]
+    },
+    {
+      "id": "mystic_awakening",
+      "label": "mystic_awakening",
+      "description": "Standard blade with preon glow and postoff wipe demo.",
+      "vars": {},
+      "layers": [
+        { "styleName": "solid", "args": ["cyan", "300", "800"] },
+        { "styleName": "clash", "args": ["white"] },
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "preon_glow", "args": ["blue"] },
+        { "styleName": "postoff_wipe", "args": ["red"] }
+      ]
+    },
+    {
+      "id": "inferno_ritual",
+      "label": "inferno_ritual",
+      "description": "Fire blade with preon pilot-light glow and postoff ember wipe.",
+      "vars": {},
+      "layers": [
+        { "styleName": "fire", "args": ["red", "yellow"] },
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "preon_glow", "args": ["orange"] },
+        { "styleName": "postoff_wipe", "args": ["red"] }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,9 @@ Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>`
 
 | File | Role |
 |------|------|
-| `layout.ts` | Responsive saber mock geometry: canvas CSS box, backing-store size, emitter anchor, per-LED display width |
+| `layout.ts` | Horizontal saber mock geometry (legacy) |
+| `vertical-layout.ts` | Upward saber: blade 15% hilt width, 3× height, above rotated hilt |
+| `hilt-asset.ts` | Public URL for user hilt SVG |
 | `composite.ts` | Layer blend + opacity (Phase 5) |
 | `frame.ts` | Build RGBA[] for N pixels at time `t` (Phase 5) |
 | `registry.ts` | Style name → renderer (Phase 5) |

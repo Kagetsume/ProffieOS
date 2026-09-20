@@ -18,8 +18,9 @@ export const poPageStyles = css`
     margin-top: 0;
   }
 
-  .page p {
-    max-width: 70ch;
+  .page .lead,
+  .page .config-lead {
+    max-width: 75ch;
   }
 
   .toolbar {
@@ -61,6 +62,51 @@ export const poPageStyles = css`
   }
 `;
 
+/** Board / features config forms (shadow DOM). */
+export const poConfigFormStyles = css`
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 16rem));
+    gap: 0.85rem 1rem;
+    width: 100%;
+    padding: 0.25rem 0;
+    align-items: start;
+  }
+
+  .form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 0;
+    max-width: 16rem;
+  }
+
+  .form-grid label.switch-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  wa-card {
+    display: block;
+    width: 100%;
+  }
+
+  .form-grid label wa-select,
+  .form-grid label wa-input {
+    width: 100%;
+    max-width: 16rem;
+  }
+
+  wa-select {
+    width: 100%;
+    max-width: 16rem;
+  }
+`;
+
 export const poBladeCardStyles = css`
   wa-card {
     display: block;
@@ -86,9 +132,10 @@ export const poBladeCardStyles = css`
 
   .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 16rem));
     gap: 0.75rem 1rem;
     width: 100%;
+    align-items: start;
   }
 
   .form-grid label {
@@ -97,18 +144,19 @@ export const poBladeCardStyles = css`
     gap: 0.25rem;
     font-size: 0.875rem;
     min-width: 0;
+    max-width: 16rem;
   }
 
   .form-grid label wa-select,
   .form-grid label wa-input {
     width: 100%;
-    max-width: 100%;
+    max-width: 16rem;
   }
 
-  /* Nested custom element — must span full grid width (class on inner div does not work). */
   .form-grid po-power-pin-editor {
     grid-column: 1 / -1;
     width: 100%;
+    max-width: 42rem;
     min-width: 0;
   }
 `;
@@ -117,8 +165,14 @@ export const poPowerPinStyles = css`
   .power-pin-editor {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.5rem;
     width: 100%;
+    max-width: 42rem;
+  }
+
+  .power-pin-editor > wa-button {
+    width: auto;
   }
 
   .power-pin-heading {
@@ -144,15 +198,17 @@ export const poPowerPinStyles = css`
 
   .power-pin-row {
     display: grid;
-    grid-template-columns: minmax(5.5rem, auto) minmax(0, 1fr) auto;
-    gap: 0.5rem;
+    grid-template-columns: 5.75rem minmax(10rem, 18rem) auto;
+    gap: 0.5rem 0.75rem;
     align-items: center;
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
   }
 
   .power-pin-row po-pin-picker {
     min-width: 0;
     width: 100%;
+    max-width: 18rem;
   }
 
   .power-pin-slot {
@@ -170,20 +226,23 @@ export const poPinPickerStyles = css`
     gap: 0.5rem;
     min-width: 0;
     width: 100%;
+    max-width: 18rem;
   }
 
   .pin-picker-select,
   .pin-picker wa-select {
     width: 100%;
-    max-width: 100%;
+    max-width: 18rem;
   }
 
   wa-select.pin-picker-select {
     width: 100%;
+    max-width: 18rem;
   }
 
   wa-input.pin-picker-custom {
     width: 100%;
+    max-width: 18rem;
   }
 
   .pin-picker-custom--hidden {

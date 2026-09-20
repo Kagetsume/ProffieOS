@@ -79,7 +79,7 @@ export class PoPowerPinEditor extends LitElement {
     );
 
     return html`
-      <div class="power-pin-editor span-2" data-field="powerPins">
+      <div class="power-pin-editor" data-field="powerPins">
         <div class="power-pin-heading">
           Power pins
           <span class="power-pin-hint">
@@ -89,6 +89,7 @@ export class PoPowerPinEditor extends LitElement {
         </div>
         <div class="power-pin-rows">${rows}</div>
         <wa-button
+          class="power-pin-add"
           size="small"
           variant="brand"
           data-action="add-pin"

@@ -93,6 +93,7 @@ export class PoBladeCard extends LitElement {
                   ></wa-input>
                 </label>
                 <po-power-pin-editor
+                  class="span-2"
                   blade-index=${blade.index}
                   .pins=${effectivePowerPins(blade.powerPins)}
                   .blades=${this.blades}

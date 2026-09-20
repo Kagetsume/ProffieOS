@@ -36,7 +36,7 @@ export const $numBlades = createStore(defaultProfile.defaultBlades.length).on(
  */
 export function getProfileBlades(profileId: string): BladeDefinition[] {
   const profile = boardProfiles.profiles.find((p) => p.id === profileId);
-  return profile?.defaultBlades ?? defaultProfile.defaultBlades;
+  return (profile?.defaultBlades ?? defaultProfile.defaultBlades) as BladeDefinition[];
 }
 
 /** Human-readable profile name for page headings. */

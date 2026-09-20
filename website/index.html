@@ -12,10 +12,14 @@
     <div id="app">
       <header class="app-header">
         <h1>ProffieOS SD Config Editor</h1>
-        <p class="app-tagline">Frontend-only — edit wiring, export INI, copy to SD card</p>
-        <nav id="nav" class="app-nav"></nav>
+        <p class="app-tagline">Edit ProffieOS SD card config — export INI, copy to your saber</p>
       </header>
-      <main id="page-root"></main>
+      <div class="app-body">
+        <aside class="app-sidebar">
+          <po-sidebar-nav></po-sidebar-nav>
+        </aside>
+        <main id="page-root" class="app-main"></main>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

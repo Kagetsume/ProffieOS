@@ -1,0 +1,1762 @@
+{
+  "groups": [
+    {
+      "id": "base",
+      "label": "Base blades"
+    },
+    {
+      "id": "overlay",
+      "label": "Overlays"
+    },
+    {
+      "id": "texture",
+      "label": "Textures"
+    },
+    {
+      "id": "preon",
+      "label": "Preon / postoff / ignition"
+    },
+    {
+      "id": "accent",
+      "label": "GPIO accents"
+    }
+  ],
+  "styles": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "standard_bend",
+      "label": "Standard bend",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "solid",
+      "label": "Solid",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "solid_bend",
+      "label": "Solid bend",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "label": "Advanced",
+      "group": "base",
+      "args": [
+        {
+          "slot": "hilt",
+          "label": "Hilt color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "mid",
+          "label": "Mid color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "tip",
+          "label": "Tip color",
+          "type": "color",
+          "default": "green"
+        },
+        {
+          "slot": "spark",
+          "label": "OnSpark color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "spark_ms",
+          "label": "OnSpark ms",
+          "type": "number",
+          "default": "10"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "magenta"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        },
+        {
+          "slot": "spark_tip",
+          "label": "Spark tip color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "fire",
+      "label": "Fire",
+      "group": "base",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Warm color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "hot",
+          "label": "Hot color",
+          "type": "color",
+          "default": "yellow"
+        }
+      ]
+    },
+    {
+      "id": "unstable",
+      "label": "Unstable",
+      "group": "base",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Warm color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "warmer",
+          "label": "Warmer color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "hot",
+          "label": "Hot color",
+          "type": "color",
+          "default": "orange"
+        },
+        {
+          "slot": "sparks",
+          "label": "Sparks color",
+          "type": "color",
+          "default": "yellow"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "100"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "200"
+        }
+      ]
+    },
+    {
+      "id": "strobe",
+      "label": "Strobe",
+      "group": "base",
+      "args": [
+        {
+          "slot": "standby",
+          "label": "Standby color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "flash",
+          "label": "Flash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "freq",
+          "label": "Frequency Hz",
+          "type": "number",
+          "default": "15"
+        },
+        {
+          "slot": "flash_ms",
+          "label": "Flash ms",
+          "type": "number",
+          "default": "1"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "cycle",
+      "label": "Cycle",
+      "group": "base",
+      "args": [
+        {
+          "slot": "start",
+          "label": "Start color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "flicker",
+          "label": "Flicker color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "red"
+        }
+      ]
+    },
+    {
+      "id": "rainbow",
+      "label": "Rainbow",
+      "group": "base",
+      "args": [
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "gradient",
+      "label": "Gradient",
+      "group": "base",
+      "args": [
+        {
+          "slot": "hilt",
+          "label": "Hilt color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "tip",
+          "label": "Tip color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "label": "Audio",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "flicker",
+          "label": "Flicker color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "flicker",
+      "label": "Flicker",
+      "group": "base",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Warm color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "hot",
+          "label": "Hot color",
+          "type": "color",
+          "default": "orange"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "sparktip",
+      "label": "Spark tip",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "green"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        },
+        {
+          "slot": "spark_tip",
+          "label": "Spark tip color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "sparkle_blade",
+      "label": "Sparkle blade",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "sparkle",
+          "label": "Sparkle color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "blast",
+          "label": "Blast color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "cylon",
+      "label": "Cylon",
+      "group": "base",
+      "args": [
+        {
+          "slot": "scan",
+          "label": "Scan color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "pulse_blade",
+      "label": "Pulse blade",
+      "group": "base",
+      "args": [
+        {
+          "slot": "off",
+          "label": "Off color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "on",
+          "label": "On color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "pulse_ms",
+          "label": "Pulse ms",
+          "type": "number",
+          "default": "3000"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "water_flow",
+      "label": "Water flow",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "darksaber",
+      "label": "Darksaber",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "static_electricity",
+      "label": "Static electricity",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "deepskyblue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "power_wave",
+      "label": "Power wave",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "unstable_blades",
+      "label": "Unstable blades",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "fallen_order",
+      "label": "Fallen order",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "thunder_loop",
+      "label": "Thunder loop",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "responsive_flame",
+      "label": "Responsive flame",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "shimmer_blade",
+      "label": "Shimmer blade",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "rotoscope",
+      "label": "Rotoscope",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "pulse_stripes",
+      "label": "Pulse stripes",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "kinetic_charge",
+      "label": "Kinetic charge",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "kinetic",
+          "label": "Kinetic color",
+          "type": "color",
+          "default": "purple"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "rotating_pulse",
+      "label": "Rotating pulse",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "trickle_blade",
+      "label": "Trickle blade",
+      "group": "base",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "green"
+        },
+        {
+          "slot": "clash",
+          "label": "Clash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
+      "id": "blast",
+      "label": "Blast",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "blast_wave_random",
+      "label": "Blast wave random",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "clash",
+      "label": "Clash",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "localized_clash",
+      "label": "Localized clash",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "real_clash",
+      "label": "Real clash",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "lockup_pos",
+          "label": "Lockup pos",
+          "type": "number",
+          "default": "16000"
+        }
+      ]
+    },
+    {
+      "id": "lockup",
+      "label": "Lockup",
+      "group": "overlay",
+      "overlay": true,
+      "description": "ResponsiveLockupL — localized bump at clash point, moves with blade angle.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "responsive_lockup",
+      "label": "Responsive lockup",
+      "group": "overlay",
+      "overlay": true,
+      "description": "Same as lockup — explicit ResponsiveLockupL overlay layer.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "sparkle",
+      "label": "Sparkle",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "pulse",
+      "label": "Pulse",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "pulse_ms",
+          "label": "Pulse ms",
+          "type": "number",
+          "default": "3000"
+        }
+      ]
+    },
+    {
+      "id": "swing",
+      "label": "Swing",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed threshold",
+          "type": "number",
+          "default": "200"
+        }
+      ]
+    },
+    {
+      "id": "drag",
+      "label": "Drag",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "orange"
+        }
+      ]
+    },
+    {
+      "id": "melt",
+      "label": "Melt",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "orange"
+        }
+      ]
+    },
+    {
+      "id": "lb",
+      "label": "Lightning block",
+      "group": "overlay",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "fire_mask",
+      "label": "Fire mask",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Warm color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "hot",
+          "label": "Hot color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "stripes",
+      "label": "Stripes",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "width",
+          "label": "Width",
+          "type": "number",
+          "default": "1000"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "c1",
+          "label": "Color 1",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "c2",
+          "label": "Color 2",
+          "type": "color",
+          "default": "cyan"
+        }
+      ]
+    },
+    {
+      "id": "hard_stripes",
+      "label": "Hard stripes",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "width",
+          "label": "Width",
+          "type": "number",
+          "default": "1000"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-3000"
+        },
+        {
+          "slot": "c1",
+          "label": "Color 1",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "c2",
+          "label": "Color 2",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "noise_flicker",
+      "label": "Noise flicker",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "flicker",
+          "label": "Flicker color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "unstable_stripes",
+      "label": "Unstable stripes",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        }
+      ]
+    },
+    {
+      "id": "thunder_loop_layer",
+      "label": "Thunder loop layer",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        }
+      ]
+    },
+    {
+      "id": "responsive_flame_layer",
+      "label": "Responsive flame layer",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "red"
+        }
+      ]
+    },
+    {
+      "id": "pixel_sequence",
+      "label": "Pixel sequence",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "steps",
+          "label": "Steps (config …)",
+          "type": "text",
+          "default": "0,0,255,0,60,150|0,255,0,0,60,150"
+        }
+      ]
+    },
+    {
+      "id": "preon_glow",
+      "label": "Preon glow",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "blue"
+        }
+      ]
+    },
+    {
+      "id": "preon_wipe",
+      "label": "Preon wipe",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "green"
+        }
+      ]
+    },
+    {
+      "id": "preon_sputter",
+      "label": "Preon sputter",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "blue"
+        }
+      ]
+    },
+    {
+      "id": "postoff_glow",
+      "label": "Postoff glow",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "red"
+        }
+      ]
+    },
+    {
+      "id": "postoff_wipe",
+      "label": "Postoff wipe",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "postoff_sputter",
+      "label": "Postoff sputter",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "red"
+        }
+      ]
+    },
+    {
+      "id": "force_glow",
+      "label": "Force glow",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "ignition_flash",
+      "label": "Ignition flash",
+      "group": "preon",
+      "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "extend_ms",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "fade_ms",
+          "label": "Fade ms",
+          "type": "number",
+          "default": "600"
+        }
+      ]
+    },
+    {
+      "id": "accent_pulse",
+      "label": "Accent pulse",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "pulse_ms",
+          "label": "Pulse ms",
+          "type": "number",
+          "default": "3000"
+        }
+      ]
+    },
+    {
+      "id": "accent_on",
+      "label": "Accent on",
+      "group": "accent",
+      "args": []
+    },
+    {
+      "id": "accent_sound_on",
+      "label": "Accent sound on",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "threshold",
+          "label": "Threshold",
+          "type": "number",
+          "default": "4096"
+        }
+      ]
+    },
+    {
+      "id": "accent_glow",
+      "label": "Accent glow",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_clash",
+      "label": "Accent clash",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "idle",
+          "label": "Idle color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "flash",
+          "label": "Flash color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_color",
+      "label": "Accent color",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_strobe",
+      "label": "Accent strobe",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "flash",
+          "label": "Flash color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "freq",
+          "label": "Frequency Hz",
+          "type": "number",
+          "default": "15"
+        },
+        {
+          "slot": "flash_ms",
+          "label": "Flash ms",
+          "type": "number",
+          "default": "1"
+        }
+      ]
+    },
+    {
+      "id": "accent_blink",
+      "label": "Accent blink",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "on_ms",
+          "label": "On ms",
+          "type": "number",
+          "default": "500"
+        },
+        {
+          "slot": "off_ms",
+          "label": "Off ms",
+          "type": "number",
+          "default": "500"
+        }
+      ]
+    },
+    {
+      "id": "accent_preon",
+      "label": "Accent preon",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_postoff",
+      "label": "Accent postoff",
+      "group": "accent",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "red"
+        }
+      ]
+    }
+  ]
+}
