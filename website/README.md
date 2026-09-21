@@ -132,7 +132,7 @@ Firmware and example configs this editor targets:
 - Preset list: font, track, name, variation, optional note
 - One **style line editor** per logical blade (named style, config recipe, or custom)
 - Style line count syncs when wiring / sub-blades change
-- Six starter presets (cyan, red, rainbow strobe, magenta vars, smoke, fire blast)
+- Six starter presets (smoke laser, red, rainbow strobe, magenta vars, smoke blade, fire blast)
 
 ### Export
 

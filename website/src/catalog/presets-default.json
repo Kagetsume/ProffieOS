@@ -3,12 +3,12 @@
     {
       "font": "LiquidStatic",
       "track": "tracks/hum.wav",
-      "name": "Cyan",
+      "name": "Smoke Laser",
       "variation": 0,
-      "comment": "Simple cyan standard blade",
+      "comment": "style = config smoke_laser — applies [smoke_laser] from blade_styles.ini",
       "styles": [
-        { "kind": "named", "ref": "standard", "args": ["cyan", "white", "300", "800"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "standard", "args": ["cyan", "white", "300", "800"], "overrides": {}, "customLine": "" },
+        { "kind": "config", "ref": "smoke_laser", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "config", "ref": "smoke_laser", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }

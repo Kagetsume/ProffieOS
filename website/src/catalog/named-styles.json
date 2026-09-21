@@ -1401,6 +1401,44 @@
       ]
     },
     {
+      "id": "smoke_up",
+      "label": "Smoke up",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Dark color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "hot",
+          "label": "Light color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "smoke_down",
+      "label": "Smoke down",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Dark color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "hot",
+          "label": "Light color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
       "id": "stripes",
       "label": "Stripes",
       "group": "texture",

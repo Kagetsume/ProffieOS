@@ -52,9 +52,10 @@
       },
       "layers": [
         { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "fire", "args": ["white", "white"], "blend": "multiply", "opacity": 20000 },
-        { "styleName": "fire", "args": ["white", "white"], "blend": "multiply", "opacity": 12000 },
-        { "styleName": "fire", "args": ["orange", "yellow"], "blend": "screen", "opacity": 3000 },
+        { "styleName": "smoke_up", "args": ["black", "white"], "blend": "multiply", "opacity": 19000 },
+        { "styleName": "smoke_down", "args": ["black", "white"], "blend": "multiply", "opacity": 22000 },
+        { "styleName": "smoke_up", "args": ["black", "{{base}}"], "blend": "screen", "opacity": 3500 },
+        { "styleName": "smoke_down", "args": ["black", "{{base}}"], "blend": "screen", "opacity": 3600 },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "clash", "args": ["white"] },
@@ -62,6 +63,21 @@
         { "styleName": "drag", "args": ["white"] },
         { "styleName": "melt", "args": ["orange"] },
         { "styleName": "lb", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "smoke_laser",
+      "label": "smoke_laser",
+      "description": "Green solid base through rolling smoke masks + composable clash/blast overlays (variant of smoke_blade).",
+      "vars": {},
+      "layers": [
+        { "styleName": "solid", "args": ["green", "300", "800"] },
+        { "styleName": "smoke_up", "args": ["black", "white"], "blend": "multiply", "opacity": 19000 },
+        { "styleName": "smoke_down", "args": ["black", "white"], "blend": "multiply", "opacity": 22000 },
+        { "styleName": "smoke_up", "args": ["black", "green"], "blend": "screen", "opacity": 3500 },
+        { "styleName": "smoke_down", "args": ["black", "green"], "blend": "screen", "opacity": 3600 },
+        { "styleName": "clash", "args": ["white"] },
+        { "styleName": "blast", "args": ["white"] }
       ]
     },
     {

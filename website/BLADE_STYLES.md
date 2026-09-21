@@ -259,9 +259,10 @@ base = blue
 ext = 300
 ret = 800
 layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 20000 fire white white
-layer = multiply opacity 12000 fire white white
-layer = screen opacity 3000 fire orange yellow
+layer = multiply opacity 24000 smoke_up black white
+layer = multiply opacity 22000 smoke_down black white
+layer = screen opacity 8000 smoke_up black {{base}}
+layer = screen opacity 7000 smoke_down black {{base}}
 layer = add opacity 6000 swing white 200
 layer = blast white
 layer = clash white
@@ -270,6 +271,8 @@ layer = drag white
 layer = melt orange
 layer = lb white
 ```
+
+**multiply** uses **`black white`** (dim only). **screen** bright wisps use **`black {{base}}`** so highlights stay the base color, not white.
 
 ```ini
 style = config smoke_blade

@@ -88,22 +88,51 @@ function renderRainbow(_args: string[], count: number, timeMs: number): PixelBuf
   return buffer;
 }
 
-/** Grayscale rolling heat — used by smoke recipes (`fire white white` in multiply). */
-function renderRollingHeatMask(count: number, timeMs: number): PixelBuffer {
+/** Slow organic smoke band — varying blob sizes, one scroll direction. */
+function renderSmokeFlowMask(
+  args: string[],
+  count: number,
+  timeMs: number,
+  direction: 1 | -1,
+): PixelBuffer {
   const buffer = createPixelBuffer(count);
+  const dark = parseColor(args[0] ?? 'black');
+  const bright = parseColor(args[1] ?? 'white');
+  const luminanceOnly =
+    args[0] === args[1] ||
+    (bright[0] === dark[0] && bright[1] === dark[1] && bright[2] === dark[2]);
+  const phase = (direction * timeMs) / 1800;
   for (let i = 0; i < count; i += 1) {
     const t = positionT(i, count);
-    const rollA = (Math.sin(t * 12 - timeMs / 320) + 1) / 2;
-    const rollB = (Math.sin(t * 8 + timeMs / 480 + 1.4) + 1) / 2;
-    const turbulence = (Math.sin(i * 2.7 + timeMs / 160) + 1) / 2;
-    const heat = Math.max(0, Math.min(1, rollA * 0.45 + rollB * 0.35 + turbulence * 0.3));
-    const shade = Math.round(heat * 255);
-    buffer.r[i] = shade;
-    buffer.g[i] = shade;
-    buffer.b[i] = shade;
+    const bandA = (Math.sin(t * 0.85 - phase) + 1) / 2;
+    const bandB = (Math.sin(t * 0.55 + phase * 0.62 + 1.2) + 1) / 2;
+    const blob = Math.max(bandA, bandB * 0.8);
+    let heat = blob;
+    const clearCutoff = 0.74;
+    if (heat > clearCutoff) {
+      heat = 1;
+    } else {
+      heat /= clearCutoff;
+    }
+    if (luminanceOnly) {
+      const shade = Math.round(heat * 255);
+      buffer.r[i] = shade;
+      buffer.g[i] = shade;
+      buffer.b[i] = shade;
+    } else {
+      const [r, g, b] = lerpRgb(dark, bright, heat);
+      buffer.r[i] = r;
+      buffer.g[i] = g;
+      buffer.b[i] = b;
+    }
     buffer.a[i] = 1;
   }
   return buffer;
+}
+
+/** Grayscale rolling heat — used by smoke recipes (`fire white white` in multiply). */
+function renderRollingHeatMask(count: number, timeMs: number): PixelBuffer {
+  return renderSmokeFlowMask(['white', 'white'], count, timeMs, 1);
 }
 
 function isGrayscaleFireArgs(args: string[]): boolean {
@@ -324,6 +353,10 @@ export function renderLayerPixels(
     case 'fire':
     case 'fire_mask':
       return renderFire(args, count, timeMs);
+    case 'smoke_up':
+      return renderSmokeFlowMask(args, count, timeMs, 1);
+    case 'smoke_down':
+      return renderSmokeFlowMask(args, count, timeMs, -1);
     case 'strobe':
       return renderStrobe(args, count, timeMs);
     case 'pulse':
