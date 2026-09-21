@@ -101,6 +101,15 @@ layer = clash white
 
 Presets override: `style = config my_blade base=magenta`
 
+**Extend/retract auto timing:** Use **`-1`** for `ext` / `ret` (or inline on `solid`, `standard`,
+`rainbow`, etc.) to match ignition or retraction soundfont length instead of fixed milliseconds:
+
+```ini
+ext = -1
+ret = -1
+layer = solid {{base}} {{ext}} {{ret}}
+```
+
 ### Palettes and includes
 
 **Shared colors across sections:**
@@ -240,8 +249,9 @@ layer = add opacity 16000 strobe black white 15 1 300 800
 
 ### 8. Smoke blade (texture stack)
 
-**Use for:** Fett263 SmokeBlade-style look **without recompiling** — blue base + rolling smoke
-masks + combat overlays. Pure SD layers.
+**Use for:** Fett263 SmokeBlade-style look **without recompiling** — **`solid`** composable base
++ rolling smoke masks + separate **`clash`** / **`blast`** / lockup overlay layers. Pure SD layers.
+Use **`ext = -1`** / **`ret = -1`** to sync in/out with your ignition/retraction sounds.
 
 ```ini
 [smoke_blade]
