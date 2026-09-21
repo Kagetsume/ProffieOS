@@ -130,13 +130,14 @@ function renderSmokeFlowMask(
   return buffer;
 }
 
-/** Dual same-direction smoke wisps (parallax), not opposing tip/hilt engines. */
+/** Single-direction smoke with spatial parallax offset (smoke_flow firmware style). */
 function renderSmokeFlowBlend(args: string[], count: number, timeMs: number): PixelBuffer {
-  const a = renderSmokeFlowMask(args, count, timeMs, 1);
-  const b = renderSmokeFlowMask(args, count, timeMs * 0.82 + 520, 1);
+  const base = renderSmokeFlowMask(args, count, timeMs, 1);
+  const offset = Math.max(4, Math.floor(count / 5));
   const buffer = createPixelBuffer(count);
   for (let i = 0; i < count; i += 1) {
-    const shade = Math.round((a.r[i] * b.r[i]) / 255);
+    const j = (i + offset) % count;
+    const shade = Math.round((base.r[i] * base.r[j]) / 255);
     buffer.r[i] = shade;
     buffer.g[i] = shade;
     buffer.b[i] = shade;
