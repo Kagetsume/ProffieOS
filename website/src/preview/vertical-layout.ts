@@ -7,8 +7,17 @@
 /** Blade width as a fraction of the hilt’s displayed width. */
 export const BLADE_WIDTH_RATIO = 0.15;
 
+/** Extra blade width (px) beyond ratio — reads fuller on screen. */
+export const BLADE_WIDTH_EXTRA_PX = 6;
+
 /** Blade height as a multiple of the hilt’s displayed height. */
 export const BLADE_HEIGHT_TO_HILT_RATIO = 3;
+
+/** Blur (px) for edge/tip glow underlay — sharp pass drawn on top afterward. */
+export const BLADE_GLOW_BLUR_PX = 4;
+
+/** Horizontal alpha feather (px) at left/right inside the clipped blade. */
+export const BLADE_SIDE_FEATHER_PX = 3;
 
 /** Source SVG pixel dimensions (saber-hilt.svg.svg). */
 export const HILT_SVG_NATURAL_WIDTH = 2089;
@@ -48,7 +57,7 @@ export function measureVerticalSaberLayout(
   const hiltCssWidth = Math.max(0, hiltDisplayWidth);
   const hiltCssHeight = Math.max(0, hiltDisplayHeight);
 
-  const bladeCssWidth = Math.max(2, hiltCssWidth * BLADE_WIDTH_RATIO);
+  const bladeCssWidth = Math.max(2, hiltCssWidth * BLADE_WIDTH_RATIO + BLADE_WIDTH_EXTRA_PX);
   const bladeCssHeight = Math.max(bladeCssWidth, hiltCssHeight * BLADE_HEIGHT_TO_HILT_RATIO);
   const bladeTipRadius = bladeCssWidth / 2;
 
@@ -101,19 +110,90 @@ export function applyVerticalBladeCanvas(
   return ctx;
 }
 
-/** Clip to a blade shape: semicircular tip at top (y = 0), square base at bottom. */
+/**
+ * Clip to a visible blade segment: semicircular cap at the top edge, square base at bottom.
+ *
+ * During in/out, `visibleHeight` is less than full `height` — the cap stays round at the
+ * retracting/ extending front instead of a flat horizontal chop.
+ */
+export function clipBladeVisibleLength(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  tipRadius: number,
+  visibleHeight: number,
+): void {
+  const h = Math.max(0, Math.min(visibleHeight, height));
+  if (h <= 0) {
+    return;
+  }
+
+  const yTop = height - h;
+  const r = Math.min(tipRadius, width / 2, h);
+
+  ctx.beginPath();
+  ctx.moveTo(0, yTop + r);
+  ctx.arc(r, yTop + r, r, Math.PI, 0);
+  ctx.lineTo(width, height);
+  ctx.lineTo(0, height);
+  ctx.closePath();
+  ctx.clip();
+}
+
+/** Clip to a full blade shape: semicircular tip at top (y = 0), square base at bottom. */
 export function clipBladeSilhouette(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
   tipRadius: number,
 ): void {
-  const r = Math.min(tipRadius, width / 2, height);
-  ctx.beginPath();
-  ctx.moveTo(0, r);
-  ctx.arc(r, r, r, Math.PI, 0);
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
-  ctx.closePath();
-  ctx.clip();
+  clipBladeVisibleLength(ctx, width, height, tipRadius, height);
+}
+
+/**
+ * Feather left/right alpha inside an already-clipped blade bitmap (soft sides, keeps dome tip).
+ */
+export function featherBladeSides(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  featherPx: number = BLADE_SIDE_FEATHER_PX,
+): void {
+  if (featherPx <= 0 || width <= featherPx * 2) {
+    return;
+  }
+  const t = Math.min(0.45, featherPx / width);
+  const grad = ctx.createLinearGradient(0, 0, width, 0);
+  grad.addColorStop(0, 'rgba(0,0,0,0)');
+  grad.addColorStop(t, 'rgba(0,0,0,1)');
+  grad.addColorStop(1 - t, 'rgba(0,0,0,1)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-in';
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, width, height);
+  ctx.restore();
+}
+
+/**
+ * Sharp clipped blade on top; blurred underlay only peeks at edges and tip halo.
+ */
+export function drawBladeWithSoftEdges(
+  dest: CanvasRenderingContext2D,
+  source: CanvasImageSource,
+  layout: Pick<VerticalSaberLayout, 'bladeCssWidth' | 'bladeCssHeight' | 'bladeTipRadius'>,
+): void {
+  const { bladeCssWidth, bladeCssHeight } = layout;
+  dest.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
+  dest.imageSmoothingEnabled = true;
+
+  // Glow underlay — visible only where the sharp layer is transparent (edges / tip fringe).
+  dest.filter = `blur(${BLADE_GLOW_BLUR_PX}px)`;
+  dest.globalAlpha = 0.55;
+  dest.drawImage(source, 0, 0, bladeCssWidth, bladeCssHeight);
+
+  // Crisp round tip + solid core on top.
+  dest.filter = 'none';
+  dest.globalAlpha = 1;
+  dest.drawImage(source, 0, 0, bladeCssWidth, bladeCssHeight);
 }

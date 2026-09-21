@@ -48,7 +48,11 @@
       "vars": {
         "base": "blue",
         "ext": "300",
-        "ret": "800"
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
       },
       "layers": [
         { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
@@ -57,26 +61,35 @@
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "clash", "args": ["white"] },
-        { "styleName": "responsive_lockup", "args": ["white"] },
-        { "styleName": "drag", "args": ["white"] },
-        { "styleName": "melt", "args": ["orange"] },
-        { "styleName": "lb", "args": ["white"] }
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
       ]
     },
     {
       "id": "smoke_laser",
       "label": "smoke_laser",
-      "description": "Green solid base through rolling smoke masks + composable clash/blast overlays (variant of smoke_blade).",
+      "description": "Solid base through rolling smoke masks + composable clash/blast/lockup overlays (variant of smoke_blade; default base green).",
       "vars": {
+        "base": "green",
         "ext": "300",
-        "ret": "800"
+        "ret": "800",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["green", "{{ext}}", "{{ret}}"] },
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
         { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "smoke_flow", "args": ["black", "green", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
         { "styleName": "clash", "args": ["white"] },
-        { "styleName": "blast", "args": ["white"] }
+        { "styleName": "blast", "args": ["white"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
       ]
     },
     {

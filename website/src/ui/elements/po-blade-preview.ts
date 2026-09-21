@@ -10,7 +10,9 @@ import {
   HILT_SVG_NATURAL_HEIGHT,
   HILT_SVG_NATURAL_WIDTH,
   applyVerticalBladeCanvas,
-  clipBladeSilhouette,
+  clipBladeVisibleLength,
+  drawBladeWithSoftEdges,
+  featherBladeSides,
   hiltVisualBoxFromRotatorWidth,
   measureVerticalSaberLayout,
 } from '../../preview/vertical-layout.js';
@@ -57,6 +59,8 @@ export class PoBladePreview extends PoElement {
   private animFrame = 0;
   private layoutFrame = 0;
   private hiltLoadAbort: AbortController | null = null;
+  private bladeSharpCanvas: HTMLCanvasElement | null = null;
+  private bladeSharpCtx: CanvasRenderingContext2D | null = null;
 
   /**
    * Starts the preview animation loop when the element is attached to the document.
@@ -227,7 +231,6 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.lockupActive}
               ?disabled=${!combatReady}
               @change=${this.onLockupChange}
-              @input=${this.onLockupChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -237,7 +240,6 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.lbActive}
               ?disabled=${!combatReady}
               @change=${this.onLbChange}
-              @input=${this.onLbChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -247,7 +249,6 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.dragActive}
               ?disabled=${!combatReady}
               @change=${this.onDragChange}
-              @input=${this.onDragChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -257,7 +258,6 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.meltActive}
               ?disabled=${!combatReady}
               @change=${this.onMeltChange}
-              @input=${this.onMeltChange}
             ></wa-switch>
           </div>
         </div>
@@ -304,22 +304,13 @@ export class PoBladePreview extends PoElement {
   }
 
   /**
-   * Reads `checked` from a Web Awesome `wa-switch` after its internal update completes.
+   * Reads `checked` synchronously from a Web Awesome `wa-switch` change event.
    *
-   * @param event - Change/input event from the switch.
-   * @returns Resolved switch state, or `null` when the target is not a switch.
+   * @param event - `change` event from the switch.
+   * @returns Switch state, or `null` when it cannot be resolved.
    */
-  private async readSwitchChecked(event: Event): Promise<boolean | null> {
-    const control = event.currentTarget as HTMLElement & {
-      checked?: boolean;
-      updateComplete?: Promise<unknown>;
-    };
-    if (typeof control.checked !== 'boolean' && !(event.target instanceof HTMLElement)) {
-      return null;
-    }
-    if (control.updateComplete) {
-      await control.updateComplete;
-    }
+  private readSwitchChecked(event: Event): boolean | null {
+    const control = event.currentTarget as HTMLElement & { checked?: boolean };
     if (typeof control.checked === 'boolean') {
       return control.checked;
     }
@@ -328,22 +319,21 @@ export class PoBladePreview extends PoElement {
   }
 
   /**
-   * Dispatches a preview-store update from a `wa-switch` once its checked state is stable.
+   * Dispatches a preview-store update from a `wa-switch` `change` event.
    *
-   * @param event - Change/input event from the switch.
+   * @param event - `change` event from the switch.
    * @param dispatch - Effector event accepting the resolved checked value.
    */
   private onCombatSwitchChange = (
     event: Event,
     dispatch: (checked: boolean) => void,
   ): void => {
-    void this.readSwitchChecked(event).then((checked) => {
-      if (checked === null) {
-        return;
-      }
-      dispatch(checked);
-      this.scheduleLayout();
-    });
+    const checked = this.readSwitchChecked(event);
+    if (checked === null) {
+      return;
+    }
+    dispatch(checked);
+    this.scheduleLayout();
   };
 
   /**
@@ -443,6 +433,7 @@ export class PoBladePreview extends PoElement {
     log.entry({ value: control.value, norm });
     log.debug('branch: updating blade angle');
     previewBladeAngleChanged(norm);
+    this.scheduleLayout();
     log.exit({ norm });
   };
 
@@ -557,19 +548,23 @@ export class PoBladePreview extends PoElement {
       $previewSim.getState(),
     );
     const lengthFraction = frame.lengthFraction;
-    ctx.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
 
     if (lengthFraction <= 0) {
+      ctx.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
       return;
     }
 
-    ctx.save();
-    clipBladeSilhouette(ctx, bladeCssWidth, bladeCssHeight, bladeTipRadius);
-
+    const sharpCtx = this.ensureBladeSharpContext(layout);
+    sharpCtx.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
     const visibleHeight = bladeCssHeight * lengthFraction;
-    ctx.beginPath();
-    ctx.rect(0, bladeCssHeight - visibleHeight, bladeCssWidth, visibleHeight);
-    ctx.clip();
+    sharpCtx.save();
+    clipBladeVisibleLength(
+      sharpCtx,
+      bladeCssWidth,
+      bladeCssHeight,
+      bladeTipRadius,
+      visibleHeight,
+    );
 
     const count = frame.pixelCount;
     for (let i = 0; i < count; i += 1) {
@@ -577,11 +572,43 @@ export class PoBladePreview extends PoElement {
         continue;
       }
       const y = bladeCssHeight - (i + 1) * pixelCssHeight;
-      ctx.fillStyle = `rgb(${frame.pixels.r[i]}, ${frame.pixels.g[i]}, ${frame.pixels.b[i]})`;
-      ctx.fillRect(0, y, bladeCssWidth, Math.ceil(pixelCssHeight) + 1);
+      sharpCtx.fillStyle = `rgb(${frame.pixels.r[i]}, ${frame.pixels.g[i]}, ${frame.pixels.b[i]})`;
+      sharpCtx.fillRect(0, y, bladeCssWidth, Math.ceil(pixelCssHeight) + 1);
     }
 
-    ctx.restore();
+    featherBladeSides(sharpCtx, bladeCssWidth, bladeCssHeight);
+    sharpCtx.restore();
+    drawBladeWithSoftEdges(ctx, this.bladeSharpCanvas!, layout);
+  }
+
+  /**
+   * Reuses an offscreen canvas for the sharp LED rows before edge softening.
+   *
+   * @param layout - Current vertical saber layout metrics.
+   * @returns 2D context for the sharp pass (CSS pixel coordinates).
+   */
+  private ensureBladeSharpContext(
+    layout: ReturnType<typeof measureVerticalSaberLayout>,
+  ): CanvasRenderingContext2D {
+    if (!this.bladeSharpCanvas) {
+      this.bladeSharpCanvas = document.createElement('canvas');
+    }
+    const dpr = layout.devicePixelRatio;
+    const backingW = layout.bladeBackingWidth;
+    const backingH = layout.bladeBackingHeight;
+    if (this.bladeSharpCanvas.width !== backingW || this.bladeSharpCanvas.height !== backingH) {
+      this.bladeSharpCanvas.width = backingW;
+      this.bladeSharpCanvas.height = backingH;
+      this.bladeSharpCtx = null;
+    }
+    if (!this.bladeSharpCtx) {
+      this.bladeSharpCtx = this.bladeSharpCanvas.getContext('2d');
+    }
+    if (!this.bladeSharpCtx) {
+      throw new Error('2d context unavailable for blade sharp pass');
+    }
+    this.bladeSharpCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return this.bladeSharpCtx;
   }
 }
 

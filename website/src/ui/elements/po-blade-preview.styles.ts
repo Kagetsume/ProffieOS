@@ -12,6 +12,13 @@ import {
 export const HILT_ROTATOR_WIDTH_REM = 11;
 export const HILT_ASPECT = HILT_SVG_NATURAL_HEIGHT / HILT_SVG_NATURAL_WIDTH;
 
+/** Drop blade onto emitter; SVG padding above socket + slight overlap into hilt art. */
+export const BLADE_EMITTER_OFFSET_PX = 4;
+/** Collapse flex gap so blade base overlaps hilt graphic (blade paints above via z-index). */
+export const BLADE_HILT_OVERLAP_PX = 6;
+/** Horizontal nudge for blade vs hilt emitter (negative = left). */
+export const BLADE_HORIZONTAL_OFFSET_PX = -1;
+
 /** Saber stack, hilt stage, preview controls, and blade angle slider layout. */
 export const poBladePreviewStyles = css`
   :host {
@@ -35,6 +42,10 @@ export const poBladePreviewStyles = css`
     justify-content: center;
     width: 100%;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    margin-bottom: calc(-1 * ${BLADE_HILT_OVERLAP_PX}px);
+    transform: translate(${BLADE_HORIZONTAL_OFFSET_PX}px, ${BLADE_EMITTER_OFFSET_PX}px);
   }
 
   .preview-blade {
@@ -45,6 +56,7 @@ export const poBladePreviewStyles = css`
 
   .hilt-stage {
     position: relative;
+    z-index: 0;
     flex-shrink: 0;
     width: calc(${HILT_ROTATOR_WIDTH_REM}rem * ${HILT_ASPECT});
     height: ${HILT_ROTATOR_WIDTH_REM}rem;

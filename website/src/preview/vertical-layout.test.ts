@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import {
   applyVerticalBladeCanvas,
   BLADE_HEIGHT_TO_HILT_RATIO,
+  BLADE_WIDTH_EXTRA_PX,
   BLADE_WIDTH_RATIO,
   clipBladeSilhouette,
+  clipBladeVisibleLength,
   hiltVisualBoxFromRotatorWidth,
   measureVerticalSaberLayout,
 } from './vertical-layout';
@@ -17,7 +19,7 @@ describe('measureVerticalSaberLayout', () => {
       pixelCount: 144,
     });
 
-    expect(layout.bladeCssWidth).toBe(40 * BLADE_WIDTH_RATIO);
+    expect(layout.bladeCssWidth).toBe(40 * BLADE_WIDTH_RATIO + BLADE_WIDTH_EXTRA_PX);
     expect(layout.bladeCssHeight).toBe(120 * BLADE_HEIGHT_TO_HILT_RATIO);
     expect(layout.bladeTipRadius).toBe(layout.bladeCssWidth / 2);
   });
@@ -48,5 +50,24 @@ describe('measureVerticalSaberLayout', () => {
     const ctx = applyVerticalBladeCanvas(canvas, layout);
     expect(canvas.width).toBeGreaterThan(0);
     clipBladeSilhouette(ctx, layout.bladeCssWidth, layout.bladeCssHeight, layout.bladeTipRadius);
+  });
+
+  it('clips partial blade length with a round cap at the visible top', () => {
+    const layout = measureVerticalSaberLayout({
+      hiltDisplayWidth: 40,
+      hiltDisplayHeight: 120,
+      pixelCount: 48,
+    });
+    const canvas = document.createElement('canvas');
+    const ctx = applyVerticalBladeCanvas(canvas, layout);
+    const partialHeight = layout.bladeCssHeight * 0.45;
+    clipBladeVisibleLength(
+      ctx,
+      layout.bladeCssWidth,
+      layout.bladeCssHeight,
+      layout.bladeTipRadius,
+      partialHeight,
+    );
+    expect(canvas.width).toBeGreaterThan(0);
   });
 });

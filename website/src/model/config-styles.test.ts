@@ -8,7 +8,7 @@ import {
   instantiateConfigStyle,
   uniqueConfigStyleId,
 } from './config-styles';
-import type { StyleSection } from './style-sections';
+import { baseSectionVarEntries, resolveLayerArgs, type StyleSection } from './style-sections';
 
 describe('config-styles', () => {
   it('includes smoke_blade config style', () => {
@@ -17,6 +17,21 @@ describe('config-styles', () => {
     expect(style!.layers.some((layer) => layer.styleName === 'solid')).toBe(true);
     expect(style!.layers.some((layer) => layer.styleName === 'clash')).toBe(true);
     expect(style!.layers.some((layer) => layer.styleName === 'responsive_lockup')).toBe(true);
+  });
+
+  it('smoke_laser and smoke_blade expose editable base color via {{base}}', () => {
+    for (const id of ['smoke_laser', 'smoke_blade'] as const) {
+      const section = instantiateConfigStyle(getConfigStyle(id)!, id);
+      expect(baseSectionVarEntries(section).some(([key]) => key === 'base')).toBe(true);
+      const solid = section.layers.find((layer) => layer.styleName === 'solid');
+      expect(resolveLayerArgs(solid!, { ...section.vars, base: 'magenta' })[0]).toBe('magenta');
+      const screenSmoke = section.layers.find(
+        (layer) => layer.styleName === 'smoke_flow' && layer.blend === 'screen',
+      );
+      expect(resolveLayerArgs(screenSmoke!, { ...section.vars, base: 'magenta' })[1]).toBe(
+        'magenta',
+      );
+    }
   });
 
   it('uses composable solid base in with_vars', () => {
