@@ -11,15 +11,20 @@
  */
 import { LitElement, type PropertyValues } from 'lit';
 import { discover } from '@awesome.me/webawesome';
+import { contextLogger } from '../../logger/index.js';
 
 type DiscoverRoot = Document | Element | ShadowRoot;
 
 /** Debounced `discover()` for one shadow root (shared scheduling per element). */
 async function runWebAwesomeDiscover(root: DiscoverRoot): Promise<void> {
+  const log = contextLogger('po-element', 'runWebAwesomeDiscover');
+  log.entry();
   try {
     await discover(root);
+    log.exit();
   } catch (error) {
-    console.warn('[po-element] Web Awesome discover failed:', error);
+    log.warn('Web Awesome discover failed:', error);
+    log.exit('failed', error);
   }
 }
 
@@ -31,16 +36,23 @@ export class PoElement extends LitElement {
   private discoverFrame = 0;
 
   connectedCallback(): void {
+    const log = contextLogger('po-element', 'connectedCallback');
+    log.entry({ tagName: this.tagName });
     super.connectedCallback();
+    log.exit();
   }
 
   disconnectedCallback(): void {
+    const log = contextLogger('po-element', 'disconnectedCallback');
+    log.entry({ tagName: this.tagName, hasPendingFrame: !!this.discoverFrame });
     this.stopWebAwesomeObserver();
     if (this.discoverFrame) {
+      log.debug('branch: cancel pending discover frame', { frame: this.discoverFrame });
       cancelAnimationFrame(this.discoverFrame);
       this.discoverFrame = 0;
     }
     super.disconnectedCallback();
+    log.exit();
   }
 
   protected firstUpdated(_changed: PropertyValues): void {

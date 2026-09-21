@@ -24,6 +24,8 @@ User guides (repo root under `website/`): [BLADES.md](../BLADES.md) (wiring), [B
 | `catalog/` | Static JSON: profiles, pins, colors, styles | [catalog/README.md](./catalog/README.md) |
 | `validation/` | Caps mirrored from firmware | [validation/README.md](./validation/README.md) |
 | `preview/` | Approximate blade preview (pure TS) | [preview/README.md](./preview/README.md) |
+| `i18n/` | JSON bundles, translation, Intl formatters | [i18n/README.md](./i18n/README.md) |
+| `logger/` | Timestamped `console` wrapper with level toggles | [logger/README.md](./logger/README.md) |
 | `ui/` | Lit elements, page mounts, copy panel | [ui/README.md](./ui/README.md) |
 
 ## Entry points

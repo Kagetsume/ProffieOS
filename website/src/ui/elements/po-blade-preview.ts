@@ -14,7 +14,6 @@ import {
   hiltVisualBoxFromRotatorWidth,
   measureVerticalSaberLayout,
 } from '../../preview/vertical-layout.js';
-import type { PreviewSimState } from '../../preview/simulation.js';
 import {
   $previewSim,
   previewBladeAngleChanged,
@@ -29,15 +28,20 @@ import {
 } from '../../stores/previewEvents.js';
 import { $styleSections, getActiveSection } from '../../stores/styleSections.js';
 import { $wiring } from '../../stores/wiring.js';
+import { contextLogger } from '../../logger/index.js';
+import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
+import { bladePreviewI18n } from './po-blade-preview.i18n.js';
+import { bladePreviewKeys } from './po-blade-preview.keys.js';
 
 const DEFAULT_PIXEL_COUNT = 144;
 const HILT_ROTATOR_WIDTH_REM = 11;
 const HILT_ASPECT = HILT_SVG_NATURAL_HEIGHT / HILT_SVG_NATURAL_WIDTH;
 
 export class PoBladePreview extends PoElement {
-  private activeSectionId = $styleSections.getState().activeSectionId;
-  private simState: PreviewSimState = $previewSim.getState();
+  private readonly stylesController = new EffectorController(this, $styleSections);
+  private readonly simController = new EffectorController(this, $previewSim);
+  private readonly wiringController = new EffectorController(this, $wiring);
 
   static styles = css`
     :host {
@@ -173,55 +177,58 @@ export class PoBladePreview extends PoElement {
     }
   `;
 
-  private pixelCount = DEFAULT_PIXEL_COUNT;
   private previewTimeMs = 0;
   private resizeObserver: ResizeObserver | null = null;
-  private unwatchWiring?: () => void;
-  private unwatchStyles?: () => void;
-  private unwatchSim?: () => void;
   private animFrame = 0;
+  private layoutFrame = 0;
+  private hiltLoadAbort: AbortController | null = null;
 
   connectedCallback(): void {
+    const log = contextLogger('po-blade-preview', 'connectedCallback');
+    log.entry();
     super.connectedCallback();
-    this.unwatchWiring = $wiring.watch((blades) => {
-      const main = blades.find((b) => b.type === 'ws2811');
-      this.pixelCount = main?.pixels ?? blades[0]?.pixels ?? DEFAULT_PIXEL_COUNT;
-      this.scheduleLayout();
-    });
-    this.unwatchStyles = $styleSections.watch((state) => {
-      this.activeSectionId = state.activeSectionId;
-      this.requestUpdate();
-      this.scheduleLayout();
-    });
-    this.unwatchSim = $previewSim.watch((state) => {
-      if (state === this.simState) {
-        return;
-      }
-      this.simState = state;
-      this.requestUpdate();
-    });
     this.startAnimation();
+    log.exit();
   }
 
   disconnectedCallback(): void {
-    this.unwatchWiring?.();
-    this.unwatchStyles?.();
-    this.unwatchSim?.();
-    this.resizeObserver?.disconnect();
+    const log = contextLogger('po-blade-preview', 'disconnectedCallback');
+    log.entry();
+    if (this.hiltLoadAbort) {
+      log.debug('branch: aborting hilt image load');
+      this.hiltLoadAbort.abort();
+    }
+    this.hiltLoadAbort = null;
+    if (this.resizeObserver) {
+      log.debug('branch: disconnecting resize observer');
+      this.resizeObserver.disconnect();
+    }
     this.resizeObserver = null;
+    if (this.layoutFrame) {
+      log.debug('branch: cancelling pending layout frame');
+      cancelAnimationFrame(this.layoutFrame);
+      this.layoutFrame = 0;
+    }
     if (this.animFrame) {
+      log.debug('branch: cancelling animation frame');
       cancelAnimationFrame(this.animFrame);
       this.animFrame = 0;
     }
     super.disconnectedCallback();
+    log.exit();
   }
 
   protected firstUpdated(): void {
     const stack = this.renderRoot.querySelector<HTMLElement>('.saber-stack');
     const hilt = this.renderRoot.querySelector<HTMLImageElement>('.hilt-img');
 
-    hilt?.addEventListener('load', () => this.scheduleLayout());
-    hilt?.addEventListener('error', () => this.scheduleLayout());
+    this.hiltLoadAbort?.abort();
+    this.hiltLoadAbort = new AbortController();
+    const { signal } = this.hiltLoadAbort;
+    if (hilt) {
+      hilt.addEventListener('load', () => this.onHiltLoad(), { signal });
+      hilt.addEventListener('error', () => this.onHiltError(), { signal });
+    }
 
     if (stack) {
       this.resizeObserver = new ResizeObserver(() => this.scheduleLayout());
@@ -231,8 +238,36 @@ export class PoBladePreview extends PoElement {
     this.scheduleLayout();
   }
 
+  private onHiltLoad(): void {
+    const log = contextLogger('po-blade-preview', 'onHiltLoad');
+    log.entry();
+    log.debug('branch: hilt image loaded — scheduling layout');
+    this.scheduleLayout();
+    log.exit();
+  }
+
+  private onHiltError(): void {
+    const log = contextLogger('po-blade-preview', 'onHiltError');
+    log.entry();
+    log.debug('branch: hilt image failed — scheduling layout with fallback sizing');
+    this.scheduleLayout();
+    log.exit();
+  }
+
+  protected updated(): void {
+    this.scheduleLayout();
+  }
+
+  private get pixelCount(): number {
+    const blades = this.wiringController.value;
+    const main = blades.find((b) => b.type === 'ws2811');
+    return main?.pixels ?? blades[0]?.pixels ?? DEFAULT_PIXEL_COUNT;
+  }
+
   render() {
-    const { transition, powered } = this.simState;
+    const simState = this.simController.value;
+    const activeSectionId = this.stylesController.value.activeSectionId;
+    const { transition, powered } = simState;
     const combatReady = powered && transition === 'none';
     const canPowerOn =
       (!powered && transition === 'none') || transition === 'postoff';
@@ -240,12 +275,12 @@ export class PoBladePreview extends PoElement {
       (powered && transition === 'none') ||
       transition === 'preon' ||
       transition === 'extending';
-    const showBladeAngle = combatReady && this.simState.lockupActive;
+    const showBladeAngle = combatReady && simState.lockupActive;
 
     return html`
       <div class="saber-stack">
         <div class="blade-slot">
-          <canvas class="preview-blade" aria-label="Blade preview"></canvas>
+          <canvas class="preview-blade" aria-label=${bladePreviewI18n.translate(bladePreviewKeys.ariaLabel)}></canvas>
         </div>
         <div class="hilt-stage">
           <div class="hilt-rotator">
@@ -264,54 +299,54 @@ export class PoBladePreview extends PoElement {
       <div class="preview-controls">
         <div class="preview-controls-row preview-controls-row--buttons">
           <wa-button size="small" variant="brand" ?disabled=${!canPowerOn} @click=${this.onPowerOn}>
-            Power on
+            ${bladePreviewI18n.translate(bladePreviewKeys.powerOn)}
           </wa-button>
           <wa-button size="small" variant="neutral" ?disabled=${!canPowerOff} @click=${this.onPowerOff}>
-            Power off
+            ${bladePreviewI18n.translate(bladePreviewKeys.powerOff)}
           </wa-button>
           <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onBlast}>
-            Blast
+            ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
           </wa-button>
           <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onClash}>
-            Clash
+            ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
           </wa-button>
           <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onSwing}>
-            Swing
+            ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
           </wa-button>
         </div>
         <div class="preview-controls-row preview-controls-row--toggles">
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>Lockup</span>
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
             <wa-switch
               size="small"
-              .checked=${this.simState.lockupActive}
+              .checked=${simState.lockupActive}
               ?disabled=${!combatReady}
               @change=${this.onLockupChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>Lightning Block</span>
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
             <wa-switch
               size="small"
-              .checked=${this.simState.lbActive}
+              .checked=${simState.lbActive}
               ?disabled=${!combatReady}
               @change=${this.onLbChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>Drag</span>
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
             <wa-switch
               size="small"
-              .checked=${this.simState.dragActive}
+              .checked=${simState.dragActive}
               ?disabled=${!combatReady}
               @change=${this.onDragChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>Melt</span>
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
             <wa-switch
               size="small"
-              .checked=${this.simState.meltActive}
+              .checked=${simState.meltActive}
               ?disabled=${!combatReady}
               @change=${this.onMeltChange}
             ></wa-switch>
@@ -321,9 +356,9 @@ export class PoBladePreview extends PoElement {
           ? html`
               <label class="blade-angle-control">
                 <span class="blade-angle-label">
-                  Blade angle
+                  ${bladePreviewI18n.translate(bladePreviewKeys.bladeAngle)}
                   <span class="blade-angle-value"
-                    >${Math.round(this.simState.bladeAngleNorm * 100)}%</span
+                    >${Math.round(simState.bladeAngleNorm * 100)}%</span
                   >
                 </span>
                 <input
@@ -331,101 +366,164 @@ export class PoBladePreview extends PoElement {
                   min="0"
                   max="100"
                   step="1"
-                  .value=${String(Math.round(this.simState.bladeAngleNorm * 100))}
+                  .value=${String(Math.round(simState.bladeAngleNorm * 100))}
                   @input=${this.onBladeAngleInput}
                 />
-                <span class="blade-angle-hint">Moves responsive lockup zone (hilt ↔ tip)</span>
+                <span class="blade-angle-hint">${bladePreviewI18n.translate(bladePreviewKeys.bladeAngleHint)}</span>
               </label>
             `
           : nothing}
       </div>
 
       <p class="preview-caption">
-        Approximate preview (simplified layer math, not firmware) · ${this.activeSectionId || '—'}
-        ${this.simState.transition !== 'none' ? ` · ${this.simState.transition}` : ''}
+        ${bladePreviewI18n.translate(bladePreviewKeys.caption, {
+          sectionId: activeSectionId || '—',
+          transitionSuffix:
+            simState.transition !== 'none' ? ` · ${simState.transition}` : '',
+        })}
       </p>
     `;
   }
 
   private activeSection() {
-    return getActiveSection($styleSections.getState()) ?? null;
+    return getActiveSection(this.stylesController.value) ?? null;
   }
 
   private onPowerOn = (): void => {
-    previewPowerOnClicked(this.activeSection());
+    const log = contextLogger('po-blade-preview', 'onPowerOn');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering power on', { sectionId: section?.id ?? null });
+    previewPowerOnClicked(section);
+    log.exit();
   };
 
   private onPowerOff = (): void => {
-    previewPowerOffClicked(this.activeSection());
+    const log = contextLogger('po-blade-preview', 'onPowerOff');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering power off', { sectionId: section?.id ?? null });
+    previewPowerOffClicked(section);
+    log.exit();
   };
 
   private onBlast = (): void => {
-    previewEventTriggered({ event: 'blast', section: this.activeSection() });
+    const log = contextLogger('po-blade-preview', 'onBlast');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering blast event', { sectionId: section?.id ?? null });
+    previewEventTriggered({ event: 'blast', section });
+    log.exit();
   };
 
   private onClash = (): void => {
-    previewEventTriggered({ event: 'clash', section: this.activeSection() });
+    const log = contextLogger('po-blade-preview', 'onClash');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering clash event', { sectionId: section?.id ?? null });
+    previewEventTriggered({ event: 'clash', section });
+    log.exit();
   };
 
   private onSwing = (): void => {
-    previewEventTriggered({ event: 'swing', section: this.activeSection() });
+    const log = contextLogger('po-blade-preview', 'onSwing');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering swing event', { sectionId: section?.id ?? null });
+    previewEventTriggered({ event: 'swing', section });
+    log.exit();
   };
 
-  private applySimState(): void {
-    this.simState = $previewSim.getState();
-    this.requestUpdate();
-    this.scheduleLayout();
-  }
-
   private onLockupChange = (event: Event): void => {
+    const log = contextLogger('po-blade-preview', 'onLockupChange');
     const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    previewLockupChanged(Boolean(control.checked));
-    this.applySimState();
+    const checked = Boolean(control.checked);
+    log.entry({ checked });
+    log.debug('branch: updating lockup state');
+    previewLockupChanged(checked);
+    log.exit({ checked });
   };
 
   private onLbChange = (event: Event): void => {
+    const log = contextLogger('po-blade-preview', 'onLbChange');
     const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    previewLbChanged(Boolean(control.checked));
-    this.applySimState();
+    const checked = Boolean(control.checked);
+    log.entry({ checked });
+    log.debug('branch: updating lightning block state');
+    previewLbChanged(checked);
+    log.exit({ checked });
   };
 
   private onDragChange = (event: Event): void => {
+    const log = contextLogger('po-blade-preview', 'onDragChange');
     const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    previewDragChanged(Boolean(control.checked));
-    this.applySimState();
+    const checked = Boolean(control.checked);
+    log.entry({ checked });
+    log.debug('branch: updating drag state');
+    previewDragChanged(checked);
+    log.exit({ checked });
   };
 
   private onMeltChange = (event: Event): void => {
+    const log = contextLogger('po-blade-preview', 'onMeltChange');
     const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    previewMeltChanged(Boolean(control.checked));
-    this.applySimState();
+    const checked = Boolean(control.checked);
+    log.entry({ checked });
+    log.debug('branch: updating melt state');
+    previewMeltChanged(checked);
+    log.exit({ checked });
   };
 
   private onBladeAngleInput = (event: Event): void => {
+    const log = contextLogger('po-blade-preview', 'onBladeAngleInput');
     const control = event.target as HTMLInputElement;
-    previewBladeAngleChanged(Number(control.value) / 100);
-    this.applySimState();
-    this.layoutAndDraw();
+    const norm = Number(control.value) / 100;
+    log.entry({ value: control.value, norm });
+    log.debug('branch: updating blade angle');
+    previewBladeAngleChanged(norm);
+    log.exit({ norm });
   };
 
   private startAnimation(): void {
+    const log = contextLogger('po-blade-preview', 'startAnimation');
+    log.entry();
     const tick = () => {
+      if (!this.isConnected) {
+        log.debug('branch: disconnected — stopping animation loop');
+        this.animFrame = 0;
+        return;
+      }
       const now = performance.now();
       this.previewTimeMs = now;
       syncPreviewClock(now);
-      this.simState = $previewSim.getState();
       this.layoutAndDraw();
       this.animFrame = requestAnimationFrame(tick);
     };
+    log.debug('branch: scheduling animation loop');
     this.animFrame = requestAnimationFrame(tick);
+    log.exit('scheduled');
   }
 
   private scheduleLayout = (): void => {
-    requestAnimationFrame(() => this.layoutAndDraw());
+    if (this.layoutFrame) {
+      cancelAnimationFrame(this.layoutFrame);
+    }
+    this.layoutFrame = requestAnimationFrame(() => {
+      this.onLayoutFrame();
+    });
   };
+
+  private onLayoutFrame(): void {
+    this.layoutFrame = 0;
+    if (!this.isConnected) {
+      return;
+    }
+    this.layoutAndDraw();
+  }
 
   private measureHiltBox(): { width: number; height: number } {
     const stage = this.renderRoot.querySelector<HTMLElement>('.hilt-stage');
+
     if (stage) {
       const rect = stage.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
@@ -461,7 +559,7 @@ export class PoBladePreview extends PoElement {
   ): void {
     const { bladeCssWidth, bladeCssHeight, bladeTipRadius, pixelCssHeight } = layout;
     const pixelCount = this.pixelCount;
-    const section = getActiveSection($styleSections.getState());
+    const section = getActiveSection(this.stylesController.value);
 
     if (!section) {
       return;

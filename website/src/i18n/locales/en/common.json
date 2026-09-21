@@ -1,0 +1,23 @@
+{
+  "actions.add": "Add",
+  "actions.copy": "Copy",
+  "actions.copied": "Copied!",
+  "actions.download": "Download",
+  "actions.duplicate": "Duplicate",
+  "actions.remove": "Remove",
+  "actions.reset": "Reset to defaults",
+  "actions.new": "New",
+  "nav.route.home": "Overview",
+  "nav.route.board": "Board",
+  "nav.route.features": "Features",
+  "nav.route.blades": "Blades",
+  "nav.route.styles": "Blade styles",
+  "nav.route.presets": "Presets",
+  "nav.route.export": "Export",
+  "nav.configFiles": "Config files",
+  "nav.output": "Output",
+  "nav.ariaLabel": "Application sections",
+  "nav.stubSoon": " · soon",
+  "hint.exportFooter": "Changes appear on the Export page as ${filename}.",
+  "hint.exportAs": "Changes appear on the Export page as ${filename}."
+}

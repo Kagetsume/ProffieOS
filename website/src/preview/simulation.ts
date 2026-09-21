@@ -3,6 +3,7 @@
  *
  * @module preview/simulation
  */
+import { getNamedStyle } from '../model/style-catalog';
 import type { StyleSection } from '../model/style-sections';
 import { resolveLayerArgs } from '../model/style-sections';
 
@@ -66,37 +67,43 @@ export function previewAnimationMs(ms: number, kind: 'extend' | 'retract'): numb
 
 const DEFAULT_IN_OUT: InOutTiming = { extendMs: 300, retractMs: 800 };
 
-const EXT_RET_AT_2_3 = new Set([
-  'standard',
-  'standard_bend',
-  'sparktip',
-  'audio',
-  'flicker',
-  'sparkle_blade',
-  'cylon',
-  'water_flow',
-  'darksaber',
-  'static_electricity',
-  'power_wave',
-  'unstable_blades',
-  'fallen_order',
-  'thunder_loop',
-  'responsive_flame',
-  'shimmer_blade',
-  'rotoscope',
-  'pulse_stripes',
-  'kinetic_charge',
-  'rotating_pulse',
-  'trickle_blade',
-]);
+/** Firmware sentinel: extend/retract ms from ignition/retraction soundfont (WavLen). */
+export const AUTO_IN_OUT_MS = -1;
 
-const EXT_RET_AT_0_1 = new Set(['rainbow', 'strobe']);
+/** Preview stand-in when soundfont duration is unavailable in the browser. */
+const PREVIEW_AUTO_IN_OUT_FALLBACK: InOutTiming = { extendMs: 800, retractMs: 1000 };
 
-const EXT_RET_AT_1_2 = new Set(['solid', 'solid_bend']);
-
-function parseMs(value: string | undefined, fallback: number): number {
+function parseInOutMs(
+  value: string | undefined,
+  fallback: number,
+  kind: 'extend' | 'retract',
+): number {
   const parsed = Number.parseInt(value ?? '', 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  if (Number.isFinite(parsed) && parsed < 1) {
+    return kind === 'extend'
+      ? PREVIEW_AUTO_IN_OUT_FALLBACK.extendMs
+      : PREVIEW_AUTO_IN_OUT_FALLBACK.retractMs;
+  }
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+  return fallback;
+}
+
+function inOutFromLayerArgs(styleName: string, args: string[]): InOutTiming | null {
+  const def = getNamedStyle(styleName);
+  if (!def) {
+    return null;
+  }
+  const extIdx = def.args.findIndex((arg) => arg.slot === 'ext' || arg.slot === 'extend_ms');
+  const retIdx = def.args.findIndex((arg) => arg.slot === 'ret' || arg.slot === 'retract_ms');
+  if (extIdx < 0 || retIdx < 0) {
+    return null;
+  }
+  return {
+    extendMs: parseInOutMs(args[extIdx], DEFAULT_IN_OUT.extendMs, 'extend'),
+    retractMs: parseInOutMs(args[retIdx], DEFAULT_IN_OUT.retractMs, 'retract'),
+  };
 }
 
 /** Read extend/retract ms from section vars or the first base layer. */
@@ -105,37 +112,16 @@ export function sectionInOutTimes(section: StyleSection): InOutTiming {
   const toVars = section.vars.ret ?? section.vars.retract_ms;
   if (fromVars || toVars) {
     return {
-      extendMs: parseMs(fromVars, DEFAULT_IN_OUT.extendMs),
-      retractMs: parseMs(toVars, DEFAULT_IN_OUT.retractMs),
+      extendMs: parseInOutMs(fromVars, DEFAULT_IN_OUT.extendMs, 'extend'),
+      retractMs: parseInOutMs(toVars, DEFAULT_IN_OUT.retractMs, 'retract'),
     };
   }
 
   for (const layer of section.layers) {
     const args = resolveLayerArgs(layer, section.vars);
-    const style = layer.styleName;
-    if (EXT_RET_AT_2_3.has(style) && args.length >= 4) {
-      return {
-        extendMs: parseMs(args[2], DEFAULT_IN_OUT.extendMs),
-        retractMs: parseMs(args[3], DEFAULT_IN_OUT.retractMs),
-      };
-    }
-    if (EXT_RET_AT_0_1.has(style) && args.length >= 2) {
-      return {
-        extendMs: parseMs(args[0], DEFAULT_IN_OUT.extendMs),
-        retractMs: parseMs(args[1], DEFAULT_IN_OUT.retractMs),
-      };
-    }
-    if (EXT_RET_AT_1_2.has(style) && args.length >= 3) {
-      return {
-        extendMs: parseMs(args[1], DEFAULT_IN_OUT.extendMs),
-        retractMs: parseMs(args[2], DEFAULT_IN_OUT.retractMs),
-      };
-    }
-    if (style === 'pulse_blade' && args.length >= 5) {
-      return {
-        extendMs: parseMs(args[3], DEFAULT_IN_OUT.extendMs),
-        retractMs: parseMs(args[4], DEFAULT_IN_OUT.retractMs),
-      };
+    const timing = inOutFromLayerArgs(layer.styleName, args);
+    if (timing) {
+      return timing;
     }
   }
 

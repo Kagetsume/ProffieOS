@@ -14,13 +14,18 @@ import {
   normalizeColorValue,
   selectValueForColor,
 } from '../../model/colors';
+import { contextLogger } from '../../logger/index.js';
+import { colorInputI18n } from './po-color-input.i18n.js';
+import { colorInputKeys } from './po-color-input.keys.js';
 
 export class PoColorInput extends LitElement {
   static properties = {
     value: { type: String },
+    customMode: { type: Boolean, state: true },
   };
 
   value = '';
+  private customMode = false;
 
   /** Light DOM — required for Web Awesome form controls. */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
@@ -30,7 +35,9 @@ export class PoColorInput extends LitElement {
   render() {
     const committed = this.value.trim();
     const swatch = colorToCss(committed);
-    const selectValue = selectValueForColor(committed);
+    const selectValue = this.customMode
+      ? CUSTOM_COLOR_VALUE
+      : selectValueForColor(committed);
     const customVisible = selectValue === CUSTOM_COLOR_VALUE;
 
     return html`
@@ -102,7 +109,7 @@ export class PoColorInput extends LitElement {
         <span class="color-swatch" style="background: ${swatch}" aria-hidden="true"></span>
         <wa-select
           class="color-select"
-          placeholder="Color…"
+          placeholder=${colorInputI18n.translate(colorInputKeys.placeholderColor)}
           .value=${selectValue}
           @change=${this.onSelectChange}
         >
@@ -126,13 +133,13 @@ export class PoColorInput extends LitElement {
           <wa-option value=${CUSTOM_COLOR_VALUE}>
             <span class="color-option">
               <span class="color-option-swatch color-option-swatch--custom"></span>
-              <span class="color-option-name">Custom…</span>
+              <span class="color-option-name">${colorInputI18n.translate(colorInputKeys.optionCustom)}</span>
             </span>
           </wa-option>
         </wa-select>
         <wa-input
           class="color-custom ${customVisible ? '' : 'color-custom--hidden'}"
-          placeholder="#rrggbb or r,g,b"
+          placeholder=${colorInputI18n.translate(colorInputKeys.placeholderCustom)}
           .value=${customVisible ? committed : ''}
           @wa-change=${this.onCustomChange}
         ></wa-input>
@@ -141,26 +148,44 @@ export class PoColorInput extends LitElement {
   }
 
   private onSelectChange = (event: Event): void => {
+    const log = contextLogger('po-color-input', 'onSelectChange');
     const chosen = (event.target as HTMLSelectElement).value;
+    log.entry({ chosen });
     if (chosen === CUSTOM_COLOR_VALUE) {
+      log.debug('branch: custom color selected', { chosen });
+      this.customMode = true;
       this.commit(this.value.trim());
-      this.querySelector<HTMLElement & { focus(): void }>('.color-custom')?.focus();
+      this.updateComplete.then(() => {
+        this.renderRoot.querySelector<HTMLElement & { focus(): void }>('.color-custom')?.focus();
+      });
+      log.exit('custom');
       return;
     }
+    this.customMode = false;
     this.commit(chosen);
+    log.exit({ chosen });
   };
 
   private onCustomChange = (event: Event): void => {
-    const select = this.querySelector('wa-select.color-select') as HTMLElement & { value: string };
-    if (select?.value !== CUSTOM_COLOR_VALUE) {
+    const log = contextLogger('po-color-input', 'onCustomChange');
+    log.entry({ customMode: this.customMode });
+    if (!this.customMode) {
+      log.debug('branch: not in custom mode, ignoring', { customMode: this.customMode });
+      log.exit('ignored');
       return;
     }
-    this.commit((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.commit(value);
+    log.exit({ value });
   };
 
   private commit(next: string): void {
+    const log = contextLogger('po-color-input', 'commit');
+    log.entry({ next, current: this.value.trim() });
     const normalized = normalizeColorValue(next);
     if (normalized === this.value.trim()) {
+      log.debug('branch: unchanged value, skipping dispatch', { normalized });
+      log.exit('unchanged');
       return;
     }
     this.dispatchEvent(
@@ -170,6 +195,7 @@ export class PoColorInput extends LitElement {
         composed: true,
       }),
     );
+    log.exit({ normalized });
   }
 }
 

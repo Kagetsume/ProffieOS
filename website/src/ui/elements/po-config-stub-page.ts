@@ -4,6 +4,8 @@
 import { html, css } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { PoElement } from './po-element.js';
+import { configStubPageI18n } from './po-config-stub-page.i18n.js';
+import { configStubPageKeys } from './po-config-stub-page.keys.js';
 import { poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 export class PoConfigStubPage extends PoElement {
@@ -54,7 +56,7 @@ export class PoConfigStubPage extends PoElement {
         ${this.sdPath ? html`<p class="config-path">${this.sdPath}</p>` : ''}
         <wa-card class="stub-card">
           <p>${this.description}</p>
-          <p class="hint">This section is a stub — editor UI coming in a later phase.</p>
+          <p class="hint">${configStubPageI18n.translate(configStubPageKeys.stubHint)}</p>
         </wa-card>
       </section>
     `;

@@ -1,18 +1,12 @@
 /**
- * Wiring route mount — inserts {@link PoWiringPage} custom element.
+ * Wiring route mount — inserts {@link PoWiringPage}.
  *
  * @module ui/pages/wiring-page
  */
-import '../elements/index.js';
+import '../elements/po-wiring-page.js';
+import { mountCustomElementPage } from './mount-page';
 
-/**
- * Mount the Wiring page into `root`.
- *
- * @returns Cleanup — removes the custom element from the DOM
- */
+/** Mount the Wiring page into `root`. */
 export function mountWiringPage(root: HTMLElement): () => void {
-  root.innerHTML = '<po-wiring-page></po-wiring-page>';
-  return () => {
-    root.innerHTML = '';
-  };
+  return mountCustomElementPage(root, 'po-wiring-page');
 }

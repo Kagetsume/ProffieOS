@@ -5,40 +5,26 @@ import { html, css } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { PoElement } from './po-element.js';
+import { homePageI18n } from './po-home-page.i18n.js';
+import {
+  homePageConfigFilePathKeys,
+  homePageConfigFilePurposeKeys,
+  homePageKeys,
+  homePageStatusKeys,
+} from './po-home-page.keys.js';
 import { poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 type ConfigFileRow = {
-  path: string;
-  purpose: string;
+  id: 'board' | 'features' | 'blades' | 'bladeStyles' | 'presets';
   status: 'ready' | 'partial' | 'planned';
 };
 
 const CONFIG_FILES: ConfigFileRow[] = [
-  {
-    path: 'config/board.ini',
-    purpose: 'Button count, OLED, Bluetooth',
-    status: 'ready',
-  },
-  {
-    path: 'config/features.ini',
-    purpose: 'Gesture and twist on/off (contest overrides)',
-    status: 'ready',
-  },
-  {
-    path: 'config/blades.ini',
-    purpose: 'NeoPixel and accent wiring, data/power pins, sub-blades',
-    status: 'ready',
-  },
-  {
-    path: 'config/blade_styles.ini',
-    purpose: 'Layer recipes (base + overlays) — see BLADE_STYLES.md',
-    status: 'ready',
-  },
-  {
-    path: 'config/presets.ini',
-    purpose: 'Fonts, tracks, preset names, style lines per blade',
-    status: 'ready',
-  },
+  { id: 'board', status: 'ready' },
+  { id: 'features', status: 'ready' },
+  { id: 'blades', status: 'ready' },
+  { id: 'bladeStyles', status: 'ready' },
+  { id: 'presets', status: 'ready' },
 ];
 
 export class PoHomePage extends PoElement {
@@ -151,42 +137,24 @@ export class PoHomePage extends PoElement {
   render() {
     return html`
       <section class="page">
-        <h2>Welcome</h2>
-        <p class="lead">
-          <strong>ProffieOS SD Config Editor</strong> helps you build and edit the INI files that
-          live on a Proffie saber’s SD card — without recompiling firmware or connecting over serial
-          for everyday wiring, feature, and style changes.
-        </p>
-        <p class="requirement">
-          <strong>Requires SD config file support in your firmware build.</strong>
-          Your saber must be compiled with a profile such as
-          <code>config/config-files-config.h</code> (<code>CONFIG_FILE</code> in
-          <code>ProffieOS.ino</code>). Without that, INI files under <code>config/</code> on the SD
-          card are ignored.
-        </p>
+        <h2>${homePageI18n.translate(homePageKeys.title)}</h2>
+        <p class="lead">${homePageI18n.translate(homePageKeys.lead)}</p>
+        <p class="requirement">${homePageI18n.translate(homePageKeys.requirement)}</p>
 
         <wa-card>
-          <h3>What it does</h3>
-          <p>
-            Use the sections in the sidebar to configure board hardware, features, blade wiring,
-            styles, and presets. The app keeps your work in the browser, validates common mistakes,
-            and generates formatted INI text you can copy or download to <code>config/</code> on the
-            SD card.
-          </p>
-          <p class="hint">
-            This is a <strong>frontend-only</strong> tool: no account, no cloud save, no firmware
-            flashing. Export when you are ready to test on hardware.
-          </p>
+          <h3>${homePageI18n.translate(homePageKeys.cardWhatItDoesTitle)}</h3>
+          <p>${homePageI18n.translate(homePageKeys.cardWhatItDoesBody)}</p>
+          <p class="hint">${homePageI18n.translate(homePageKeys.cardWhatItDoesHint)}</p>
         </wa-card>
 
         <wa-card>
-          <h3>SD config files</h3>
+          <h3>${homePageI18n.translate(homePageKeys.cardConfigFilesTitle)}</h3>
           <table class="file-table">
             <thead>
               <tr>
-                <th scope="col">File</th>
-                <th scope="col">Purpose</th>
-                <th scope="col">In editor</th>
+                <th scope="col">${homePageI18n.translate(homePageKeys.tableFile)}</th>
+                <th scope="col">${homePageI18n.translate(homePageKeys.tablePurpose)}</th>
+                <th scope="col">${homePageI18n.translate(homePageKeys.tableInEditor)}</th>
               </tr>
             </thead>
             <tbody>
@@ -196,18 +164,24 @@ export class PoHomePage extends PoElement {
         </wa-card>
 
         <wa-card>
-          <h3>Typical workflow</h3>
+          <h3>${homePageI18n.translate(homePageKeys.cardWorkflowTitle)}</h3>
           <ol class="steps">
-            <li>Set up <strong>Board</strong> and <strong>Features</strong> for your chassis and contest rules.</li>
-            <li>Define <strong>Blades</strong> — data pins, pixel counts, and power FET assignments.</li>
-            <li>Add <strong>Blade styles</strong> and <strong>Presets</strong> (coming soon).</li>
-            <li>Open <strong>Export</strong>, copy or download INI files, and copy them to the SD card.</li>
-            <li>Boot the saber with your <code>config-files-config.h</code> profile and verify on hardware.</li>
+            <li>${homePageI18n.translate(homePageKeys.workflowStep1)}</li>
+            <li>${homePageI18n.translate(homePageKeys.workflowStep2)}</li>
+            <li>${homePageI18n.translate(homePageKeys.workflowStep3)}</li>
+            <li>${homePageI18n.translate(homePageKeys.workflowStep4)}</li>
+            <li>${homePageI18n.translate(homePageKeys.workflowStep5)}</li>
           </ol>
           <div class="actions">
-            <wa-button variant="brand" href="#/board">Start with Board</wa-button>
-            <wa-button variant="neutral" href="#/blades">Edit blades</wa-button>
-            <wa-button variant="neutral" href="#/export">Export</wa-button>
+            <wa-button variant="brand" href="#/board"
+              >${homePageI18n.translate(homePageKeys.actionStartBoard)}</wa-button
+            >
+            <wa-button variant="neutral" href="#/blades"
+              >${homePageI18n.translate(homePageKeys.actionEditBlades)}</wa-button
+            >
+            <wa-button variant="neutral" href="#/export"
+              >${homePageI18n.translate(homePageKeys.actionExport)}</wa-button
+            >
           </div>
         </wa-card>
       </section>
@@ -215,13 +189,13 @@ export class PoHomePage extends PoElement {
   }
 
   private renderFileRow(row: ConfigFileRow) {
-    const statusLabel =
-      row.status === 'ready' ? 'Editor ready' : row.status === 'partial' ? 'Partial' : 'Planned';
     return html`
       <tr>
-        <td class="file-path">${row.path}</td>
-        <td>${row.purpose}</td>
-        <td class="status status--${row.status}">${statusLabel}</td>
+        <td class="file-path">${homePageI18n.translate(homePageConfigFilePathKeys[row.id])}</td>
+        <td>${homePageI18n.translate(homePageConfigFilePurposeKeys[row.id])}</td>
+        <td class="status status--${row.status}">
+          ${homePageI18n.translate(homePageStatusKeys[row.status])}
+        </td>
       </tr>
     `;
   }

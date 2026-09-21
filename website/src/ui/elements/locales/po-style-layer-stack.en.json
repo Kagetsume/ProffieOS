@@ -1,0 +1,17 @@
+{
+  "moveTowardTop.aria": "Move layer ${stackIndex} toward top",
+  "moveTowardTop.title": "Move toward top",
+  "moveTowardBase.aria": "Move layer ${stackIndex} toward base",
+  "moveTowardBase.title": "Move toward base",
+  "removeLayer.aria": "Remove layer ${stackIndex}",
+  "removeLayer.title": "Remove layer",
+  "removeLayer.only.title": "Cannot remove the only layer",
+  "label.style": "Style",
+  "label.blend": "Blend",
+  "label.opacity": "Opacity (0–32768)",
+  "hint.configExport": "Exports as <code>layer = config ${configSection}</code>.",
+  "hint.sectionVar": "Section var <code>${varName}</code>",
+  "button.towardBase": "↓ Toward base",
+  "button.towardTop": "↑ Toward top",
+  "button.removeLayer": "Remove layer"
+}

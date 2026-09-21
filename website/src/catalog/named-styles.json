@@ -43,13 +43,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         },
         {
           "slot": "lockup",
@@ -86,13 +88,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         },
         {
           "slot": "lockup",
@@ -123,13 +127,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -148,13 +154,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -215,13 +223,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         },
         {
           "slot": "spark_tip",
@@ -283,13 +293,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "100"
+          "default": "100",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "200"
+          "default": "200",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -326,13 +338,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -382,13 +396,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         },
         {
           "slot": "clash",
@@ -443,13 +459,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -480,13 +498,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -517,13 +537,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -548,13 +570,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         },
         {
           "slot": "spark_tip",
@@ -603,13 +627,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -634,13 +660,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -671,13 +699,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -702,13 +732,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -733,13 +765,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -764,13 +798,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -795,13 +831,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -826,13 +864,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -857,13 +897,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -888,13 +930,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -919,13 +963,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -950,13 +996,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -981,13 +1029,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -1012,13 +1062,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -1049,13 +1101,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -1080,13 +1134,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -1111,13 +1167,15 @@
           "slot": "ext",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "ret",
           "label": "Retract ms",
           "type": "number",
-          "default": "800"
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
         }
       ]
     },
@@ -1589,7 +1647,8 @@
           "slot": "extend_ms",
           "label": "Extend ms",
           "type": "number",
-          "default": "300"
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
         },
         {
           "slot": "fade_ms",

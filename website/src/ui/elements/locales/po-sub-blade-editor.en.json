@@ -1,0 +1,11 @@
+{
+  "heading": "Sub-blades",
+  "hint": "Split this strip into ${logicalCount} logical blade${logicalSuffix} (${logicalCount} preset <code>style =</code> line${logicalSuffix}). Leave empty to use the full strip. Up to ${maxSubBlades} ranges — <code>sub_blade = first, last</code> (0-based, inclusive).",
+  "empty": "Full strip — no sub_blade lines exported.",
+  "slotLabel": "sub_blade",
+  "label.first": "first",
+  "label.last": "last",
+  "meta.ledCount": "${count} LED${ledSuffix}",
+  "meta.invalid": "Invalid (need 0 ≤ first ≤ last < ${pixels})",
+  "addRange": "Add sub-blade range"
+}

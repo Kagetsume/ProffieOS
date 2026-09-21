@@ -22,11 +22,29 @@ import {
 export type StyleSectionsState = {
   sections: StyleSection[];
   activeSectionId: string;
+  /** Expanded layer row in the styles editor (empty = collapsed). */
+  activeLayerId: string;
 };
 
 const defaults = createDefaultStyleSections();
 
+function defaultActiveLayerId(sections: StyleSection[]): string {
+  const section = sections[0];
+  return section?.layers[section.layers.length - 1]?.id ?? '';
+}
+
+function activeLayerForSection(section: StyleSection | undefined, currentId: string): string {
+  if (!section) {
+    return '';
+  }
+  if (currentId && section.layers.some((layer) => layer.id === currentId)) {
+    return currentId;
+  }
+  return section.layers[section.layers.length - 1]?.id ?? '';
+}
+
 export const activeSectionChanged = createEvent<string>();
+export const activeLayerChanged = createEvent<string>();
 export const styleSectionAdded = createEvent<void>();
 export const styleSectionRemoved = createEvent<string>();
 export const sectionVarChanged = createEvent<{ sectionId: string; key: string; value: string }>();
@@ -73,12 +91,28 @@ function nextSectionId(sections: StyleSection[]): string {
 export const $styleSections = createStore<StyleSectionsState>({
   sections: defaults,
   activeSectionId: defaults[0]!.id,
+  activeLayerId: defaultActiveLayerId(defaults),
 })
   .on(activeSectionChanged, (state, id) => {
-    if (!findSection(state.sections, id)) {
+    const section = findSection(state.sections, id);
+    if (!section) {
       return state;
     }
-    return { ...state, activeSectionId: id };
+    return {
+      ...state,
+      activeSectionId: id,
+      activeLayerId: activeLayerForSection(section, ''),
+    };
+  })
+  .on(activeLayerChanged, (state, layerId) => {
+    const section = findSection(state.sections, state.activeSectionId);
+    if (!section) {
+      return state;
+    }
+    if (layerId && !section.layers.some((layer) => layer.id === layerId)) {
+      return state;
+    }
+    return { ...state, activeLayerId: layerId };
   })
   .on(styleSectionAdded, (state) => {
     const id = nextSectionId(state.sections);
@@ -90,6 +124,7 @@ export const $styleSections = createStore<StyleSectionsState>({
     return {
       sections: [...state.sections, section],
       activeSectionId: id,
+      activeLayerId: section.layers[section.layers.length - 1]?.id ?? '',
     };
   })
   .on(styleSectionRemoved, (state, sectionId) => {
@@ -99,7 +134,12 @@ export const $styleSections = createStore<StyleSectionsState>({
     const sections = state.sections.filter((section) => section.id !== sectionId);
     const activeSectionId =
       state.activeSectionId === sectionId ? sections[0]!.id : state.activeSectionId;
-    return { sections, activeSectionId };
+    const activeSection = findSection(sections, activeSectionId);
+    return {
+      sections,
+      activeSectionId,
+      activeLayerId: activeLayerForSection(activeSection, state.activeLayerId),
+    };
   })
   .on(sectionVarChanged, (state, { sectionId, key, value }) => ({
     ...state,
@@ -130,9 +170,8 @@ export const $styleSections = createStore<StyleSectionsState>({
       layers: [...section.layers, createDefaultLayer()],
     })),
   }))
-  .on(styleLayerRemoved, (state, { sectionId, layerId }) => ({
-    ...state,
-    sections: updateSection(state.sections, sectionId, (section) => {
+  .on(styleLayerRemoved, (state, { sectionId, layerId }) => {
+    const sections = updateSection(state.sections, sectionId, (section) => {
       if (section.layers.length <= 1) {
         return section;
       }
@@ -140,8 +179,14 @@ export const $styleSections = createStore<StyleSectionsState>({
         ...section,
         layers: section.layers.filter((layer) => layer.id !== layerId),
       };
-    }),
-  }))
+    });
+    const activeSection = findSection(sections, state.activeSectionId);
+    const nextActiveLayerId =
+      state.activeLayerId === layerId
+        ? activeLayerForSection(activeSection, '')
+        : state.activeLayerId;
+    return { ...state, sections, activeLayerId: nextActiveLayerId };
+  })
   .on(styleLayerUpdated, (state, { sectionId, layerId, patch }) => ({
     ...state,
     sections: updateSection(state.sections, sectionId, (section) => ({
@@ -186,6 +231,7 @@ export const $styleSections = createStore<StyleSectionsState>({
     return {
       sections: [...state.sections, section],
       activeSectionId: id,
+      activeLayerId: section.layers[section.layers.length - 1]?.id ?? '',
     };
   });
 

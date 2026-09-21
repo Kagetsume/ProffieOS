@@ -15,6 +15,9 @@ import {
   updatePowerPinRow,
   usedPresetsForPicker,
 } from '../../model/power-pins';
+import { contextLogger } from '../../logger/index.js';
+import { powerPinEditorI18n } from './po-power-pin-editor.i18n.js';
+import { powerPinEditorKeys } from './po-power-pin-editor.keys.js';
 import './po-pin-picker.js';
 
 function powerPinFieldLabel(index: number, count: number): string {
@@ -72,7 +75,7 @@ export class PoPowerPinEditor extends LitElement {
             ?disabled=${this.localPins.length <= 1}
             @click=${() => this.removeRow(index)}
           >
-            Remove
+            ${powerPinEditorI18n.translate(powerPinEditorKeys.remove)}
           </wa-button>
         </div>
       `,
@@ -81,11 +84,8 @@ export class PoPowerPinEditor extends LitElement {
     return html`
       <div class="power-pin-editor" data-field="powerPins">
         <div class="power-pin-heading">
-          Power pins
-          <span class="power-pin-hint">
-            Six FET pins (bladePowerPin1–6) are shared across all NeoPixel blades — each pin can
-            only be used once in the whole saber.
-          </span>
+          ${powerPinEditorI18n.translate(powerPinEditorKeys.heading)}
+          <span class="power-pin-hint">${powerPinEditorI18n.translate(powerPinEditorKeys.hint)}</span>
         </div>
         <div class="power-pin-rows">${rows}</div>
         <wa-button
@@ -96,13 +96,15 @@ export class PoPowerPinEditor extends LitElement {
           ?disabled=${this.localPins.length >= MAX_POWER_PINS}
           @click=${this.addRow}
         >
-          Add power pin
+          ${powerPinEditorI18n.translate(powerPinEditorKeys.addPowerPin)}
         </wa-button>
       </div>
     `;
   }
 
   private emitPins(next: string[]): void {
+    const log = contextLogger('po-power-pin-editor', 'emitPins');
+    log.entry({ next, previous: this.localPins });
     this.localPins = next;
     this.requestUpdate();
     this.dispatchEvent(
@@ -112,24 +114,38 @@ export class PoPowerPinEditor extends LitElement {
         composed: true,
       }),
     );
+    log.exit({ pins: next });
   }
 
   private onPinChange(index: number, value: string): void {
+    const log = contextLogger('po-power-pin-editor', 'onPinChange');
+    log.entry({ index, value });
     this.emitPins(updatePowerPinRow(this.localPins, index, value));
+    log.exit();
   }
 
   private addRow = (): void => {
+    const log = contextLogger('po-power-pin-editor', 'addRow');
+    log.entry({ pinCount: this.localPins.length, max: MAX_POWER_PINS });
     if (this.localPins.length >= MAX_POWER_PINS) {
+      log.debug('branch: at max power pins, skipping add', { pinCount: this.localPins.length });
+      log.exit('max-reached');
       return;
     }
     this.emitPins(addPowerPinRow(this.localPins));
+    log.exit({ pinCount: this.localPins.length });
   };
 
   private removeRow = (index: number): void => {
+    const log = contextLogger('po-power-pin-editor', 'removeRow');
+    log.entry({ index, pinCount: this.localPins.length });
     if (this.localPins.length <= 1) {
+      log.debug('branch: only one row, skipping remove', { pinCount: this.localPins.length });
+      log.exit('min-reached');
       return;
     }
     this.emitPins(removePowerPinRow(this.localPins, index));
+    log.exit({ pinCount: this.localPins.length });
   };
 }
 

@@ -1,0 +1,7 @@
+{
+  "placeholder.data": "Select data pin…",
+  "placeholder.power": "Select power pin…",
+  "option.custom": "Custom (type pin name or number)",
+  "option.inUse": "${label} (in use)",
+  "placeholder.custom": "e.g. 20 or bladePin"
+}

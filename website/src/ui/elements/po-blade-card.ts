@@ -13,10 +13,13 @@ import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
+import { contextLogger } from '../../logger/index.js';
 import type { BladeDefinition, BladeType, SubBladeRange } from '../../model/blades';
 import { boardPinReferenceLabel } from '../../model/data-pins';
 import { effectivePowerPins } from '../../model/power-pins';
 import { getUsedDataPinsForPicker } from '../../stores/data-pin-usage';
+import { bladeCardI18n } from './po-blade-card.i18n.js';
+import { bladeCardKeys } from './po-blade-card.keys.js';
 import './po-pin-picker.js';
 import './po-power-pin-editor.js';
 import './po-sub-blade-editor.js';
@@ -43,25 +46,27 @@ export class PoBladeCard extends LitElement {
     return html`
       <wa-card class="blade-card" data-blade-index="${blade.index}">
         <div slot="header" class="blade-card-header">
-          <strong>Blade ${blade.index}</strong>
+          <strong>${bladeCardI18n.translate(bladeCardKeys.header, { index: blade.index })}</strong>
           ${boardPinLabel
             ? html`<span class="blade-label">${boardPinLabel}</span>`
             : nothing}
-          <wa-button size="small" variant="danger" @click=${this.onRemove}>Remove</wa-button>
+          <wa-button size="small" variant="danger" @click=${this.onRemove}
+            >${bladeCardI18n.translate(bladeCardKeys.remove)}</wa-button
+          >
         </div>
         <div class="form-grid">
           <label>
-            Type
+            ${bladeCardI18n.translate(bladeCardKeys.labelType)}
             <wa-select
               .value=${blade.type}
               @wa-change=${this.onTypeChange}
             >
-              <wa-option value="ws2811">NeoPixel (ws2811)</wa-option>
-              <wa-option value="simple">Simple PWM LED</wa-option>
+              <wa-option value="ws2811">${bladeCardI18n.translate(bladeCardKeys.optionWs2811)}</wa-option>
+              <wa-option value="simple">${bladeCardI18n.translate(bladeCardKeys.optionSimple)}</wa-option>
             </wa-select>
           </label>
           <label class="data-pin-field">
-            data_pin
+            ${bladeCardI18n.translate(bladeCardKeys.labelDataPin)}
             <po-pin-picker
               .mode=${'data'}
               .value=${blade.dataPin}
@@ -70,45 +75,45 @@ export class PoBladeCard extends LitElement {
             ></po-pin-picker>
           </label>
           <label class="board-pin-field">
-            Board pin (silkscreen)
+            ${bladeCardI18n.translate(bladeCardKeys.labelBoardPin)}
             <wa-input
               class="readonly-field"
               .value=${boardPinLabel}
-              placeholder="Select a data pin…"
+              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderDataPin)}
               readonly
             ></wa-input>
           </label>
           <label class="comment-field span-2">
-            Note (optional)
+            ${bladeCardI18n.translate(bladeCardKeys.labelComment)}
             <wa-input
               .value=${blade.comment ?? ''}
-              placeholder="e.g. Crystal chamber accent"
+              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderComment)}
               @wa-input=${this.onCommentInput}
             ></wa-input>
           </label>
           ${isSimple
             ? html`
                 <label>
-                  led
+                  ${bladeCardI18n.translate(bladeCardKeys.labelLed)}
                   <wa-input
                     .value=${blade.led ?? 'CreeXPE2White'}
                     @wa-input=${this.onLedInput}
                   ></wa-input>
                 </label>
                 <label>
-                  active_state
+                  ${bladeCardI18n.translate(bladeCardKeys.labelActiveState)}
                   <wa-select
                     .value=${blade.activeState ?? 'high'}
                     @wa-change=${this.onActiveStateChange}
                   >
-                    <wa-option value="high">high</wa-option>
-                    <wa-option value="low">low</wa-option>
+                    <wa-option value="high">${bladeCardI18n.translate(bladeCardKeys.optionHigh)}</wa-option>
+                    <wa-option value="low">${bladeCardI18n.translate(bladeCardKeys.optionLow)}</wa-option>
                   </wa-select>
                 </label>
               `
             : html`
                 <label>
-                  pixels
+                  ${bladeCardI18n.translate(bladeCardKeys.labelPixels)}
                   <wa-input
                     type="number"
                     .value=${String(blade.pixels ?? 144)}
@@ -135,6 +140,8 @@ export class PoBladeCard extends LitElement {
   }
 
   private patch(patch: Partial<BladeDefinition>): void {
+    const log = contextLogger('po-blade-card', 'patch');
+    log.entry({ index: this.blade.index, patchKeys: Object.keys(patch) });
     this.dispatchEvent(
       new CustomEvent('blade-patch', {
         detail: { index: this.blade.index, patch },
@@ -142,9 +149,12 @@ export class PoBladeCard extends LitElement {
         composed: true,
       }),
     );
+    log.exit();
   }
 
   private onRemove = (): void => {
+    const log = contextLogger('po-blade-card', 'onRemove');
+    log.entry({ index: this.blade.index });
     this.dispatchEvent(
       new CustomEvent('blade-remove', {
         detail: { index: this.blade.index },
@@ -152,11 +162,15 @@ export class PoBladeCard extends LitElement {
         composed: true,
       }),
     );
+    log.exit();
   };
 
   private onTypeChange = (event: Event): void => {
+    const log = contextLogger('po-blade-card', 'onTypeChange');
     const type = (event.target as HTMLSelectElement & { value: BladeType }).value;
+    log.entry({ index: this.blade.index, type });
     if (type === 'simple') {
+      log.debug('branch: switch to simple', { type });
       this.patch({
         type,
         led: this.blade.led ?? 'CreeXPE2White',
@@ -166,6 +180,7 @@ export class PoBladeCard extends LitElement {
         subBlades: undefined,
       });
     } else {
+      log.debug('branch: switch to ws2811', { type });
       this.patch({
         type,
         pixels: this.blade.pixels ?? 144,
@@ -174,37 +189,67 @@ export class PoBladeCard extends LitElement {
         activeState: undefined,
       });
     }
+    log.exit();
   };
 
   private onDataPinChange = (event: CustomEvent<{ value: string }>): void => {
+    const log = contextLogger('po-blade-card', 'onDataPinChange');
+    log.entry({ index: this.blade.index, dataPin: event.detail.value });
     this.patch({ dataPin: event.detail.value });
+    log.exit();
   };
 
   private onCommentInput = (event: Event): void => {
-    this.patch({ comment: (event.target as HTMLInputElement).value });
+    const log = contextLogger('po-blade-card', 'onCommentInput');
+    const comment = (event.target as HTMLInputElement).value;
+    log.entry({ index: this.blade.index, comment });
+    this.patch({ comment });
+    log.exit();
   };
 
   private onLedInput = (event: Event): void => {
-    this.patch({ led: (event.target as HTMLInputElement).value });
+    const log = contextLogger('po-blade-card', 'onLedInput');
+    const led = (event.target as HTMLInputElement).value;
+    log.entry({ index: this.blade.index, led });
+    this.patch({ led });
+    log.exit();
   };
 
   private onActiveStateChange = (event: Event): void => {
-    this.patch({
-      activeState: (event.target as HTMLSelectElement).value as 'high' | 'low',
-    });
+    const log = contextLogger('po-blade-card', 'onActiveStateChange');
+    const activeState = (event.target as HTMLSelectElement).value as 'high' | 'low';
+    log.entry({ index: this.blade.index, activeState });
+    this.patch({ activeState });
+    log.exit();
   };
 
   private onPixelsInput = (event: Event): void => {
-    this.patch({ pixels: Number((event.target as HTMLInputElement).value) || 0 });
+    const log = contextLogger('po-blade-card', 'onPixelsInput');
+    const pixels = Number((event.target as HTMLInputElement).value) || 0;
+    log.entry({ index: this.blade.index, pixels });
+    this.patch({ pixels });
+    log.exit();
   };
 
   private onPinsChange = (event: CustomEvent<{ pins: string[] }>): void => {
+    const log = contextLogger('po-blade-card', 'onPinsChange');
+    log.entry({ index: this.blade.index, pinCount: event.detail.pins.length });
     this.patch({ powerPins: event.detail.pins });
+    log.exit();
   };
 
   private onSubBladesChange = (event: CustomEvent<{ subBlades: SubBladeRange[] }>): void => {
+    const log = contextLogger('po-blade-card', 'onSubBladesChange');
     const subBlades = event.detail.subBlades;
-    this.patch({ subBlades: subBlades.length > 0 ? subBlades : undefined });
+    log.entry({ index: this.blade.index, count: subBlades.length });
+    if (subBlades.length > 0) {
+      log.debug('branch: keep subBlades', { count: subBlades.length });
+      this.patch({ subBlades });
+    } else {
+      log.debug('branch: clear subBlades');
+      this.patch({ subBlades: undefined });
+    }
+    log.exit();
   };
 }
 

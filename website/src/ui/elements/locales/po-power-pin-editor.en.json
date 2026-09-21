@@ -1,0 +1,5 @@
+{
+  "heading": "Power pins",
+  "hint": "Six FET pins (bladePowerPin1–6) are shared across all NeoPixel blades — each pin can only be used once in the whole saber.",
+  "addPowerPin": "Add power pin"
+}

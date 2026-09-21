@@ -8,68 +8,55 @@ import '@awesome.me/webawesome/dist/components/select/select.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
 import type { BoardFeaturesState, ButtonCount } from '../../model/board';
 import { $boardFeatures, boardFeaturesChanged } from '../../stores/boardFeatures';
+import { contextLogger } from '../../logger/index.js';
+import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
+import { boardPageI18n } from './po-board-page.i18n.js';
+import { boardPageKeys } from './po-board-page.keys.js';
 import { poConfigFormStyles, poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 export class PoBoardPage extends PoElement {
   static styles = [poHostStyles, poPageStyles, poConfigFormStyles];
 
-  private state = $boardFeatures.getState();
-  private unwatch?: () => void;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.unwatch = $boardFeatures.watch((state) => {
-      this.state = state;
-      this.requestUpdate();
-    });
-  }
-
-  disconnectedCallback(): void {
-    this.unwatch?.();
-    super.disconnectedCallback();
-  }
+  private readonly featuresController = new EffectorController(this, $boardFeatures);
 
   render() {
+    const state = this.featuresController.value;
     return html`
       <section class="page">
-        <h2>Board</h2>
-        <p class="config-lead">
-          Hardware options for <code>config/board.ini</code> — button count, OLED, and Bluetooth.
-          Gesture and twist toggles are also exported here (and in
-          <code>config/features.ini</code> for contest overrides).
-        </p>
+        <h2>${boardPageI18n.translate(boardPageKeys.title)}</h2>
+        <p class="config-lead">${boardPageI18n.translate(boardPageKeys.lead)}</p>
 
         <wa-card>
           <div class="form-grid">
             <label>
-              Button count
+              ${boardPageI18n.translate(boardPageKeys.labelButtonCount)}
               <wa-select
-                .value=${String(this.state.buttons)}
+                .value=${String(state.buttons)}
                 @wa-change=${(event: Event) =>
                   this.patch({
                     buttons: Number((event.target as HTMLSelectElement).value) as ButtonCount,
                   })}
               >
-                <wa-option value="1">1 button</wa-option>
-                <wa-option value="2">2 buttons</wa-option>
-                <wa-option value="3">3 buttons</wa-option>
+                <wa-option value="1">${boardPageI18n.translate(boardPageKeys.optionButtons1)}</wa-option>
+                <wa-option value="2">${boardPageI18n.translate(boardPageKeys.optionButtons2)}</wa-option>
+                <wa-option value="3">${boardPageI18n.translate(boardPageKeys.optionButtons3)}</wa-option>
               </wa-select>
             </label>
 
             <label class="switch-row">
-              OLED display
+              ${boardPageI18n.translate(boardPageKeys.labelOled)}
               <wa-switch
-                .checked=${this.state.oled}
+                .checked=${state.oled}
                 @change=${(event: Event) =>
                   this.patch({ oled: (event.target as HTMLInputElement).checked })}
               ></wa-switch>
             </label>
 
             <label class="switch-row">
-              Bluetooth serial
+              ${boardPageI18n.translate(boardPageKeys.labelBluetooth)}
               <wa-switch
-                .checked=${this.state.bluetooth}
+                .checked=${state.bluetooth}
                 @change=${(event: Event) =>
                   this.patch({ bluetooth: (event.target as HTMLInputElement).checked })}
               ></wa-switch>
@@ -77,13 +64,16 @@ export class PoBoardPage extends PoElement {
           </div>
         </wa-card>
 
-        <p class="hint">Changes appear on the Export page as <code>board.ini</code>.</p>
+        <p class="hint">${boardPageI18n.translate(boardPageKeys.hintExportAs, { filename: 'board.ini' })}</p>
       </section>
     `;
   }
 
   private patch(partial: Partial<BoardFeaturesState>): void {
+    const log = contextLogger('po-board-page', 'patch');
+    log.entry({ partial });
     boardFeaturesChanged(partial);
+    log.exit();
   }
 }
 

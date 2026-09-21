@@ -29,6 +29,7 @@ describe('config-styles', () => {
   it('seeds defaults from config file styles', () => {
     const sections = createDefaultConfigStyles();
     expect(sections.map((section) => section.id)).toEqual([
+      'rainbow_strobe',
       'smoke_blade',
       'water_blade',
       'fire_blast',

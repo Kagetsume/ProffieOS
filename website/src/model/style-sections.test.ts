@@ -25,7 +25,7 @@ describe('style-sections', () => {
   });
 
   it('detects primary base layer and base section vars', () => {
-    const section = createDefaultStyleSections()[0]!;
+    const section = createDefaultStyleSections().find((entry) => entry.id === 'with_vars')!;
     const base = sectionPrimaryBaseLayer(section);
     expect(base?.styleName).toBeTruthy();
     const entries = baseSectionVarEntries(section);

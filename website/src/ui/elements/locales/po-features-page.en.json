@@ -1,0 +1,10 @@
+{
+  "title": "Features",
+  "lead": "Feature toggles for <code>config/features.ini</code>. Loaded after <code>config/board.ini</code> — these values override gesture and twist settings from the board file (useful for contest-specific SD cards).",
+  "feature.gesture.label": "Gesture ignition",
+  "feature.gesture.description": "When on, motion gestures (swing, thrust, or twist) can ignite the blade without pressing the activation switch. When off, the saber only turns on from the button.",
+  "feature.twistOn.label": "Twist to turn on",
+  "feature.twistOn.description": "When on, rotating the hilt in the twist-on gesture powers the saber on. When off, twist cannot be used to ignite — useful if you want button-only activation.",
+  "feature.twistOff.label": "Twist to turn off",
+  "feature.twistOff.description": "When on, a twist gesture shuts the saber down. When off, twist-off is disabled — a common contest setting so the blade cannot be turned off accidentally during performance."
+}

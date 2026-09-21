@@ -19,6 +19,9 @@ import {
   updateSubBladeRow,
 } from '../../model/sub-blades';
 import { MAX_SUB_BLADES } from '../../validation/limits';
+import { contextLogger } from '../../logger/index.js';
+import { subBladeEditorI18n } from './po-sub-blade-editor.i18n.js';
+import { subBladeEditorKeys } from './po-sub-blade-editor.keys.js';
 
 export class PoSubBladeEditor extends LitElement {
   static properties = {
@@ -48,24 +51,25 @@ export class PoSubBladeEditor extends LitElement {
     return html`
       <div class="sub-blade-editor" data-field="subBlades">
         <div class="sub-blade-heading">
-          Sub-blades
-          <span class="sub-blade-hint">
-            Split this strip into ${logicalCount} logical blade${logicalCount === 1 ? '' : 's'}
-            (${logicalCount} preset <code>style =</code> line${logicalCount === 1 ? '' : 's'}).
-            Leave empty to use the full strip. Up to ${MAX_SUB_BLADES} ranges —
-            <code>sub_blade = first, last</code> (0-based, inclusive).
-          </span>
+          ${subBladeEditorI18n.translate(subBladeEditorKeys.heading)}
+          <span class="sub-blade-hint"
+            >${subBladeEditorI18n.translate(subBladeEditorKeys.hint, {
+              logicalCount,
+              logicalSuffix: logicalCount === 1 ? '' : 's',
+              maxSubBlades: MAX_SUB_BLADES,
+            })}</span
+          >
         </div>
         ${rows.length === 0
-          ? html`<p class="sub-blade-empty">Full strip — no sub_blade lines exported.</p>`
+          ? html`<p class="sub-blade-empty">${subBladeEditorI18n.translate(subBladeEditorKeys.empty)}</p>`
           : html`
               <div class="sub-blade-rows">
                 ${rows.map(
                   (row, index) => html`
                     <div class="sub-blade-row" data-sub-blade-row="${index}">
-                      <span class="sub-blade-slot">sub_blade</span>
+                      <span class="sub-blade-slot">${subBladeEditorI18n.translate(subBladeEditorKeys.slotLabel)}</span>
                       <label>
-                        first
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelFirst)}
                         <wa-input
                           type="number"
                           min="0"
@@ -75,7 +79,7 @@ export class PoSubBladeEditor extends LitElement {
                         ></wa-input>
                       </label>
                       <label>
-                        last
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelLast)}
                         <wa-input
                           type="number"
                           min="0"
@@ -90,8 +94,11 @@ export class PoSubBladeEditor extends LitElement {
                           : 'sub-blade-meta--invalid'}"
                       >
                         ${isValidSubBladeRange(row, this.pixels)
-                          ? `${subBladeLedCount(row)} LED${subBladeLedCount(row) === 1 ? '' : 's'}`
-                          : `Invalid (need 0 ≤ first ≤ last < ${this.pixels})`}
+                          ? subBladeEditorI18n.translate(subBladeEditorKeys.metaLedCount, {
+                              count: subBladeLedCount(row),
+                              ledSuffix: subBladeLedCount(row) === 1 ? '' : 's',
+                            })
+                          : subBladeEditorI18n.translate(subBladeEditorKeys.metaInvalid, { pixels: this.pixels })}
                       </span>
                       <wa-button
                         size="small"
@@ -99,7 +106,7 @@ export class PoSubBladeEditor extends LitElement {
                         data-action="remove-sub-blade"
                         @click=${() => this.removeRow(index)}
                       >
-                        Remove
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.remove)}
                       </wa-button>
                     </div>
                   `,
@@ -114,13 +121,15 @@ export class PoSubBladeEditor extends LitElement {
           ?disabled=${rows.length >= MAX_SUB_BLADES}
           @click=${this.addRow}
         >
-          Add sub-blade range
+          ${subBladeEditorI18n.translate(subBladeEditorKeys.addRange)}
         </wa-button>
       </div>
     `;
   }
 
   private emitSubBlades(next: SubBladeRange[]): void {
+    const log = contextLogger('po-sub-blade-editor', 'emitSubBlades');
+    log.entry({ next, previous: this.localSubBlades });
     this.localSubBlades = next;
     this.requestUpdate();
     this.dispatchEvent(
@@ -130,6 +139,7 @@ export class PoSubBladeEditor extends LitElement {
         composed: true,
       }),
     );
+    log.exit({ subBlades: next });
   }
 
   private onFieldInput(
@@ -137,20 +147,29 @@ export class PoSubBladeEditor extends LitElement {
     field: 'first' | 'last',
     event: Event,
   ): void {
+    const log = contextLogger('po-sub-blade-editor', 'onFieldInput');
     const value = Number((event.target as HTMLInputElement).value);
+    log.entry({ index, field, value });
     this.emitSubBlades(
       updateSubBladeRow(this.localSubBlades, index, {
         [field]: Number.isFinite(value) ? value : 0,
       }),
     );
+    log.exit();
   }
 
   private addRow = (): void => {
+    const log = contextLogger('po-sub-blade-editor', 'addRow');
+    log.entry({ rowCount: this.localSubBlades.length, max: MAX_SUB_BLADES });
     this.emitSubBlades(addSubBladeRow(this.localSubBlades));
+    log.exit({ rowCount: this.localSubBlades.length });
   };
 
   private removeRow = (index: number): void => {
+    const log = contextLogger('po-sub-blade-editor', 'removeRow');
+    log.entry({ index, rowCount: this.localSubBlades.length });
     this.emitSubBlades(removeSubBladeRow(this.localSubBlades, index));
+    log.exit({ rowCount: this.localSubBlades.length });
   };
 }
 

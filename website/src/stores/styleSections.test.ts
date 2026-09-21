@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from 'vitest';
 import { getConfigStyle } from '../model/config-styles';
 import {
   $styleSections,
+  activeLayerChanged,
   activeSectionChanged,
   configStyleAdded,
   getActiveSection,
@@ -71,6 +72,39 @@ describe('styleSections store', () => {
     expect(suggestedBlendForStyle('blast').blend).toBe('add');
     expect(suggestedBlendForStyle('fire_mask').blend).toBe('multiply');
     expect(suggestedBlendForStyle('solid').blend).toBe('normal');
+  });
+
+  it('tracks expanded layer selection', () => {
+    const section = getActiveSection($styleSections.getState())!;
+    const layerId = section.layers[0]!.id;
+    activeLayerChanged(layerId);
+    expect($styleSections.getState().activeLayerId).toBe(layerId);
+    activeLayerChanged('');
+    expect($styleSections.getState().activeLayerId).toBe('');
+    activeLayerChanged('missing-layer');
+    expect($styleSections.getState().activeLayerId).toBe('');
+  });
+
+  it('resets active layer when switching sections', () => {
+    styleSectionAdded();
+    const state = $styleSections.getState();
+    const firstSection = state.sections[0]!;
+    activeLayerChanged(firstSection.layers[0]!.id);
+    activeSectionChanged(state.sections[1]!.id);
+    expect($styleSections.getState().activeLayerId).toBe(
+      state.sections[1]!.layers.at(-1)!.id,
+    );
+  });
+
+  it('clears active layer when the expanded layer is removed', () => {
+    const section = getActiveSection($styleSections.getState())!;
+    styleLayerAdded({ sectionId: section.id });
+    const expanded = getActiveSection($styleSections.getState())!.layers.at(-1)!;
+    activeLayerChanged(expanded.id);
+    styleLayerRemoved({ sectionId: section.id, layerId: expanded.id });
+    expect($styleSections.getState().activeLayerId).toBe(
+      getActiveSection($styleSections.getState())!.layers.at(-1)!.id,
+    );
   });
 
   it('ignores invalid active section changes', () => {

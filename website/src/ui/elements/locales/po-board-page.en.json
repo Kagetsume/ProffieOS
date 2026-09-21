@@ -1,0 +1,10 @@
+{
+  "title": "Board",
+  "lead": "Hardware options for <code>config/board.ini</code> — button count, OLED, and Bluetooth. Gesture and twist toggles are also exported here (and in <code>config/features.ini</code> for contest overrides).",
+  "label.buttonCount": "Button count",
+  "option.buttons1": "1 button",
+  "option.buttons2": "2 buttons",
+  "option.buttons3": "3 buttons",
+  "label.oled": "OLED display",
+  "label.bluetooth": "Bluetooth serial"
+}

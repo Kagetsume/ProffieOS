@@ -46,6 +46,53 @@ describe('preview simulation', () => {
     expect(sectionInOutTimes(section)).toEqual({ extendMs: 500, retractMs: 1200 });
   });
 
+  it('treats -1 extend/retract as soundfont auto timing in preview', () => {
+    const solidSection: StyleSection = {
+      id: 'auto_inout',
+      vars: {},
+      layers: [
+        {
+          id: 'base',
+          styleName: 'solid',
+          args: ['cyan', '-1', '-1'],
+          blend: 'normal',
+          opacity: 32768,
+        },
+      ],
+    };
+    expect(sectionInOutTimes(solidSection)).toEqual({ extendMs: 800, retractMs: 1000 });
+
+    const standardSection: StyleSection = {
+      id: 'standard_auto',
+      vars: {},
+      layers: [
+        {
+          id: 'base',
+          styleName: 'standard',
+          args: ['cyan', 'white', '-1', '-1'],
+          blend: 'normal',
+          opacity: 32768,
+        },
+      ],
+    };
+    expect(sectionInOutTimes(standardSection)).toEqual({ extendMs: 800, retractMs: 1000 });
+
+    const kineticSection: StyleSection = {
+      id: 'kinetic_auto',
+      vars: {},
+      layers: [
+        {
+          id: 'base',
+          styleName: 'kinetic_charge',
+          args: ['blue', 'purple', 'white', '-1', '-1'],
+          blend: 'normal',
+          opacity: 32768,
+        },
+      ],
+    };
+    expect(sectionInOutTimes(kineticSection)).toEqual({ extendMs: 800, retractMs: 1000 });
+  });
+
   it('extends blade after preon completes', () => {
     const off = { ...createInitialPreviewSim(), powered: false };
     let sim = previewPowerOn(off, 1000, { extendMs: 300, retractMs: 800 }, true, false);

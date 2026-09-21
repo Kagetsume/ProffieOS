@@ -3,11 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { BladeDefinition } from '../model/blades';
-import {
-  getUsedPresetsForPicker,
-  registerPowerPinEditorRefresh,
-  wiringWithBladePins,
-} from './power-pin-usage';
+import { getUsedPresetsForPicker, wiringWithBladePins } from './power-pin-usage';
 
 const twoBlades: BladeDefinition[] = [
   { index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: ['bladePowerPin1'] },
@@ -27,15 +23,4 @@ describe('power pin usage store', () => {
     expect(merged[0]?.powerPins).toEqual(['bladePowerPin1']);
   });
 
-  it('registerPowerPinEditorRefresh returns an unsubscribe that removes the callback', () => {
-    let calls = 0;
-    const unwatch = registerPowerPinEditorRefresh(() => {
-      calls += 1;
-    });
-    unwatch();
-    registerPowerPinEditorRefresh(() => {
-      calls += 1;
-    })();
-    expect(calls).toBe(0);
-  });
 });

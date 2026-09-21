@@ -35,6 +35,7 @@ const catalog = stylesCatalog as { styles: ConfigStyleDef[] };
 
 /** Config styles loaded when the editor starts (from bundled catalog). */
 export const DEFAULT_CONFIG_STYLE_IDS = [
+  'rainbow_strobe',
   'smoke_blade',
   'water_blade',
   'fire_blast',

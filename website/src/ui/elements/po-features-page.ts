@@ -6,34 +6,21 @@ import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
 import type { BoardFeaturesState } from '../../model/board';
 import { $boardFeatures, boardFeaturesChanged } from '../../stores/boardFeatures';
+import { contextLogger } from '../../logger/index.js';
+import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
+import { featuresPageI18n } from './po-features-page.i18n.js';
+import { featuresPageFieldKeys, featuresPageKeys } from './po-features-page.keys.js';
 import { poConfigFormStyles, poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 type FeatureField = {
   key: 'gesture' | 'twistOn' | 'twistOff';
-  label: string;
-  description: string;
 };
 
 const FEATURE_FIELDS: FeatureField[] = [
-  {
-    key: 'gesture',
-    label: 'Gesture ignition',
-    description:
-      'When on, motion gestures (swing, thrust, or twist) can ignite the blade without pressing the activation switch. When off, the saber only turns on from the button.',
-  },
-  {
-    key: 'twistOn',
-    label: 'Twist to turn on',
-    description:
-      'When on, rotating the hilt in the twist-on gesture powers the saber on. When off, twist cannot be used to ignite — useful if you want button-only activation.',
-  },
-  {
-    key: 'twistOff',
-    label: 'Twist to turn off',
-    description:
-      'When on, a twist gesture shuts the saber down. When off, twist-off is disabled — a common contest setting so the blade cannot be turned off accidentally during performance.',
-  },
+  { key: 'gesture' },
+  { key: 'twistOn' },
+  { key: 'twistOff' },
 ];
 
 export class PoFeaturesPage extends PoElement {
@@ -76,49 +63,32 @@ export class PoFeaturesPage extends PoElement {
     `,
   ];
 
-  private state = $boardFeatures.getState();
-  private unwatch?: () => void;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.unwatch = $boardFeatures.watch((state) => {
-      this.state = state;
-      this.requestUpdate();
-    });
-  }
-
-  disconnectedCallback(): void {
-    this.unwatch?.();
-    super.disconnectedCallback();
-  }
+  private readonly featuresController = new EffectorController(this, $boardFeatures);
 
   render() {
+    const state = this.featuresController.value;
     return html`
       <section class="page">
-        <h2>Features</h2>
-        <p class="config-lead">
-          Feature toggles for <code>config/features.ini</code>. Loaded after
-          <code>config/board.ini</code> — these values override gesture and twist settings from the
-          board file (useful for contest-specific SD cards).
-        </p>
+        <h2>${featuresPageI18n.translate(featuresPageKeys.title)}</h2>
+        <p class="config-lead">${featuresPageI18n.translate(featuresPageKeys.lead)}</p>
 
         <wa-card>
           <div class="feature-list">
-            ${FEATURE_FIELDS.map((field) => this.renderField(field))}
+            ${FEATURE_FIELDS.map((field) => this.renderField(field, state))}
           </div>
         </wa-card>
 
-        <p class="hint">Changes appear on the Export page as <code>features.ini</code>.</p>
+        <p class="hint">${featuresPageI18n.translate(featuresPageKeys.hintExportAs, { filename: 'features.ini' })}</p>
       </section>
     `;
   }
 
-  private renderField(field: FeatureField) {
-    const checked = this.state[field.key];
+  private renderField(field: FeatureField, state: BoardFeaturesState) {
+    const checked = state[field.key];
     return html`
       <div class="feature-field">
-        <span class="feature-label">${field.label}</span>
-        <p class="feature-description">${field.description}</p>
+        <span class="feature-label">${featuresPageI18n.translate(featuresPageFieldKeys[field.key].label)}</span>
+        <p class="feature-description">${featuresPageI18n.translate(featuresPageFieldKeys[field.key].description)}</p>
         <wa-switch
           .checked=${checked}
           @change=${(event: Event) =>
@@ -129,7 +99,10 @@ export class PoFeaturesPage extends PoElement {
   }
 
   private patch(partial: Partial<BoardFeaturesState>): void {
+    const log = contextLogger('po-features-page', 'patch');
+    log.entry({ partial });
     boardFeaturesChanged(partial);
+    log.exit();
   }
 }
 

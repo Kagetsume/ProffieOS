@@ -1,0 +1,20 @@
+/**
+ * i18n keys for {@link PoBladePreview}.
+ *
+ * @module ui/elements/po-blade-preview.keys
+ */
+export const bladePreviewKeys = {
+  ariaLabel: 'ariaLabel',
+  powerOn: 'powerOn',
+  powerOff: 'powerOff',
+  blast: 'blast',
+  clash: 'clash',
+  swing: 'swing',
+  lockup: 'lockup',
+  lightningBlock: 'lightningBlock',
+  drag: 'drag',
+  melt: 'melt',
+  bladeAngle: 'bladeAngle',
+  bladeAngleHint: 'bladeAngleHint',
+  caption: 'caption',
+} as const;

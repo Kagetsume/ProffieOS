@@ -4,17 +4,24 @@
 import { describe, expect, it } from 'vitest';
 import { getConfigStyle, listConfigStyles } from './config-styles';
 import {
+  decodePresetStylePickerValue,
   decodeStylePickerValue,
   encodeFileRecipe,
   encodeLayerStyle,
   encodeLibraryRecipe,
   encodeNestedRecipe,
+  encodePresetConfigRecipe,
+  encodePresetLibraryRecipe,
+  encodePresetNamedStyle,
   layerStylePickerValue,
   listLayerStylePickerOptions,
+  listPresetStylePickerOptions,
   listRecipePickerOptions,
+  presetStylePickerValue,
   recipeDescription,
   summarizeRecipeLayers,
 } from './style-picker';
+import { defaultNeoPixelStyle } from './preset-styles';
 import type { StyleSection } from './style-sections';
 
 describe('style-picker', () => {
@@ -70,6 +77,64 @@ describe('style-picker', () => {
     ];
     expect(recipeDescription(sections[0], listConfigStyles())).toBeTruthy();
     expect(recipeDescription(undefined, listConfigStyles())).toBeUndefined();
+  });
+
+  it('lists preset style options from blade_styles.ini recipes and named styles', () => {
+    const sections: StyleSection[] = [
+      {
+        id: 'smoke_blade',
+        vars: {},
+        layers: [{ id: 'l1', styleName: 'standard', args: [], blend: 'normal', opacity: 32768 }],
+      },
+    ];
+    const options = listPresetStylePickerOptions(sections, listConfigStyles());
+    expect(options.some((option) => option.value === encodePresetConfigRecipe('smoke_blade'))).toBe(
+      true,
+    );
+    expect(options.some((option) => option.value === encodePresetLibraryRecipe('water_blade'))).toBe(
+      true,
+    );
+    expect(options.some((option) => option.value === encodePresetNamedStyle('standard'))).toBe(true);
+  });
+
+  it('decodes preset style picker values', () => {
+    expect(decodePresetStylePickerValue(encodePresetNamedStyle('fire'))).toEqual({
+      source: 'named',
+      ref: 'fire',
+    });
+    expect(decodePresetStylePickerValue(encodePresetConfigRecipe('smoke_blade'))).toEqual({
+      source: 'config',
+      ref: 'smoke_blade',
+    });
+    expect(decodePresetStylePickerValue(encodePresetLibraryRecipe('rainbow_strobe'))).toEqual({
+      source: 'library',
+      ref: 'rainbow_strobe',
+    });
+  });
+
+  it('maps preset editor state to unified picker values', () => {
+    const sections: StyleSection[] = [
+      {
+        id: 'smoke_blade',
+        vars: {},
+        layers: [{ id: 'l1', styleName: 'standard', args: [], blend: 'normal', opacity: 32768 }],
+      },
+    ];
+    expect(presetStylePickerValue(defaultNeoPixelStyle(), sections)).toBe(
+      encodePresetNamedStyle('standard'),
+    );
+    expect(
+      presetStylePickerValue(
+        { kind: 'config', ref: 'smoke_blade', args: [], overrides: {}, customLine: '' },
+        sections,
+      ),
+    ).toBe(encodePresetConfigRecipe('smoke_blade'));
+    expect(
+      presetStylePickerValue(
+        { kind: 'config', ref: 'rainbow_strobe', args: [], overrides: {}, customLine: '' },
+        sections,
+      ),
+    ).toBe(encodePresetLibraryRecipe('rainbow_strobe'));
   });
 
   it('summarizes a recipe as its layer style names', () => {

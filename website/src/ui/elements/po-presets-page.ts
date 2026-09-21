@@ -11,6 +11,7 @@ import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
+import { contextLogger } from '../../logger/index.js';
 import { totalLogicalBladeSlots } from '../../model/sub-blades';
 import {
   $presets,
@@ -22,12 +23,14 @@ import {
   presetStyleUpdated,
   presetUpdated,
   presetsResetToDefaults,
-  type PresetsState,
 } from '../../stores/presets';
-import { $styleSections } from '../../stores/styleSections';
+import { $styleSections, configStyleAdded } from '../../stores/styleSections';
 import { $wiring } from '../../stores/wiring';
 import { MAX_PRESETS } from '../../validation/limits';
+import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
+import { presetsPageI18n } from './po-presets-page.i18n.js';
+import { presetsPageKeys } from './po-presets-page.keys.js';
 import { poConfigFormStyles, poHostStyles, poPageStyles } from './po-shared-styles.js';
 import './po-preset-style-row.js';
 
@@ -94,80 +97,39 @@ export class PoPresetsPage extends PoElement {
     `,
   ];
 
-  private presetsState: PresetsState = $presets.getState();
-  private sectionIds: string[] = $styleSections.getState().sections.map((section) => section.id);
-  private slotCount = totalLogicalBladeSlots($wiring.getState());
-
-  private unwatchPresets?: () => void;
-  private unwatchStyles?: () => void;
-  private unwatchWiring?: () => void;
-
-  connectedCallback(): void {
-    super.connectedCallback();
-    this.unwatchPresets = $presets.watch((state) => {
-      this.presetsState = state;
-      this.requestUpdate();
-    });
-    this.unwatchStyles = $styleSections.watch((state) => {
-      this.sectionIds = state.sections.map((section) => section.id);
-      this.requestUpdate();
-    });
-    this.unwatchWiring = $wiring.watch((blades) => {
-      this.slotCount = totalLogicalBladeSlots(blades);
-      this.requestUpdate();
-    });
-  }
-
-  disconnectedCallback(): void {
-    this.unwatchPresets?.();
-    this.unwatchStyles?.();
-    this.unwatchWiring?.();
-    super.disconnectedCallback();
-  }
+  private readonly presetsController = new EffectorController(this, $presets);
+  private readonly stylesController = new EffectorController(this, $styleSections);
+  private readonly wiringController = new EffectorController(this, $wiring);
 
   render() {
-    const preset = getActivePreset(this.presetsState);
-    const presetCount = this.presetsState.presets.length;
-
+    const presetsState = this.presetsController.value;
+    const styleSections = this.stylesController.value.sections;
+    const slotCount = totalLogicalBladeSlots(this.wiringController.value);
+    const preset = getActivePreset(presetsState);
+    const presetCount = presetsState.presets.length;
     return html`
       <section class="page">
-        <h2>Presets</h2>
-        <p class="config-lead">
-          Edit <code>config/presets.ini</code>. Each preset sets font, track, display name, and one
-          <code>style =</code> line per logical blade. Use <strong>Config recipe</strong> to reference
-          sections from <code>blade_styles.ini</code>, or pick a <strong>Named style</strong> directly.
-        </p>
+        <h2>${presetsPageI18n.translate(presetsPageKeys.title)}</h2>
+        <p class="config-lead">${presetsPageI18n.translate(presetsPageKeys.lead)}</p>
         <details class="presets-help">
-          <summary>How presets connect to blades and styles</summary>
+          <summary>${presetsPageI18n.translate(presetsPageKeys.helpSummary)}</summary>
           <ul>
-            <li>
-              <strong>Blade count</strong> — must match logical blades from the Blades page and
-              firmware <code>NUM_BLADES</code> (currently ${this.slotCount}).
-            </li>
-            <li>
-              <strong>Config recipe</strong> — <code>style = config smoke_blade</code> loads the
-              <code>[smoke_blade]</code> section from <code>blade_styles.ini</code>.
-            </li>
-            <li>
-              <strong>Overrides</strong> — <code>style = config with_vars base=magenta</code> replaces
-              <code>{{base}}</code> for that preset only.
-            </li>
-            <li>
-              <strong>Accents</strong> — blades 2–4 on a five-blade build typically use
-              <code>accent_*</code> named styles (PWM outputs in <code>blades.ini</code>).
-            </li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpBladeCount, { slotCount })}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpConfigRecipe)}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpOverrides)}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpAccents)}</li>
           </ul>
         </details>
 
         <wa-card>
           <div class="section-toolbar">
             <label>
-              Preset
+              ${presetsPageI18n.translate(presetsPageKeys.labelPreset)}
               <wa-select
-                .value=${this.presetsState.activePresetId}
+                .value=${presetsState.activePresetId}
                 @wa-change=${this.onPresetSelect}
               >
-                ${this.presetsState.presets.map(
+                ${presetsState.presets.map(
                   (row) => html`
                     <wa-option value=${row.id}>${row.name || row.id}</wa-option>
                   `,
@@ -175,42 +137,51 @@ export class PoPresetsPage extends PoElement {
               </wa-select>
             </label>
             <wa-button variant="brand" ?disabled=${presetCount >= MAX_PRESETS} @click=${presetAdded}>
-              Add preset
+              ${presetsPageI18n.translate(presetsPageKeys.addPreset)}
             </wa-button>
             <wa-button
               variant="neutral"
               ?disabled=${!preset}
               @click=${() => preset && presetDuplicated(preset.id)}
             >
-              Duplicate
+              ${presetsPageI18n.translate(presetsPageKeys.duplicate)}
             </wa-button>
             <wa-button
               variant="neutral"
               ?disabled=${presetCount <= 1}
               @click=${() => preset && presetRemoved(preset.id)}
             >
-              Remove
+              ${presetsPageI18n.translate(presetsPageKeys.remove)}
             </wa-button>
             <wa-button variant="neutral" @click=${presetsResetToDefaults}>
-              Reset to defaults
+              ${presetsPageI18n.translate(presetsPageKeys.reset)}
             </wa-button>
           </div>
 
-          ${preset ? this.renderPresetForm(preset) : nothing}
+          ${preset ? this.renderPresetForm(preset, slotCount, styleSections) : nothing}
         </wa-card>
 
         <p class="hint">
-          ${presetCount} preset${presetCount === 1 ? '' : 's'} · ${this.slotCount} style line${this.slotCount === 1 ? '' : 's'} each · Export on the Export page.
+          ${presetsPageI18n.translate(presetsPageKeys.hintFooter, {
+            presetCount,
+            presetSuffix: presetCount === 1 ? '' : 's',
+            slotCount,
+            styleSuffix: slotCount === 1 ? '' : 's',
+          })}
         </p>
       </section>
     `;
   }
 
-  private renderPresetForm(preset: NonNullable<ReturnType<typeof getActivePreset>>) {
+  private renderPresetForm(
+    preset: NonNullable<ReturnType<typeof getActivePreset>>,
+    slotCount: number,
+    styleSections: import('../../model/style-sections').StyleSection[],
+  ) {
     return html`
       <div class="form-grid">
         <label>
-          Font
+          ${presetsPageI18n.translate(presetsPageKeys.labelFont)}
           <wa-input
             .value=${preset.font}
             @wa-input=${(event: Event) =>
@@ -218,7 +189,7 @@ export class PoPresetsPage extends PoElement {
           ></wa-input>
         </label>
         <label>
-          Track
+          ${presetsPageI18n.translate(presetsPageKeys.labelTrack)}
           <wa-input
             .value=${preset.track}
             @wa-input=${(event: Event) =>
@@ -226,7 +197,7 @@ export class PoPresetsPage extends PoElement {
           ></wa-input>
         </label>
         <label>
-          Preset name
+          ${presetsPageI18n.translate(presetsPageKeys.labelPresetName)}
           <wa-input
             .value=${preset.name}
             @wa-input=${(event: Event) =>
@@ -234,7 +205,7 @@ export class PoPresetsPage extends PoElement {
           ></wa-input>
         </label>
         <label>
-          Variation
+          ${presetsPageI18n.translate(presetsPageKeys.labelVariation)}
           <wa-input
             type="number"
             min="0"
@@ -246,7 +217,7 @@ export class PoPresetsPage extends PoElement {
           ></wa-input>
         </label>
         <label class="span-2">
-          Note (optional, exported as comment)
+          ${presetsPageI18n.translate(presetsPageKeys.labelComment)}
           <wa-input
             .value=${preset.comment ?? ''}
             @wa-input=${(event: Event) =>
@@ -255,15 +226,16 @@ export class PoPresetsPage extends PoElement {
         </label>
       </div>
 
-      <p class="vars-heading">Style lines — one per logical blade</p>
+      <p class="vars-heading">${presetsPageI18n.translate(presetsPageKeys.headingStyleLines)}</p>
       ${preset.styles.map(
         (style, index) => html`
           <po-preset-style-row
             slot-index=${index}
-            slot-count=${this.slotCount}
+            slot-count=${slotCount}
             .presetStyle=${style}
-            .sectionIds=${this.sectionIds}
+            .styleSections=${styleSections}
             @preset-style-change=${this.onStyleChange}
+            @preset-library-recipe-selected=${this.onLibraryRecipeSelected}
           ></po-preset-style-row>
         `,
       )}
@@ -271,26 +243,55 @@ export class PoPresetsPage extends PoElement {
   }
 
   private onPresetSelect = (event: Event): void => {
-    activePresetChanged((event.target as HTMLSelectElement).value);
+    const log = contextLogger('po-presets-page', 'onPresetSelect');
+    const presetId = (event.target as HTMLSelectElement).value;
+    log.entry({ presetId });
+    activePresetChanged(presetId);
+    log.exit();
   };
 
   private patchPreset(
     id: string,
     patch: Partial<Omit<import('../../model/presets').PresetDefinition, 'id'>>,
   ): void {
+    const log = contextLogger('po-presets-page', 'patchPreset');
+    log.entry({ id, patchKeys: Object.keys(patch) });
     presetUpdated({ id, patch });
+    log.exit();
   }
 
+  private onLibraryRecipeSelected = (
+    event: CustomEvent<{ recipeId: string }>,
+  ): void => {
+    const log = contextLogger('po-presets-page', 'onLibraryRecipeSelected');
+    const recipeId = event.detail.recipeId;
+    log.entry({ recipeId });
+    const sections = this.stylesController.value.sections;
+    if (!sections.some((section) => section.id === recipeId)) {
+      log.debug('branch: add missing library recipe', { recipeId });
+      configStyleAdded(recipeId);
+    } else {
+      log.debug('branch: recipe already in sections', { recipeId });
+    }
+    log.exit();
+  };
+
   private onStyleChange = (event: CustomEvent<{ slotIndex: number; style: import('../../model/preset-styles').PresetStyle }>): void => {
-    const preset = getActivePreset(this.presetsState);
+    const log = contextLogger('po-presets-page', 'onStyleChange');
+    log.entry({ slotIndex: event.detail.slotIndex, kind: event.detail.style.kind });
+    const preset = getActivePreset(this.presetsController.value);
     if (!preset) {
+      log.debug('branch: no active preset — skip update');
+      log.exit();
       return;
     }
+    log.debug('branch: update preset style', { presetId: preset.id, slotIndex: event.detail.slotIndex });
     presetStyleUpdated({
       presetId: preset.id,
       slotIndex: event.detail.slotIndex,
       style: event.detail.style,
     });
+    log.exit();
   };
 }
 

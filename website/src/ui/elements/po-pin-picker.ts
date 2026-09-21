@@ -3,7 +3,7 @@
  *
  * Supports power FET pins (`mode=power`) and blade data/Free pins (`mode=data`).
  * Options are rendered declaratively so Lit re-renders keep selection + disabled state.
- * Subscribes to `$wiring` via {@link registerPowerPinEditorRefresh} for cross-blade sync.
+ * Parent passes fresh `.usedPresets` when `$wiring` changes — options re-render declaratively.
  *
  * @fires pin-change - `{ value: string }` when the committed pin changes
  */
@@ -11,15 +11,16 @@ import { LitElement, html } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
-import { registerPowerPinEditorRefresh } from '../../stores/power-pin-usage';
+import { contextLogger } from '../../logger/index.js';
 import {
   CUSTOM_PIN_VALUE,
   isPresetPinForMode,
   pinCatalogForMode,
-  placeholderForMode,
   selectValueForPin,
   type PinPickerMode,
 } from './pin-picker-utils';
+import { pinPickerI18n } from './po-pin-picker.i18n.js';
+import { pinPickerKeys } from './po-pin-picker.keys.js';
 
 export class PoPinPicker extends LitElement {
   static properties = {
@@ -32,24 +33,9 @@ export class PoPinPicker extends LitElement {
   usedPresets: ReadonlySet<string> = new Set();
   mode: PinPickerMode = 'power';
 
-  private unwatchWiring?: () => void;
-
   /** Light DOM — required for Web Awesome form controls. */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
-  }
-
-  override connectedCallback(): void {
-    super.connectedCallback();
-    this.unwatchWiring = registerPowerPinEditorRefresh(() => {
-      this.requestUpdate();
-    });
-  }
-
-  override disconnectedCallback(): void {
-    this.unwatchWiring?.();
-    this.unwatchWiring = undefined;
-    super.disconnectedCallback();
   }
 
   render() {
@@ -63,7 +49,9 @@ export class PoPinPicker extends LitElement {
         <wa-select
           class="pin-picker-select"
           .value=${selectValue}
-          placeholder=${placeholderForMode(this.mode)}
+          placeholder=${pinPickerI18n.translate(
+            this.mode === 'data' ? pinPickerKeys.placeholderData : pinPickerKeys.placeholderPower,
+          )}
           @wa-change=${this.onSelectChange}
           @change=${this.onSelectChange}
         >
@@ -74,19 +62,19 @@ export class PoPinPicker extends LitElement {
                 ?disabled=${this.usedPresets.has(entry.id)}
               >
                 ${this.usedPresets.has(entry.id)
-                  ? `${entry.label} (in use)`
+                  ? pinPickerI18n.translate(pinPickerKeys.optionInUse, { label: entry.label })
                   : entry.label}
               </wa-option>
             `,
           )}
           <wa-option value=${CUSTOM_PIN_VALUE}
-            >Custom (type pin name or number)</wa-option
+            >${pinPickerI18n.translate(pinPickerKeys.optionCustom)}</wa-option
           >
         </wa-select>
         <wa-input
           class="pin-picker-custom ${showCustom ? '' : 'pin-picker-custom--hidden'}"
           .value=${showCustom ? stored : ''}
-          placeholder="e.g. 20 or bladePin"
+          placeholder=${pinPickerI18n.translate(pinPickerKeys.placeholderCustom)}
           @wa-input=${this.onCustomInput}
         ></wa-input>
       </div>
@@ -94,24 +82,39 @@ export class PoPinPicker extends LitElement {
   }
 
   private onSelectChange = (event: Event): void => {
+    const log = contextLogger('po-pin-picker', 'onSelectChange');
     const chosen = (event.target as HTMLSelectElement & { value: string }).value;
+    log.entry({ chosen, mode: this.mode });
     if (chosen === CUSTOM_PIN_VALUE) {
+      log.debug('branch: custom pin selected', { chosen });
       this.emit(isPresetPinForMode(storedValue(this), this.mode) ? '' : storedValue(this));
+      log.exit('custom');
       return;
     }
     this.emit(chosen);
+    log.exit({ chosen });
   };
 
   private onCustomInput = (event: Event): void => {
+    const log = contextLogger('po-pin-picker', 'onCustomInput');
+    log.entry({ value: storedValue(this), mode: this.mode });
     if (selectValueForPin(storedValue(this), this.mode) !== CUSTOM_PIN_VALUE) {
+      log.debug('branch: not in custom mode, ignoring', { value: storedValue(this) });
+      log.exit('ignored');
       return;
     }
-    this.emit((event.target as HTMLInputElement).value);
+    const value = (event.target as HTMLInputElement).value;
+    this.emit(value);
+    log.exit({ value });
   };
 
   private emit(next: string): void {
+    const log = contextLogger('po-pin-picker', 'emit');
+    log.entry({ next, current: storedValue(this), mode: this.mode });
     const trimmed = next.trim();
     if (trimmed === storedValue(this)) {
+      log.debug('branch: unchanged value, skipping dispatch', { trimmed });
+      log.exit('unchanged');
       return;
     }
     if (
@@ -119,6 +122,8 @@ export class PoPinPicker extends LitElement {
       isPresetPinForMode(trimmed, this.mode) &&
       this.usedPresets.has(trimmed)
     ) {
+      log.debug('branch: preset already in use, skipping dispatch', { trimmed });
+      log.exit('in-use');
       return;
     }
     this.dispatchEvent(
@@ -128,6 +133,7 @@ export class PoPinPicker extends LitElement {
         composed: true,
       }),
     );
+    log.exit({ trimmed });
   }
 }
 

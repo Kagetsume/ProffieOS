@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BladeDefinition } from '../../model/blades';
 import { usedPresetsForPicker } from '../../model/power-pins';
+import { MAX_POWER_PINS } from '../../validation/limits';
 import './po-pin-picker.js';
 import './po-power-pin-editor.js';
 import { PoPowerPinEditor } from './po-power-pin-editor.js';
@@ -84,6 +85,77 @@ describe('po-power-pin-editor', () => {
     await updateComplete(editor);
 
     expect(changed).toEqual(['bladePowerPin1', 'bladePowerPin2']);
+    editor.remove();
+  });
+
+  it('updates a row when pin picker value changes', async () => {
+    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    editor.bladeIndex = 0;
+    editor.pins = [''];
+    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: [''] }];
+    document.body.appendChild(editor);
+    await updateComplete(editor);
+
+    const picker = editor.querySelector('po-pin-picker')!;
+    await updateComplete(picker as HTMLElement & { updateComplete?: Promise<boolean> });
+
+    let changed: string[] | undefined;
+    editor.addEventListener('pins-change', (event) => {
+      changed = (event as CustomEvent<{ pins: string[] }>).detail.pins;
+    });
+
+    picker.dispatchEvent(
+      new CustomEvent('pin-change', { detail: { value: 'bladePowerPin2' }, bubbles: true }),
+    );
+    await updateComplete(editor);
+
+    expect(changed).toEqual(['bladePowerPin2']);
+    editor.remove();
+  });
+
+  it('does not add beyond MAX_POWER_PINS', async () => {
+    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    editor.bladeIndex = 0;
+    editor.pins = Array.from({ length: MAX_POWER_PINS }, (_, i) =>
+      i === 0 ? 'bladePowerPin1' : '',
+    );
+    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
+    document.body.appendChild(editor);
+    await updateComplete(editor);
+
+    let changeCount = 0;
+    editor.addEventListener('pins-change', () => {
+      changeCount += 1;
+    });
+
+    const addBtn = editor.querySelector('[data-action="add-pin"]') as HTMLElement;
+    addBtn.click();
+    await updateComplete(editor);
+
+    expect(changeCount).toBe(0);
+    expect(editor.querySelectorAll('.power-pin-row')).toHaveLength(MAX_POWER_PINS);
+    editor.remove();
+  });
+
+  it('does not remove the last remaining row', async () => {
+    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    editor.bladeIndex = 0;
+    editor.pins = ['bladePowerPin1'];
+    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
+    document.body.appendChild(editor);
+    await updateComplete(editor);
+
+    let changeCount = 0;
+    editor.addEventListener('pins-change', () => {
+      changeCount += 1;
+    });
+
+    const removeBtn = editor.querySelector('[data-action="remove-pin"]') as HTMLElement;
+    removeBtn.click();
+    await updateComplete(editor);
+
+    expect(changeCount).toBe(0);
+    expect(editor.querySelectorAll('.power-pin-row')).toHaveLength(1);
     editor.remove();
   });
 });

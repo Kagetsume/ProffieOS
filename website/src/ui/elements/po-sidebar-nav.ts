@@ -9,7 +9,10 @@ import {
   toolRoutes,
   type RouteId,
 } from '../../route-config';
+import { contextLogger } from '../../logger/index.js';
 import { PoElement } from './po-element.js';
+import { sidebarNavI18n } from './po-sidebar-nav.i18n.js';
+import { sidebarNavKeys, sidebarNavRouteKeys } from './po-sidebar-nav.keys.js';
 
 export class PoSidebarNav extends PoElement {
   private activeId: RouteId = parseRoute();
@@ -81,8 +84,7 @@ export class PoSidebarNav extends PoElement {
         word-break: break-all;
       }
 
-      .nav-link--stub .nav-label::after {
-        content: ' · soon';
+      .nav-stub-soon {
         font-weight: normal;
         font-size: 0.75rem;
         opacity: 0.65;
@@ -91,50 +93,60 @@ export class PoSidebarNav extends PoElement {
   ];
 
   connectedCallback(): void {
+    const log = contextLogger('po-sidebar-nav', 'connectedCallback');
+    log.entry({ activeId: this.activeId });
     super.connectedCallback();
     this.onRouteChange = this.onRouteChange.bind(this);
     window.addEventListener('hashchange', this.onRouteChange);
     document.addEventListener('po-route-change', this.onRouteChange);
     this.activeId = parseRoute();
+    log.exit({ activeId: this.activeId });
   }
 
   disconnectedCallback(): void {
+    const log = contextLogger('po-sidebar-nav', 'disconnectedCallback');
+    log.entry();
     window.removeEventListener('hashchange', this.onRouteChange);
     document.removeEventListener('po-route-change', this.onRouteChange);
     super.disconnectedCallback();
+    log.exit();
   }
 
   private onRouteChange(): void {
+    const log = contextLogger('po-sidebar-nav', 'onRouteChange');
+    log.entry({ previousActiveId: this.activeId });
     this.activeId = parseRoute();
     this.requestUpdate();
+    log.exit({ activeId: this.activeId });
   }
 
   render() {
     return html`
-      <nav aria-label="Application sections">
+      <nav aria-label=${sidebarNavI18n.translate(sidebarNavKeys.navAriaLabel)}>
         <div>
           <ul class="nav-list">
-            ${introRoutes().map((route) => this.renderLink(route.id, route.label, route.sdPath, route.stub))}
+            ${introRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
           </ul>
         </div>
         <div>
-          <h2 class="nav-group-title">Config files</h2>
+          <h2 class="nav-group-title">${sidebarNavI18n.translate(sidebarNavKeys.navConfigFiles)}</h2>
           <ul class="nav-list">
-            ${configRoutes().map((route) => this.renderLink(route.id, route.label, route.sdPath, route.stub))}
+            ${configRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
           </ul>
         </div>
         <div>
-          <h2 class="nav-group-title">Output</h2>
+          <h2 class="nav-group-title">${sidebarNavI18n.translate(sidebarNavKeys.navOutput)}</h2>
           <ul class="nav-list">
-            ${toolRoutes().map((route) => this.renderLink(route.id, route.label, route.sdPath, route.stub))}
+            ${toolRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
           </ul>
         </div>
       </nav>
     `;
   }
 
-  private renderLink(id: RouteId, label: string, sdPath?: string, stub?: boolean) {
+  private renderLink(id: RouteId, sdPath?: string, stub?: boolean) {
     const current = this.activeId === id;
+    const label = sidebarNavI18n.translate(sidebarNavRouteKeys[id]);
     return html`
       <li>
         <a
@@ -142,7 +154,11 @@ export class PoSidebarNav extends PoElement {
           href="#/${id}"
           aria-current=${current ? 'page' : 'false'}
         >
-          <span class="nav-label">${label}</span>
+          <span class="nav-label"
+            >${label}${stub
+              ? html`<span class="nav-stub-soon">${sidebarNavI18n.translate(sidebarNavKeys.navStubSoon)}</span>`
+              : nothing}</span
+          >
           ${sdPath ? html`<span class="nav-path">${sdPath}</span>` : nothing}
         </a>
       </li>
