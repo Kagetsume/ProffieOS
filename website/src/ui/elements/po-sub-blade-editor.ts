@@ -23,6 +23,11 @@ import { contextLogger } from '../../logger/index.js';
 import { subBladeEditorI18n } from './po-sub-blade-editor.i18n.js';
 import { subBladeEditorKeys } from './po-sub-blade-editor.keys.js';
 
+/**
+ * Editable list of sub-blade pixel ranges for one NeoPixel strip.
+ *
+ * @fires sub-blades-change - `{ subBlades: SubBladeRange[] }`
+ */
 export class PoSubBladeEditor extends LitElement {
   static properties = {
     subBlades: { attribute: false },
@@ -34,16 +39,31 @@ export class PoSubBladeEditor extends LitElement {
 
   private localSubBlades: SubBladeRange[] = [];
 
+  /**
+   * Renders into light DOM so nested Web Awesome controls work without shadow boundaries.
+   *
+   * @returns This element as its own render root.
+   */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  /**
+   * Syncs local editable state when the parent passes a new `subBlades` array.
+   *
+   * @param changed - Lit property change map from the current update cycle.
+   */
   override willUpdate(changed: Map<string, unknown>): void {
     if (changed.has('subBlades') && this.subBlades !== this.localSubBlades) {
       this.localSubBlades = [...this.subBlades];
     }
   }
 
+  /**
+   * Builds the sub-blade range editor — rows with first/last inputs, validation, and add/remove actions.
+   *
+   * @returns Lit template for the sub-blade editor UI.
+   */
   render() {
     const rows = this.localSubBlades;
     const logicalCount = rows.length > 0 ? rows.length : 1;
@@ -127,6 +147,11 @@ export class PoSubBladeEditor extends LitElement {
     `;
   }
 
+  /**
+   * Updates local state and notifies the parent of a new sub-blade range list.
+   *
+   * @param next - Complete sub-blade range array after an edit.
+   */
   private emitSubBlades(next: SubBladeRange[]): void {
     const log = contextLogger('po-sub-blade-editor', 'emitSubBlades');
     log.entry({ next, previous: this.localSubBlades });
@@ -142,6 +167,13 @@ export class PoSubBladeEditor extends LitElement {
     log.exit({ subBlades: next });
   }
 
+  /**
+   * Handles first/last pixel input on one sub-blade row.
+   *
+   * @param index - Zero-based row index in {@link localSubBlades}.
+   * @param field - Which bound of the inclusive range changed (`first` or `last`).
+   * @param event - Input event from the corresponding `wa-input`.
+   */
   private onFieldInput(
     index: number,
     field: 'first' | 'last',
@@ -158,6 +190,9 @@ export class PoSubBladeEditor extends LitElement {
     log.exit();
   }
 
+  /**
+   * Appends a new sub-blade range row using model defaults.
+   */
   private addRow = (): void => {
     const log = contextLogger('po-sub-blade-editor', 'addRow');
     log.entry({ rowCount: this.localSubBlades.length, max: MAX_SUB_BLADES });
@@ -165,6 +200,11 @@ export class PoSubBladeEditor extends LitElement {
     log.exit({ rowCount: this.localSubBlades.length });
   };
 
+  /**
+   * Removes one sub-blade range row by index.
+   *
+   * @param index - Zero-based row index to delete.
+   */
   private removeRow = (index: number): void => {
     const log = contextLogger('po-sub-blade-editor', 'removeRow');
     log.entry({ index, rowCount: this.localSubBlades.length });

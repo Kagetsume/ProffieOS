@@ -20,6 +20,13 @@ import { powerPinEditorI18n } from './po-power-pin-editor.i18n.js';
 import { powerPinEditorKeys } from './po-power-pin-editor.keys.js';
 import './po-pin-picker.js';
 
+/**
+ * Returns the firmware field label for one power-pin row (`power_pin` or `power_pinN`).
+ *
+ * @param index - Zero-based row index within the blade's power-pin list.
+ * @param count - Total number of power-pin rows for this blade.
+ * @returns Label string used in the UI and exported config.
+ */
 function powerPinFieldLabel(index: number, count: number): string {
   if (count === 1) {
     return 'power_pin';
@@ -27,6 +34,11 @@ function powerPinFieldLabel(index: number, count: number): string {
   return `power_pin${index + 1}`;
 }
 
+/**
+ * Multi-row power FET pin editor for one NeoPixel blade.
+ *
+ * @fires pins-change - `{ pins: string[] }`
+ */
 export class PoPowerPinEditor extends LitElement {
   static properties = {
     pins: { attribute: false },
@@ -40,17 +52,31 @@ export class PoPowerPinEditor extends LitElement {
 
   private localPins: string[] = [''];
 
-  /** Light DOM — Web Awesome + nested custom elements. */
+  /**
+   * Renders into light DOM so Web Awesome and nested `po-pin-picker` elements work correctly.
+   *
+   * @returns This element as its own render root.
+   */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  /**
+   * Syncs local editable state when the parent passes a new `pins` array.
+   *
+   * @param changed - Lit property change map from the current update cycle.
+   */
   override willUpdate(changed: Map<string, unknown>): void {
     if (changed.has('pins') && this.pins !== this.localPins) {
       this.localPins = [...this.pins];
     }
   }
 
+  /**
+   * Builds the power-pin editor — one pin picker per row plus add/remove controls.
+   *
+   * @returns Lit template for the power-pin editor UI.
+   */
   render() {
     const rows = this.localPins.map(
       (pin, index) => html`
@@ -102,6 +128,11 @@ export class PoPowerPinEditor extends LitElement {
     `;
   }
 
+  /**
+   * Updates local state and notifies the parent of a new power-pin list.
+   *
+   * @param next - Complete power-pin id array after an edit.
+   */
   private emitPins(next: string[]): void {
     const log = contextLogger('po-power-pin-editor', 'emitPins');
     log.entry({ next, previous: this.localPins });
@@ -117,6 +148,12 @@ export class PoPowerPinEditor extends LitElement {
     log.exit({ pins: next });
   }
 
+  /**
+   * Handles pin selection on one power-pin row.
+   *
+   * @param index - Zero-based row index in {@link localPins}.
+   * @param value - Committed pin id from the nested pin picker.
+   */
   private onPinChange(index: number, value: string): void {
     const log = contextLogger('po-power-pin-editor', 'onPinChange');
     log.entry({ index, value });
@@ -124,6 +161,9 @@ export class PoPowerPinEditor extends LitElement {
     log.exit();
   }
 
+  /**
+   * Appends a new empty power-pin row, respecting {@link MAX_POWER_PINS}.
+   */
   private addRow = (): void => {
     const log = contextLogger('po-power-pin-editor', 'addRow');
     log.entry({ pinCount: this.localPins.length, max: MAX_POWER_PINS });
@@ -136,6 +176,11 @@ export class PoPowerPinEditor extends LitElement {
     log.exit({ pinCount: this.localPins.length });
   };
 
+  /**
+   * Removes one power-pin row by index, keeping at least one row.
+   *
+   * @param index - Zero-based row index to delete.
+   */
   private removeRow = (index: number): void => {
     const log = contextLogger('po-power-pin-editor', 'removeRow');
     log.entry({ index, pinCount: this.localPins.length });

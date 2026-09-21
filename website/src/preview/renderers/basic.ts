@@ -130,20 +130,77 @@ function renderSmokeFlowMask(
   return buffer;
 }
 
-/** Single-direction smoke with spatial parallax offset (smoke_flow firmware style). */
+/** smoke_flow: opposing multi-band rolls with spatial width/phase warp. */
 function renderSmokeFlowBlend(args: string[], count: number, timeMs: number): PixelBuffer {
-  const base = renderSmokeFlowMask(args, count, timeMs, 1);
-  const offset = Math.max(4, Math.floor(count / 5));
   const buffer = createPixelBuffer(count);
+  const dark = parseColor(args[0] ?? 'black');
+  const bright = parseColor(args[1] ?? 'white');
+  const luminanceOnly =
+    args[0] === args[1] ||
+    (bright[0] === dark[0] && bright[1] === dark[1] && bright[2] === dark[2]);
+  const downTimeMs = timeMs + 4800;
+  const scrollUp = (timeMs * 9) / 10;
+  const scrollDown = (downTimeMs * 5) / 14;
   for (let i = 0; i < count; i += 1) {
-    const j = (i + offset) % count;
-    const shade = Math.round((base.r[i] * base.r[j]) / 255);
-    buffer.r[i] = shade;
-    buffer.g[i] = shade;
-    buffer.b[i] = shade;
+    const pos = Math.round(positionT(i, count) * 32768);
+    const heat = rollFlowShade(pos, scrollUp, scrollDown, timeMs, downTimeMs);
+    if (luminanceOnly) {
+      const shade = Math.round(heat * 255);
+      buffer.r[i] = shade;
+      buffer.g[i] = shade;
+      buffer.b[i] = shade;
+    } else {
+      const [r, g, b] = lerpRgb(dark, bright, heat);
+      buffer.r[i] = r;
+      buffer.g[i] = g;
+      buffer.b[i] = b;
+    }
     buffer.a[i] = 1;
   }
   return buffer;
+}
+
+function flowWavelength(base: number, pos: number, bandSeed: number, timeIdx: number): number {
+  const sp = ((pos >> 4) + bandSeed) & 1023;
+  const sp2 = ((pos >> 7) + bandSeed * 13) & 1023;
+  return (
+    base +
+    Math.sin(sp * 0.006135923) * 4096 +
+    Math.sin(sp2 * 0.006135923) * 2048 +
+    Math.sin(timeIdx * 0.006135923) * 2048
+  );
+}
+
+function flowPhaseWarp(pos: number, seed: number): number {
+  const sp = ((pos >> 5) + seed) & 1023;
+  const sp2 = ((pos >> 9) + seed * 17) & 1023;
+  return Math.sin(sp * 0.006135923) * 2048 + Math.sin(sp2 * 0.006135923) * 1024;
+}
+
+function rollFlowShade(
+  pos: number,
+  scrollUp: number,
+  scrollDown: number,
+  timeMs: number,
+  downTimeMs: number,
+): number {
+  const tUp = (timeMs >> 5) & 1023;
+  const tDn = ((downTimeMs >> 5) + 512) & 1023;
+  const creep = (downTimeMs * 1000) >> 12;
+  const warpUp = flowPhaseWarp(pos, 117);
+  const warpDn = flowPhaseWarp(pos, 503);
+  const phaseUp = pos - scrollUp + warpUp;
+  const phaseDn = pos + scrollDown + creep + warpDn;
+  const wUp1 = flowWavelength(26000, pos, 11, tUp);
+  const wUp2 = flowWavelength(18000, pos, 29, (tUp + 171) & 1023);
+  const wDn1 = flowWavelength(21000, pos, 47, (tDn + 85) & 1023);
+  const wDn2 = flowWavelength(15500, pos, 73, (tDn + 341) & 1023);
+  const sUp1 = Math.sin((phaseUp / wUp1) * Math.PI * 2);
+  const sUp2 = Math.sin((phaseUp / wUp2) * Math.PI * 2);
+  const sDn1 = Math.sin((phaseDn / wDn1) * Math.PI * 2);
+  const sDn2 = Math.sin((phaseDn / wDn2) * Math.PI * 2);
+  const bright = 0.5 + 0.21 * sUp1 + 0.07 * sUp2 + 0.07 * sDn1 + 0.035 * sDn2;
+  return Math.max(0.22, Math.min(0.92, bright));
 }
 
 /** Grayscale rolling heat — used by smoke recipes (`fire white white` in multiply). */

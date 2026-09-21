@@ -1,7 +1,7 @@
 /**
  * Upward-facing saber mock — rotated/scaled hilt SVG + vertical blade canvas above.
  */
-import { html, css, nothing } from 'lit';
+import { html, nothing, type PropertyValues } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
 import { renderStylePreview } from '../../preview/frame.js';
@@ -33,149 +33,24 @@ import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
 import { bladePreviewI18n } from './po-blade-preview.i18n.js';
 import { bladePreviewKeys } from './po-blade-preview.keys.js';
+import {
+  HILT_ROTATOR_WIDTH_REM,
+  poBladePreviewStyles,
+} from './po-blade-preview.styles.js';
 
 const DEFAULT_PIXEL_COUNT = 144;
-const HILT_ROTATOR_WIDTH_REM = 11;
-const HILT_ASPECT = HILT_SVG_NATURAL_HEIGHT / HILT_SVG_NATURAL_WIDTH;
 
+/**
+ * Live saber style preview — vertical blade canvas, hilt graphic, and preview simulation controls.
+ *
+ * Renders the active style section onto a canvas and wires buttons/toggles to the preview store.
+ */
 export class PoBladePreview extends PoElement {
   private readonly stylesController = new EffectorController(this, $styleSections);
   private readonly simController = new EffectorController(this, $previewSim);
   private readonly wiringController = new EffectorController(this, $wiring);
 
-  static styles = css`
-    :host {
-      display: block;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .saber-stack {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      width: fit-content;
-      max-width: 100%;
-      margin: 0 auto;
-    }
-
-    .blade-slot {
-      display: flex;
-      justify-content: center;
-      width: 100%;
-      flex-shrink: 0;
-    }
-
-    .preview-blade {
-      display: block;
-      flex-shrink: 0;
-      box-shadow: 0 0 14px rgba(100, 200, 255, 0.4);
-    }
-
-    .hilt-stage {
-      position: relative;
-      flex-shrink: 0;
-      width: calc(${HILT_ROTATOR_WIDTH_REM}rem * ${HILT_ASPECT});
-      height: ${HILT_ROTATOR_WIDTH_REM}rem;
-      max-width: 85%;
-    }
-
-    .hilt-rotator {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: ${HILT_ROTATOR_WIDTH_REM}rem;
-      transform: translate(-50%, -50%) rotate(-90deg);
-      transform-origin: center center;
-    }
-
-    .hilt-img {
-      display: block;
-      width: 100%;
-      height: auto;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    .preview-controls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.45rem;
-      margin: 0.75rem 0 0;
-      width: 100%;
-    }
-
-    .preview-controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      justify-content: center;
-      width: 100%;
-    }
-
-    .preview-controls-row--buttons wa-button {
-      min-width: 4.5rem;
-    }
-
-    .combat-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      padding: 0.15rem 0.35rem;
-      opacity: 0.85;
-    }
-
-    .combat-toggle--disabled {
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    .blade-angle-control {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      width: min(100%, 16rem);
-      margin-top: 0.15rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-    }
-
-    .blade-angle-label {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .blade-angle-value {
-      font-weight: normal;
-      font-variant-numeric: tabular-nums;
-      opacity: 0.75;
-    }
-
-    .blade-angle-control input[type='range'] {
-      width: 100%;
-      margin: 0;
-      accent-color: var(--wa-color-brand-50, #0ea5e9);
-    }
-
-    .blade-angle-hint {
-      font-weight: normal;
-      font-size: 0.75rem;
-      opacity: 0.7;
-      line-height: 1.35;
-    }
-
-    .preview-caption {
-      margin: 0.5rem 0 0;
-      font-size: 0.7rem;
-      opacity: 0.6;
-      text-align: center;
-    }
-  `;
+  static styles = poBladePreviewStyles;
 
   private previewTimeMs = 0;
   private resizeObserver: ResizeObserver | null = null;
@@ -183,6 +58,9 @@ export class PoBladePreview extends PoElement {
   private layoutFrame = 0;
   private hiltLoadAbort: AbortController | null = null;
 
+  /**
+   * Starts the preview animation loop when the element is attached to the document.
+   */
   connectedCallback(): void {
     const log = contextLogger('po-blade-preview', 'connectedCallback');
     log.entry();
@@ -191,6 +69,9 @@ export class PoBladePreview extends PoElement {
     log.exit();
   }
 
+  /**
+   * Tears down observers, pending animation frames, and hilt image listeners on detach.
+   */
   disconnectedCallback(): void {
     const log = contextLogger('po-blade-preview', 'disconnectedCallback');
     log.entry();
@@ -218,7 +99,11 @@ export class PoBladePreview extends PoElement {
     log.exit();
   }
 
-  protected firstUpdated(): void {
+  /**
+   * Wires hilt image load/error handlers and a resize observer after the first render.
+   */
+  protected firstUpdated(changed: PropertyValues): void {
+    super.firstUpdated(changed);
     const stack = this.renderRoot.querySelector<HTMLElement>('.saber-stack');
     const hilt = this.renderRoot.querySelector<HTMLImageElement>('.hilt-img');
 
@@ -238,6 +123,9 @@ export class PoBladePreview extends PoElement {
     this.scheduleLayout();
   }
 
+  /**
+   * Re-measures layout after the hilt SVG finishes loading.
+   */
   private onHiltLoad(): void {
     const log = contextLogger('po-blade-preview', 'onHiltLoad');
     log.entry();
@@ -246,6 +134,9 @@ export class PoBladePreview extends PoElement {
     log.exit();
   }
 
+  /**
+   * Re-measures layout with fallback sizing when the hilt SVG fails to load.
+   */
   private onHiltError(): void {
     const log = contextLogger('po-blade-preview', 'onHiltError');
     log.entry();
@@ -254,16 +145,30 @@ export class PoBladePreview extends PoElement {
     log.exit();
   }
 
-  protected updated(): void {
+  /**
+   * Schedules a layout pass whenever Lit finishes an update that may affect sizing.
+   */
+  protected updated(changed: PropertyValues): void {
+    super.updated(changed);
     this.scheduleLayout();
   }
 
+  /**
+   * Pixel count for preview rendering — prefers the first NeoPixel blade, else the first blade.
+   *
+   * @returns Number of LEDs to simulate on the preview canvas.
+   */
   private get pixelCount(): number {
     const blades = this.wiringController.value;
     const main = blades.find((b) => b.type === 'ws2811');
     return main?.pixels ?? blades[0]?.pixels ?? DEFAULT_PIXEL_COUNT;
   }
 
+  /**
+   * Builds the saber stack, preview controls, and status caption from store state.
+   *
+   * @returns Lit template for the full blade preview UI.
+   */
   render() {
     const simState = this.simController.value;
     const activeSectionId = this.stylesController.value.activeSectionId;
@@ -322,6 +227,7 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.lockupActive}
               ?disabled=${!combatReady}
               @change=${this.onLockupChange}
+              @input=${this.onLockupChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -331,6 +237,7 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.lbActive}
               ?disabled=${!combatReady}
               @change=${this.onLbChange}
+              @input=${this.onLbChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -340,6 +247,7 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.dragActive}
               ?disabled=${!combatReady}
               @change=${this.onDragChange}
+              @input=${this.onDragChange}
             ></wa-switch>
           </div>
           <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
@@ -349,6 +257,7 @@ export class PoBladePreview extends PoElement {
               .checked=${simState.meltActive}
               ?disabled=${!combatReady}
               @change=${this.onMeltChange}
+              @input=${this.onMeltChange}
             ></wa-switch>
           </div>
         </div>
@@ -385,95 +294,148 @@ export class PoBladePreview extends PoElement {
     `;
   }
 
+  /**
+   * Resolves the currently active style section from the styles store.
+   *
+   * @returns Active section object, or `null` when none is selected.
+   */
   private activeSection() {
     return getActiveSection(this.stylesController.value) ?? null;
   }
 
+  /**
+   * Reads `checked` from a Web Awesome `wa-switch` after its internal update completes.
+   *
+   * @param event - Change/input event from the switch.
+   * @returns Resolved switch state, or `null` when the target is not a switch.
+   */
+  private async readSwitchChecked(event: Event): Promise<boolean | null> {
+    const control = event.currentTarget as HTMLElement & {
+      checked?: boolean;
+      updateComplete?: Promise<unknown>;
+    };
+    if (typeof control.checked !== 'boolean' && !(event.target instanceof HTMLElement)) {
+      return null;
+    }
+    if (control.updateComplete) {
+      await control.updateComplete;
+    }
+    if (typeof control.checked === 'boolean') {
+      return control.checked;
+    }
+    const input = control.querySelector('input[type="checkbox"]') as HTMLInputElement | null;
+    return input ? input.checked : null;
+  }
+
+  /**
+   * Dispatches a preview-store update from a `wa-switch` once its checked state is stable.
+   *
+   * @param event - Change/input event from the switch.
+   * @param dispatch - Effector event accepting the resolved checked value.
+   */
+  private onCombatSwitchChange = (
+    event: Event,
+    dispatch: (checked: boolean) => void,
+  ): void => {
+    void this.readSwitchChecked(event).then((checked) => {
+      if (checked === null) {
+        return;
+      }
+      dispatch(checked);
+      this.scheduleLayout();
+    });
+  };
+
+  /**
+   * Triggers the preview power-on transition for the active style section.
+   */
   private onPowerOn = (): void => {
     const log = contextLogger('po-blade-preview', 'onPowerOn');
     log.entry();
     const section = this.activeSection();
     log.debug('branch: triggering power on', { sectionId: section?.id ?? null });
     previewPowerOnClicked(section);
+    this.scheduleLayout();
     log.exit();
   };
 
+  /**
+   * Triggers the preview power-off transition for the active style section.
+   */
   private onPowerOff = (): void => {
     const log = contextLogger('po-blade-preview', 'onPowerOff');
     log.entry();
     const section = this.activeSection();
     log.debug('branch: triggering power off', { sectionId: section?.id ?? null });
     previewPowerOffClicked(section);
+    this.scheduleLayout();
     log.exit();
   };
 
+  /**
+   * Fires a one-shot blast effect on the active style section.
+   */
   private onBlast = (): void => {
     const log = contextLogger('po-blade-preview', 'onBlast');
     log.entry();
     const section = this.activeSection();
     log.debug('branch: triggering blast event', { sectionId: section?.id ?? null });
     previewEventTriggered({ event: 'blast', section });
+    this.scheduleLayout();
     log.exit();
   };
 
+  /**
+   * Fires a one-shot clash effect on the active style section.
+   */
   private onClash = (): void => {
     const log = contextLogger('po-blade-preview', 'onClash');
     log.entry();
     const section = this.activeSection();
     log.debug('branch: triggering clash event', { sectionId: section?.id ?? null });
     previewEventTriggered({ event: 'clash', section });
+    this.scheduleLayout();
     log.exit();
   };
 
+  /**
+   * Fires a one-shot swing effect on the active style section.
+   */
   private onSwing = (): void => {
     const log = contextLogger('po-blade-preview', 'onSwing');
     log.entry();
     const section = this.activeSection();
     log.debug('branch: triggering swing event', { sectionId: section?.id ?? null });
     previewEventTriggered({ event: 'swing', section });
+    this.scheduleLayout();
     log.exit();
   };
 
+  /** @param event - Change/input event from the lockup `wa-switch`. */
   private onLockupChange = (event: Event): void => {
-    const log = contextLogger('po-blade-preview', 'onLockupChange');
-    const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    const checked = Boolean(control.checked);
-    log.entry({ checked });
-    log.debug('branch: updating lockup state');
-    previewLockupChanged(checked);
-    log.exit({ checked });
+    this.onCombatSwitchChange(event, previewLockupChanged);
   };
 
+  /** @param event - Change/input event from the lightning-block `wa-switch`. */
   private onLbChange = (event: Event): void => {
-    const log = contextLogger('po-blade-preview', 'onLbChange');
-    const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    const checked = Boolean(control.checked);
-    log.entry({ checked });
-    log.debug('branch: updating lightning block state');
-    previewLbChanged(checked);
-    log.exit({ checked });
+    this.onCombatSwitchChange(event, previewLbChanged);
   };
 
+  /** @param event - Change/input event from the drag `wa-switch`. */
   private onDragChange = (event: Event): void => {
-    const log = contextLogger('po-blade-preview', 'onDragChange');
-    const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    const checked = Boolean(control.checked);
-    log.entry({ checked });
-    log.debug('branch: updating drag state');
-    previewDragChanged(checked);
-    log.exit({ checked });
+    this.onCombatSwitchChange(event, previewDragChanged);
   };
 
+  /** @param event - Change/input event from the melt `wa-switch`. */
   private onMeltChange = (event: Event): void => {
-    const log = contextLogger('po-blade-preview', 'onMeltChange');
-    const control = event.currentTarget as HTMLElement & { checked?: boolean };
-    const checked = Boolean(control.checked);
-    log.entry({ checked });
-    log.debug('branch: updating melt state');
-    previewMeltChanged(checked);
-    log.exit({ checked });
+    this.onCombatSwitchChange(event, previewMeltChanged);
   };
 
+  /**
+   * Updates normalized blade angle (0–1) from the lockup angle slider.
+   *
+   * @param event - Input event from the blade-angle range control.
+   */
   private onBladeAngleInput = (event: Event): void => {
     const log = contextLogger('po-blade-preview', 'onBladeAngleInput');
     const control = event.target as HTMLInputElement;
@@ -484,6 +446,9 @@ export class PoBladePreview extends PoElement {
     log.exit({ norm });
   };
 
+  /**
+   * Starts a `requestAnimationFrame` loop that syncs preview time and redraws the blade canvas.
+   */
   private startAnimation(): void {
     const log = contextLogger('po-blade-preview', 'startAnimation');
     log.entry();
@@ -504,6 +469,9 @@ export class PoBladePreview extends PoElement {
     log.exit('scheduled');
   }
 
+  /**
+   * Coalesces layout and draw work to the next animation frame.
+   */
   private scheduleLayout = (): void => {
     if (this.layoutFrame) {
       cancelAnimationFrame(this.layoutFrame);
@@ -513,6 +481,9 @@ export class PoBladePreview extends PoElement {
     });
   };
 
+  /**
+   * Runs a single deferred layout-and-draw pass when still connected.
+   */
   private onLayoutFrame(): void {
     this.layoutFrame = 0;
     if (!this.isConnected) {
@@ -521,6 +492,11 @@ export class PoBladePreview extends PoElement {
     this.layoutAndDraw();
   }
 
+  /**
+   * Measures the displayed hilt bounding box, falling back to CSS rem sizing.
+   *
+   * @returns Hilt display width and height in CSS pixels.
+   */
   private measureHiltBox(): { width: number; height: number } {
     const stage = this.renderRoot.querySelector<HTMLElement>('.hilt-stage');
 
@@ -535,6 +511,9 @@ export class PoBladePreview extends PoElement {
     return hiltVisualBoxFromRotatorWidth(rootFont * HILT_ROTATOR_WIDTH_REM);
   }
 
+  /**
+   * Sizes the preview canvas from hilt layout and draws the current style frame.
+   */
   private layoutAndDraw(): void {
     const canvas = this.renderRoot.querySelector<HTMLCanvasElement>('.preview-blade');
     if (!canvas) {
@@ -553,6 +532,12 @@ export class PoBladePreview extends PoElement {
     this.drawPreviewBlade(ctx, layout);
   }
 
+  /**
+   * Renders style preview pixels onto the blade canvas with tip clipping and length fraction.
+   *
+   * @param ctx - 2D canvas context configured for the blade element.
+   * @param layout - Vertical saber layout metrics from {@link measureVerticalSaberLayout}.
+   */
   private drawPreviewBlade(
     ctx: CanvasRenderingContext2D,
     layout: ReturnType<typeof measureVerticalSaberLayout>,

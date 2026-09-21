@@ -38,7 +38,8 @@ ProffieOS config editor UI. Registered via `index.ts` (imported from `main.ts`).
 | Module | Role |
 |--------|------|
 | `po-element.ts` | Shadow-DOM base — Web Awesome `discover()` after Lit updates |
-| `po-shared-styles.ts` | Layout CSS for shadow-DOM pages |
+| `po-shared-styles.ts` | Shared layout CSS (host, page shell, config forms, wiring widgets) |
+| `po-*.styles.ts` | Per-component Lit `css` — imported as `static styles` (keeps `.ts` files small) |
 
 ## Light DOM + Web Awesome
 

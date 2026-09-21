@@ -5,7 +5,7 @@
  *
  * @module ui/elements/po-styles-page
  */
-import { html, css, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
@@ -40,337 +40,32 @@ import { PoElement } from './po-element.js';
 import { stylesPageI18n } from './po-styles-page.i18n.js';
 import { stylesPageKeys } from './po-styles-page.keys.js';
 import { poHostStyles, poPageStyles } from './po-shared-styles.js';
+import { poStylesPageStyles } from './po-styles-page.styles.js';
 import './po-blade-preview.js';
 import './po-color-input.js';
 import './po-style-layer-stack.js';
 
 export class PoStylesPage extends PoElement {
-  static styles = [
-    poHostStyles,
-    poPageStyles,
-    css`
-      .styles-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
-        gap: 1.5rem;
-        align-items: start;
-        width: 100%;
-      }
-
-      @media (max-width: 640px) {
-        .styles-layout {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      .editor-pane,
-      .preview-pane {
-        min-width: 0;
-      }
-
-      .editor-pane wa-card {
-        overflow: visible;
-      }
-
-      .preview-pane {
-        position: sticky;
-        top: 1rem;
-      }
-
-      .preview-pane wa-card {
-        display: block;
-        min-height: 22rem;
-      }
-
-      wa-card {
-        display: block;
-        width: 100%;
-      }
-
-      .section-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: end;
-        margin-bottom: 1rem;
-      }
-
-      .section-toolbar label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        min-width: min(100%, 14rem);
-        flex: 1;
-      }
-
-      .section-toolbar wa-select,
-      .section-toolbar wa-input {
-        width: 100%;
-        min-width: 0;
-        font-weight: normal;
-        box-sizing: border-box;
-      }
-
-      .layer-stack {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin: 0 0 1rem;
-      }
-
-      .layer-item {
-        border: 1px solid var(--wa-color-neutral-85, #d4d4d8);
-        border-radius: var(--wa-border-radius-medium, 6px);
-        background: var(--wa-color-neutral-98, #fafafa);
-        min-width: 0;
-        overflow: hidden;
-      }
-
-      .layer-item:hover {
-        border-color: var(--wa-color-brand-70, #38bdf8);
-      }
-
-      .layer-item--expanded {
-        border-color: var(--wa-color-brand-60, #0ea5e9);
-        background: var(--wa-color-brand-98, #f0f9ff);
-      }
-
-      .layer-row {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.55rem 0.65rem;
-        font-size: 0.875rem;
-        cursor: pointer;
-        min-width: 0;
-      }
-
-      .layer-item--expanded .layer-row {
-        border-bottom: 1px solid var(--wa-color-brand-85, #bae6fd);
-        background: var(--wa-color-brand-95, #e0f2fe);
-      }
-
-      .layer-order {
-        font-family: ui-monospace, monospace;
-        font-size: 0.75rem;
-        opacity: 0.65;
-        min-width: 1.25rem;
-      }
-
-      .layer-label {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .layer-badge {
-        font-size: 0.7rem;
-        padding: 0.1rem 0.35rem;
-        border-radius: 4px;
-        background: var(--wa-color-neutral-90, #e4e4e7);
-        white-space: nowrap;
-      }
-
-      .layer-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-      }
-
-      .layer-row-actions {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        flex-shrink: 0;
-      }
-
-      .layer-reorder,
-      .layer-remove {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        border: 1px solid var(--wa-color-neutral-80, #c4c4c8);
-        border-radius: var(--wa-border-radius-medium, 6px);
-        background: var(--wa-color-neutral-98, #fafafa);
-        color: var(--wa-color-neutral-35, #52525b);
-        cursor: pointer;
-        line-height: 1;
-      }
-
-      .layer-reorder:hover:not(:disabled) {
-        border-color: var(--wa-color-brand-60, #0ea5e9);
-        color: var(--wa-color-brand-60, #0ea5e9);
-        background: var(--wa-color-brand-95, #e0f2fe);
-      }
-
-      .layer-remove:hover:not(:disabled) {
-        border-color: var(--wa-color-danger-60, #dc2626);
-        color: var(--wa-color-danger-60, #dc2626);
-        background: var(--wa-color-danger-95, #fef2f2);
-      }
-
-      .layer-reorder:disabled,
-      .layer-remove:disabled {
-        opacity: 0.35;
-        cursor: not-allowed;
-      }
-
-      .layer-form-footer {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--wa-color-brand-85, #bae6fd);
-      }
-
-      .layer-form {
-        padding: 0.75rem;
-        font-size: 0.875rem;
-      }
-
-      .layer-form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-        gap: 0.75rem;
-        margin-top: 0.75rem;
-      }
-
-      .layer-form-grid label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-      }
-
-      .layer-form-grid wa-input,
-      .layer-form-grid wa-select {
-        font-weight: normal;
-      }
-
-      .vars-heading {
-        margin: 1rem 0 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-      }
-
-      .vars-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 0.65rem;
-        margin-bottom: 0.75rem;
-        width: 100%;
-      }
-
-      @media (min-width: 520px) {
-        .vars-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      @media (min-width: 880px) {
-        .vars-grid {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-      }
-
-      .var-row {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        min-width: 0;
-      }
-
-      .var-label {
-        font-size: 0.8125rem;
-        font-weight: 600;
-      }
-
-      .var-controls {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        min-width: 0;
-      }
-
-      .var-controls po-color-input,
-      .var-controls wa-input {
-        flex: 1;
-        min-width: 0;
-        box-sizing: border-box;
-      }
-
-      .var-remove {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        width: 2.375rem;
-        height: 2.375rem;
-        padding: 0;
-        border: 1px solid var(--wa-color-neutral-80, #c4c4c8);
-        border-radius: var(--wa-border-radius-medium, 6px);
-        background: var(--wa-color-neutral-98, #fafafa);
-        color: var(--wa-color-neutral-35, #52525b);
-        cursor: pointer;
-        line-height: 1;
-        transition:
-          background 0.15s ease,
-          border-color 0.15s ease,
-          color 0.15s ease;
-      }
-
-      .var-remove:hover {
-        background: var(--wa-color-danger-95, #fef2f2);
-        border-color: var(--wa-color-danger-70, #fca5a5);
-        color: var(--wa-color-danger-50, #ef4444);
-      }
-
-      .var-remove:focus-visible {
-        outline: 2px solid var(--wa-color-brand-60, #0ea5e9);
-        outline-offset: 2px;
-      }
-
-      .var-remove wa-icon {
-        font-size: 1.125rem;
-      }
-
-
-      .recipe-summary {
-        margin: 0 0 0.75rem;
-        font-size: 0.8125rem;
-        line-height: 1.45;
-        opacity: 0.85;
-      }
-
-      .recipe-summary code {
-        display: block;
-        font-size: 0.78rem;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-      }
-    `,
-  ];
+  static styles = [poHostStyles, poPageStyles, poStylesPageStyles];
 
   private readonly recipeCatalog = listConfigStyles();
 
   private readonly stylesController = new EffectorController(this, $styleSections);
 
+  /**
+   * Current style sections store snapshot from the Effector controller.
+   *
+   * @returns Active style sections state including recipes, layers, and selection.
+   */
   private get stylesState(): StyleSectionsState {
     return this.stylesController.value;
   }
 
+  /**
+   * Renders the blade styles editor with recipe toolbar, vars, layer stack, and preview.
+   *
+   * @returns Lit template for the full styles page layout.
+   */
   render() {
     const section = getActiveSection(this.stylesState);
     return html`
@@ -447,6 +142,11 @@ export class PoStylesPage extends PoElement {
     `;
   }
 
+  /**
+   * Builds grouped `<wa-option>` nodes for in-file and library style recipes.
+   *
+   * @returns Lit template fragment containing recipe picker options.
+   */
   private renderRecipePickerOptions() {
     const { inFile, library } = listRecipePickerOptions(
       this.stylesState.sections,
@@ -470,6 +170,12 @@ export class PoStylesPage extends PoElement {
     `;
   }
 
+  /**
+   * Renders a human-readable layer stack summary and optional catalog description.
+   *
+   * @param section Active style recipe section to summarize.
+   * @returns Lit template with layer stack code and optional hint text.
+   */
   private renderRecipeSummary(section: StyleSection) {
     const description = recipeDescription(section, this.recipeCatalog);
     const stack = summarizeRecipeLayers(section);
@@ -481,6 +187,12 @@ export class PoStylesPage extends PoElement {
     `;
   }
 
+  /**
+   * Renders base blade variable inputs with add/remove controls.
+   *
+   * @param section Style recipe section whose base vars are edited.
+   * @returns Lit template for the base blade variables grid.
+   */
   private renderVars(section: StyleSection) {
     const entries = baseSectionVarEntries(section);
     return html`
@@ -515,6 +227,12 @@ export class PoStylesPage extends PoElement {
     `;
   }
 
+  /**
+   * Switches the active recipe or imports a library recipe from the picker.
+   *
+   * @param event Change event from the recipe `<wa-select>`.
+   * @returns Nothing; may dispatch `activeSectionChanged` or `configStyleAdded`.
+   */
   private onRecipePickerChange = (event: Event): void => {
     const log = contextLogger('po-styles-page', 'onRecipePickerChange');
     const rawValue = (event.target as HTMLSelectElement).value;
@@ -538,6 +256,11 @@ export class PoStylesPage extends PoElement {
     }
   };
 
+  /**
+   * Creates a new empty style recipe section in the store.
+   *
+   * @returns Nothing; dispatches `styleSectionAdded`.
+   */
   private onNewSection = (): void => {
     const log = contextLogger('po-styles-page', 'onNewSection');
     log.entry();
@@ -545,6 +268,11 @@ export class PoStylesPage extends PoElement {
     log.exit();
   };
 
+  /**
+   * Removes the currently active style recipe section.
+   *
+   * @returns Nothing; dispatches `styleSectionRemoved` for the active section id.
+   */
   private onRemoveSection = (): void => {
     const log = contextLogger('po-styles-page', 'onRemoveSection');
     log.entry({ activeSectionId: this.stylesState.activeSectionId });
@@ -552,6 +280,11 @@ export class PoStylesPage extends PoElement {
     log.exit();
   };
 
+  /**
+   * Appends a new layer to the active style recipe.
+   *
+   * @returns Nothing; dispatches `styleLayerAdded` for the active section.
+   */
   private onAddLayer = (): void => {
     const log = contextLogger('po-styles-page', 'onAddLayer');
     log.entry({ sectionId: this.stylesState.activeSectionId });
@@ -559,6 +292,12 @@ export class PoStylesPage extends PoElement {
     log.exit();
   };
 
+  /**
+   * Adds a new base blade variable with a preferred or generated key name.
+   *
+   * @param sectionId Id of the style recipe section receiving the new variable.
+   * @returns Nothing; dispatches `sectionVarAdded` with an empty initial value.
+   */
   private onAddBaseVar(sectionId: string): void {
     const log = contextLogger('po-styles-page', 'onAddBaseVar');
     log.entry({ sectionId });
@@ -576,6 +315,14 @@ export class PoStylesPage extends PoElement {
     log.exit({ key });
   }
 
+  /**
+   * Updates one base blade variable value in the store.
+   *
+   * @param sectionId Id of the style recipe section owning the variable.
+   * @param key Variable name to update.
+   * @param value New variable value string.
+   * @returns Nothing; dispatches `sectionVarChanged`.
+   */
   private onVarChange(sectionId: string, key: string, value: string): void {
     const log = contextLogger('po-styles-page', 'onVarChange');
     log.entry({ sectionId, key, value });
@@ -583,10 +330,24 @@ export class PoStylesPage extends PoElement {
     log.exit();
   }
 
+  /**
+   * Determines whether a base variable should use the color input control.
+   *
+   * @param key Base variable name to inspect.
+   * @returns True when the key represents a color variable.
+   */
   private isColorVarKey(key: string): boolean {
     return key === 'base' || key.endsWith('_color') || key === 'color';
   }
 
+  /**
+   * Renders the appropriate input control for a base blade variable.
+   *
+   * @param sectionId Id of the style recipe section owning the variable.
+   * @param key Variable name being edited.
+   * @param value Current variable value string.
+   * @returns Lit template for a color picker or text input.
+   */
   private renderVarInput(sectionId: string, key: string, value: string) {
     if (this.isColorVarKey(key)) {
       return html`

@@ -18,6 +18,11 @@ import { contextLogger } from '../../logger/index.js';
 import { colorInputI18n } from './po-color-input.i18n.js';
 import { colorInputKeys } from './po-color-input.keys.js';
 
+/**
+ * Firmware color picker — named color catalog with swatch preview and custom hex/r,g,b entry.
+ *
+ * @fires color-change - `{ value: string }`
+ */
 export class PoColorInput extends LitElement {
   static properties = {
     value: { type: String },
@@ -27,11 +32,20 @@ export class PoColorInput extends LitElement {
   value = '';
   private customMode = false;
 
-  /** Light DOM — required for Web Awesome form controls. */
+  /**
+   * Renders into light DOM so Web Awesome form controls work without shadow boundaries.
+   *
+   * @returns This element as its own render root.
+   */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  /**
+   * Builds the color input — swatch, grouped named-color select, and optional custom field.
+   *
+   * @returns Lit template for the color picker UI.
+   */
   render() {
     const committed = this.value.trim();
     const swatch = colorToCss(committed);
@@ -147,6 +161,11 @@ export class PoColorInput extends LitElement {
     `;
   }
 
+  /**
+   * Handles named-color or custom selection from the color `wa-select`.
+   *
+   * @param event - Change event from the color select control.
+   */
   private onSelectChange = (event: Event): void => {
     const log = contextLogger('po-color-input', 'onSelectChange');
     const chosen = (event.target as HTMLSelectElement).value;
@@ -166,6 +185,11 @@ export class PoColorInput extends LitElement {
     log.exit({ chosen });
   };
 
+  /**
+   * Handles custom color text input when custom mode is active.
+   *
+   * @param event - Change event from the custom color `wa-input`.
+   */
   private onCustomChange = (event: Event): void => {
     const log = contextLogger('po-color-input', 'onCustomChange');
     log.entry({ customMode: this.customMode });
@@ -179,6 +203,11 @@ export class PoColorInput extends LitElement {
     log.exit({ value });
   };
 
+  /**
+   * Normalizes and dispatches `color-change` when the value differs from the current property.
+   *
+   * @param next - Raw color string to normalize and commit.
+   */
   private commit(next: string): void {
     const log = contextLogger('po-color-input', 'commit');
     log.entry({ next, current: this.value.trim() });

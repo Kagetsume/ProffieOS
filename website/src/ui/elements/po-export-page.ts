@@ -17,6 +17,11 @@ export class PoExportPage extends PoElement {
 
   private readonly exportState = new EffectorController(this, $export);
 
+  /**
+   * Renders live export previews for all generated INI config files.
+   *
+   * @returns Lit template with one `po-copy-panel` per exported file.
+   */
   render() {
     const files = this.exportState.value;
     return html`

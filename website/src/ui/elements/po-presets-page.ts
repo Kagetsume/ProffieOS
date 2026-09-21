@@ -5,7 +5,7 @@
  *
  * @module ui/elements/po-presets-page
  */
-import { html, css, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
@@ -31,76 +31,22 @@ import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
 import { presetsPageI18n } from './po-presets-page.i18n.js';
 import { presetsPageKeys } from './po-presets-page.keys.js';
+import { poPresetsPageStyles } from './po-presets-page.styles.js';
 import { poConfigFormStyles, poHostStyles, poPageStyles } from './po-shared-styles.js';
 import './po-preset-style-row.js';
 
 export class PoPresetsPage extends PoElement {
-  static styles = [
-    poHostStyles,
-    poPageStyles,
-    poConfigFormStyles,
-    css`
-      .section-toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: end;
-        margin-bottom: 1rem;
-      }
-
-      .section-toolbar label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 600;
-        min-width: min(100%, 14rem);
-        flex: 1;
-      }
-
-      .section-toolbar wa-select {
-        width: 100%;
-        min-width: 0;
-        font-weight: normal;
-      }
-
-      .vars-heading {
-        margin: 1.25rem 0 0.5rem;
-        font-weight: 600;
-        font-size: 0.9375rem;
-      }
-
-      .form-grid .span-2 {
-        grid-column: 1 / -1;
-        max-width: 42rem;
-      }
-
-      .presets-help {
-        max-width: 65ch;
-        margin: 0 0 1rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid var(--wa-color-neutral-90, #e5e7eb);
-        border-radius: var(--wa-border-radius-medium, 6px);
-        font-size: 0.9375rem;
-        line-height: 1.45;
-      }
-
-      .presets-help summary {
-        cursor: pointer;
-        font-weight: 600;
-      }
-
-      .presets-help ul {
-        margin: 0.5rem 0;
-        padding-left: 1.25rem;
-      }
-    `,
-  ];
+  static styles = [poHostStyles, poPageStyles, poConfigFormStyles, poPresetsPageStyles];
 
   private readonly presetsController = new EffectorController(this, $presets);
   private readonly stylesController = new EffectorController(this, $styleSections);
   private readonly wiringController = new EffectorController(this, $wiring);
 
+  /**
+   * Renders the presets editor with toolbar, active preset form, and style rows.
+   *
+   * @returns Lit template for the full presets.ini editor page.
+   */
   render() {
     const presetsState = this.presetsController.value;
     const styleSections = this.stylesController.value.sections;
@@ -173,6 +119,14 @@ export class PoPresetsPage extends PoElement {
     `;
   }
 
+  /**
+   * Renders metadata fields and per-slot style rows for one preset.
+   *
+   * @param preset Active preset definition being edited.
+   * @param slotCount Number of logical blade slots from current wiring.
+   * @param styleSections Available style recipe sections from the styles editor.
+   * @returns Lit template for preset fields and `po-preset-style-row` children.
+   */
   private renderPresetForm(
     preset: NonNullable<ReturnType<typeof getActivePreset>>,
     slotCount: number,
@@ -242,6 +196,12 @@ export class PoPresetsPage extends PoElement {
     `;
   }
 
+  /**
+   * Switches the active preset when the user picks one from the dropdown.
+   *
+   * @param event Change event from the preset `<wa-select>`.
+   * @returns Nothing; dispatches `activePresetChanged`.
+   */
   private onPresetSelect = (event: Event): void => {
     const log = contextLogger('po-presets-page', 'onPresetSelect');
     const presetId = (event.target as HTMLSelectElement).value;
@@ -250,6 +210,13 @@ export class PoPresetsPage extends PoElement {
     log.exit();
   };
 
+  /**
+   * Applies a partial update to one preset in the store.
+   *
+   * @param id Preset id to update.
+   * @param patch Fields to merge into the preset definition (excluding id).
+   * @returns Nothing; dispatches `presetUpdated`.
+   */
   private patchPreset(
     id: string,
     patch: Partial<Omit<import('../../model/presets').PresetDefinition, 'id'>>,
@@ -260,6 +227,12 @@ export class PoPresetsPage extends PoElement {
     log.exit();
   }
 
+  /**
+   * Ensures a library recipe referenced by a preset style row exists in style sections.
+   *
+   * @param event Custom event from `po-preset-style-row` with the selected recipe id.
+   * @returns Nothing; may dispatch `configStyleAdded` when the recipe is missing.
+   */
   private onLibraryRecipeSelected = (
     event: CustomEvent<{ recipeId: string }>,
   ): void => {
@@ -276,6 +249,12 @@ export class PoPresetsPage extends PoElement {
     log.exit();
   };
 
+  /**
+   * Persists a style-line edit from a child preset style row to the active preset.
+   *
+   * @param event Custom event carrying slot index and updated preset style.
+   * @returns Nothing; dispatches `presetStyleUpdated` when a preset is active.
+   */
   private onStyleChange = (event: CustomEvent<{ slotIndex: number; style: import('../../model/preset-styles').PresetStyle }>): void => {
     const log = contextLogger('po-presets-page', 'onStyleChange');
     log.entry({ slotIndex: event.detail.slotIndex, kind: event.detail.style.kind });

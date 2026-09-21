@@ -22,6 +22,11 @@ import {
 import { pinPickerI18n } from './po-pin-picker.i18n.js';
 import { pinPickerKeys } from './po-pin-picker.keys.js';
 
+/**
+ * Board pin selector — preset catalog dropdown with optional custom pin entry.
+ *
+ * @fires pin-change - `{ value: string }`
+ */
 export class PoPinPicker extends LitElement {
   static properties = {
     value: { type: String },
@@ -33,11 +38,20 @@ export class PoPinPicker extends LitElement {
   usedPresets: ReadonlySet<string> = new Set();
   mode: PinPickerMode = 'power';
 
-  /** Light DOM — required for Web Awesome form controls. */
+  /**
+   * Renders into light DOM so Web Awesome `wa-select` and `wa-input` behave correctly.
+   *
+   * @returns This element as its own render root.
+   */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  /**
+   * Builds the pin picker — preset options (with in-use disabling) and optional custom input.
+   *
+   * @returns Lit template for the pin picker UI.
+   */
   render() {
     const stored = this.value.trim();
     const selectValue = selectValueForPin(stored, this.mode);
@@ -81,6 +95,11 @@ export class PoPinPicker extends LitElement {
     `;
   }
 
+  /**
+   * Handles preset or custom selection from the pin `wa-select`.
+   *
+   * @param event - Change event from the pin select control.
+   */
   private onSelectChange = (event: Event): void => {
     const log = contextLogger('po-pin-picker', 'onSelectChange');
     const chosen = (event.target as HTMLSelectElement & { value: string }).value;
@@ -95,6 +114,11 @@ export class PoPinPicker extends LitElement {
     log.exit({ chosen });
   };
 
+  /**
+   * Handles free-text custom pin input when custom mode is active.
+   *
+   * @param event - Input event from the custom pin `wa-input`.
+   */
   private onCustomInput = (event: Event): void => {
     const log = contextLogger('po-pin-picker', 'onCustomInput');
     log.entry({ value: storedValue(this), mode: this.mode });
@@ -108,6 +132,11 @@ export class PoPinPicker extends LitElement {
     log.exit({ value });
   };
 
+  /**
+   * Dispatches `pin-change` when the trimmed value differs and is not a blocked preset.
+   *
+   * @param next - Raw pin value to commit (trimmed before comparison and dispatch).
+   */
   private emit(next: string): void {
     const log = contextLogger('po-pin-picker', 'emit');
     log.entry({ next, current: storedValue(this), mode: this.mode });
@@ -137,6 +166,12 @@ export class PoPinPicker extends LitElement {
   }
 }
 
+/**
+ * Returns the trimmed committed pin value from a picker instance.
+ *
+ * @param picker - Pin picker whose `value` property should be read.
+ * @returns Trimmed pin string currently stored on the element.
+ */
 function storedValue(picker: PoPinPicker): string {
   return picker.value.trim();
 }

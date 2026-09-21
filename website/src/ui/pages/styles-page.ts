@@ -6,7 +6,12 @@
 import '../elements/index.js';
 import { mountCustomElementPage } from './mount-page';
 
-/** Mount the Blade styles page into `root`. */
+/**
+ * Mounts the blade styles editor page (`po-styles-page`) into a route container.
+ *
+ * @param root - DOM node that becomes the page shell (typically the router outlet).
+ * @returns Cleanup callback that removes the mounted page from `root`.
+ */
 export function mountStylesPage(root: HTMLElement): () => void {
   return mountCustomElementPage(root, 'po-styles-page');
 }

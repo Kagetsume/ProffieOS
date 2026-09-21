@@ -20,6 +20,11 @@ export class PoBoardPage extends PoElement {
 
   private readonly featuresController = new EffectorController(this, $boardFeatures);
 
+  /**
+   * Renders the board config form bound to the current board features store state.
+   *
+   * @returns Lit template for the board.ini editor page.
+   */
   render() {
     const state = this.featuresController.value;
     return html`
@@ -69,6 +74,12 @@ export class PoBoardPage extends PoElement {
     `;
   }
 
+  /**
+   * Applies a partial update to the board features store.
+   *
+   * @param partial Fields to merge into the current board features state.
+   * @returns Nothing; updates are dispatched via the Effector store.
+   */
   private patch(partial: Partial<BoardFeaturesState>): void {
     const log = contextLogger('po-board-page', 'patch');
     log.entry({ partial });

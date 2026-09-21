@@ -3,7 +3,7 @@
  *
  * @module ui/elements/po-style-layer-stack
  */
-import { html, css, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
@@ -31,154 +31,21 @@ import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
 import { styleLayerStackI18n } from './po-style-layer-stack.i18n.js';
 import { styleLayerStackKeys } from './po-style-layer-stack.keys.js';
+import { poStyleLayerStackStyles } from './po-style-layer-stack.styles.js';
 import './po-color-input.js';
 
 export class PoStyleLayerStack extends PoElement {
-  static styles = css`
-    .layer-stack {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin: 0 0 1rem;
-    }
-
-    .layer-item {
-      border: 1px solid var(--wa-color-neutral-85, #d4d4d8);
-      border-radius: var(--wa-border-radius-medium, 6px);
-      background: var(--wa-color-neutral-98, #fafafa);
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    .layer-item:hover {
-      border-color: var(--wa-color-brand-70, #38bdf8);
-    }
-
-    .layer-item--expanded {
-      border-color: var(--wa-color-brand-60, #0ea5e9);
-      background: var(--wa-color-brand-98, #f0f9ff);
-    }
-
-    .layer-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.55rem 0.65rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-      min-width: 0;
-    }
-
-    .layer-item--expanded .layer-row {
-      border-bottom: 1px solid var(--wa-color-brand-85, #bae6fd);
-      background: var(--wa-color-brand-95, #e0f2fe);
-    }
-
-    .layer-order {
-      font-family: ui-monospace, monospace;
-      font-size: 0.75rem;
-      opacity: 0.65;
-      min-width: 1.25rem;
-    }
-
-    .layer-label {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .layer-badge {
-      font-size: 0.7rem;
-      padding: 0.1rem 0.35rem;
-      border-radius: 4px;
-      background: var(--wa-color-neutral-90, #e4e4e7);
-      white-space: nowrap;
-    }
-
-    .layer-row-actions {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      flex-shrink: 0;
-    }
-
-    .layer-reorder,
-    .layer-remove {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      width: 2rem;
-      height: 2rem;
-      padding: 0;
-      border: 1px solid var(--wa-color-neutral-80, #c4c4c8);
-      border-radius: var(--wa-border-radius-medium, 6px);
-      background: var(--wa-color-neutral-98, #fafafa);
-      color: var(--wa-color-neutral-35, #52525b);
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .layer-reorder:hover:not(:disabled) {
-      border-color: var(--wa-color-brand-60, #0ea5e9);
-      color: var(--wa-color-brand-60, #0ea5e9);
-      background: var(--wa-color-brand-95, #e0f2fe);
-    }
-
-    .layer-remove:hover:not(:disabled) {
-      border-color: var(--wa-color-danger-60, #dc2626);
-      color: var(--wa-color-danger-60, #dc2626);
-      background: var(--wa-color-danger-95, #fef2f2);
-    }
-
-    .layer-reorder:disabled,
-    .layer-remove:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    .layer-form-footer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--wa-color-brand-85, #bae6fd);
-    }
-
-    .layer-form {
-      padding: 0.75rem;
-      font-size: 0.875rem;
-    }
-
-    .layer-form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-
-    .layer-form-grid label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.8125rem;
-      font-weight: 600;
-    }
-
-    .layer-form-grid wa-input,
-    .layer-form-grid wa-select {
-      font-weight: normal;
-    }
-  `;
+  static styles = poStyleLayerStackStyles;
 
   private readonly stylesController = new EffectorController(this, $styleSections);
 
   private scrollTargetId = '';
 
+  /**
+   * Renders the expandable layer stack for the active style recipe section.
+   *
+   * @returns Lit template for the layer stack, or `nothing` when no section is active.
+   */
   render() {
     const section = getActiveSection(this.stylesController.value);
     if (!section) {
@@ -187,6 +54,11 @@ export class PoStyleLayerStack extends PoElement {
     return this.renderLayerStack(section);
   }
 
+  /**
+   * Scrolls the expanded layer into view after the active layer changes.
+   *
+   * @returns Nothing; schedules scroll via `updateComplete` when a target is set.
+   */
   protected updated(): void {
     if (!this.scrollTargetId) {
       return;
@@ -198,6 +70,12 @@ export class PoStyleLayerStack extends PoElement {
     });
   }
 
+  /**
+   * Smoothly scrolls a layer item element into the nearest visible viewport edge.
+   *
+   * @param targetId DOM id of the element to scroll into view.
+   * @returns Nothing; no-ops when the target element is not found.
+   */
   private scrollToTarget(targetId: string): void {
     const element = this.shadowRoot?.getElementById(targetId);
     if (element) {
@@ -205,6 +83,12 @@ export class PoStyleLayerStack extends PoElement {
     }
   }
 
+  /**
+   * Renders all layers in display order with expand, reorder, and remove controls.
+   *
+   * @param section Style recipe section whose layers are listed.
+   * @returns Lit template for the ordered layer stack list.
+   */
   private renderLayerStack(section: StyleSection) {
     const activeLayerId = this.stylesController.value.activeLayerId;
     const layers = [...section.layers].reverse();
@@ -284,6 +168,16 @@ export class PoStyleLayerStack extends PoElement {
     `;
   }
 
+  /**
+   * Renders the expanded editor form for one style layer.
+   *
+   * @param section Parent style recipe section providing shared vars.
+   * @param layer Layer definition being edited.
+   * @param canRemove Whether the layer may be removed (more than one layer exists).
+   * @param canMoveUp Whether the layer can move toward the blade tip.
+   * @param canMoveDown Whether the layer can move toward the blade base.
+   * @returns Lit template for the layer style, blend, opacity, and arg controls.
+   */
   private renderLayerForm(
     section: StyleSection,
     layer: StyleLayer,
@@ -391,6 +285,13 @@ export class PoStyleLayerStack extends PoElement {
     `;
   }
 
+  /**
+   * Expands or collapses a layer row by toggling the active layer id.
+   *
+   * @param id Layer id that was clicked.
+   * @param activeLayerId Currently expanded layer id, if any.
+   * @returns Nothing; dispatches `activeLayerChanged` and may queue scroll.
+   */
   private toggleLayer(id: string, activeLayerId: string): void {
     const log = contextLogger('po-style-layer-stack', 'toggleLayer');
     log.entry({ id, activeLayerId });
@@ -405,6 +306,14 @@ export class PoStyleLayerStack extends PoElement {
     log.exit({ nextActiveLayerId: next });
   }
 
+  /**
+   * Handles remove-button clicks without toggling the layer row.
+   *
+   * @param event Click event from the remove button.
+   * @param sectionId Id of the style recipe section owning the layer.
+   * @param layerId Id of the layer to remove.
+   * @returns Nothing; delegates to `removeLayer` after stopping propagation.
+   */
   private onRemoveLayerClick(event: Event, sectionId: string, layerId: string): void {
     const log = contextLogger('po-style-layer-stack', 'onRemoveLayerClick');
     log.entry({ sectionId, layerId });
@@ -413,6 +322,15 @@ export class PoStyleLayerStack extends PoElement {
     log.exit();
   }
 
+  /**
+   * Handles reorder-button clicks without toggling the layer row.
+   *
+   * @param event Click event from a move-up or move-down button.
+   * @param sectionId Id of the style recipe section owning the layer.
+   * @param layerId Id of the layer to reorder.
+   * @param direction Stack direction: `up` toward tip or `down` toward base.
+   * @returns Nothing; dispatches `styleLayerMoved` after stopping propagation.
+   */
   private onMoveLayerClick(
     event: Event,
     sectionId: string,
@@ -426,6 +344,13 @@ export class PoStyleLayerStack extends PoElement {
     log.exit();
   }
 
+  /**
+   * Removes a layer when the section has more than one layer.
+   *
+   * @param sectionId Id of the style recipe section owning the layer.
+   * @param layerId Id of the layer to remove.
+   * @returns Nothing; dispatches `styleLayerRemoved` or no-ops when blocked.
+   */
   private removeLayer(sectionId: string, layerId: string): void {
     const log = contextLogger('po-style-layer-stack', 'removeLayer');
     log.entry({ sectionId, layerId });
@@ -440,6 +365,14 @@ export class PoStyleLayerStack extends PoElement {
     log.exit();
   }
 
+  /**
+   * Applies a partial update to one style layer in the store.
+   *
+   * @param sectionId Id of the style recipe section owning the layer.
+   * @param layerId Id of the layer to update.
+   * @param patch Fields to merge into the layer definition.
+   * @returns Nothing; dispatches `styleLayerUpdated`.
+   */
   private patchLayer(sectionId: string, layerId: string, patch: Partial<StyleLayer>): void {
     const log = contextLogger('po-style-layer-stack', 'patchLayer');
     log.entry({ sectionId, layerId, patchKeys: Object.keys(patch) });
@@ -447,6 +380,12 @@ export class PoStyleLayerStack extends PoElement {
     log.exit();
   }
 
+  /**
+   * Switches the active layer between named styles and config-section references.
+   *
+   * @param event Change event from the layer style `<wa-select>`.
+   * @returns Nothing; dispatches `styleLayerUpdated` with decoded picker value.
+   */
   private onLayerStyleChange = (event: Event): void => {
     const log = contextLogger('po-style-layer-stack', 'onLayerStyleChange');
     const rawValue = (event.target as HTMLSelectElement).value;
@@ -493,11 +432,26 @@ export class PoStyleLayerStack extends PoElement {
     }
   };
 
+  /**
+   * Extracts a section variable name from a `{{var}}` template placeholder.
+   *
+   * @param arg Raw layer argument string that may reference a section var.
+   * @returns Variable name when the arg is a template reference; otherwise undefined.
+   */
   private templateVarName(arg: string): string | undefined {
     const match = arg.trim().match(/^\{\{(\w+)\}\}$/);
     return match?.[1];
   }
 
+  /**
+   * Renders an input for one style-layer argument, resolving section var bindings.
+   *
+   * @param section Parent style recipe section providing shared vars.
+   * @param layer Layer whose args array is edited.
+   * @param index Zero-based index of the argument within the layer.
+   * @param arg Style catalog metadata describing the argument type and default.
+   * @returns Lit template for the arg input and optional section-var hint.
+   */
   private renderLayerArgInput(
     section: StyleSection,
     layer: StyleLayer,
@@ -509,6 +463,12 @@ export class PoStyleLayerStack extends PoElement {
     const usesSectionVar = varName !== undefined && varName in section.vars;
     const value = usesSectionVar ? section.vars[varName]! : raw;
 
+    /**
+     * Persists a layer arg edit to the section var or layer args array.
+     *
+     * @param next New argument value string from the input control.
+     * @returns Nothing; dispatches `sectionVarChanged` or `patchLayer`.
+     */
     const onValueChange = (next: string): void => {
       const changeLog = contextLogger('po-style-layer-stack', 'onLayerArgValueChange');
       changeLog.entry({ layerId: layer.id, index, next });

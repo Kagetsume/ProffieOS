@@ -1,7 +1,7 @@
 /**
  * Features config editor — `config/features.ini` (gesture, twist on/off).
  */
-import { html, css } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/switch/switch.js';
 import type { BoardFeaturesState } from '../../model/board';
@@ -11,6 +11,7 @@ import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
 import { featuresPageI18n } from './po-features-page.i18n.js';
 import { featuresPageFieldKeys, featuresPageKeys } from './po-features-page.keys.js';
+import { poFeaturesPageStyles } from './po-features-page.styles.js';
 import { poConfigFormStyles, poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 type FeatureField = {
@@ -24,47 +25,15 @@ const FEATURE_FIELDS: FeatureField[] = [
 ];
 
 export class PoFeaturesPage extends PoElement {
-  static styles = [
-    poHostStyles,
-    poPageStyles,
-    poConfigFormStyles,
-    css`
-      .feature-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-        padding: 0.25rem 0;
-        width: 100%;
-      }
-
-      .feature-field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .feature-label {
-        font-size: 0.875rem;
-        font-weight: 600;
-        line-height: 1.3;
-      }
-
-      .feature-description {
-        margin: 0;
-        font-size: 0.8125rem;
-        font-weight: normal;
-        line-height: 1.45;
-        opacity: 0.85;
-      }
-
-      .feature-field wa-switch {
-        align-self: flex-start;
-      }
-    `,
-  ];
+  static styles = [poHostStyles, poPageStyles, poConfigFormStyles, poFeaturesPageStyles];
 
   private readonly featuresController = new EffectorController(this, $boardFeatures);
 
+  /**
+   * Renders the features config form with toggle switches for gesture and twist settings.
+   *
+   * @returns Lit template for the features.ini editor page.
+   */
   render() {
     const state = this.featuresController.value;
     return html`
@@ -83,6 +52,13 @@ export class PoFeaturesPage extends PoElement {
     `;
   }
 
+  /**
+   * Renders a labeled feature toggle with description text.
+   *
+   * @param field Feature metadata identifying which board feature to edit.
+   * @param state Current board features state used for the switch checked value.
+   * @returns Lit template for one feature field row.
+   */
   private renderField(field: FeatureField, state: BoardFeaturesState) {
     const checked = state[field.key];
     return html`
@@ -98,6 +74,12 @@ export class PoFeaturesPage extends PoElement {
     `;
   }
 
+  /**
+   * Applies a partial update to the board features store.
+   *
+   * @param partial Fields to merge into the current board features state.
+   * @returns Nothing; updates are dispatched via the Effector store.
+   */
   private patch(partial: Partial<BoardFeaturesState>): void {
     const log = contextLogger('po-features-page', 'patch');
     log.entry({ partial });

@@ -1,7 +1,7 @@
 /**
  * One logical blade's `style =` line editor inside a preset.
  */
-import { html, css, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -23,72 +23,13 @@ import {
 } from '../../model/style-picker';
 import type { StyleSection } from '../../model/style-sections';
 import { PoElement } from './po-element.js';
+import { poPresetStyleRowStyles } from './po-preset-style-row.styles.js';
 import { presetStyleRowI18n } from './po-preset-style-row.i18n.js';
 import { presetStyleRowKeys } from './po-preset-style-row.keys.js';
 import './po-color-input.js';
 
 export class PoPresetStyleRow extends PoElement {
-  static styles = [
-    css`
-      :host {
-        display: block;
-      }
-
-      .style-row {
-        border: 1px solid var(--wa-color-neutral-90, #e5e7eb);
-        border-radius: var(--wa-border-radius-medium, 6px);
-        padding: 0.75rem;
-        margin-bottom: 0.75rem;
-      }
-
-      .style-row-header {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem 1rem;
-        align-items: baseline;
-        margin-bottom: 0.65rem;
-      }
-
-      .slot-label {
-        font-weight: 600;
-        font-size: 0.9rem;
-      }
-
-      .style-preview {
-        font-family: ui-monospace, monospace;
-        font-size: 0.8rem;
-        opacity: 0.85;
-        word-break: break-word;
-      }
-
-      .style-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
-        gap: 0.65rem;
-      }
-
-      label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        min-width: 0;
-      }
-
-      wa-select,
-      wa-input {
-        font-weight: normal;
-        width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-      }
-
-      .span-2 {
-        grid-column: 1 / -1;
-      }
-    `,
-  ];
+  static styles = [poPresetStyleRowStyles];
 
   slotIndex = 0;
   slotCount = 1;
@@ -112,6 +53,11 @@ export class PoPresetStyleRow extends PoElement {
     styleSections: { attribute: false },
   };
 
+  /**
+   * Renders one logical blade's preset style editor with mode picker and preview.
+   *
+   * @returns Lit template for the style row header and input grid.
+   */
   render() {
     const preview = formatPresetStyleLine(this.presetStyle);
     const isCustom = this.presetStyle.kind === 'custom';
@@ -138,6 +84,11 @@ export class PoPresetStyleRow extends PoElement {
     `;
   }
 
+  /**
+   * Builds grouped `<wa-option>` nodes for preset, config, and library styles.
+   *
+   * @returns Array of Lit template nodes for the style picker dropdown.
+   */
   private renderPresetStyleOptions() {
     const options = listPresetStylePickerOptions(this.styleSections, this.recipeCatalog);
     let lastGroup = '';
@@ -156,6 +107,11 @@ export class PoPresetStyleRow extends PoElement {
     return nodes;
   }
 
+  /**
+   * Renders preset-mode controls: style picker, overrides, and style arguments.
+   *
+   * @returns Lit template for named, config, or library preset style fields.
+   */
   private renderPreset() {
     const styleDef =
       this.presetStyle.kind === 'named' ? getNamedStyle(this.presetStyle.ref) : undefined;
@@ -204,6 +160,11 @@ export class PoPresetStyleRow extends PoElement {
     `;
   }
 
+  /**
+   * Renders custom-mode controls for a raw `style =` line string.
+   *
+   * @returns Lit template with a single custom line text input.
+   */
   private renderCustom() {
     return html`
       <label class="span-2">
@@ -218,12 +179,23 @@ export class PoPresetStyleRow extends PoElement {
     `;
   }
 
+  /**
+   * Serializes config-style override key/value pairs for display in the input field.
+   *
+   * @returns Space-separated `key=value` tokens derived from `presetStyle.overrides`.
+   */
   private formatOverrides(): string {
     return Object.entries(this.presetStyle.overrides)
       .map(([key, value]) => `${key}=${value}`)
       .join(' ');
   }
 
+  /**
+   * Switches between preset-driven and custom raw-line style editing modes.
+   *
+   * @param event Change event from the style mode `<wa-select>`.
+   * @returns Nothing; emits a reset `PresetStyle` via `emitStyle`.
+   */
   private onStyleModeChange = (event: Event): void => {
     const log = contextLogger('po-preset-style-row', 'onStyleModeChange');
     const mode = (event.target as HTMLSelectElement).value;
@@ -252,6 +224,12 @@ export class PoPresetStyleRow extends PoElement {
     log.exit();
   };
 
+  /**
+   * Applies a style selection from the preset, config, or library picker.
+   *
+   * @param event Change event from the style `<wa-select>`.
+   * @returns Nothing; may emit style change and request library recipe import.
+   */
   private onStylePickerChange = (event: Event): void => {
     const log = contextLogger('po-preset-style-row', 'onStylePickerChange');
     const value = (event.target as HTMLSelectElement).value;
@@ -299,6 +277,12 @@ export class PoPresetStyleRow extends PoElement {
     log.exit();
   };
 
+  /**
+   * Parses override tokens from the config-style overrides text field.
+   *
+   * @param event Change event from the overrides `<wa-input>`.
+   * @returns Nothing; emits an updated config-style preset with parsed overrides.
+   */
   private onOverridesChange = (event: Event): void => {
     const log = contextLogger('po-preset-style-row', 'onOverridesChange');
     const text = (event.target as HTMLInputElement).value.trim();
@@ -317,6 +301,13 @@ export class PoPresetStyleRow extends PoElement {
     log.exit({ overrideCount: Object.keys(overrides).length });
   };
 
+  /**
+   * Updates one named-style argument at the given index, padding args as needed.
+   *
+   * @param index Zero-based argument index within the named style.
+   * @param value New argument value string.
+   * @returns Nothing; emits an updated named preset style via `emitStyle`.
+   */
   private patchArg(index: number, value: string): void {
     const log = contextLogger('po-preset-style-row', 'patchArg');
     log.entry({ slotIndex: this.slotIndex, index, value });
@@ -330,6 +321,12 @@ export class PoPresetStyleRow extends PoElement {
     log.exit({ argCount: args.length });
   }
 
+  /**
+   * Bubbles a preset style change event to the parent presets page.
+   *
+   * @param style Complete updated preset style for this blade slot.
+   * @returns Nothing; dispatches `preset-style-change` with slot index and style.
+   */
   private emitStyle(style: PresetStyle): void {
     const log = contextLogger('po-preset-style-row', 'emitStyle');
     log.entry({ slotIndex: this.slotIndex, kind: style.kind, ref: style.ref });

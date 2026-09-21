@@ -5,6 +5,7 @@
  */
 import { css } from 'lit';
 
+/** Host element layout: block display, full width, border-box sizing. */
 export const poHostStyles = css`
   :host {
     display: block;
@@ -13,6 +14,7 @@ export const poHostStyles = css`
   }
 `;
 
+/** Page shell styles: headings, lead text, toolbar, blade list, hints, and inline code. */
 export const poPageStyles = css`
   .page h2 {
     margin-top: 0;
@@ -62,7 +64,7 @@ export const poPageStyles = css`
   }
 `;
 
-/** Board / features config forms (shadow DOM). */
+/** Board and features config form grid, labels, switches, and card layout (shadow DOM). */
 export const poConfigFormStyles = css`
   .form-grid {
     display: grid;
@@ -107,6 +109,7 @@ export const poConfigFormStyles = css`
   }
 `;
 
+/** Blade card header, form grid, and power-pin editor span styles for blade config UI. */
 export const poBladeCardStyles = css`
   wa-card {
     display: block;
@@ -161,6 +164,7 @@ export const poBladeCardStyles = css`
   }
 `;
 
+/** Power FET pin editor layout: heading, hint, row grid, and pin-picker sizing. */
 export const poPowerPinStyles = css`
   .power-pin-editor {
     display: flex;
@@ -219,6 +223,7 @@ export const poPowerPinStyles = css`
   }
 `;
 
+/** Pin picker select/custom input layout and visibility for preset vs custom pin entry. */
 export const poPinPickerStyles = css`
   .pin-picker {
     display: flex;

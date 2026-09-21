@@ -1,38 +1,16 @@
 /**
  * Placeholder page for config sections not yet implemented.
  */
-import { html, css } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import { PoElement } from './po-element.js';
 import { configStubPageI18n } from './po-config-stub-page.i18n.js';
 import { configStubPageKeys } from './po-config-stub-page.keys.js';
+import { poConfigStubPageStyles } from './po-config-stub-page.styles.js';
 import { poHostStyles, poPageStyles } from './po-shared-styles.js';
 
 export class PoConfigStubPage extends PoElement {
-  static styles = [
-    poHostStyles,
-    poPageStyles,
-    css`
-      wa-card {
-        display: block;
-        width: 100%;
-      }
-
-      .stub-card p {
-        margin: 0 0 0.75rem;
-      }
-
-      .stub-card p:last-child {
-        margin-bottom: 0;
-      }
-
-      .config-path {
-        font-family: ui-monospace, monospace;
-        font-size: 0.875rem;
-        opacity: 0.8;
-      }
-    `,
-  ];
+  static styles = [poHostStyles, poPageStyles, poConfigStubPageStyles];
 
   /** Page heading (e.g. "Presets"). */
   title = '';
@@ -49,6 +27,11 @@ export class PoConfigStubPage extends PoElement {
     description: { type: String },
   };
 
+  /**
+   * Renders a placeholder page for config sections not yet implemented.
+   *
+   * @returns Lit template showing title, SD path, description, and stub hint.
+   */
   render() {
     return html`
       <section class="page">

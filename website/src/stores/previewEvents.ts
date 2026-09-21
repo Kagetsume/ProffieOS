@@ -59,12 +59,9 @@ export const $previewSim = createStore<PreviewSimState>(createInitialPreviewSim(
     const timing = section ? sectionInOutTimes(section) : { extendMs: 300, retractMs: 800 };
     return previewPowerOff(state, performance.now(), timing, sectionHasPostoff(layerNames(section)));
   })
-  .on(previewEventTriggered, (state, { event, section }) => {
-    if (!section) {
-      return state;
-    }
-    return previewTriggerEvent(state, event, performance.now());
-  })
+  .on(previewEventTriggered, (state, { event }) =>
+    previewTriggerEvent(state, event, performance.now()),
+  )
   .on(previewLockupChanged, (state, active) => previewSetLockup(state, active))
   .on(previewDragChanged, (state, active) => previewSetDrag(state, active))
   .on(previewMeltChanged, (state, active) => previewSetMelt(state, active))

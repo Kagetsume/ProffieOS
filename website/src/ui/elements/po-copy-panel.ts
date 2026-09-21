@@ -3,7 +3,7 @@
  *
  * @module ui/elements/po-copy-panel
  */
-import { html, css } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
@@ -11,6 +11,7 @@ import { contextLogger } from '../../logger/index.js';
 import { copyPanelI18n } from './po-copy-panel.i18n.js';
 import { copyPanelKeys } from './po-copy-panel.keys.js';
 import { PoElement } from './po-element.js';
+import { poCopyPanelStyles } from './po-copy-panel.styles.js';
 
 export class PoCopyPanel extends PoElement {
   static properties = {
@@ -19,45 +20,7 @@ export class PoCopyPanel extends PoElement {
     content: { type: String },
   };
 
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    wa-card {
-      display: block;
-    }
-
-    .copy-panel-header {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
-    .copy-panel-filename {
-      font-size: 0.875rem;
-      color: var(--wa-color-neutral-600, #666);
-    }
-
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 8rem;
-      margin: 0.75rem 0;
-      padding: 0.5rem;
-      font-family: ui-monospace, monospace;
-      font-size: 0.8125rem;
-      box-sizing: border-box;
-      resize: vertical;
-    }
-
-    .copy-panel-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-  `;
+  static styles = poCopyPanelStyles;
 
   title = '';
   filename = '';
@@ -66,6 +29,11 @@ export class PoCopyPanel extends PoElement {
   private copyLabel = copyPanelI18n.translate(copyPanelKeys.copy);
   private copyResetTimer = 0;
 
+  /**
+   * Clears the copy-label reset timer when the panel is removed from the DOM.
+   *
+   * @returns Nothing; delegates to `super.disconnectedCallback` after cleanup.
+   */
   disconnectedCallback(): void {
     const log = contextLogger('po-copy-panel', 'disconnectedCallback');
     log.entry({ hasTimer: Boolean(this.copyResetTimer) });
@@ -78,6 +46,11 @@ export class PoCopyPanel extends PoElement {
     log.exit();
   }
 
+  /**
+   * Renders a read-only INI preview with copy and download actions.
+   *
+   * @returns Lit template for the copy panel card and textarea.
+   */
   render() {
     return html`
       <wa-card>
@@ -100,6 +73,11 @@ export class PoCopyPanel extends PoElement {
     `;
   }
 
+  /**
+   * Copies panel content to the clipboard and briefly shows a confirmation label.
+   *
+   * @returns Promise that resolves when the copy attempt finishes (success or failure).
+   */
   private onCopy = async (): Promise<void> => {
     const log = contextLogger('po-copy-panel', 'onCopy');
     log.entry({ filename: this.filename, contentLength: this.content.length });
@@ -125,6 +103,11 @@ export class PoCopyPanel extends PoElement {
     }
   };
 
+  /**
+   * Triggers a browser download of the panel content as a plain-text file.
+   *
+   * @returns Nothing; creates a temporary object URL and programmatically clicks it.
+   */
   private onDownload = (): void => {
     const log = contextLogger('po-copy-panel', 'onDownload');
     log.entry({ filename: this.filename, contentLength: this.content.length });

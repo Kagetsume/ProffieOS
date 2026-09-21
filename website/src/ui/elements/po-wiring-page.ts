@@ -35,10 +35,20 @@ export class PoWiringPage extends LitElement {
   private readonly wiringController = new EffectorController(this, $wiring);
   private readonly profileController = new EffectorController(this, $boardProfileId);
 
+  /**
+   * Uses light DOM so global page styles apply to blade wiring markup.
+   *
+   * @returns This element itself as the render root.
+   */
   protected createRenderRoot(): HTMLElement | DocumentFragment {
     return this;
   }
 
+  /**
+   * Renders the blades wiring page with profile selector, toolbar, and blade cards.
+   *
+   * @returns Lit template for the full wiring editor section.
+   */
   render() {
     const blades = this.wiringController.value;
     const profileId = this.profileController.value;
@@ -104,6 +114,12 @@ export class PoWiringPage extends LitElement {
     `;
   }
 
+  /**
+   * Handles board profile selection and updates the project store.
+   *
+   * @param event Change event from the profile `<wa-select>`.
+   * @returns Nothing; dispatches `boardProfileChanged` with the selected profile id.
+   */
   private onProfileChange = (event: Event): void => {
     const log = contextLogger('po-wiring-page', 'onProfileChange');
     const profileId = (event.target as HTMLSelectElement).value;
@@ -112,6 +128,11 @@ export class PoWiringPage extends LitElement {
     log.exit();
   };
 
+  /**
+   * Resets blade wiring to the defaults for the currently selected board profile.
+   *
+   * @returns Nothing; dispatches `applyProfileDefaults`.
+   */
   private onApplyProfile = (): void => {
     const log = contextLogger('po-wiring-page', 'onApplyProfile');
     log.entry();
@@ -119,6 +140,11 @@ export class PoWiringPage extends LitElement {
     log.exit();
   };
 
+  /**
+   * Appends a new blade definition to the wiring store.
+   *
+   * @returns Nothing; dispatches `bladeAdded`.
+   */
   private onAddBlade = (): void => {
     const log = contextLogger('po-wiring-page', 'onAddBlade');
     log.entry({ currentCount: this.wiringController.value.length });
@@ -126,6 +152,12 @@ export class PoWiringPage extends LitElement {
     log.exit();
   };
 
+  /**
+   * Applies a partial update to one blade from a child `po-blade-card` event.
+   *
+   * @param event Custom event carrying blade index and field patch.
+   * @returns Nothing; dispatches `bladeUpdated` with the event detail.
+   */
   private onBladePatch = (event: CustomEvent<{ index: number; patch: Partial<BladeDefinition> }>): void => {
     const log = contextLogger('po-wiring-page', 'onBladePatch');
     log.entry({ index: event.detail.index, patchKeys: Object.keys(event.detail.patch) });
@@ -133,6 +165,12 @@ export class PoWiringPage extends LitElement {
     log.exit();
   };
 
+  /**
+   * Removes a blade at the index reported by a child `po-blade-card` event.
+   *
+   * @param event Custom event carrying the blade index to remove.
+   * @returns Nothing; dispatches `bladeRemoved`.
+   */
   private onBladeRemove = (event: CustomEvent<{ index: number }>): void => {
     const log = contextLogger('po-wiring-page', 'onBladeRemove');
     log.entry({ index: event.detail.index });
