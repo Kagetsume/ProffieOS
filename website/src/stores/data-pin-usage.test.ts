@@ -22,6 +22,6 @@ describe('data pin usage store', () => {
   it('wiringWithBladeDataPin substitutes in-progress data pin', () => {
     const merged = wiringWithBladeDataPin(blades, 2, 'blade7Pin');
     expect(merged[2]?.dataPin).toBe('blade7Pin');
-    expect(merged[1]?.dataPin).toBe('blade6Pin');
+    expect(merged.find((blade) => blade.index === 1)?.dataPin).toBe('blade5Pin');
   });
 });

@@ -1,5 +1,8 @@
 # ProffieOS SD Config Editor — Implementation Plan
 
+> **Current status:** See [README.md](./README.md) and per-folder READMEs under `src/` for
+> what is implemented today. This plan retains historical phase notes and future ideas.
+
 Web app for **displaying, editing, and exporting** SD card config files used by the
 config-driven workflow in [`examples/config/`](../examples/config/). Generates
 formatted INI text for copy/download — does **not** run Proffie firmware or generate

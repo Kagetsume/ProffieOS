@@ -26,18 +26,18 @@ const CONFIG_FILES: ConfigFileRow[] = [
   },
   {
     path: 'config/blades.ini',
-    purpose: 'NeoPixel and accent wiring, power pins',
+    purpose: 'NeoPixel and accent wiring, data/power pins, sub-blades',
     status: 'ready',
   },
   {
     path: 'config/blade_styles.ini',
-    purpose: 'Layer recipes for config-driven styles',
-    status: 'partial',
+    purpose: 'Layer recipes (base + overlays) — see BLADE_STYLES.md',
+    status: 'ready',
   },
   {
     path: 'config/presets.ini',
-    purpose: 'Fonts, tracks, preset names, style lines',
-    status: 'planned',
+    purpose: 'Fonts, tracks, preset names, style lines per blade',
+    status: 'ready',
   },
 ];
 

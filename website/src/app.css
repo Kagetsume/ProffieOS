@@ -14,6 +14,7 @@ body {
 po-wiring-page,
 po-blade-card,
 po-power-pin-editor,
+po-sub-blade-editor,
 po-pin-picker {
   display: block;
   width: 100%;
@@ -186,6 +187,7 @@ po-wiring-page {
 }
 
 .form-grid po-power-pin-editor,
+.form-grid po-sub-blade-editor,
 .form-grid .span-2 {
   grid-column: 1 / -1;
   width: 100%;
@@ -196,6 +198,34 @@ po-wiring-page {
 .hint {
   font-size: 0.875rem;
   opacity: 0.75;
+}
+
+.blades-help,
+.styles-help {
+  max-width: 65ch;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--wa-color-neutral-90, #e5e7eb);
+  border-radius: var(--wa-border-radius-medium, 6px);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+}
+
+.blades-help summary,
+.styles-help summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.blades-help ul,
+.styles-help ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+}
+
+.blades-help p,
+.styles-help p {
+  margin: 0.5rem 0 0;
 }
 
 .pin-picker {
@@ -288,6 +318,105 @@ wa-input.pin-picker-custom {
   font-size: 0.8125rem;
   opacity: 0.85;
   white-space: nowrap;
+}
+
+.sub-blade-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 42rem;
+}
+
+.sub-blade-editor > wa-button {
+  width: auto;
+}
+
+.sub-blade-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sub-blade-hint {
+  display: block;
+  max-width: 72ch;
+  font-weight: normal;
+  opacity: 0.75;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.sub-blade-empty {
+  margin: 0;
+  font-size: 0.8125rem;
+  opacity: 0.75;
+}
+
+.sub-blade-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.sub-blade-row {
+  display: grid;
+  grid-template-columns: 5.75rem repeat(2, minmax(4.5rem, 6rem)) minmax(6rem, 1fr) auto;
+  gap: 0.5rem 0.75rem;
+  align-items: end;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.sub-blade-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 0;
+}
+
+.sub-blade-row wa-input {
+  width: 100%;
+  min-width: 0;
+  font-weight: normal;
+}
+
+.sub-blade-slot {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  padding-bottom: 0.35rem;
+}
+
+.sub-blade-meta {
+  font-size: 0.8125rem;
+  opacity: 0.85;
+  padding-bottom: 0.35rem;
+  white-space: nowrap;
+}
+
+.sub-blade-meta--invalid {
+  color: var(--wa-color-danger-50, #dc2626);
+  opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .sub-blade-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .sub-blade-slot,
+  .sub-blade-meta,
+  .sub-blade-row wa-button {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 560px) {

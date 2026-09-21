@@ -1,6 +1,8 @@
 /**
  * Types for `config/blade_styles.ini` sections (variables + layer stack).
  *
+ * User guide with functional examples: `website/BLADE_STYLES.md`.
+ *
  * @module model/style-sections
  */
 import { createDefaultConfigStyles } from './config-styles';

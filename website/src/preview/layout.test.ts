@@ -1,6 +1,6 @@
 /** Responsive saber preview layout (container resize, DPR, emitter). */
 import { describe, expect, it } from 'vitest';
-import { measurePreviewLayout } from './layout';
+import { applyPreviewLayoutToCanvas, measurePreviewLayout } from './layout';
 
 describe('measurePreviewLayout', () => {
   it('scales blade length down when container narrows', () => {
@@ -46,6 +46,32 @@ describe('measurePreviewLayout', () => {
 
     expect(layout.canvasBackingWidth).toBe(Math.round(layout.canvasCssWidth * 2));
     expect(layout.canvasBackingHeight).toBe(Math.round(layout.canvasCssHeight * 2));
+  });
+
+  it('applies layout to a canvas element', () => {
+    const layout = measurePreviewLayout({
+      containerWidth: 400,
+      containerHeight: 100,
+      pixelCount: 80,
+      emitter: { x: 0.5, y: 0.5 },
+      devicePixelRatio: 2,
+    });
+    const canvas = document.createElement('canvas');
+    const ctx = applyPreviewLayoutToCanvas(canvas, layout);
+    expect(canvas.width).toBe(layout.canvasBackingWidth);
+    expect(canvas.height).toBe(layout.canvasBackingHeight);
+    expect(typeof ctx.setTransform).toBe('function');
+  });
+
+  it('handles zero pixel count as a single blade segment', () => {
+    const layout = measurePreviewLayout({
+      containerWidth: 400,
+      containerHeight: 100,
+      pixelCount: 0,
+      emitter: { x: 0.1, y: 0.5 },
+    });
+    expect(layout.canvasCssWidth).toBeGreaterThan(0);
+    expect(layout.pixelCssWidth).toBe(layout.bladeLengthCss);
   });
 
   it('positions canvas at emitter anchor', () => {

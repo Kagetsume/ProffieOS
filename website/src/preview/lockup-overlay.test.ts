@@ -42,12 +42,16 @@ describe('lockup and melt overlays', () => {
     expect(on.pixels.r.some((value, index) => value !== off.pixels.r[index])).toBe(true);
   });
 
-  it('does not show lb sparks when only lockup is held', () => {
-    const locked = previewSetLockup(createInitialPreviewSim(), true);
+  it('shows lb overlay when lb is held but not when only lockup is held', () => {
+    const idle = createInitialPreviewSim();
+    const locked = previewSetLockup(idle, true);
     const withLb = previewSetLb(createInitialPreviewSim(), true);
     const lockOnly = renderStylePreview(section, 48, 1000, locked);
     const lbOnly = renderStylePreview(section, 48, 1000, withLb);
-    expect(lbOnly.pixels.a.some((value, index) => value !== lockOnly.pixels.a[index])).toBe(true);
+    expect(lbOnly.pixels.r.some((value, index) => value !== lockOnly.pixels.r[index])).toBe(true);
+    expect(
+      lockOnly.pixels.r.some((value, index) => value !== renderStylePreview(section, 48, 1000, idle).pixels.r[index]),
+    ).toBe(true);
   });
 
   it('localizes lockup instead of washing the whole blade', () => {

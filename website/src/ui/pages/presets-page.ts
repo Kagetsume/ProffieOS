@@ -1,13 +1,12 @@
 /**
- * Presets route stub — `config/presets.ini`.
+ * Presets route — `config/presets.ini`.
  *
  * @module ui/pages/presets-page
  */
-import { getRouteMeta } from '../../route-config';
 import '../elements/index.js';
-import { mountConfigStubPage } from './mount-page';
+import { mountCustomElementPage } from './mount-page';
 
-/** Mount the Presets stub page into `root`. */
+/** Mount the Presets page into `root`. */
 export function mountPresetsPage(root: HTMLElement): () => void {
-  return mountConfigStubPage(root, getRouteMeta('presets')!);
+  return mountCustomElementPage(root, 'po-presets-page');
 }

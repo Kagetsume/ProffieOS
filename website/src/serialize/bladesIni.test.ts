@@ -48,4 +48,18 @@ describe('serializeBladesIni power pins', () => {
     expect(ini).toContain('# ---- Main blade data (bladePin) ----');
     expect(ini).not.toMatch(/# Crystal/);
   });
+
+  it('exports sub_blade ranges for NeoPixel blades', () => {
+    const ini = serializeBladesIni([
+      {
+        ...neoBlade(['bladePowerPin1']),
+        subBlades: [
+          { first: 0, last: 99 },
+          { first: 100, last: 143 },
+        ],
+      },
+    ]);
+    expect(ini).toContain('sub_blade = 0, 99');
+    expect(ini).toContain('sub_blade = 100, 143');
+  });
 });

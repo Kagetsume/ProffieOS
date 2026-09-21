@@ -1,6 +1,8 @@
 /**
  * Serialize style sections to `config/blade_styles.ini` text.
  *
+ * User guide with layer examples: `website/BLADE_STYLES.md`.
+ *
  * @module serialize/bladeStylesIni
  */
 import { exportColorToken } from '../model/colors';

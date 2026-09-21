@@ -17,10 +17,11 @@ export function mountExportPage(root: HTMLElement): () => void {
   root.innerHTML = `
     <section class="page">
       <h2>Export</h2>
-      <p>Copy or download generated INI files. Presets export is still a stub.</p>
+      <p>Copy or download generated INI files for your SD card <code>config/</code> folder.</p>
       <div class="export-panels">
         <div id="export-blades"></div>
         <div id="export-blade-styles"></div>
+        <div id="export-presets"></div>
         <div id="export-board"></div>
         <div id="export-features"></div>
       </div>
@@ -52,6 +53,7 @@ export function mountExportPage(root: HTMLElement): () => void {
     'blade_styles.ini',
     (files) => files.bladeStylesIni,
   );
+  mount('#export-presets', 'presets.ini', 'presets.ini', (files) => files.presetsIni);
   mount('#export-board', 'board.ini', 'board.ini', (files) => files.boardIni);
   mount('#export-features', 'features.ini', 'features.ini', (files) => files.featuresIni);
 
@@ -61,6 +63,7 @@ export function mountExportPage(root: HTMLElement): () => void {
       const keys: (keyof ExportFiles)[] = [
         'bladesIni',
         'bladeStylesIni',
+        'presetsIni',
         'boardIni',
         'featuresIni',
       ];

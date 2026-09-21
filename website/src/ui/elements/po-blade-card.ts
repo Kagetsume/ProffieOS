@@ -1,5 +1,8 @@
 /**
- * One blade wiring card — type, pins, NeoPixel vs simple fields.
+ * One blade wiring card — type, data/power pins, sub-blades, NeoPixel vs simple fields.
+ *
+ * NeoPixel blades: pixels, power pins, optional sub-blade ranges, sub-blade editor.
+ * Simple blades: led type, active_state. Board silkscreen label is read-only (derived from data pin).
  *
  * @fires blade-patch - `{ index: number, patch: Partial<BladeDefinition> }`
  * @fires blade-remove - `{ index: number }`
@@ -10,12 +13,13 @@ import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
-import type { BladeDefinition, BladeType } from '../../model/blades';
+import type { BladeDefinition, BladeType, SubBladeRange } from '../../model/blades';
 import { boardPinReferenceLabel } from '../../model/data-pins';
 import { effectivePowerPins } from '../../model/power-pins';
 import { getUsedDataPinsForPicker } from '../../stores/data-pin-usage';
 import './po-pin-picker.js';
 import './po-power-pin-editor.js';
+import './po-sub-blade-editor.js';
 
 export class PoBladeCard extends LitElement {
   static properties = {
@@ -118,6 +122,12 @@ export class PoBladeCard extends LitElement {
                   .blades=${this.blades}
                   @pins-change=${this.onPinsChange}
                 ></po-power-pin-editor>
+                <po-sub-blade-editor
+                  class="span-2"
+                  .pixels=${blade.pixels ?? 144}
+                  .subBlades=${blade.subBlades ?? []}
+                  @sub-blades-change=${this.onSubBladesChange}
+                ></po-sub-blade-editor>
               `}
         </div>
       </wa-card>
@@ -153,6 +163,7 @@ export class PoBladeCard extends LitElement {
         activeState: this.blade.activeState ?? 'high',
         pixels: undefined,
         powerPins: undefined,
+        subBlades: undefined,
       });
     } else {
       this.patch({
@@ -189,6 +200,11 @@ export class PoBladeCard extends LitElement {
 
   private onPinsChange = (event: CustomEvent<{ pins: string[] }>): void => {
     this.patch({ powerPins: event.detail.pins });
+  };
+
+  private onSubBladesChange = (event: CustomEvent<{ subBlades: SubBladeRange[] }>): void => {
+    const subBlades = event.detail.subBlades;
+    this.patch({ subBlades: subBlades.length > 0 ? subBlades : undefined });
   };
 }
 

@@ -1,0 +1,509 @@
+# Blade styles configuration guide
+
+This guide explains **`config/blade_styles.ini`** — layer recipes, how they connect to
+**`presets.ini`**, and copy-paste examples you can build from. The SD Config Editor **Blade
+styles** page (`#/styles`) edits the same data and exports this file.
+
+Firmware reference: [`doc/blade_styles_config.md`](../doc/blade_styles_config.md)  
+Annotated examples: [`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini)  
+Accent styles (PWM blades): [`examples/README.md`](../examples/README.md)
+
+---
+
+## Quick start — what do I want to build?
+
+| Goal | Start with example | Preset line |
+|------|-------------------|-------------|
+| Simple rainbow blade | [§1 Plain rainbow](#1-plain-rainbow-one-layer) | `style = config plain_rainbow` |
+| Fire with blast flash | [§2 Fire + blast](#2-fire--blast-two-layers) | `style = config fire_blast` |
+| Recolor without editing INI | [§3 Variables](#3-section-variables-recolor-from-presets) | `style = config with_vars base=magenta` |
+| Smoke / texture blade (SD-only) | [§8 Smoke blade](#8-smoke-blade-texture-stack) | `style = config smoke_blade` |
+| Fett263 OS7 water look | [§9 Water blade](#9-water-blade-firmware-base--overlays) | `style = config water_blade` |
+| Preon glow + postoff wipe | [§12 Preon / postoff](#12-preon--postoff-transitions) | `style = config mystic_awakening` |
+| PWM accent (motor, bar graph) | [§15 Accent on simple blade](#15-accent-recipes-on-pwm-blades) | `style = accent_pulse 1500` (in presets, not this file) |
+| Reuse a sub-recipe | [§7 Nested config](#7-nested-config-reusable-sub-recipes) | `style = config nested_config_demo` |
+
+**Rule of thumb:** **`blade_styles.ini`** = reusable **recipes** (layer stacks).
+**`presets.ini`** = which recipe (or direct named style) each blade uses, plus font/track/name.
+
+---
+
+## What is `blade_styles.ini` for?
+
+| Question | Answered here | Answered elsewhere |
+|----------|---------------|-------------------|
+| What colors/effects does this blade show? | `[section]` + `layer =` lines | — |
+| Which recipe does preset 3 use? | — | `style = config section` in `presets.ini` |
+| How is the strip wired? | — | `config/blades.ini` ([BLADES.md](./BLADES.md)) |
+| New firmware effect name (e.g. `water_flow`) | Needs one reflash | Colors/overlays still SD-editable after |
+
+Each **`[section_name]`** block is one **recipe**. Presets reference it as:
+
+```ini
+style = config section_name
+```
+
+Optional **`key=value`** tokens override section variables for that preset only:
+
+```ini
+style = config with_vars base=red clash=yellow
+```
+
+Layers composite **bottom → top** (first `layer =` is the base; each next line draws on top).
+
+---
+
+## Core concepts
+
+### Base layers vs overlay layers
+
+| Kind | Examples | Behavior |
+|------|----------|----------|
+| **Base (opaque)** | `standard`, `solid`, `fire`, `rainbow`, `water_flow`, `darksaber`, … | Fills the blade when ignited |
+| **Overlay (event-driven)** | `blast`, `clash`, `lockup`, `swing`, `drag`, `melt`, `preon_glow`, … | Mostly transparent until triggered |
+| **Texture (mask)** | `fire_mask`, `stripes`, `noise_flicker`, … | Usually stacked with `multiply` / `screen` / `add` + `opacity` |
+
+**Composable base:** Use **`solid`** or **`solid_bend`** when you want extend/retract and color
+but **no built-in clash/lockup/blast** — then add `clash`, `blast`, `responsive_lockup`, etc. as
+separate overlay layers. This is how advanced SD recipes (smoke, greyscale, energy) are built.
+
+**Monolithic base:** **`standard`**, **`rainbow`**, **`fire`**, Fett263 bases (`water_flow`, …)
+include their own combat behavior; you can still stack extra overlays on top.
+
+### Blend modes and opacity
+
+```ini
+layer = multiply opacity 20000 fire white white
+layer = add opacity 8000 swing white 200
+layer = screen opacity 22000 blast white
+```
+
+| Blend | Use for |
+|-------|---------|
+| `normal` (default) | Standard alpha-over; opaque layers cover what's below |
+| `multiply` | Darkening masks (smoke, stripes, lava scroll) |
+| `screen` | Soft brightening without harsh clip |
+| `add` | Flashes, strobe pulses, sparkles on a base |
+
+**Opacity:** `0` = transparent, `32768` = fully opaque. Opaque full blades without blend +
+opacity will **hide** layers below — use overlays, textures with blend, or lower opacity.
+
+### Section variables
+
+```ini
+[my_blade]
+base = cyan
+ext = 300
+ret = 800
+layer = solid {{base}} {{ext}} {{ret}}
+layer = clash white
+```
+
+Presets override: `style = config my_blade base=magenta`
+
+### Palettes and includes
+
+**Shared colors across sections:**
+
+```ini
+[palette_default]
+base = cyan
+clash = white
+
+[uses_palette]
+palette = default
+layer = solid {{base}} 300 800
+```
+
+**Merge a fragment file into one section:**
+
+```ini
+[rainbow_strobe_included]
+layer = rainbow 300 800
+include = blade_styles/strobe_overlay.ini
+```
+
+See [`examples/config/blade_styles/`](../examples/config/blade_styles/) for fragment examples.
+
+---
+
+## Complete examples
+
+### 1. Plain rainbow (one layer)
+
+**Use for:** Simplest config-driven style; same as `style = rainbow 300 800` in presets but named.
+
+```ini
+[plain_rainbow]
+layer = rainbow 300 800
+```
+
+```ini
+style = config plain_rainbow
+```
+
+---
+
+### 2. Fire + blast (two layers)
+
+**Use for:** Rolling flame with white flash on blast. Blast is transparent until triggered — no
+blend mode needed.
+
+```ini
+[fire_blast]
+layer = fire red yellow
+layer = blast white
+```
+
+---
+
+### 3. Section variables (recolor from presets)
+
+**Use for:** One recipe, many color variants without duplicating sections.
+
+```ini
+[with_vars]
+base = cyan
+clash = white
+ext = 300
+ret = 800
+layer = solid {{base}} {{ext}} {{ret}}
+layer = clash {{clash}}
+layer = blast white
+```
+
+```ini
+style = config with_vars base=magenta
+style = config with_vars base=blue clash=yellow
+```
+
+---
+
+### 4. Rainbow + strobe pulse (blend required)
+
+**Use for:** Keep rainbow visible while strobe flashes. Strobe is opaque — use **`add opacity`**
+so black standby adds nothing and white flash brightens the base.
+
+```ini
+[rainbow_strobe]
+layer = rainbow 300 800
+layer = add opacity 16000 strobe black white 15 1 300 800
+```
+
+---
+
+### 5. Three-layer stack (rainbow + blast + strobe)
+
+**Use for:** Full combat plus periodic cyan pulses.
+
+```ini
+[complex]
+layer = rainbow 300 800
+layer = blast white
+layer = add opacity 16000 strobe black cyan 20 1 300 800
+```
+
+---
+
+### 6. Structured layer keys (readable args)
+
+**Use for:** Long argument lists; same result as one `layer =` line. Supported for `standard`,
+`fire`, `rainbow`, `strobe`, `cycle`, `unstable`, `advanced`.
+
+```ini
+[structured_standard]
+layer.standard.base = cyan
+layer.standard.clash = white
+layer.standard.ext = 300
+layer.standard.ret = 800
+```
+
+Preon/postoff: use single-line `layer = preon_glow blue` (not structured keys yet).
+
+---
+
+### 7. Nested config (reusable sub-recipes)
+
+**Use for:** Build complex stacks from shared building blocks.
+
+```ini
+[base_rainbow_blast]
+layer = rainbow 300 800
+layer = blast white
+
+[nested_config_demo]
+layer = config base_rainbow_blast
+layer = add opacity 16000 strobe black white 15 1 300 800
+```
+
+---
+
+### 8. Smoke blade (texture stack)
+
+**Use for:** Fett263 SmokeBlade-style look **without recompiling** — blue base + rolling smoke
+masks + combat overlays. Pure SD layers.
+
+```ini
+[smoke_blade]
+base = blue
+ext = 300
+ret = 800
+layer = solid {{base}} {{ext}} {{ret}}
+layer = multiply opacity 20000 fire white white
+layer = multiply opacity 12000 fire white white
+layer = screen opacity 3000 fire orange yellow
+layer = add opacity 6000 swing white 200
+layer = blast white
+layer = clash white
+layer = responsive_lockup white
+layer = drag white
+layer = melt orange
+layer = lb white
+```
+
+```ini
+style = config smoke_blade
+style = config smoke_blade base=purple
+```
+
+Also in the editor **recipe library** as a starter template.
+
+---
+
+### 9. Water blade (firmware base + overlays)
+
+**Use for:** Flowing water idle (needs **`water_flow`** in firmware after one reflash), plus
+audio shimmer and tip pulse.
+
+```ini
+[water_blade]
+base = blue
+tip = cyan
+clash = white
+ext = 300
+ret = 800
+pulse_ms = 5000
+layer = water_flow {{base}} {{clash}} {{ext}} {{ret}}
+layer = screen opacity 8000 audio {{base}} {{tip}} {{clash}} {{ext}} {{ret}}
+layer = multiply opacity 12000 pulse {{tip}} {{pulse_ms}}
+layer = add opacity 3000 sparkle white
+layer = responsive_lockup white
+layer = drag white
+layer = melt orange
+layer = lb white
+```
+
+Direct preset alternative: `style = water_flow blue white 300 800`
+
+---
+
+### 10. DarkSaber / Static / Fallen Order (Fett263 bases)
+
+**Use for:** OS7-style idle animations. Reflash once for the named style; keep colors on SD.
+
+```ini
+[darksaber_blade]
+base = silver
+clash = white
+ext = 300
+ret = 800
+layer = darksaber {{base}} {{clash}} {{ext}} {{ret}}
+layer = responsive_lockup white
+layer = drag white
+layer = melt orange
+layer = lb white
+```
+
+Similar sections in the repo: `static_electricity_blade`, `fallen_order_blade`, `power_wave_blade`,
+`unstable_blades`, `shimmer_blade_sd`, `rotoscope_sd`, `kinetic_charge_sd`, `thunder_storm_sd`.
+
+---
+
+### 11. Energy / rolling surge (pure SD stripes)
+
+**Use for:** Striped energy core or slow rolling bands without new firmware.
+
+```ini
+[energy_blade]
+base = blue
+ext = 300
+ret = 800
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = multiply opacity 16000 stripes 6000 -3000 {{base}} black
+layer = real_clash white 16000
+layer = blast_wave_random white
+layer = responsive_lockup white
+```
+
+```ini
+[rolling_surge]
+base = blue
+ext = 300
+ret = 800
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = multiply opacity 16000 stripes 22000 -1400 {{base}} black
+layer = screen opacity 10000 audio {{base}} {{base}} white {{ext}} {{ret}}
+layer = real_clash white 16000
+```
+
+---
+
+### 12. Preon / postoff transitions
+
+**Use for:** Glow or wipe during preon sound (before extension) and postoff sound (after
+retraction). Needs matching **`preon/`** and **`pstoff/`** folders in the font.
+
+```ini
+[mystic_awakening]
+layer = solid cyan 300 800
+layer = clash white
+layer = blast white
+layer = preon_glow blue
+layer = postoff_wipe red
+```
+
+| Layer | When it runs |
+|-------|----------------|
+| `preon_glow` / `preon_wipe` / `preon_sputter` | During preon audio (blade still off) |
+| `postoff_glow` / `postoff_wipe` / `postoff_sputter` | After full retraction, during pstoff audio |
+
+More examples: `spectral_gate`, `inferno_ritual`, `sputter_gate` in
+[`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini).
+
+---
+
+### 13. Ignition flash overlay
+
+**Use for:** Full-blade flash during extension (SeismicCharge-style).
+
+```ini
+[ignition_flash_demo]
+layer = solid cyan 300 800
+layer = clash white
+layer = ignition_flash white 300 600
+```
+
+---
+
+### 14. Chaos inferno (aggressive multi-layer)
+
+**Use for:** Unstable crackling base + fire warmth + rainbow tint + strobe + audio shimmer.
+
+```ini
+[chaos_inferno]
+layer = unstable red red orange yellow 300 800
+layer = screen opacity 10000 fire red yellow
+layer = screen opacity 6000 rainbow 300 800
+layer = blast white
+layer = add opacity 5000 strobe black cyan 18 1 300 800
+layer = add opacity 4000 solid blue 300 800
+```
+
+---
+
+### 15. Accent recipes on PWM blades
+
+**Simple PWM outputs** (`type = simple` in `blades.ini`) do **not** use layer recipes in this
+file for basic accents. Set styles **directly in presets**:
+
+```ini
+style = accent_pulse 1500
+style = accent_sound_on white 4096
+style = accent_glow white
+```
+
+**Layered accents** can use config recipes — stack `accent_*` bases with overlays in
+`blade_styles.ini`, then `style = config accent_reactive` in presets. See
+[`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) sections
+`accent_glow_clash`, `accent_glow_lockup`, `accent_reactive`.
+
+---
+
+## Layer style catalog (summary)
+
+Full tables: [`examples/README.md`](../examples/README.md) and the header of
+[`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini).
+
+| Group | Styles | Typical role |
+|-------|--------|--------------|
+| Base blades | `standard`, `solid`, `fire`, `rainbow`, `gradient`, `audio`, `water_flow`, … | Bottom layer — blade color + idle motion |
+| Overlays | `blast`, `clash`, `lockup`, `swing`, `real_clash`, `blast_wave_random`, … | Combat and motion reactions |
+| Textures | `fire_mask`, `stripes`, `hard_stripes`, `noise_flicker`, `pixel_sequence` | Masks and scroll patterns |
+| Preon/postoff | `preon_glow`, `preon_wipe`, `postoff_wipe`, … | Startup/shutdown tied to font sounds |
+| Accents | `accent_pulse`, `accent_glow`, … | PWM blades in presets (usually not layered here) |
+
+The editor **Add layer** dropdown groups styles the same way (`catalog/named-styles.json`).
+
+---
+
+## How presets connect
+
+One preset, main blade uses a config recipe:
+
+```ini
+new_preset
+font = MyFont
+track = tracks/hum.wav
+style = config smoke_blade base=purple
+style = accent_pulse 1500
+name = Smoke + pulse accent
+variation = 0
+end
+```
+
+| Line | Blade index | Source |
+|------|-------------|--------|
+| 1st `style =` | 0 (main NeoPixel) | `[smoke_blade]` in `blade_styles.ini` |
+| 2nd `style =` | 1 (accent) | Direct `accent_*` named style |
+
+Multi-blade presets need one `style =` per logical blade (see [BLADES.md](./BLADES.md)).
+
+---
+
+## Editor workflow (`#/styles`)
+
+1. Pick a **Blade style (recipe)** from your file or add **New recipe**.
+2. Set **section variables** (`base`, `ext`, `ret`, …) when layers use `{{name}}`.
+3. Build the **recipe stack** bottom → top: base blade, textures, overlays.
+4. Use **blend** + **opacity** on texture layers; keep combat as normal overlays when possible.
+5. Watch the **preview** (approximate — not firmware-accurate).
+6. **Export** → copy or download `blade_styles.ini` to SD `config/`.
+7. Reference sections in `presets.ini`: `style = config your_section`.
+
+**Recipe library:** The picker includes bundled starters (`smoke_blade`, `water_blade`, … from
+`catalog/config-styles.json`) you can insert as new sections.
+
+---
+
+## Common mistakes
+
+| Symptom | Likely cause |
+|---------|----------------|
+| Strobe hides rainbow completely | Opaque layer without `add`/`screen` + `opacity` |
+| No clash flash | Base is `solid` but `clash` layer missing |
+| Preon never shows | No `preon/` sounds in font, or layer omitted |
+| `config foo` fails to parse | Section `[foo]` missing from SD file |
+| Colors wrong after SD edit | Preset override or old SD file — re-export both INIs |
+| `water_flow` unknown | Firmware not reflashed with named style |
+| Preview ≠ saber | Preview is approximate; verify on hardware |
+
+---
+
+## Limits (firmware)
+
+| Limit | Value |
+|-------|-------|
+| Section variables | 16 keys per section |
+| Preset `config` overrides | 16 `key=value` pairs |
+| Palette sections | 8 cached |
+| Include nesting depth | Fixed (cycle-safe) |
+| Parser line cap | 512 lines |
+
+---
+
+## Related docs
+
+- [BLADES.md](./BLADES.md) — wiring (`blades.ini`)
+- [`doc/blade_styles_config.md`](../doc/blade_styles_config.md) — parser grammar
+- [`doc/README_blade_styles_config.md`](../doc/README_blade_styles_config.md) — shorter reference
+- [`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) — every feature demonstrated

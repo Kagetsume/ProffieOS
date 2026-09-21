@@ -2,7 +2,8 @@
  * Starter recipes for `config/blade_styles.ini` — each is a full layer stack.
  *
  * Same format as sections you edit in the app; presets reference them as
- * `style = config smoke_blade`.
+ * `style = config smoke_blade`. See `website/BLADE_STYLES.md` for use cases and
+ * copy-paste INI equivalents.
  *
  * @module model/config-styles
  */

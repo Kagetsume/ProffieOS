@@ -28,9 +28,12 @@ describe('responsive lockup preview', () => {
   });
 
   it('moves lockup zone when blade angle changes', () => {
-    const low = responsiveLockupStrength(0.5, 24, 0.15, 1000);
-    const high = responsiveLockupStrength(0.5, 24, 0.85, 1000);
-    expect(high).not.toBeCloseTo(low, 1);
+    const lowCenter = responsiveLockupCenter(0.15);
+    const highCenter = responsiveLockupCenter(0.85);
+    expect(highCenter).not.toBeCloseTo(lowCenter, 2);
+    expect(responsiveLockupBump(lowCenter, 0.15)).toBeGreaterThan(0.2);
+    expect(responsiveLockupBump(highCenter, 0.85)).toBeGreaterThan(0.2);
+    expect(responsiveLockupBump(lowCenter, 0.85)).toBeLessThan(0.1);
   });
 
   it('flickers over time while blade angle is fixed', () => {

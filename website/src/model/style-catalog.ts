@@ -1,6 +1,9 @@
 /**
  * Helpers for `catalog/named-styles.json` — INI layer keywords used in `layer = …` lines.
  *
+ * Style groups (base, overlay, texture, preon, accent) and arg slots drive the Styles page
+ * layer editor. Full catalog summary: `website/BLADE_STYLES.md`.
+ *
  * @module model/style-catalog
  */
 import catalog from '../catalog/named-styles.json';

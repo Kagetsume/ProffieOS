@@ -19,8 +19,11 @@ export type PinPickerMode = 'power' | 'data';
 /** `wa-select` value when user chooses free-form pin entry. */
 export const CUSTOM_PIN_VALUE = '__custom__';
 
-/** Dataset flag: preset `<wa-option>` nodes were created for this select. */
-export const PIN_OPTIONS_INIT = 'pinOptionsInit';
+/** Dataset keys — must be valid `data-*` names (camelCase in `dataset`). */
+export const PIN_OPTIONS_INIT_KEYS: Record<PinPickerMode, 'pinOptionsInitPower' | 'pinOptionsInitData'> = {
+  power: 'pinOptionsInitPower',
+  data: 'pinOptionsInitData',
+};
 
 /** Clear cached option lists so a select can rebuild after mode changes. */
 export function clearPinSelectOptionInit(
@@ -28,11 +31,11 @@ export function clearPinSelectOptionInit(
   mode?: PinPickerMode,
 ): void {
   if (mode) {
-    delete select.dataset[`${PIN_OPTIONS_INIT}-${mode}`];
+    delete select.dataset[PIN_OPTIONS_INIT_KEYS[mode]];
     return;
   }
-  delete select.dataset[`${PIN_OPTIONS_INIT}-power`];
-  delete select.dataset[`${PIN_OPTIONS_INIT}-data`];
+  delete select.dataset.pinOptionsInitPower;
+  delete select.dataset.pinOptionsInitData;
 }
 
 type WaOptionElement = HTMLElement & {
@@ -105,7 +108,7 @@ export function initPinSelectOptions(
   mode: PinPickerMode = 'power',
 ): void {
   const catalog = pinCatalogForMode(mode);
-  const initKey = `${PIN_OPTIONS_INIT}-${mode}`;
+  const initKey = PIN_OPTIONS_INIT_KEYS[mode];
 
   if (select.dataset[initKey] !== 'true') {
     select.replaceChildren();

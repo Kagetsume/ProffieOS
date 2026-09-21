@@ -71,7 +71,6 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
     sdPath: 'config/presets.ini',
     group: 'config',
     description: 'Font, track, preset name, and one style line per blade.',
-    stub: true,
   },
   {
     id: 'export',

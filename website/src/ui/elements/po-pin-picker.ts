@@ -3,6 +3,7 @@
  *
  * Supports power FET pins (`mode=power`) and blade data/Free pins (`mode=data`).
  * Options are rendered declaratively so Lit re-renders keep selection + disabled state.
+ * Subscribes to `$wiring` via {@link registerPowerPinEditorRefresh} for cross-blade sync.
  *
  * @fires pin-change - `{ value: string }` when the committed pin changes
  */

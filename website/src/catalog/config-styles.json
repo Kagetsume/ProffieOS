@@ -1,6 +1,21 @@
 {
   "styles": [
     {
+      "id": "rainbow_strobe",
+      "label": "rainbow_strobe",
+      "description": "Rainbow base with add-blended strobe overlay — common preset example.",
+      "vars": {},
+      "layers": [
+        { "styleName": "rainbow", "args": ["300", "800"] },
+        {
+          "styleName": "strobe",
+          "args": ["black", "white", "15", "1", "300", "800"],
+          "blend": "add",
+          "opacity": 16000
+        }
+      ]
+    },
+    {
       "id": "fire_blast",
       "label": "fire_blast",
       "description": "Simple fire base with blast overlay — minimal blade_styles.ini example.",

@@ -5,6 +5,8 @@
  * (`standard`, `fire`, `blast`, …). Presets use the whole recipe: `style = config smoke_blade`.
  * A layer line can also nest another recipe: `layer = config other_section`.
  *
+ * Examples: `website/BLADE_STYLES.md`.
+ *
  * @module model/style-picker
  */
 import type { ConfigStyleDef } from './config-styles';

@@ -2,8 +2,9 @@
  * Serialize {@link BladeDefinition}[] to `config/blades.ini` text.
  *
  * Output matches conventions in `examples/config/blades.ini` and `doc/blade_config.md`:
- * - NeoPixel: `data_pin`, `pixels`, `power_pin` or `power_pin1`…
+ * - NeoPixel: `data_pin`, `pixels`, `power_pin` or `power_pin1`…, optional `sub_blade = first, last`
  * - Simple: `type = simple`, `data_pin`, `led`, `active_state`
+ * - Comment header from board pin catalog; optional user `#` note
  * - Terminates with `end`
  *
  * @module serialize/bladesIni
@@ -11,6 +12,7 @@
 import type { BladeDefinition } from '../model/blades';
 import { boardPinReferenceLabel } from '../model/data-pins';
 import { exportablePowerPins } from '../model/power-pins';
+import { exportableSubBlades } from '../model/sub-blades';
 import { blankLine, iniHeader } from './format';
 
 /** One optional `# …` line from user note text (empty / whitespace-only → omit). */
@@ -59,6 +61,10 @@ function serializeBladeBlock(blade: BladeDefinition): string[] {
       pins.forEach((pin, i) => {
         lines.push(`power_pin${i + 1} = ${pin}`);
       });
+    }
+    const subBlades = exportableSubBlades(blade.subBlades, blade.pixels ?? 0);
+    for (const range of subBlades) {
+      lines.push(`sub_blade = ${range.first}, ${range.last}`);
     }
   }
 

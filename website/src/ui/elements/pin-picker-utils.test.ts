@@ -44,7 +44,7 @@ describe('pin-picker-utils', () => {
     const select = document.createElement('wa-select');
     select.appendChild(createWaPinOption('bladePowerPin1', 'bladePowerPin1'));
     select.appendChild(createWaPinOption('bladePowerPin2', 'bladePowerPin2'));
-    (select as HTMLElement & { dataset: DOMStringMap }).dataset.pinOptionsInit = 'true';
+    (select as HTMLElement & { dataset: DOMStringMap }).dataset.pinOptionsInitPower = 'true';
 
     const before = select.querySelectorAll('wa-option').length;
     applyUsedPresetOptionStatesToSelect(select, powerPinCatalog(), new Set(['bladePowerPin1']));

@@ -1,5 +1,9 @@
 /**
  * Blade styles editor — layer recipes (left) + upward saber preview (right).
+ *
+ * Route: `#/styles`. User guide: `website/BLADE_STYLES.md`.
+ *
+ * @module ui/elements/po-styles-page
  */
 import { html, css, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
@@ -409,6 +413,37 @@ export class PoStylesPage extends PoElement {
           clash, lockup, and other effects. Use <code>solid</code> for a composable base with no
           built-in combat. Presets pick the whole recipe: <code>style = config smoke_blade</code>.
         </p>
+        <details class="styles-help">
+          <summary>What are blade style recipes?</summary>
+          <ul>
+            <li>
+              <strong>Recipe</strong> — one <code>[section]</code> in this file; a stack of
+              <code>layer =</code> lines composited bottom → top.
+            </li>
+            <li>
+              <strong>Base layer</strong> — <code>solid</code>, <code>fire</code>, <code>rainbow</code>,
+              <code>water_flow</code>, … fills the blade when ignited.
+            </li>
+            <li>
+              <strong>Overlays</strong> — <code>clash</code>, <code>blast</code>, <code>lockup</code>,
+              <code>swing</code>, … mostly transparent until triggered.
+            </li>
+            <li>
+              <strong>Textures</strong> — <code>fire_mask</code>, <code>stripes</code>, … usually with
+              <code>multiply</code> / <code>screen</code> / <code>add</code> and <code>opacity</code>.
+            </li>
+            <li>
+              <strong>Variables</strong> — <code>base = cyan</code> + <code>{{base}}</code> in layers;
+              presets override with <code>style = config section base=red</code>.
+            </li>
+          </ul>
+          <p>
+            Preview is approximate — verify on the saber. Full examples and build-from recipes:
+            <a href="https://github.com/profezzorn/ProffieOS/blob/main/website/BLADE_STYLES.md"
+              >website/BLADE_STYLES.md</a
+            >.
+          </p>
+        </details>
 
         <div class="styles-layout">
           <div class="editor-pane">

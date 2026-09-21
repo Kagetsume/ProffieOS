@@ -1,17 +1,30 @@
 # Blade preview (approximate)
 
-Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>` (Phase 5) calls into this folder.
+Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>` (on the Styles page) calls into this folder.
+
+**Important:** Preview output is an **approximation** of firmware blade styles, not a pixel-accurate emulator. Recipe concepts and INI examples: [BLADE_STYLES.md](../../BLADE_STYLES.md).
 
 ## Modules
 
 | File | Role |
 |------|------|
+| `simulation.ts` | Preview sim state: lockup, drag, blast, LB, melt, clock |
+| `frame.ts` | Composite all layers → RGBA pixel buffer for one frame |
+| `composite.ts` | Layer blend + opacity |
+| `colors.ts` | Resolve style color tokens to RGB |
+| `renderers/basic.ts` | Base styles (solid, gradient, audio, etc.) |
+| `renderers/overlays.ts` | Overlay effects (clash, lockup, swing, …) |
+| `vertical-layout.ts` | Upward saber geometry: hilt + blade canvas placement |
 | `layout.ts` | Horizontal saber mock geometry (legacy) |
-| `vertical-layout.ts` | Upward saber: blade 15% hilt width, 3× height, above rotated hilt |
-| `hilt-asset.ts` | Public URL for user hilt SVG |
-| `composite.ts` | Layer blend + opacity (Phase 5) |
-| `frame.ts` | Build RGBA[] for N pixels at time `t` (Phase 5) |
-| `registry.ts` | Style name → renderer (Phase 5) |
+| `hilt-asset.ts` | Public URL for hilt SVG |
+| `responsive-lockup.ts` | Lockup overlay positioning helpers |
+
+## Data flow
+
+1. `$styleSections` → active section layers + vars
+2. `$previewSim` → effect simulation state
+3. `renderStylePreview()` → pixel buffer
+4. `<po-blade-preview>` → canvas draw + ResizeObserver
 
 ## Responsive layout contract
 
@@ -26,34 +39,6 @@ The preview must scale when the viewport or styles-page pane resizes.
   </div>
   <canvas class="preview-blade"></canvas>
 </div>
-```
-
-### CSS (shadow DOM — e.g. `po-preview-styles.ts`)
-
-```css
-:host {
-  display: block;
-  width: 100%;
-  min-width: 0;
-}
-
-.preview-mock {
-  position: relative;
-  width: 100%;
-  max-width: min(100%, 48rem);
-}
-
-.preview-hilt svg {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.preview-blade {
-  position: absolute;
-  /* left, top, width, height set from measurePreviewLayout() in JS */
-  pointer-events: none;
-}
 ```
 
 ### Canvas sizing (critical)
@@ -73,16 +58,14 @@ ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
 On `ResizeObserver` callback: remeasure → update canvas box → redraw last frame.
 
-### Emitter anchor
-
-Hilt SVG should expose `#emitter` (or normalized `{ x, y }` in 0–1 mock space). After the SVG lays out at CSS width:
-
-1. Map emitter to CSS coordinates inside `.preview-mock`.
-2. Place canvas origin at emitter; blade extends along +X (configurable later).
-3. `bladeLengthCss = min(availableWidth, maxBladeCss)` where `availableWidth` is mock width minus hilt portion.
-
-Simulation **pixel count** comes from wiring (`num_pixels`); **display** scales via `pixelCssWidth = bladeLengthCss / numPixels`.
+Simulation **pixel count** comes from wiring (`pixels` on blade 0 by default); **display** scales via CSS layout.
 
 ## Tests
 
-- `layout.test.ts` — container shrink/grow, DPR, pixel count, emitter position.
+| File | Covers |
+|------|--------|
+| `layout.test.ts` | Container shrink/grow, DPR, pixel count |
+| `vertical-layout.test.ts` | Vertical saber geometry |
+| `frame.test.ts` | Layer compositing |
+| `simulation.test.ts` | Sim state transitions |
+| `responsive-lockup.test.ts`, `lockup-overlay.test.ts` | Lockup overlay layout |

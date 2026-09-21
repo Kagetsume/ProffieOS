@@ -33,12 +33,16 @@ describe('colors', () => {
     expect(normalizeColorValue('#00ff80')).toBe('0,255,128');
     expect(normalizeColorValue('100, 200, 50')).toBe('100,200,50');
     expect(normalizeColorValue('gold')).toBe('gold');
+    expect(normalizeColorValue('')).toBe('');
+    expect(normalizeColorValue('not-a-color')).toBe('not-a-color');
   });
 
   it('exports extended names as rgb triplets', () => {
     expect(exportColorToken('blue')).toBe('blue');
     expect(exportColorToken('gold')).toBe('180,130,0');
     expect(exportColorToken('purple')).toBe('93,0,197');
+    expect(exportColorToken('')).toBe('');
+    expect(exportColorToken('#ff0000')).toBe('255,0,0');
   });
 
   it('recognizes and exports vivid OS 8 colors', () => {
@@ -60,12 +64,13 @@ describe('colors', () => {
       const prev = sorted[i - 1]!;
       const current = sorted[i]!;
       const placed = new Set(sorted.slice(0, i).map((color) => color.name));
-      const closestRemaining = catalog.firmware
-        .filter((color) => !placed.has(color.name))
-        .reduce((best, color) =>
-          rgbDistanceSquared(prev, color) < rgbDistanceSquared(prev, best) ? color : best,
-        );
-      expect(current.name).toBe(closestRemaining.name);
+      const remaining = catalog.firmware.filter((color) => !placed.has(color.name));
+      const closestDistance = Math.min(...remaining.map((color) => rgbDistanceSquared(prev, color)));
+      const closestNames = remaining
+        .filter((color) => rgbDistanceSquared(prev, color) === closestDistance)
+        .map((color) => color.name)
+        .sort();
+      expect(closestNames).toContain(current.name);
     }
 
     const standard = listColorGroups().find((group) => group.id === 'firmware')!.colors;

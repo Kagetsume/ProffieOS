@@ -8,7 +8,11 @@ import {
   encodeFileRecipe,
   encodeLayerStyle,
   encodeLibraryRecipe,
+  encodeNestedRecipe,
+  layerStylePickerValue,
+  listLayerStylePickerOptions,
   listRecipePickerOptions,
+  recipeDescription,
   summarizeRecipeLayers,
 } from './style-picker';
 import type { StyleSection } from './style-sections';
@@ -24,6 +28,15 @@ describe('style-picker', () => {
     expect(library.some((entry) => entry.label === 'smoke_blade')).toBe(false);
   });
 
+  it('lists layer style picker options including nested recipes', () => {
+    const sections: StyleSection[] = [
+      { id: 'nested', vars: {}, layers: [{ id: 'l1', styleName: 'solid', args: [], blend: 'normal', opacity: 32768 }] },
+    ];
+    const options = listLayerStylePickerOptions(sections);
+    expect(options.some((option) => option.value === encodeLayerStyle('fire'))).toBe(true);
+    expect(options.some((option) => option.value === encodeNestedRecipe('nested'))).toBe(true);
+  });
+
   it('decodes recipe and layer picker values', () => {
     expect(decodeStylePickerValue(encodeFileRecipe('smoke_blade'))).toEqual({
       kind: 'file',
@@ -37,6 +50,26 @@ describe('style-picker', () => {
       kind: 'layer',
       id: 'fire',
     });
+    expect(decodeStylePickerValue(encodeNestedRecipe('nested'))).toEqual({
+      kind: 'config',
+      id: 'nested',
+    });
+    expect(decodeStylePickerValue('invalid')).toBeNull();
+  });
+
+  it('encodes layer picker values from layer rows', () => {
+    expect(layerStylePickerValue({ styleName: 'fire' })).toBe(encodeLayerStyle('fire'));
+    expect(layerStylePickerValue({ styleName: 'config', configSection: 'smoke_blade' })).toBe(
+      encodeNestedRecipe('smoke_blade'),
+    );
+  });
+
+  it('returns catalog description for active recipe', () => {
+    const sections: StyleSection[] = [
+      { id: 'smoke_blade', vars: {}, layers: [{ id: 'l1', styleName: 'solid', args: [], blend: 'normal', opacity: 32768 }] },
+    ];
+    expect(recipeDescription(sections[0], listConfigStyles())).toBeTruthy();
+    expect(recipeDescription(undefined, listConfigStyles())).toBeUndefined();
   });
 
   it('summarizes a recipe as its layer style names', () => {
@@ -53,7 +86,7 @@ describe('style-picker', () => {
         opacity: layer.opacity ?? 32768,
       })),
     });
-    expect(summary).toContain('standard');
-    expect(summary).toContain('drag');
+    expect(summary).toContain('Solid');
+    expect(summary).toContain('Drag');
   });
 });

@@ -1,0 +1,87 @@
+{
+  "presets": [
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Cyan",
+      "variation": 0,
+      "comment": "Simple cyan standard blade",
+      "styles": [
+        { "kind": "named", "ref": "standard", "args": ["cyan", "white", "300", "800"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "standard", "args": ["cyan", "white", "300", "800"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    },
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Red",
+      "variation": 0,
+      "comment": "Red standard blade",
+      "styles": [
+        { "kind": "named", "ref": "standard", "args": ["red", "white", "300", "800"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "standard", "args": ["red", "white", "300", "800"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    },
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Rainbow Strobe",
+      "variation": 0,
+      "comment": "config rainbow_strobe from blade_styles.ini",
+      "styles": [
+        { "kind": "config", "ref": "rainbow_strobe", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "config", "ref": "rainbow_strobe", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    },
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Magenta vars",
+      "variation": 0,
+      "comment": "Override base color via preset key=value",
+      "styles": [
+        { "kind": "config", "ref": "with_vars", "args": [], "overrides": { "base": "magenta" }, "customLine": "" },
+        { "kind": "config", "ref": "with_vars", "args": [], "overrides": { "base": "magenta" }, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    },
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Smoke Blade",
+      "variation": 0,
+      "comment": "Fett263-style SD smoke recipe",
+      "styles": [
+        { "kind": "config", "ref": "smoke_blade", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "config", "ref": "smoke_blade", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    },
+    {
+      "font": "LiquidStatic",
+      "track": "tracks/hum.wav",
+      "name": "Fire blast",
+      "variation": 0,
+      "styles": [
+        { "kind": "config", "ref": "fire_blast", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "config", "ref": "fire_blast", "args": [], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+      ]
+    }
+  ]
+}

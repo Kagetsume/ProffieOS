@@ -6,19 +6,28 @@
 
 ```
 ui/
-  copy-panel.ts           Read-only INI preview + copy/download
+  copy-panel.ts              Read-only INI preview + copy/download
   elements/
-    po-pin-picker.ts      Single power pin picker (Light DOM)
-    po-power-pin-editor.ts Multi-row power pin list
-    po-blade-card.ts      One blade wiring card
-    po-wiring-page.ts     Wiring route page
-    pin-picker-utils.ts   wa-select option helpers (shared)
-    po-element.ts         Base for future shadow-DOM components
-    po-shared-styles.ts   CSS for shadow-DOM components
-    index.ts              Side-effect registration
+    po-sidebar-nav.ts        Sidebar navigation
+    po-home-page.ts          Overview / config file status
+    po-board-page.ts         Board hardware form
+    po-features-page.ts      Gesture/twist toggles
+    po-wiring-page.ts        Blades wiring route
+    po-blade-card.ts         One blade wiring card
+    po-pin-picker.ts         Pin dropdown (power or data mode)
+    po-power-pin-editor.ts   Multi-row power pin list
+    po-sub-blade-editor.ts   NeoPixel sub-blade ranges
+    po-styles-page.ts        Blade styles + layer stack
+    po-color-input.ts        Grouped color picker with swatches
+    po-blade-preview.ts      Approximate saber preview canvas
+    po-config-stub-page.ts   Placeholder for unimplemented routes
+    pin-picker-utils.ts      Pin catalog + wa-option helpers
+    po-element.ts            Base for shadow-DOM + Web Awesome discover
+    po-shared-styles.ts      CSS for shadow-DOM pages
+    index.ts                 Side-effect registration
   pages/
-    wiring-page.ts        Mount `<po-wiring-page>`
-    export-page.ts        Live export preview
+    *-page.ts                Thin mount wrappers → `<po-*>` or copy panel
+    mount-page.ts            Shared mount helpers
 ```
 
 ## Patterns
@@ -32,15 +41,22 @@ Pages export `mountXPage(root): () => void`. Lit elements subscribe to Effector 
 
 - `$wiring` is the source of truth; `po-wiring-page` watches it and passes `.blade` /
   `.blades` to each `po-blade-card`.
-- Cross-blade power pin usage: `usedPresetsForPicker()` in `model/power-pins.ts`; each
-  editor re-renders when the wiring store changes.
+- Pin pickers register with `registerPowerPinEditorRefresh()` so all pickers refresh
+  when `$wiring` changes (disabled states + selection sync).
+- `$export` drives the export page copy panels.
 
-### Light DOM for form controls
+### Light DOM vs shadow DOM
 
-Wiring pickers extend `LitElement` with Light DOM so Web Awesome selects work without
-shadow-root autoload workarounds. See `elements/README.md`.
+**Wiring pickers** (`po-blade-card`, `po-pin-picker`, editors) use **Light DOM** so Web Awesome
+selects work without shadow-root autoload workarounds.
+
+**Styles/preview pages** use **`PoElement`** + shadow DOM for encapsulated layout and canvas.
+See `elements/README.md`.
 
 ## Tests
 
-- `elements/pin-picker-utils.test.ts` — option init, disabled flags
-- `elements/po-power-pin-editor.test.ts` — add/remove rows, cross-blade disable
+| File | Covers |
+|------|--------|
+| `elements/pin-picker-utils.test.ts` | Option init, disabled flags, data mode |
+| `elements/po-power-pin-editor.test.ts` | Add/remove rows, cross-blade disable |
+| `elements/po-blade-card.test.ts` | Data pin picker on blade card |

@@ -3,7 +3,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { StyleSection } from '../model/style-sections';
-import { renderStylePreview } from './frame';
+import { applyBladeLengthMask, renderStylePreview } from './frame';
+import { createPixelBuffer } from './composite';
+import { createInitialPreviewSim, previewPowerOff } from './simulation';
 
 describe('renderStylePreview', () => {
   it('composites a fire base layer', () => {
@@ -55,5 +57,35 @@ describe('renderStylePreview', () => {
     };
     expect(spread(early)).toBeGreaterThan(20);
     expect(later.pixels.r.some((value, index) => value !== early.pixels.r[index])).toBe(true);
+  });
+
+  it('masks pixels above the current blade length', () => {
+    const pixels = createPixelBuffer(10);
+    pixels.r.fill(255);
+    pixels.g.fill(255);
+    pixels.b.fill(255);
+    pixels.a.fill(1);
+    applyBladeLengthMask(pixels, 0.5);
+    expect(pixels.a[9]).toBe(0);
+    expect(pixels.a[4]).toBe(1);
+  });
+
+  it('skips mismatched layer buffer sizes', () => {
+    const section: StyleSection = {
+      id: 'bad',
+      vars: {},
+      layers: [
+        {
+          id: 'l1',
+          styleName: 'standard',
+          args: ['cyan', 'white'],
+          blend: 'normal',
+          opacity: 32768,
+        },
+      ],
+    };
+    const retracting = previewPowerOff(createInitialPreviewSim(), 1000, { extendMs: 300, retractMs: 800 }, false);
+    const frame = renderStylePreview(section, 8, 1500, retracting);
+    expect(frame.lengthFraction).toBeLessThan(1);
   });
 });

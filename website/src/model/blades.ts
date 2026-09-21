@@ -2,7 +2,11 @@
  * Core blade wiring types for `config/blades.ini`.
  *
  * These mirror the SD file structure documented in `doc/blade_config.md`.
- * NeoPixel blades use `pixels` + `powerPins`; simple PWM accents use `led` + `activeState`.
+ * User guide with examples: `website/BLADES.md`.
+ *
+ * - **NeoPixel** (`ws2811`): `pixels`, `powerPins`, optional `subBlades` ranges
+ * - **Simple PWM** (`type = simple`): `led`, `activeState` on a single data pin
+ * - **comment**: optional user note exported as `#` line (board silkscreen label is derived from `dataPin`)
  *
  * @module model/blades
  */
@@ -12,6 +16,14 @@ export type BladeType = 'ws2811' | 'simple';
 
 /** GPIO active level for simple blades (`active_state = high|low`). */
 export type ActiveState = 'high' | 'low';
+
+/** Inclusive LED index range for one logical sub-blade on a NeoPixel strip. */
+export type SubBladeRange = {
+  /** First pixel index (0-based). */
+  first: number;
+  /** Last pixel index (inclusive). */
+  last: number;
+};
 
 /**
  * One blade entry in the wiring editor / `blades.ini`.
@@ -28,6 +40,11 @@ export type BladeDefinition = {
   pixels?: number;
   /** FET power pin names, up to six (ws2811 only). May include empty strings while editing. */
   powerPins?: string[];
+  /**
+   * NeoPixel strip segments (ws2811 only). Each range becomes one `sub_blade = first, last`
+   * line and one logical blade for preset `style =` entries. Omit for a single full-strip blade.
+   */
+  subBlades?: SubBladeRange[];
   /** SimpleBlade LED type name (simple only). */
   led?: string;
   /** GPIO polarity for simple accents (simple only). */

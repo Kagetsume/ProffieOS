@@ -1,8 +1,10 @@
 /** Upward saber preview layout (blade 15% hilt width, 3× hilt height). */
 import { describe, expect, it } from 'vitest';
 import {
+  applyVerticalBladeCanvas,
   BLADE_HEIGHT_TO_HILT_RATIO,
   BLADE_WIDTH_RATIO,
+  clipBladeSilhouette,
   hiltVisualBoxFromRotatorWidth,
   measureVerticalSaberLayout,
 } from './vertical-layout';
@@ -34,5 +36,17 @@ describe('measureVerticalSaberLayout', () => {
     const box = hiltVisualBoxFromRotatorWidth(176);
     expect(box.height).toBe(176);
     expect(box.width).toBeCloseTo(176 * (753 / 2089), 1);
+  });
+
+  it('applies canvas backing store and clips blade silhouette', () => {
+    const layout = measureVerticalSaberLayout({
+      hiltDisplayWidth: 40,
+      hiltDisplayHeight: 120,
+      pixelCount: 48,
+    });
+    const canvas = document.createElement('canvas');
+    const ctx = applyVerticalBladeCanvas(canvas, layout);
+    expect(canvas.width).toBeGreaterThan(0);
+    clipBladeSilhouette(ctx, layout.bladeCssWidth, layout.bladeCssHeight, layout.bladeTipRadius);
   });
 });

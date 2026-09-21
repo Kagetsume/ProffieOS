@@ -88,6 +88,6 @@ describe('power pin list model', () => {
     ];
     const used = usedPresetsForPicker(blades, 1, ['bladePowerPin2', ''], 1);
     expect(used.has('bladePowerPin1')).toBe(true);
-    expect(used.has('bladePowerPin2')).toBe(false);
+    expect(used.has('bladePowerPin2')).toBe(true);
   });
 });

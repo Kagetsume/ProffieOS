@@ -1,20 +1,29 @@
 # Catalog (static JSON)
 
-Curated data shipped with the app — not fetched from a server. Update when firmware pin maps or example layouts change.
+Curated data shipped with the app — not fetched from a server. Update when firmware pin maps, color names, or style catalogs change.
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `board-profiles.json` | Board presets with default `BladeDefinition[]` (starts from `examples/config/blades.ini` layout) |
-| `pin-options.json` | Proffie V3 **FET power pin** names (`bladePowerPin1`–`6`) for the wiring dropdown |
+| `board-profiles.json` | Board presets with default `BladeDefinition[]` (Proffie V3 five-blade layout) |
+| `pin-options.json` | **Power** FET names (`bladePowerPin1`–`6`) and **data/Free** pins with silkscreen labels |
+| `named-styles.json` | Layer style catalog: id, human label, argument schema, groups (base/overlay/texture/…) |
+| `colors.json` | Color groups: Standard (firmware names), Extended (Fett263 menu), Vivid (OS 8) |
+| `config-styles.json` | Starter **recipes** insertable from the Styles page library (`smoke_blade`, …) |
 
-## Pin list scope
+## Pin lists
 
-Only the six dedicated blade power FET pins are listed for pickers. The firmware enum also defines `bladePowerPin7`–`11` as alternate mappings to Free/data pins; those are available via **Custom (type pin name or number)** in the UI.
+**Power pins** — six dedicated blade FET pins for NeoPixel `power_pin` dropdowns. Firmware also defines `bladePowerPin7`–`11` as alternate mappings; use **Custom** in the picker for those.
 
-Source of truth: [`config/proffieboard_v3_config.h`](../../../config/proffieboard_v3_config.h).
+**Data pins** — names from [`common/blade_config_pin_names.h`](../../../common/blade_config_pin_names.h) / [`config/proffieboard_v3_config.h`](../../../config/proffieboard_v3_config.h): `bladePin`, `blade2Pin`–`blade9Pin`, `bladeIdentifyPin`. Labels match board silkscreen (e.g. “Free 1 / accent PWM”).
 
-## Future
+## Style / color catalogs
 
-Phase 3 may add `named-styles.json`, `colors.json` synced from `styles/style_parser.h` via `scripts/sync-named-styles.mjs`.
+- **named-styles.json** — `id` is the INI/firmware keyword; `label` is the UI display name. Used in **Add layer** dropdowns on the Styles page.
+- **config-styles.json** — full `[section]` recipes (vars + layer stack). INI equivalents and use cases: [BLADE_STYLES.md](../../BLADE_STYLES.md).
+- **colors.json** — Standard colors export as names; extended/vivid export as `r,g,b` via `exportColorToken()` in `model/colors.ts`.
+
+## Maintenance
+
+When firmware adds pins or styles, update the relevant JSON and corresponding model tests. A sync script for named styles may be added later (`scripts/sync-named-styles.mjs`).
