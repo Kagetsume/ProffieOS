@@ -1300,6 +1300,72 @@
       ]
     },
     {
+      "id": "pulse_layer",
+      "label": "Pulse layer",
+      "group": "overlay",
+      "overlay": true,
+      "description": "Smooth breathing brightness pulse over layers below — scales all pixel colors equally (multiply).",
+      "args": [
+        {
+          "slot": "pulse_ms",
+          "label": "Pulse ms",
+          "type": "number",
+          "default": "3000",
+          "hint": "Milliseconds for one full brighten/dim cycle"
+        }
+      ]
+    },
+    {
+      "id": "swing_layer",
+      "label": "Swing layer",
+      "group": "texture",
+      "description": "Uniform swing brightening over layers below — preserves hue (multiply). Clipped to base extend/retract automatically.",
+      "args": [
+        {
+          "slot": "delta_percent",
+          "label": "Delta %",
+          "type": "number",
+          "default": "10",
+          "hint": "Max brightness boost at full swing (e.g. 10 = +10%)"
+        },
+        {
+          "slot": "speed_threshold",
+          "label": "Speed threshold",
+          "type": "number",
+          "default": "200",
+          "hint": "Swing speed at which boost reaches full strength (same scale as swing overlay)"
+        }
+      ]
+    },
+    {
+      "id": "base_flicker",
+      "label": "Base flicker",
+      "group": "overlay",
+      "overlay": true,
+      "description": "Uniform brightness flicker over layers below — scales all pixel colors equally (multiply).",
+      "args": [
+        {
+          "slot": "delta_percent",
+          "label": "Delta %",
+          "type": "number",
+          "default": "10",
+          "hint": "Random +/- brightness change (e.g. 10 = ±10%)"
+        },
+        {
+          "slot": "min_ms",
+          "label": "Min period ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "max_ms",
+          "label": "Max period ms",
+          "type": "number",
+          "default": "500"
+        }
+      ]
+    },
+    {
       "id": "pulse",
       "label": "Pulse",
       "group": "overlay",
@@ -1442,6 +1508,7 @@
       "id": "smoke_flow",
       "label": "Smoke flow",
       "group": "texture",
+      "description": "Clipped to base extend/retract automatically when stacked in config layers.",
       "args": [
         {
           "slot": "warm",
@@ -1454,18 +1521,6 @@
           "label": "Light color",
           "type": "color",
           "default": "white"
-        },
-        {
-          "slot": "extend",
-          "label": "Extend ms",
-          "type": "number",
-          "default": "300"
-        },
-        {
-          "slot": "retract",
-          "label": "Retract ms",
-          "type": "number",
-          "default": "800"
         }
       ]
     },
@@ -1528,6 +1583,38 @@
           "label": "Color 2",
           "type": "color",
           "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "per_led_flicker",
+      "label": "Per-LED flicker",
+      "group": "texture",
+      "description": "Independent random brightness per LED — multiply over any base to preserve hue."
+    },
+    {
+      "id": "audio_layer",
+      "label": "Audio layer",
+      "group": "texture",
+      "description": "Hum-reactive uniform brightness — multiply over any base (composable alternative to the audio base style)."
+    },
+    {
+      "id": "gradient_layer",
+      "label": "Gradient layer",
+      "group": "texture",
+      "description": "Hilt-to-tip gradient over layers below. Clipped to base extend/retract automatically. Use normal blend; layer opacity controls mix (32768 = full, ~3277 = 10%).",
+      "args": [
+        {
+          "slot": "hilt",
+          "label": "Hilt color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "tip",
+          "label": "Tip color",
+          "type": "color",
+          "default": "blue"
         }
       ]
     },

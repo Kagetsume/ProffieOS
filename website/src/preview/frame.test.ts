@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StyleSection } from '../model/style-sections';
 import { applyBladeLengthMask, renderStylePreview } from './frame';
-import { createPixelBuffer } from './composite';
+import { clipOverlayToBaseLit, createPixelBuffer } from './composite';
 import { createInitialPreviewSim, previewPowerOff } from './simulation';
 
 describe('renderStylePreview', () => {
@@ -57,6 +57,22 @@ describe('renderStylePreview', () => {
     };
     expect(spread(early)).toBeGreaterThan(20);
     expect(later.pixels.r.some((value, index) => value !== early.pixels.r[index])).toBe(true);
+  });
+
+  it('clips overlay layers to lit base pixels during extend', () => {
+    const base = createPixelBuffer(8);
+    base.r[0] = 255;
+    base.g[0] = 0;
+    base.b[0] = 0;
+    base.a[0] = 1;
+    const overlay = createPixelBuffer(8);
+    overlay.r.fill(0);
+    overlay.g.fill(255);
+    overlay.b.fill(0);
+    overlay.a.fill(1);
+    clipOverlayToBaseLit(overlay, base);
+    expect(overlay.a[0]).toBe(1);
+    expect(overlay.a[7]).toBe(0);
   });
 
   it('masks pixels above the current blade length', () => {

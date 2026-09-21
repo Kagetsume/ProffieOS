@@ -5,7 +5,7 @@
  */
 import type { StyleSection } from '../model/style-sections';
 import { sectionHasDedicatedLockupLayer } from '../model/style-sections';
-import { compositeLayer, createPixelBuffer, type PixelBuffer } from './composite';
+import { clipOverlayToBaseLit, compositeLayer, createPixelBuffer, type PixelBuffer } from './composite';
 import { renderLayerPixels } from './renderers/basic';
 import type { PreviewSimState } from './simulation';
 import { bladeLengthFraction, createInitialPreviewSim } from './simulation';
@@ -29,12 +29,16 @@ export function renderStylePreview(
   const pixels = createPixelBuffer(count);
 
   const dedicatedLockupLayer = sectionHasDedicatedLockupLayer(section);
-  for (const layer of section.layers) {
+  for (let layerIndex = 0; layerIndex < section.layers.length; layerIndex += 1) {
+    const layer = section.layers[layerIndex]!;
     const overlay = renderLayerPixels(layer, section.vars, count, timeMs, sim, {
       dedicatedLockupLayer,
     });
     if (overlay.r.length !== count) {
       continue;
+    }
+    if (layerIndex > 0) {
+      clipOverlayToBaseLit(overlay, pixels);
     }
     compositeLayer(pixels, overlay, layer.blend, layer.opacity);
   }

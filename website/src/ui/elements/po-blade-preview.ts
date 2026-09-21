@@ -61,6 +61,7 @@ export class PoBladePreview extends PoElement {
   private hiltLoadAbort: AbortController | null = null;
   private bladeSharpCanvas: HTMLCanvasElement | null = null;
   private bladeSharpCtx: CanvasRenderingContext2D | null = null;
+  private stylesWatch?: () => void;
 
   /**
    * Starts the preview animation loop when the element is attached to the document.
@@ -69,6 +70,9 @@ export class PoBladePreview extends PoElement {
     const log = contextLogger('po-blade-preview', 'connectedCallback');
     log.entry();
     super.connectedCallback();
+    this.stylesWatch = $styleSections.watch(() => {
+      this.scheduleLayout();
+    });
     this.startAnimation();
     log.exit();
   }
@@ -79,6 +83,8 @@ export class PoBladePreview extends PoElement {
   disconnectedCallback(): void {
     const log = contextLogger('po-blade-preview', 'disconnectedCallback');
     log.entry();
+    this.stylesWatch?.();
+    this.stylesWatch = undefined;
     if (this.hiltLoadAbort) {
       log.debug('branch: aborting hilt image load');
       this.hiltLoadAbort.abort();
@@ -300,7 +306,7 @@ export class PoBladePreview extends PoElement {
    * @returns Active section object, or `null` when none is selected.
    */
   private activeSection() {
-    return getActiveSection(this.stylesController.value) ?? null;
+    return getActiveSection($styleSections.getState()) ?? null;
   }
 
   /**
@@ -535,7 +541,7 @@ export class PoBladePreview extends PoElement {
   ): void {
     const { bladeCssWidth, bladeCssHeight, bladeTipRadius, pixelCssHeight } = layout;
     const pixelCount = this.pixelCount;
-    const section = getActiveSection(this.stylesController.value);
+    const section = getActiveSection($styleSections.getState());
 
     if (!section) {
       return;

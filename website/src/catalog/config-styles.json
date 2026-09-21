@@ -60,7 +60,7 @@
         { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
         { "styleName": "blast", "args": ["white"] },
-        { "styleName": "clash", "args": ["white"] },
+        { "styleName": "real_clash", "args": ["white", "16000"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
         { "styleName": "melt", "args": ["{{melt}}"] },

@@ -28,6 +28,7 @@ import {
 } from '../../stores/styleSections';
 import { contextLogger } from '../../logger/index.js';
 import { EffectorController } from '../effector-controller.js';
+import { readWaSelectValue } from '../wa-form-utils.js';
 import { PoElement } from './po-element.js';
 import { styleLayerStackI18n } from './po-style-layer-stack.i18n.js';
 import { styleLayerStackKeys } from './po-style-layer-stack.keys.js';
@@ -197,6 +198,7 @@ export class PoStyleLayerStack extends PoElement {
             <wa-select
               .value=${layerStylePickerValue(layer)}
               @wa-change=${this.onLayerStyleChange}
+              @change=${this.onLayerStyleChange}
             >
               ${layerOptions.flatMap((option) => {
                 const headers =
@@ -216,7 +218,11 @@ export class PoStyleLayerStack extends PoElement {
               .value=${layer.blend}
               @wa-change=${(event: Event) =>
                 this.patchLayer(sectionId, layer.id, {
-                  blend: (event.target as HTMLSelectElement).value as LayerBlend,
+                  blend: readWaSelectValue(event) as LayerBlend,
+                })}
+              @change=${(event: Event) =>
+                this.patchLayer(sectionId, layer.id, {
+                  blend: readWaSelectValue(event) as LayerBlend,
                 })}
             >
               <wa-option value="normal">normal</wa-option>
@@ -388,7 +394,7 @@ export class PoStyleLayerStack extends PoElement {
    */
   private onLayerStyleChange = (event: Event): void => {
     const log = contextLogger('po-style-layer-stack', 'onLayerStyleChange');
-    const rawValue = (event.target as HTMLSelectElement).value;
+    const rawValue = readWaSelectValue(event);
     log.entry({ value: rawValue });
     const section = getActiveSection(this.stylesController.value);
     const activeLayerId = this.stylesController.value.activeLayerId;

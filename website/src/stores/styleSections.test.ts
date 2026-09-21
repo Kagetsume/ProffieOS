@@ -71,6 +71,13 @@ describe('styleSections store', () => {
   it('suggests blend defaults for overlay and texture styles', () => {
     expect(suggestedBlendForStyle('blast').blend).toBe('add');
     expect(suggestedBlendForStyle('fire_mask').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('base_flicker').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('pulse_layer').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('swing_layer').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('per_led_flicker').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('audio_layer').blend).toBe('multiply');
+    expect(suggestedBlendForStyle('gradient_layer').blend).toBe('normal');
+    expect(suggestedBlendForStyle('gradient_layer').opacity).toBe(16384);
     expect(suggestedBlendForStyle('solid').blend).toBe('normal');
   });
 

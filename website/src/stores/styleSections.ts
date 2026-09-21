@@ -245,6 +245,12 @@ export function suggestedBlendForStyle(styleName: string): {
   blend: LayerBlend;
   opacity: number;
 } {
+  if (styleName === 'base_flicker' || styleName === 'pulse_layer' || styleName === 'swing_layer') {
+    return { blend: 'multiply', opacity: 32768 };
+  }
+  if (styleName === 'gradient_layer') {
+    return { blend: 'normal', opacity: 16384 };
+  }
   const def = getNamedStyle(styleName);
   if (def?.overlay) {
     return { blend: 'add', opacity: 16000 };

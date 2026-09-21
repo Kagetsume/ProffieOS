@@ -14,10 +14,9 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import { listConfigStyles } from '../../model/config-styles';
 import {
-  decodeStylePickerValue,
-  encodeFileRecipe,
   listRecipePickerOptions,
   recipeDescription,
+  resolveRecipePickerSelection,
   summarizeRecipeLayers,
 } from '../../model/style-picker';
 import { baseSectionVarEntries, type StyleSection } from '../../model/style-sections';
@@ -36,6 +35,7 @@ import {
 } from '../../stores/styleSections';
 import { contextLogger } from '../../logger/index.js';
 import { EffectorController } from '../effector-controller.js';
+import { readWaSelectValue } from '../wa-form-utils.js';
 import { PoElement } from './po-element.js';
 import { stylesPageI18n } from './po-styles-page.i18n.js';
 import { stylesPageKeys } from './po-styles-page.keys.js';
@@ -96,8 +96,9 @@ export class PoStylesPage extends PoElement {
                 <label>
                   ${stylesPageI18n.translate(stylesPageKeys.labelRecipe)}
                   <wa-select
-                    .value=${encodeFileRecipe(this.stylesState.activeSectionId)}
+                    .value=${this.stylesState.activeSectionId}
                     @wa-change=${this.onRecipePickerChange}
+                    @change=${this.onRecipePickerChange}
                   >
                     ${this.renderRecipePickerOptions()}
                   </wa-select>
@@ -155,14 +156,14 @@ export class PoStylesPage extends PoElement {
     return html`
       ${inFile.map(
         (option) => html`
-          <wa-option value=${option.value}
+          <wa-option .value=${option.value}
             >${stylesPageI18n.translate(stylesPageKeys.pickerInFile, { label: option.label })}</wa-option
           >
         `,
       )}
       ${library.map(
         (option) => html`
-          <wa-option value=${option.value}
+          <wa-option .value=${option.value}
             >${stylesPageI18n.translate(stylesPageKeys.pickerLibrary, { label: option.label })}</wa-option
           >
         `,
@@ -235,11 +236,11 @@ export class PoStylesPage extends PoElement {
    */
   private onRecipePickerChange = (event: Event): void => {
     const log = contextLogger('po-styles-page', 'onRecipePickerChange');
-    const rawValue = (event.target as HTMLSelectElement).value;
+    const rawValue = readWaSelectValue(event);
     log.entry({ value: rawValue });
-    const decoded = decodeStylePickerValue(rawValue);
+    const decoded = resolveRecipePickerSelection(rawValue, this.stylesState.sections);
     if (!decoded) {
-      log.debug('branch: decode failed — ignoring change');
+      log.debug('branch: could not resolve recipe selection — ignoring change', { rawValue });
       log.exit('ignored');
       return;
     }
@@ -249,11 +250,9 @@ export class PoStylesPage extends PoElement {
       log.exit('file');
       return;
     }
-    if (decoded.kind === 'library') {
-      log.debug('branch: library recipe selected', { id: decoded.id });
-      configStyleAdded(decoded.id);
-      log.exit('library');
-    }
+    log.debug('branch: library recipe selected', { id: decoded.id });
+    configStyleAdded(decoded.id);
+    log.exit('library');
   };
 
   /**

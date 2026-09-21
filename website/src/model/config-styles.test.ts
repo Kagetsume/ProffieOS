@@ -15,7 +15,7 @@ describe('config-styles', () => {
     const style = getConfigStyle('smoke_blade');
     expect(style).toBeDefined();
     expect(style!.layers.some((layer) => layer.styleName === 'solid')).toBe(true);
-    expect(style!.layers.some((layer) => layer.styleName === 'clash')).toBe(true);
+    expect(style!.layers.some((layer) => layer.styleName === 'real_clash')).toBe(true);
     expect(style!.layers.some((layer) => layer.styleName === 'responsive_lockup')).toBe(true);
   });
 

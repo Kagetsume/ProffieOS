@@ -53,6 +53,16 @@ function blendChannel(base: number, overlay: number, mode: LayerBlend): number {
   }
 }
 
+/** Zero overlay pixels where the composited base is off/black (matches ConfigLayersStyle). */
+export function clipOverlayToBaseLit(overlay: PixelBuffer, base: PixelBuffer): void {
+  const count = base.r.length;
+  for (let i = 0; i < count; i += 1) {
+    if (base.a[i]! <= 0 || (base.r[i] === 0 && base.g[i] === 0 && base.b[i] === 0)) {
+      overlay.a[i] = 0;
+    }
+  }
+}
+
 /**
  * Composite overlay onto base using firmware-like blend + opacity (0–32768).
  */

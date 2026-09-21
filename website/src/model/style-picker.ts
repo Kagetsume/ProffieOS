@@ -99,9 +99,8 @@ export function listPresetStylePickerOptions(
   const options: PresetStylePickerOption[] = [];
 
   for (const option of inFile) {
-    const id = decodeStylePickerValue(option.value)?.id ?? '';
     options.push({
-      value: encodePresetConfigRecipe(id),
+      value: encodePresetConfigRecipe(option.value),
       label: option.label,
       hint: option.hint,
       group: 'Recipes (blade_styles.ini)',
@@ -109,7 +108,7 @@ export function listPresetStylePickerOptions(
   }
 
   for (const option of library) {
-    const id = decodeStylePickerValue(option.value)?.id ?? '';
+    const id = decodeStylePickerValue(option.value)?.id ?? option.value;
     options.push({
       value: encodePresetLibraryRecipe(id),
       label: option.label,
@@ -181,7 +180,8 @@ export function listRecipePickerOptions(
     const catalogEntry = catalog.find((entry) => entry.id === section.id);
     const layerCount = section.layers.length;
     return {
-      value: encodeFileRecipe(section.id),
+      // Plain section id — `wa-select` reads this reliably (prefixed `file:` values often do not).
+      value: section.id,
       label: `${section.id} · ${layerCount} layer${layerCount === 1 ? '' : 's'}`,
       hint: catalogEntry?.description,
     };
@@ -196,6 +196,50 @@ export function listRecipePickerOptions(
     }));
 
   return { inFile, library };
+}
+
+/**
+ * Resolve a recipe `<wa-select>` value to an in-file section or library import.
+ *
+ * Accepts plain section ids, legacy `file:` / `library:` prefixes, and label-like
+ * strings (`rainbow_strobe · 2 layers`).
+ */
+export function resolveRecipePickerSelection(
+  rawValue: string,
+  sections: StyleSection[],
+): { kind: 'file' | 'library'; id: string } | null {
+  const trimmed = rawValue.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const decoded = decodeStylePickerValue(trimmed);
+  if (decoded?.kind === 'file' || decoded?.kind === 'library') {
+    return decoded;
+  }
+
+  // Display text when `wa-select` reports the option label instead of `.value`.
+  const inFileDisplay = trimmed.match(/^In file · ([^ ·]+)/);
+  if (inFileDisplay) {
+    const sectionId = inFileDisplay[1];
+    if (sections.some((section) => section.id === sectionId)) {
+      return { kind: 'file', id: sectionId };
+    }
+  }
+
+  const layerCountLabel = trimmed.match(/^([^ ·]+) · \d+ layer/);
+  if (layerCountLabel) {
+    const sectionId = layerCountLabel[1];
+    if (sections.some((section) => section.id === sectionId)) {
+      return { kind: 'file', id: sectionId };
+    }
+  }
+
+  if (sections.some((section) => section.id === trimmed)) {
+    return { kind: 'file', id: trimmed };
+  }
+
+  return null;
 }
 
 /** Layer-style options for one row in a recipe stack (named styles + nest another recipe). */

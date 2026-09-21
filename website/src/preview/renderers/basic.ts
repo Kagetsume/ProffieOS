@@ -9,13 +9,21 @@ import { resolveLayerArgs } from '../../model/style-sections';
 import { createPixelBuffer, fillSolid, type PixelBuffer } from '../composite';
 import { lerpRgb, parseColor } from '../colors';
 import {
+  eventIntensity,
   isBaseBladeVisible,
   isOverlayPhaseActive,
   overlayPhaseForStyle,
+  PREVIEW_DURATIONS,
   type PreviewSimState,
 } from '../simulation';
 import { responsiveLockupStrength } from '../responsive-lockup';
 import { renderEventOverlay } from './overlays';
+import {
+  brightnessOverlayFromFlickerArgs,
+  brightnessOverlayFromPulseArgs,
+  brightnessOverlayFromSwingArgs,
+  brightnessOverlayScale,
+} from '../uniform-brightness-overlay';
 
 function positionT(index: number, count: number): number {
   if (count <= 1) {
@@ -252,6 +260,64 @@ function renderStrobe(args: string[], count: number, timeMs: number): PixelBuffe
   return buffer;
 }
 
+/** Per-LED random grey mask for multiply — preserves underlying pixel hue when composited. */
+/** Hum-reactive uniform grey mask — preview approximates NoisySoundLevelCompat. */
+function renderAudioLayer(count: number, timeMs: number): PixelBuffer {
+  const hum = (Math.sin(timeMs / 120) + 1) / 2;
+  const grey = Math.round(hum * 255);
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderPerLedFlicker(count: number, timeMs: number): PixelBuffer {
+  const buffer = createPixelBuffer(count);
+  const frame = Math.floor(timeMs / 80);
+  for (let i = 0; i < count; i += 1) {
+    const hash = ((i * 7919 + frame * 104729) ^ (i << 3)) >>> 0;
+    const grey = Math.round(((hash % 32769) / 32768) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderBrightnessOverlayMask(
+  scale: number,
+  count: number,
+): PixelBuffer {
+  const grey = Math.round(scale * 255);
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderBrightnessOverlay(args: string[], count: number, timeMs: number, mode: 'random_hold' | 'sine'): PixelBuffer {
+  const config =
+    mode === 'random_hold'
+      ? brightnessOverlayFromFlickerArgs(args)
+      : brightnessOverlayFromPulseArgs(args);
+  return renderBrightnessOverlayMask(brightnessOverlayScale(timeMs, config), count);
+}
+
+function renderSwingLayer(args: string[], count: number, timeMs: number, sim: PreviewSimState): PixelBuffer {
+  const intensity = eventIntensity(sim.swingUntil, timeMs, PREVIEW_DURATIONS.swing);
+  const config = brightnessOverlayFromSwingArgs(args, intensity);
+  return renderBrightnessOverlayMask(brightnessOverlayScale(timeMs, config), count);
+}
+
 function renderPulse(args: string[], count: number, timeMs: number): PixelBuffer {
   const color = parseColor(args[0] ?? 'white');
   const pulseMs = Number(args[1] ?? '3000') || 3000;
@@ -453,6 +519,18 @@ export function renderLayerPixels(
       fillSolid(buffer, color);
       return buffer;
     }
+    case 'base_flicker':
+      return renderBrightnessOverlay(args, count, timeMs, 'random_hold');
+    case 'pulse_layer':
+      return renderBrightnessOverlay(args, count, timeMs, 'sine');
+    case 'swing_layer':
+      return renderSwingLayer(args, count, timeMs, sim);
+    case 'per_led_flicker':
+      return renderPerLedFlicker(count, timeMs);
+    case 'audio_layer':
+      return renderAudioLayer(count, timeMs);
+    case 'gradient_layer':
+      return renderGradient(args, count);
     case 'noise_flicker': {
       const base = parseColor(args[0] ?? 'black');
       const flicker = parseColor(args[1] ?? 'white');

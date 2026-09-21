@@ -125,6 +125,7 @@ export class PoColorInput extends LitElement {
           class="color-select"
           placeholder=${colorInputI18n.translate(colorInputKeys.placeholderColor)}
           .value=${selectValue}
+          @wa-change=${this.onSelectChange}
           @change=${this.onSelectChange}
         >
           <span slot="start" class="color-select-swatch" style="background: ${swatch}"></span>

@@ -19,6 +19,7 @@ import {
   listRecipePickerOptions,
   presetStylePickerValue,
   recipeDescription,
+  resolveRecipePickerSelection,
   summarizeRecipeLayers,
 } from './style-picker';
 import { defaultNeoPixelStyle } from './preset-styles';
@@ -31,8 +32,36 @@ describe('style-picker', () => {
     ];
     const { inFile, library } = listRecipePickerOptions(sections, listConfigStyles());
     expect(inFile).toHaveLength(1);
+    expect(inFile[0]?.value).toBe('smoke_blade');
     expect(library.some((entry) => entry.label === 'water_blade')).toBe(true);
     expect(library.some((entry) => entry.label === 'smoke_blade')).toBe(false);
+  });
+
+  it('resolves recipe picker values from section ids and legacy prefixes', () => {
+    const sections: StyleSection[] = [
+      { id: 'smoke_laser', vars: {}, layers: [] },
+      { id: 'rainbow_strobe', vars: {}, layers: [] },
+    ];
+    expect(resolveRecipePickerSelection('rainbow_strobe', sections)).toEqual({
+      kind: 'file',
+      id: 'rainbow_strobe',
+    });
+    expect(resolveRecipePickerSelection(encodeFileRecipe('rainbow_strobe'), sections)).toEqual({
+      kind: 'file',
+      id: 'rainbow_strobe',
+    });
+    expect(resolveRecipePickerSelection('rainbow_strobe · 2 layers', sections)).toEqual({
+      kind: 'file',
+      id: 'rainbow_strobe',
+    });
+    expect(resolveRecipePickerSelection('In file · rainbow_strobe · 2 layers', sections)).toEqual({
+      kind: 'file',
+      id: 'rainbow_strobe',
+    });
+    expect(resolveRecipePickerSelection(encodeLibraryRecipe('water_blade'), sections)).toEqual({
+      kind: 'library',
+      id: 'water_blade',
+    });
   });
 
   it('lists layer style picker options including nested recipes', () => {
