@@ -130,6 +130,21 @@ function renderSmokeFlowMask(
   return buffer;
 }
 
+/** Dual same-direction smoke wisps (parallax), not opposing tip/hilt engines. */
+function renderSmokeFlowBlend(args: string[], count: number, timeMs: number): PixelBuffer {
+  const a = renderSmokeFlowMask(args, count, timeMs, 1);
+  const b = renderSmokeFlowMask(args, count, timeMs * 0.82 + 520, 1);
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    const shade = Math.round((a.r[i] * b.r[i]) / 255);
+    buffer.r[i] = shade;
+    buffer.g[i] = shade;
+    buffer.b[i] = shade;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
 /** Grayscale rolling heat — used by smoke recipes (`fire white white` in multiply). */
 function renderRollingHeatMask(count: number, timeMs: number): PixelBuffer {
   return renderSmokeFlowMask(['white', 'white'], count, timeMs, 1);
@@ -357,6 +372,8 @@ export function renderLayerPixels(
       return renderSmokeFlowMask(args, count, timeMs, 1);
     case 'smoke_down':
       return renderSmokeFlowMask(args, count, timeMs, -1);
+    case 'smoke_flow':
+      return renderSmokeFlowBlend(args, count, timeMs);
     case 'strobe':
       return renderStrobe(args, count, timeMs);
     case 'pulse':

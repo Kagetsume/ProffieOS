@@ -52,10 +52,8 @@
       },
       "layers": [
         { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "smoke_up", "args": ["black", "white"], "blend": "multiply", "opacity": 19000 },
-        { "styleName": "smoke_down", "args": ["black", "white"], "blend": "multiply", "opacity": 22000 },
-        { "styleName": "smoke_up", "args": ["black", "{{base}}"], "blend": "screen", "opacity": 3500 },
-        { "styleName": "smoke_down", "args": ["black", "{{base}}"], "blend": "screen", "opacity": 3600 },
+        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
+        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "clash", "args": ["white"] },
@@ -69,13 +67,14 @@
       "id": "smoke_laser",
       "label": "smoke_laser",
       "description": "Green solid base through rolling smoke masks + composable clash/blast overlays (variant of smoke_blade).",
-      "vars": {},
+      "vars": {
+        "ext": "300",
+        "ret": "800"
+      },
       "layers": [
-        { "styleName": "solid", "args": ["green", "300", "800"] },
-        { "styleName": "smoke_up", "args": ["black", "white"], "blend": "multiply", "opacity": 19000 },
-        { "styleName": "smoke_down", "args": ["black", "white"], "blend": "multiply", "opacity": 22000 },
-        { "styleName": "smoke_up", "args": ["black", "green"], "blend": "screen", "opacity": 3500 },
-        { "styleName": "smoke_down", "args": ["black", "green"], "blend": "screen", "opacity": 3600 },
+        { "styleName": "solid", "args": ["green", "{{ext}}", "{{ret}}"] },
+        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
+        { "styleName": "smoke_flow", "args": ["black", "green", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
         { "styleName": "clash", "args": ["white"] },
         { "styleName": "blast", "args": ["white"] }
       ]

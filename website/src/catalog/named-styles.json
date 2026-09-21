@@ -1439,6 +1439,37 @@
       ]
     },
     {
+      "id": "smoke_flow",
+      "label": "Smoke flow",
+      "group": "texture",
+      "args": [
+        {
+          "slot": "warm",
+          "label": "Dark color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "hot",
+          "label": "Light color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "extend",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300"
+        },
+        {
+          "slot": "retract",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800"
+        }
+      ]
+    },
+    {
       "id": "stripes",
       "label": "Stripes",
       "group": "texture",
