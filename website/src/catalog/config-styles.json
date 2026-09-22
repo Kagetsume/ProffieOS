@@ -363,6 +363,301 @@
         { "styleName": "preon_glow", "args": ["orange"] },
         { "styleName": "postoff_wipe", "args": ["red"] }
       ]
+    },
+    {
+      "id": "accent_os7_combat",
+      "label": "accent_os7_combat",
+      "description": "PWM accent: hum-reactive glow + OS7 real_clash, blast_wave_random, lockup/drag/melt/lb, swing.",
+      "vars": {
+        "color": "white",
+        "clash": "white",
+        "lockup": "yellow",
+        "drag": "orange",
+        "melt": "orangered",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "accent_glow", "args": ["{{color}}"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] },
+        { "styleName": "swing", "args": ["{{color}}", "300"], "blend": "add", "opacity": 8000 }
+      ]
+    },
+    {
+      "id": "accent_solid_reactive",
+      "label": "accent_solid_reactive",
+      "description": "PWM accent: solid color base + clash, lockup, swing (no hum reactivity).",
+      "vars": {
+        "color": "amber",
+        "clash": "white",
+        "lockup": "yellow"
+      },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "clash", "args": ["{{clash}}"] },
+        { "styleName": "lockup", "args": ["{{lockup}}"] },
+        { "styleName": "swing", "args": ["{{color}}", "300"], "blend": "add", "opacity": 8000 }
+      ]
+    },
+    {
+      "id": "accent_motor_clash",
+      "label": "accent_motor_clash",
+      "description": "PWM accent: audio-gated motor (postoff tail) + clash flash.",
+      "vars": {},
+      "layers": [
+        { "styleName": "accent_sound_on", "args": ["white", "4096"] },
+        { "styleName": "clash", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "accent_glow_sparkle",
+      "label": "accent_glow_sparkle",
+      "description": "PWM accent: hum-reactive glow + add-blended sparkle twinkle.",
+      "vars": { "color": "white" },
+      "layers": [
+        { "styleName": "accent_glow", "args": ["{{color}}"] },
+        { "styleName": "sparkle", "args": ["{{color}}"], "blend": "add", "opacity": 12000 }
+      ]
+    },
+    {
+      "id": "accent_ignite_flash",
+      "label": "accent_ignite_flash",
+      "description": "PWM accent: hum-reactive idle + ignition flash overlay during extension.",
+      "vars": { "color": "white", "ext": "300", "fade": "600" },
+      "layers": [
+        { "styleName": "accent_glow", "args": ["{{color}}"] },
+        { "styleName": "ignition_flash", "args": ["{{color}}", "{{ext}}", "{{fade}}"] }
+      ]
+    },
+    {
+      "id": "composable_checklist",
+      "label": "composable_checklist",
+      "description": "Capstone composable stack: solid_bend + gradient/audio/sparkle + preon/postoff/sparktip + OS7 real_clash/blast_wave_random + lockup suite + swing.",
+      "vars": {
+        "base": "blue",
+        "hilt": "blue",
+        "tip": "cyan",
+        "spark": "white",
+        "clash": "white",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white",
+        "ext": "300",
+        "ret": "800",
+        "preon": "cyan",
+        "postoff": "red"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "gradient_layer",
+          "args": ["{{hilt}}", "{{tip}}"],
+          "blend": "normal",
+          "opacity": 12000
+        },
+        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
+        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 5000 },
+        { "styleName": "preon_glow", "args": ["{{preon}}"] },
+        { "styleName": "postoff_glow", "args": ["{{postoff}}"] },
+        {
+          "styleName": "sparktip_layer",
+          "args": ["{{spark}}", "{{ext}}", "{{ret}}"],
+          "blend": "add",
+          "opacity": 32768
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] },
+        { "styleName": "swing", "args": ["white", "250"], "blend": "add", "opacity": 7000 }
+      ]
+    },
+    {
+      "id": "composable_checklist_responsive",
+      "label": "composable_checklist_responsive",
+      "description": "Same capstone stack with responsive_clash + responsive_blast instead of OS7 real_clash/blast_wave_random.",
+      "vars": {
+        "base": "blue",
+        "hilt": "blue",
+        "tip": "cyan",
+        "spark": "white",
+        "clash": "white",
+        "lockup": "white",
+        "drag": "white",
+        "melt": "orange",
+        "lb": "white",
+        "ext": "300",
+        "ret": "800",
+        "preon": "cyan",
+        "postoff": "red"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "gradient_layer",
+          "args": ["{{hilt}}", "{{tip}}"],
+          "blend": "normal",
+          "opacity": 12000
+        },
+        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
+        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 5000 },
+        { "styleName": "preon_glow", "args": ["{{preon}}"] },
+        { "styleName": "postoff_glow", "args": ["{{postoff}}"] },
+        {
+          "styleName": "sparktip_layer",
+          "args": ["{{spark}}", "{{ext}}", "{{ret}}"],
+          "blend": "add",
+          "opacity": 32768
+        },
+        { "styleName": "responsive_clash", "args": ["{{clash}}"] },
+        { "styleName": "responsive_blast", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "drag", "args": ["{{drag}}"] },
+        { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] },
+        { "styleName": "swing", "args": ["white", "250"], "blend": "add", "opacity": 7000 }
+      ]
+    },
+    {
+      "id": "accent_composable_audio",
+      "label": "accent_composable_audio",
+      "description": "PWM accent: fixed color + multiply audio_layer hum (composable alternative to accent_glow).",
+      "vars": { "color": "blue", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_breathe",
+      "label": "accent_composable_breathe",
+      "description": "PWM accent: solid color + pulse_layer breathing (mirrors composable_breathe on one LED).",
+      "vars": { "color": "cyan", "clash": "white", "pulse_ms": "4000" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "pulse_layer", "args": ["{{pulse_ms}}"], "blend": "multiply", "opacity": 32768 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_crackle",
+      "label": "accent_composable_crackle",
+      "description": "PWM accent: per_led + noise + base_flicker crackle stack (mirrors composable_crackle).",
+      "vars": { "color": "silver", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "per_led_flicker", "args": [], "blend": "multiply", "opacity": 14000 },
+        { "styleName": "noise_flicker", "args": ["black", "white"], "blend": "multiply", "opacity": 9000 },
+        { "styleName": "base_flicker", "args": ["8", "400", "600"], "blend": "multiply", "opacity": 6000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_swing",
+      "label": "accent_composable_swing",
+      "description": "PWM accent: solid color + swing_layer uniform brighten (hue-preserving multiply).",
+      "vars": { "color": "white", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "swing_layer", "args": ["10", "200"], "blend": "multiply", "opacity": 32768 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_heat",
+      "label": "accent_composable_heat",
+      "description": "PWM accent: fire_mask rolling heat on one LED (solid_lava pattern for PWM).",
+      "vars": { "color": "orange", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "fire_mask", "args": ["red", "yellow"], "blend": "multiply", "opacity": 22000 },
+        { "styleName": "fire_mask", "args": ["orange", "yellow"], "blend": "screen", "opacity": 8000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_stripes",
+      "label": "accent_composable_stripes",
+      "description": "PWM accent: hard_stripes brightness oscillation on single LED.",
+      "vars": { "color": "blue", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "hard_stripes", "args": ["1000", "-3000", "black", "white"], "blend": "multiply", "opacity": 24000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_unstable",
+      "label": "accent_composable_unstable",
+      "description": "PWM accent: unstable_stripes + base_flicker unstable idle.",
+      "vars": { "color": "silver", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "unstable_stripes", "args": ["{{color}}"], "blend": "multiply", "opacity": 16000 },
+        { "styleName": "base_flicker", "args": ["10", "300", "500"], "blend": "multiply", "opacity": 8000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_flame",
+      "label": "accent_composable_flame",
+      "description": "PWM accent: responsive_flame_layer angle-reactive heat on solid accent.",
+      "vars": { "color": "red", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "responsive_flame_layer", "args": ["{{color}}"], "blend": "multiply", "opacity": 20000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_composable_thunder",
+      "label": "accent_composable_thunder",
+      "description": "PWM accent: thunder_loop_layer storm flicker on solid accent.",
+      "vars": { "color": "blue", "clash": "white" },
+      "layers": [
+        { "styleName": "accent_color", "args": ["{{color}}"] },
+        { "styleName": "thunder_loop_layer", "args": ["{{color}}"], "blend": "multiply", "opacity": 24000 },
+        { "styleName": "clash", "args": ["{{clash}}"] }
+      ]
+    },
+    {
+      "id": "accent_glow_crackle",
+      "label": "accent_glow_crackle",
+      "description": "PWM accent: hum-reactive glow + noise_flicker organic texture.",
+      "vars": { "color": "white" },
+      "layers": [
+        { "styleName": "accent_glow", "args": ["{{color}}"] },
+        { "styleName": "noise_flicker", "args": ["black", "white"], "blend": "multiply", "opacity": 10000 },
+        { "styleName": "clash", "args": ["white"] }
+      ]
+    },
+    {
+      "id": "accent_solid_on_lockup",
+      "label": "accent_solid_on_lockup",
+      "description": "PWM accent: always on while blade is out + lockup brighten.",
+      "vars": { "lockup": "yellow" },
+      "layers": [
+        { "styleName": "accent_on", "args": [] },
+        { "styleName": "lockup", "args": ["{{lockup}}"] }
+      ]
+    },
+    {
+      "id": "accent_force_glow",
+      "label": "accent_force_glow",
+      "description": "PWM accent: hum-reactive glow + Force-push brighten overlay.",
+      "vars": { "color": "white" },
+      "layers": [
+        { "styleName": "accent_glow", "args": ["{{color}}"] },
+        { "styleName": "force_glow", "args": ["{{color}}"], "blend": "add", "opacity": 14000 }
+      ]
     }
   ]
 }

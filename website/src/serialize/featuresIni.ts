@@ -3,6 +3,7 @@
  *
  * @module serialize/featuresIni
  */
+import { contextLogger } from '../logger';
 import type { BoardFeaturesState } from '../model/board';
 import { iniHeader } from './format';
 
@@ -12,6 +13,10 @@ function onOff(value: boolean): string {
 
 /** Generate `features.ini` contents (gesture + twist only). */
 export function serializeFeaturesIni(state: BoardFeaturesState): string {
+  contextLogger('featuresIni', 'serializeFeaturesIni').debug('export', {
+    gesture: state.gesture,
+    twistOn: state.twistOn,
+  });
   const header = iniHeader('config/features.ini - Feature toggles (gesture, twist)', [
     'Copy this file to the root of your SD card as:  config/features.ini',
     '',

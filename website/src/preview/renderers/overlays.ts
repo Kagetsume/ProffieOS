@@ -57,10 +57,13 @@ export function renderBlastWaveOverlay(
   count: number,
   intensity: number,
   timeMs: number,
+  anchorIndex?: number,
 ): PixelBuffer {
   const color = parseColor(args[0] ?? 'white');
   const buffer = createPixelBuffer(count);
-  const waveCenter = ((timeMs / 12) % (count + 20)) - 10;
+  const waveTravel = ((timeMs / 12) % (count + 20)) - 10;
+  const waveCenter =
+    anchorIndex === undefined ? waveTravel : anchorIndex + waveTravel * 0.25;
   for (let i = 0; i < count; i += 1) {
     const dist = Math.abs(i - waveCenter);
     const band = Math.max(0, 1 - dist / 8);
@@ -217,6 +220,20 @@ export function renderIgnitionFlash(
   return buffer;
 }
 
+/** Full-blade Force glow — hum-modulated (approximates SmoothSoundLevel). */
+export function renderForceGlow(
+  args: string[],
+  count: number,
+  intensity: number,
+  timeMs: number,
+): PixelBuffer {
+  const color = parseColor(args[0] ?? 'white');
+  const buffer = createPixelBuffer(count);
+  const hum = 0.55 + ((Math.sin(timeMs / 90) + 1) / 2) * 0.45;
+  fillColor(buffer, color, intensity * hum);
+  return buffer;
+}
+
 export function renderLockupOverlay(
   args: string[],
   count: number,
@@ -361,11 +378,29 @@ export function renderEventOverlay(
       const intensity = eventIntensity(sim.blastUntil, now, PREVIEW_DURATIONS.blast);
       return intensity > 0 ? renderBlastWaveOverlay(args, count, intensity, now) : null;
     }
+    case 'responsive_blast': {
+      const intensity = eventIntensity(sim.blastUntil, now, PREVIEW_DURATIONS.blast);
+      if (intensity <= 0) {
+        return null;
+      }
+      const anchor = Math.round(sim.bladeAngleNorm * Math.max(0, count - 1));
+      return renderBlastWaveOverlay(args, count, intensity, now, anchor);
+    }
     case 'clash':
     case 'localized_clash':
     case 'real_clash': {
       const intensity = eventIntensity(sim.clashUntil, now, PREVIEW_DURATIONS.clash);
       return intensity > 0 ? renderClashOverlay(args, count, intensity, styleName) : null;
+    }
+    case 'responsive_clash': {
+      const intensity = eventIntensity(sim.clashUntil, now, PREVIEW_DURATIONS.clash);
+      if (intensity <= 0) {
+        return null;
+      }
+      const color = parseColor(args[0] ?? 'white');
+      const center = Math.round(sim.bladeAngleNorm * Math.max(0, count - 1));
+      const halfWidth = Math.max(3, Math.floor(count * 0.15));
+      return renderLocalizedClashOverlay(color, count, intensity, center, halfWidth);
     }
     case 'swing': {
       const intensity = eventIntensity(sim.swingUntil, now, PREVIEW_DURATIONS.swing);
@@ -409,6 +444,10 @@ export function renderEventOverlay(
       return sim.powered && sim.transition === 'none'
         ? renderSparkleOverlay(args, count, now)
         : null;
+    case 'force_glow': {
+      const intensity = eventIntensity(sim.forceUntil, now, PREVIEW_DURATIONS.force);
+      return intensity > 0 ? renderForceGlow(args, count, intensity, now) : null;
+    }
     case 'lockup':
     case 'responsive_lockup':
       return sim.lockupActive

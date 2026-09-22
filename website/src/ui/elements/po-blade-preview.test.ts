@@ -22,4 +22,11 @@ describe('po-blade-preview', () => {
     expect($previewSim.getState().clashUntil).toBeGreaterThan(before);
     unmount();
   });
+
+  it('disables force when the active section has no force_glow layer', async () => {
+    const { el, unmount } = await mount(document.createElement('po-blade-preview'));
+    const forceBtn = getByTestId(el, 'blade-preview-force') as HTMLButtonElement;
+    expect(forceBtn.disabled).toBe(true);
+    unmount();
+  });
 });

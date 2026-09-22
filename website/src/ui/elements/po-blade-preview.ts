@@ -1,5 +1,7 @@
 /**
  * Upward-facing saber mock — rotated/scaled hilt SVG + vertical blade canvas above.
+ *
+ * @module ui/elements/po-blade-preview
  */
 import { html, nothing, type PropertyValues } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
@@ -16,6 +18,10 @@ import {
   hiltVisualBoxFromRotatorWidth,
   measureVerticalSaberLayout,
 } from '../../preview/vertical-layout.js';
+import {
+  previewCombatControlEnabled,
+  sectionPreviewCapabilities,
+} from '../../preview/preview-capabilities.js';
 import {
   $previewSim,
   previewBladeAngleChanged,
@@ -281,6 +287,19 @@ export class PoBladePreview extends PoElement {
     log.exit();
   };
 
+  /**
+   * Fires a one-shot force effect on the active style section (`force_glow` overlay).
+   */
+  private onForce = (): void => {
+    const log = contextLogger('po-blade-preview', 'onForce');
+    log.entry();
+    const section = this.activeSection();
+    log.debug('branch: triggering force event', { sectionId: section?.id ?? null });
+    previewEventTriggered({ event: 'force', section });
+    this.scheduleLayout();
+    log.exit();
+  };
+
   /** @param event - Change/input event from the lockup `wa-switch`. */
   private onLockupChange = (event: Event): void => {
     this.onCombatSwitchChange(event, previewLockupChanged);
@@ -500,9 +519,20 @@ export class PoBladePreview extends PoElement {
    */
   render() {
     const simState = this.simController.value;
-    const activeSectionId = this.stylesController.value.activeSectionId;
+    const stylesState = this.stylesController.value;
+    const activeSectionId = stylesState.activeSectionId;
+    const activeSection = getActiveSection(stylesState);
+    const previewCaps = sectionPreviewCapabilities(activeSection, stylesState.sections);
     const { transition, powered } = simState;
     const combatReady = powered && transition === 'none';
+    const canBlast = previewCombatControlEnabled(previewCaps, combatReady, 'blast');
+    const canClash = previewCombatControlEnabled(previewCaps, combatReady, 'clash');
+    const canSwing = previewCombatControlEnabled(previewCaps, combatReady, 'swing');
+    const canForce = previewCombatControlEnabled(previewCaps, combatReady, 'force');
+    const canLockup = previewCombatControlEnabled(previewCaps, combatReady, 'lockup');
+    const canDrag = previewCombatControlEnabled(previewCaps, combatReady, 'drag');
+    const canMelt = previewCombatControlEnabled(previewCaps, combatReady, 'melt');
+    const canLb = previewCombatControlEnabled(previewCaps, combatReady, 'lb');
     const canPowerOn =
       (!powered && transition === 'none') || transition === 'postoff';
     const canPowerOff =
@@ -559,7 +589,7 @@ export class PoBladePreview extends PoElement {
             data-testid="blade-preview-blast"
             size="small"
             variant="neutral"
-            ?disabled=${!combatReady}
+            ?disabled=${!canBlast}
             @click=${this.onBlast}
           >
             ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
@@ -568,7 +598,7 @@ export class PoBladePreview extends PoElement {
             data-testid="blade-preview-clash"
             size="small"
             variant="neutral"
-            ?disabled=${!combatReady}
+            ?disabled=${!canClash}
             @click=${this.onClash}
           >
             ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
@@ -577,46 +607,55 @@ export class PoBladePreview extends PoElement {
             data-testid="blade-preview-swing"
             size="small"
             variant="neutral"
-            ?disabled=${!combatReady}
+            ?disabled=${!canSwing}
             @click=${this.onSwing}
           >
             ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
           </wa-button>
+          <wa-button
+            data-testid="blade-preview-force"
+            size="small"
+            variant="neutral"
+            ?disabled=${!canForce}
+            @click=${this.onForce}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.force)}
+          </wa-button>
         </div>
         <div class="preview-controls-row preview-controls-row--toggles">
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+          <div class="combat-toggle ${canLockup ? '' : 'combat-toggle--disabled'}">
             <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
             <wa-switch
               size="small"
               .checked=${simState.lockupActive}
-              ?disabled=${!combatReady}
+              ?disabled=${!canLockup}
               @change=${this.onLockupChange}
             ></wa-switch>
           </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+          <div class="combat-toggle ${canLb ? '' : 'combat-toggle--disabled'}">
             <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
             <wa-switch
               size="small"
               .checked=${simState.lbActive}
-              ?disabled=${!combatReady}
+              ?disabled=${!canLb}
               @change=${this.onLbChange}
             ></wa-switch>
           </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+          <div class="combat-toggle ${canDrag ? '' : 'combat-toggle--disabled'}">
             <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
             <wa-switch
               size="small"
               .checked=${simState.dragActive}
-              ?disabled=${!combatReady}
+              ?disabled=${!canDrag}
               @change=${this.onDragChange}
             ></wa-switch>
           </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+          <div class="combat-toggle ${canMelt ? '' : 'combat-toggle--disabled'}">
             <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
             <wa-switch
               size="small"
               .checked=${simState.meltActive}
-              ?disabled=${!combatReady}
+              ?disabled=${!canMelt}
               @change=${this.onMeltChange}
             ></wa-switch>
           </div>

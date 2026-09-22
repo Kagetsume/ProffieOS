@@ -1,5 +1,7 @@
 /**
  * One logical blade's `style =` line editor inside a preset.
+ *
+ * @module ui/elements/po-preset-style-row
  */
 import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';

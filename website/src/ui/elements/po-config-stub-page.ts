@@ -1,5 +1,7 @@
 /**
  * Placeholder page for config sections not yet implemented.
+ *
+ * @module ui/elements/po-config-stub-page
  */
 import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';

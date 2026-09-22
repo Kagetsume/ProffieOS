@@ -69,3 +69,30 @@ style=pixel_sequence 0,255,0,0,100,100|1,0,255,0,80,100
 ```
 
 Same format works in the serial style editor and other places that accept a style string with arguments.
+
+## As a layer in `blade_styles.ini`
+
+**`pixel_sequence`** works as a composable texture layer in a config recipe — not only as a
+standalone preset style. Stack it over a **`solid`** or **`solid_bend`** base (or any opaque
+base). Use **`normal`** or **`add`** blend with optional **`opacity`**; the layer does **not**
+need extend/retract args on its line (the compositor follows the base timing).
+
+```ini
+[sequencer_demo]
+base = black
+ext = 300
+ret = 800
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = add opacity 32768 pixel_sequence 0,0,255,0,60,150|0,255,0,0,60,150|255,255,255,255,40,80
+layer = real_clash white 16000
+layer = blast white
+```
+
+**In preset:** `style = config sequencer_demo`
+
+The step string is one argument on the **`layer =`** line (pipe-separated steps, no spaces
+required). Up to **16 steps** per sequence. For a full composable stack with clash, blast, and
+textures, see **`[composable_checklist]`** in **`examples/config/blade_styles.ini`**.
+
+**Website preview:** The SD Config Editor approximates **`pixel_sequence`** animation in the
+blade preview (not pixel-accurate vs firmware).

@@ -78,6 +78,8 @@ describe('styleSections store', () => {
     expect(suggestedBlendForStyle('audio_layer').blend).toBe('multiply');
     expect(suggestedBlendForStyle('gradient_layer').blend).toBe('normal');
     expect(suggestedBlendForStyle('gradient_layer').opacity).toBe(16384);
+    expect(suggestedBlendForStyle('rainbow_layer').blend).toBe('normal');
+    expect(suggestedBlendForStyle('rainbow_layer').opacity).toBe(16384);
     expect(suggestedBlendForStyle('solid').blend).toBe('normal');
   });
 

@@ -14,6 +14,22 @@ describe('serializeBoardIni', () => {
     expect(ini).toContain('bluetooth = on');
     expect(ini).toContain('twist_off = on');
   });
+
+  it('writes off toggles when features are disabled', () => {
+    const ini = serializeBoardIni({
+      ...DEFAULT_BOARD_FEATURES,
+      oled: false,
+      bluetooth: false,
+      gesture: false,
+      twistOn: false,
+      twistOff: false,
+    });
+    expect(ini).toContain('oled = off');
+    expect(ini).toContain('bluetooth = off');
+    expect(ini).toContain('gesture = off');
+    expect(ini).toContain('twist_on = off');
+    expect(ini).toContain('twist_off = off');
+  });
 });
 
 describe('serializeFeaturesIni', () => {

@@ -19,6 +19,7 @@ Accent styles (PWM blades): [`examples/README.md`](../examples/README.md)
 | Recolor without editing INI | [§3 Variables](#3-section-variables-recolor-from-presets) | `style = config with_vars base=magenta` |
 | Smoke / texture blade (SD-only) | [§8 Smoke blade](#8-smoke-blade-texture-stack) | `style = config smoke_blade` |
 | Composable gradient / audio / pulse | [§12 Composable textures](#12-composable-texture-recipes) | `style = config composable_gradient` |
+| Full composable layer inventory | [§12 Composable textures](#12-composable-texture-recipes) | `style = config composable_checklist` |
 | Fett263 OS7 water look | [§9 Water blade](#9-water-blade-firmware-base--overlays) | `style = config water_blade` |
 | Preon glow + postoff wipe | [§13 Preon / postoff](#13-preon--postoff-transitions) | `style = config mystic_awakening` |
 | PWM accent (motor, bar graph) | [§16 Accent on simple blade](#16-accent-recipes-on-pwm-blades) | `style = accent_pulse 1500` (in presets, not this file) |
@@ -433,8 +434,33 @@ layer = blast white
 ```
 
 Shipped sections: **`[composable_gradient]`**, **`[composable_gradient_tint]`**,
-**`[composable_audio]`**, **`[composable_breathe]`**, **`[composable_crackle]`**,
-**`[composable_shimmer]`** in **`examples/config/blade_styles.ini`**.
+**`[composable_rainbow]`**, **`[composable_audio]`**, **`[composable_breathe]`**,
+**`[composable_crackle]`**, **`[composable_shimmer]`**, OS7 approximations
+(`[composable_water_flow]`, `[composable_cylon]`, …), and capstone demos
+**`[composable_checklist]`** / **`[composable_checklist_responsive]`** in
+**`examples/config/blade_styles.ini`**.
+
+**Composable alternatives to monoliths:**
+
+| Monolithic | Composable replacement |
+|------------|------------------------|
+| `rainbow` | `solid_bend black …` + `normal opacity 32768 rainbow_layer` |
+| `gradient` | `solid_bend` + `normal opacity 32768 gradient_layer hilt tip` |
+| `audio` | `solid_bend` + `multiply opacity 32768 audio_layer` |
+| `pulse_blade` | `solid_bend` + `multiply opacity 32768 pulse_layer 3000` |
+| `sparktip` (full InOut) | `solid_bend` + `add sparktip_layer white {{ext}} {{ret}}` during extend |
+
+**Clash / blast paths:** OS7 stack uses **`real_clash`** + **`blast_wave_random`**;
+Fett263 responsive stack uses **`responsive_clash`** + **`responsive_blast`**. Pick one
+pair — do not stack multiple clash or blast types.
+
+**Other composable overlays:** `force_glow` (audio-reactive on `EFFECT_FORCE`),
+`localized_clash`, `responsive_lockup`, `drag`, `melt`, `lb`, `sparkle`, `pulse`,
+`preon_*` / `postoff_*`, `ignition_flash`.
+
+Canonical layer inventory: comment block above **`[composable_checklist]`** in
+[`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) and
+[`examples/README.md`](../examples/README.md).
 
 ---
 
@@ -502,10 +528,27 @@ style = accent_sound_on white 4096
 style = accent_glow white
 ```
 
-**Layered accents** can use config recipes — stack `accent_*` bases with overlays in
-`blade_styles.ini`, then `style = config accent_reactive` in presets. See
-[`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) sections
-`accent_glow_clash`, `accent_glow_lockup`, `accent_reactive`.
+**Layered accents** can use config recipes — stack `accent_*` bases with overlay and
+**composable texture** layers in `blade_styles.ini`, then `style = config accent_reactive`
+in presets. On a single PWM LED, texture layers (`audio_layer`, `pulse_layer`, `fire_mask`,
+`hard_stripes`, …) modulate **uniform brightness** the same way they do on a pixel blade.
+
+| Recipe | Stack |
+|--------|--------|
+| `accent_reactive` / `accent_combat` | `accent_glow` + clash / lockup / swing / blast |
+| `accent_os7_combat` | glow + `real_clash`, `blast_wave_random`, drag/melt/lb |
+| `accent_solid_reactive` | `accent_color` + combat overlays |
+| `accent_motor_clash` | `accent_sound_on` + clash |
+| `accent_glow_sparkle` | glow + add `sparkle` |
+| `accent_ignite_flash` | glow + `ignition_flash` |
+| `accent_composable_audio` | `accent_color` + multiply `audio_layer` |
+| `accent_composable_breathe` | `accent_color` + multiply `pulse_layer` |
+| `accent_composable_crackle` | `accent_color` + per_led / noise / base_flicker |
+| `accent_composable_heat` | `accent_color` + `fire_mask` (solid_lava pattern) |
+| `accent_composable_stripes` | `accent_color` + `hard_stripes` |
+| `accent_composable_flame` / `accent_composable_thunder` | `accent_color` + Fett263 texture layers |
+
+Full list: [`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) — GPIO ACCENT RECIPES section.
 
 ---
 
@@ -516,10 +559,12 @@ Full tables: [`examples/README.md`](../examples/README.md) and the header of
 
 | Group | Styles | Typical role |
 |-------|--------|--------------|
-| Base blades | `standard`, `solid`, `fire`, `rainbow`, `gradient`, `audio`, `water_flow`, … | Bottom layer — blade color + idle motion |
-| Overlays | `blast`, `clash`, `lockup`, `swing`, `real_clash`, `blast_wave_random`, … | Combat and motion reactions |
-| Textures | `fire_mask`, `stripes`, `hard_stripes`, `noise_flicker`, `pixel_sequence` | Masks and scroll patterns |
-| Preon/postoff | `preon_glow`, `preon_wipe`, `postoff_wipe`, … | Startup/shutdown tied to font sounds |
+| Composable base | `solid`, `solid_bend` | Extend/retract + color only; stack overlays below |
+| Monolithic base | `standard`, `fire`, `rainbow`, `water_flow`, `fallen_order`, … | Full blade with built-in combat |
+| Overlays | `blast`, `clash`, `real_clash`, `responsive_clash`, `blast_wave_random`, `responsive_blast`, `lockup`, `responsive_lockup`, `swing`, `drag`, `melt`, `lb`, `force_glow`, … | Combat and motion reactions |
+| Composable textures | `gradient_layer`, `rainbow_layer`, `audio_layer`, `pulse_layer`, `swing_layer`, `fire_mask`, `stripes`, `pixel_sequence`, OS7 `*_layer` (`water_flow_layer`, `cylon_layer`, `sparktip_layer`, …) | Masks and idle motion stacked over base |
+| Smoke (matched ext/ret) | `smoke_flow` | Multiply/screen bands — pass **`{{ext}}`/`{{ret}}`** on each line |
+| Preon/postoff | `preon_glow`, `preon_wipe`, `postoff_wipe`, `ignition_flash`, … | Startup/shutdown tied to font sounds |
 | Accents | `accent_pulse`, `accent_glow`, … | PWM blades in presets (usually not layered here) |
 
 The editor **Add layer** dropdown groups styles the same way (`catalog/named-styles.json`).
@@ -581,13 +626,17 @@ Multi-blade presets need one `style =` per logical blade (see [BLADES.md](./BLAD
 
 ## Limits (firmware)
 
-| Limit | Value |
-|-------|-------|
-| Section variables | 16 keys per section |
-| Preset `config` overrides | 16 `key=value` pairs |
-| Palette sections | 8 cached |
-| Include nesting depth | Fixed (cycle-safe) |
-| Parser line cap | 512 lines |
+| Limit | Value | Applies to |
+|-------|-------|------------|
+| Layers per section | 16 | `blade_styles.ini` |
+| Characters per `layer =` line | 384 | `blade_styles.ini` |
+| Section variables | 16 keys per section | `blade_styles.ini` |
+| Preset `config` overrides | 16 `key=value` pairs | `presets.ini` |
+| Palette sections | 8 cached | `blade_styles.ini` |
+| Include nesting depth | Fixed (cycle-safe) | `blade_styles.ini` |
+| Parser line cap | **4096** lines | **`blade_styles.ini`** (`SD_STYLE_CONFIG_MAX_LINES`) |
+| Parser line cap | 512 lines | `blades.ini`, `board.ini` (different files) |
+| Style string per preset | 512 characters max | `presets.ini` |
 
 ---
 

@@ -88,6 +88,16 @@ describe('overlay renderers', () => {
       true,
     );
     expect(renderEventOverlay('real_clash', ['white'], 24, 1100, previewTriggerEvent(sim, 'clash', 1000))?.a.some((a) => a > 0)).toBe(true);
+    expect(
+      renderEventOverlay('responsive_clash', ['white'], 24, 1100, previewTriggerEvent(sim, 'clash', 1000))?.a.some(
+        (a) => a > 0,
+      ),
+    ).toBe(true);
+    expect(
+      renderEventOverlay('responsive_blast', ['white'], 24, 1100, previewTriggerEvent(sim, 'blast', 1000))?.a.some(
+        (a) => a > 0,
+      ),
+    ).toBe(true);
     expect(renderEventOverlay('swing', ['white'], 24, 1100, previewTriggerEvent(sim, 'swing', 1000))?.a.some((a) => a > 0)).toBe(true);
     expect(renderEventOverlay('sparkle', ['white'], 24, 1000, sim)?.a.some((a) => a >= 0)).toBe(true);
     expect(renderEventOverlay('melt', ['orange'], 24, 1000, sim)).toBeNull();

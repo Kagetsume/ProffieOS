@@ -4,6 +4,8 @@
  * Reads a master pin list from sibling blades via {@link usedPresetsForPicker}.
  *
  * @fires pins-change - `{ pins: string[] }` when any row changes
+ *
+ * @module ui/elements/po-power-pin-editor
  */
 import { LitElement, html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';

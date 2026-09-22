@@ -1,5 +1,7 @@
 /**
  * Features config editor — `config/features.ini` (gesture, twist on/off).
+ *
+ * @module ui/elements/po-features-page
  */
 import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';

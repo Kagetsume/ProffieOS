@@ -14,12 +14,28 @@
 
 #include "alpha.h"
 #include "colors.h"
+#include "cylon.h"
+#include "sparktip_layer.h"
+#include "darksaber.h"
+#include "fallen_order.h"
 #include "fire.h"
 #include "gradient.h"
+#include "kinetic_charge.h"
 #include "mix.h"
+#include "power_wave.h"
+#include "pulse_stripes.h"
+#include "rainbow.h"
+#include "responsive_flame.h"
+#include "rotating_pulse.h"
+#include "rotoscope.h"
+#include "shimmer_blade.h"
 #include "smoke_mask.h"
+#include "static_electricity.h"
 #include "stripes.h"
+#include "thunder_loop.h"
+#include "trickle_blade.h"
 #include "unstable_blades.h"
+#include "water_flow.h"
 #include "../functions/inout_ms.h"
 #include "../functions/scale.h"
 #include "../functions/random.h"
@@ -111,5 +127,46 @@ using AudioLayerOverlay = Mix<NoisySoundLevelCompat, Black, White>;
 // Hilt-to-tip color gradient — stack with normal blend; layer opacity sets mix vs base below.
 template<class HILT, class TIP>
 using GradientLayer = Gradient<HILT, TIP>;
+
+// Animated sin-table RGB rainbow — stack with normal blend; opacity tints base toward full rainbow.
+using RainbowLayer = Rainbow;
+
+// OS7 / interactive idle bases extracted for config layering (multiply/normal/add over solid_bend).
+template<class BASE_COLOR>
+using WaterFlowLayer = WaterFlowStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using DarkSaberLayer = DarkSaberFlickerBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using StaticElectricityLayer = StaticElectricityBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using PowerWaveLayer = PowerWaveStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using FallenOrderLayer = FallenOrderStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using ShimmerBladeLayer = ShimmerBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using RotoscopeLayer = RotoscopeBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using PulseStripesLayer = PulseStripesBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR, class KINETIC_COLOR>
+using KineticChargeLayer = KineticChargeBladeBase<BASE_COLOR, KINETIC_COLOR>;
+
+template<class BASE_COLOR>
+using RotatingPulseLayer = RotatingPulseStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using TrickleBladeLayer = TrickleBladeBase<BASE_COLOR>;
+
+// Cylon scanner band — stack with add over solid_bend (black sections add nothing).
+template<class SCAN_COLOR, class ON_PERCENT, class ON_RPM>
+using CylonLayer = CylonConfigL<SCAN_COLOR, ON_PERCENT, ON_RPM>;
 
 #endif  // STYLES_TEXTURE_LAYERS_H

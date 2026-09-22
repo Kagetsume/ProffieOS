@@ -3,6 +3,7 @@
  *
  * @module serialize/presetsIni
  */
+import { contextLogger } from '../logger';
 import type { PresetDefinition } from '../model/presets';
 import { formatPresetStyleLine } from '../model/preset-styles';
 import { iniHeader } from './format';
@@ -30,6 +31,9 @@ function serializePreset(preset: PresetDefinition): string[] {
 
 /** Generate full `presets.ini` contents. */
 export function serializePresetsIni(presets: PresetDefinition[]): string {
+  contextLogger('presetsIni', 'serializePresetsIni').debug('export', {
+    presetCount: presets.length,
+  });
   const header = iniHeader('config/presets.ini - Preset list (font, track, style, name)', [
     'Copy this file to the root of your SD card as:  config/presets.ini',
     '',

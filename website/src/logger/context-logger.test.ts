@@ -106,6 +106,13 @@ describe('contextLogger', () => {
     expect(warnSpy).toHaveBeenCalledWith('[2026-09-21T03:14:00.000Z] plain');
   });
 
+  it('blocks contexts missing a filtered function name', () => {
+    const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
+    configureContextLoggerFilter({ functionNames: ['saveBlade'] });
+    contextLogger('po-blade-card').debug('hidden');
+    expect(debugSpy).not.toHaveBeenCalled();
+  });
+
   it('silences filtered entry and exit traces', () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
     configureContextLoggerFilter({ objectNames: ['other-component'] });

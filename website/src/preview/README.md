@@ -12,8 +12,12 @@ Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>`
 | `frame.ts` | Composite all layers → RGBA pixel buffer for one frame |
 | `composite.ts` | Layer blend + opacity |
 | `colors.ts` | Resolve style color tokens to RGB |
-| `renderers/basic.ts` | Base styles (solid, gradient, audio, etc.) |
-| `renderers/overlays.ts` | Overlay effects (clash, lockup, swing, …) |
+| `renderers/basic.ts` | Base styles, generic textures, composable `*_layer` routing |
+| `renderers/os7-layers.ts` | OS7 `*_layer` texture renderers (`water_flow_layer`, `cylon_layer`, …) |
+| `renderers/overlays.ts` | Overlay effects (clash, blast, lockup, preon/postoff, force_glow, …) |
+| `preview-capabilities.ts` | Which preview combat controls apply to the active section |
+
+Renderer details: [renderers/README.md](./renderers/README.md).
 | `vertical-layout.ts` | Upward saber geometry: hilt + blade canvas placement |
 | `layout.ts` | Horizontal saber mock geometry (legacy) |
 | `hilt-asset.ts` | Public URL for hilt SVG |
@@ -60,10 +64,27 @@ On `ResizeObserver` callback: remeasure → update canvas box → redraw last fr
 
 Simulation **pixel count** comes from wiring (`pixels` on blade 0 by default); **display** scales via CSS layout.
 
+## Composable layer coverage
+
+Preview renderers cover the composable checklist in **`examples/config/blade_styles.ini`**:
+generic textures (`gradient_layer`, `rainbow_layer`, `audio_layer`, …), OS7 **`*_layer`**
+textures, combat overlays (`real_clash`, `responsive_clash`, `blast_wave_random`, …),
+transitions (`preon_*`, `postoff_*`, `ignition_flash`, `sparktip_layer`), and full capstone
+stacks **`composable_checklist`** / **`composable_checklist_responsive`**.
+
+**Approximate only** — timing, Perlin noise, and angle math are simplified vs firmware.
+
+**Combat controls** (`preview-capabilities.ts`) enable Blast / Clash / Swing / Force and
+lockup-suite toggles only when the active section's layer stack (including nested `config`
+layers) includes a matching overlay or preview-reactive texture/base.
+
 ## Tests
 
 | File | Covers |
 |------|--------|
+| `renderers/composable-preview.test.ts` | Per-layer lit pixels + capstone stacks |
+| `renderers/os7-layers.test.ts` | OS7 `*_layer` renderers |
+| `renderers/basic.test.ts`, `renderers/overlays.test.ts` | Generic textures and overlays |
 | `layout.test.ts` | Container shrink/grow, DPR, pixel count |
 | `vertical-layout.test.ts` | Vertical saber geometry |
 | `frame.test.ts` | Layer compositing |

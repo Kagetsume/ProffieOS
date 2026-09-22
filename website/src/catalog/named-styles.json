@@ -1208,6 +1208,21 @@
       ]
     },
     {
+      "id": "responsive_blast",
+      "label": "Responsive blast",
+      "group": "overlay",
+      "overlay": true,
+      "description": "ResponsiveBlastWaveL — blade-angle positioned blast wave (transparent until blast).",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
       "id": "clash",
       "label": "Clash",
       "group": "overlay",
@@ -1226,6 +1241,21 @@
       "label": "Localized clash",
       "group": "overlay",
       "overlay": true,
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "responsive_clash",
+      "label": "Responsive clash",
+      "group": "overlay",
+      "overlay": true,
+      "description": "ResponsiveClashL — blade-angle positioned clash bump (transparent until clash).",
       "args": [
         {
           "slot": "color",
@@ -1633,6 +1663,12 @@
       ]
     },
     {
+      "id": "rainbow_layer",
+      "label": "Rainbow layer",
+      "group": "texture",
+      "description": "Animated RGB rainbow over layers below. No args or ext/ret on layer line. Use normal blend; layer opacity controls mix vs base (32768 = full rainbow, ~3277 = subtle tint)."
+    },
+    {
       "id": "noise_flicker",
       "label": "Noise flicker",
       "group": "texture",
@@ -1688,6 +1724,128 @@
           "type": "color",
           "default": "red"
         }
+      ]
+    },
+    {
+      "id": "water_flow_layer",
+      "label": "Water flow layer",
+      "group": "texture",
+      "description": "WaterBlade idle texture — angle-reactive stripes and swing flow reversal (Fett263 OS7). Stack normal over solid_bend.",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+      ]
+    },
+    {
+      "id": "darksaber_layer",
+      "label": "Darksaber layer",
+      "group": "texture",
+      "description": "DarkSaber idle texture — metallic stripes, brown-noise, audio flicker, swing gleam (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+      ]
+    },
+    {
+      "id": "static_electricity_layer",
+      "label": "Static electricity layer",
+      "group": "texture",
+      "description": "StaticElectricity charge texture — swing builds charge; clash/lockup resets (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "deepskyblue" }
+      ]
+    },
+    {
+      "id": "power_wave_layer",
+      "label": "Power wave layer",
+      "group": "texture",
+      "description": "PowerWave idle texture — wide slow reverse stripes (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+      ]
+    },
+    {
+      "id": "fallen_order_layer",
+      "label": "Fallen order layer",
+      "group": "texture",
+      "description": "FallenOrder idle texture — wide stripes with pulsing mid-band (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+      ]
+    },
+    {
+      "id": "shimmer_blade_layer",
+      "label": "Shimmer blade layer",
+      "group": "texture",
+      "description": "ShimmerBlade idle texture — HoldPeakF swing shimmer (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "cyan" }
+      ]
+    },
+    {
+      "id": "rotoscope_layer",
+      "label": "Rotoscope layer",
+      "group": "texture",
+      "description": "Rotoscope idle texture — SwingAcceleration OT bands (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+      ]
+    },
+    {
+      "id": "pulse_stripes_layer",
+      "label": "Pulse stripes layer",
+      "group": "texture",
+      "description": "PulseStripes idle texture — ignition-surge stripes + pulsing mid-band (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+      ]
+    },
+    {
+      "id": "kinetic_charge_layer",
+      "label": "Kinetic charge layer",
+      "group": "texture",
+      "description": "KineticCharge texture — clash/lockup build kinetic stripes; swing decay releases (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" },
+        { "slot": "kinetic", "label": "Kinetic color", "type": "color", "default": "purple" }
+      ]
+    },
+    {
+      "id": "rotating_pulse_layer",
+      "label": "Rotating pulse layer",
+      "group": "texture",
+      "description": "RotatingPulse idle texture — Saw-modulated stripe direction reversal (Fett263 OS7 EnergyBlade).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+      ]
+    },
+    {
+      "id": "trickle_blade_layer",
+      "label": "Trickle blade layer",
+      "group": "texture",
+      "description": "TrickleBlade idle texture — angle stripes + tip StaticFire trickle (Fett263 OS7).",
+      "args": [
+        { "slot": "base", "label": "Base color", "type": "color", "default": "green" }
+      ]
+    },
+    {
+      "id": "cylon_layer",
+      "label": "Cylon layer",
+      "group": "texture",
+      "description": "Cylon scanner band — stack with add over solid_bend (black sections add nothing).",
+      "args": [
+        { "slot": "scan", "label": "Scan color", "type": "color", "default": "red" },
+        { "slot": "percent", "label": "Lit percent", "type": "number", "default": "25" },
+        { "slot": "rpm", "label": "RPM", "type": "number", "default": "200" }
+      ]
+    },
+    {
+      "id": "sparktip_layer",
+      "label": "Spark tip layer",
+      "group": "texture",
+      "description": "Spark color at the extension front (InOutSparkTip). Match ext/ret to solid_bend base; stack with add or normal.",
+      "args": [
+        { "slot": "spark", "label": "Spark color", "type": "color", "default": "white" },
+        { "slot": "ext", "label": "Extend ms", "type": "number", "default": "300", "hint": "-1 uses ignition sound length" },
+        { "slot": "ret", "label": "Retract ms", "type": "number", "default": "800", "hint": "-1 uses retraction sound length" }
       ]
     },
     {
@@ -1958,6 +2116,196 @@
           "label": "Off ms",
           "type": "number",
           "default": "500"
+        }
+      ]
+    },
+    {
+      "id": "accent_audio_flicker",
+      "label": "Accent audio flicker",
+      "group": "accent",
+      "description": "GPIO accent: jittery hum-reactive flicker while saber is on.",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "flicker",
+          "label": "Flicker color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_pulse_color",
+      "label": "Accent pulse color",
+      "group": "accent",
+      "description": "GPIO accent: pulse from black to a chosen color while saber is on.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "pulse_ms",
+          "label": "Pulse ms",
+          "type": "number",
+          "default": "3000"
+        }
+      ]
+    },
+    {
+      "id": "accent_flicker",
+      "label": "Accent flicker",
+      "group": "accent",
+      "description": "GPIO accent: organic BrownNoise flicker while saber is on.",
+      "args": [
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "black"
+        },
+        {
+          "slot": "flicker",
+          "label": "Flicker color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_sequence",
+      "label": "Accent sequence",
+      "group": "accent",
+      "description": "GPIO accent: repeating timed pixel steps while saber is on (pixel,r,g,b,brightness,ms|…).",
+      "args": [
+        {
+          "slot": "steps",
+          "label": "Steps (config …)",
+          "type": "text",
+          "default": "0,255,255,255,32768,100|0,0,0,0,0,100"
+        }
+      ]
+    },
+    {
+      "id": "accent_lockup",
+      "label": "Accent lockup",
+      "group": "accent",
+      "description": "GPIO accent: idle color with lockup/drag color when locked.",
+      "args": [
+        {
+          "slot": "idle",
+          "label": "Idle color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "lockup",
+          "label": "Lockup color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_swing",
+      "label": "Accent swing",
+      "group": "accent",
+      "description": "GPIO accent: brightens when swinging.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed threshold",
+          "type": "number",
+          "default": "200"
+        }
+      ]
+    },
+    {
+      "id": "accent_blast",
+      "label": "Accent blast",
+      "group": "accent",
+      "description": "GPIO accent: idle color with blast flash while saber is on.",
+      "args": [
+        {
+          "slot": "idle",
+          "label": "Idle color",
+          "type": "color",
+          "default": "silver"
+        },
+        {
+          "slot": "flash",
+          "label": "Flash color",
+          "type": "color",
+          "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "accent_drag",
+      "label": "Accent drag",
+      "group": "accent",
+      "description": "GPIO accent: off until drag lockup, then twist-responsive color.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "orange"
+        }
+      ]
+    },
+    {
+      "id": "accent_melt",
+      "label": "Accent melt",
+      "group": "accent",
+      "description": "GPIO accent: off until melt lockup, then twist-responsive color.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "orangered"
+        }
+      ]
+    },
+    {
+      "id": "accent_battery",
+      "label": "Accent battery",
+      "group": "accent",
+      "description": "GPIO accent: brightness follows battery level while saber is on.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "green"
+        }
+      ]
+    },
+    {
+      "id": "accent_sparkle",
+      "label": "Accent sparkle",
+      "group": "accent",
+      "description": "GPIO accent: random sparkle twinkle while saber is on.",
+      "args": [
+        {
+          "slot": "color",
+          "label": "Color",
+          "type": "color",
+          "default": "white"
         }
       ]
     },

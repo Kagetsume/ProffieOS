@@ -1,5 +1,7 @@
 /**
  * Left sidebar — config file sections and export.
+ *
+ * @module ui/elements/po-sidebar-nav
  */
 import { html, nothing } from 'lit';
 import { parseRoute } from '../../router';

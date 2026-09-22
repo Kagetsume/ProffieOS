@@ -5,6 +5,7 @@
  */
 import { createEvent, createStore } from 'effector';
 import type { StyleSection } from '../model/style-sections';
+import { contextLogger } from '../logger';
 import {
   advancePreviewSim,
   createInitialPreviewSim,
@@ -72,3 +73,32 @@ export const $previewSim = createStore<PreviewSimState>(createInitialPreviewSim(
 export function syncPreviewClock(now: number): void {
   previewSimTick(now);
 }
+
+previewPowerOnClicked.watch((section) => {
+  contextLogger('previewEvents', 'previewPowerOnClicked').debug('dispatched', {
+    sectionId: section?.id ?? null,
+  });
+});
+previewPowerOffClicked.watch((section) => {
+  contextLogger('previewEvents', 'previewPowerOffClicked').debug('dispatched', {
+    sectionId: section?.id ?? null,
+  });
+});
+previewEventTriggered.watch((event) => {
+  contextLogger('previewEvents', 'previewEventTriggered').debug('dispatched', { event });
+});
+previewLockupChanged.watch((active) => {
+  contextLogger('previewEvents', 'previewLockupChanged').debug('dispatched', { active });
+});
+previewDragChanged.watch((active) => {
+  contextLogger('previewEvents', 'previewDragChanged').debug('dispatched', { active });
+});
+previewMeltChanged.watch((active) => {
+  contextLogger('previewEvents', 'previewMeltChanged').debug('dispatched', { active });
+});
+previewLbChanged.watch((active) => {
+  contextLogger('previewEvents', 'previewLbChanged').debug('dispatched', { active });
+});
+previewBladeAngleChanged.watch((angle) => {
+  contextLogger('previewEvents', 'previewBladeAngleChanged').debug('dispatched', { angle });
+});

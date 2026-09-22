@@ -60,6 +60,32 @@ One app-lifetime `$wiring.watch` notifies registered refresh callbacks. Each pic
 
 `$styleSections` holds `[section]` blocks for `config/blade_styles.ini` (variables + layer stack). Events cover section/layer CRUD, variable binding, reorder, and active section selection. Recipe concepts: [BLADE_STYLES.md](../../BLADE_STYLES.md).
 
+## Debug logging
+
+Store events are traced at **debug** level via `event.watch` + `contextLogger` at the bottom of each store module. Example:
+
+```ts
+bladeUpdated.watch(({ index, patch }) => {
+  contextLogger('wiring', 'bladeUpdated').debug('dispatched', {
+    index,
+    patchKeys: Object.keys(patch),
+  });
+});
+```
+
+Example DevTools filter:
+
+```ts
+import { configureContextLoggerFilter, configureLogger } from '../logger';
+
+configureLogger({ debug: true });
+configureContextLoggerFilter({ objectNames: ['wiring', 'presets'] });
+```
+
+UI components log user handlers separately (`contextLogger('po-*', …)`). Together they trace: click → store event → `$export` → serialize (also logged in each `serialize*Ini`).
+
+**Not logged:** `previewSimTick`, derived `presetStyleSlotsSynced` (fires on every wiring change — use `wiring` events instead).
+
 ## Adding new config files
 
-Follow the same pattern: plain model types → store → serializer → add to `$export` combine. Keep serializers free of Effector imports.
+Follow the same pattern: plain model types → store → serializer → add to `$export` combine. Keep serializers free of Effector imports. Add `event.watch` + `contextLogger` for new events and a debug line at each serializer entry point.

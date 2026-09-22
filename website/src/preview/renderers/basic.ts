@@ -24,6 +24,7 @@ import {
   brightnessOverlayFromSwingArgs,
   brightnessOverlayScale,
 } from '../uniform-brightness-overlay';
+import { renderOs7MonolithicBase, renderOs7TextureLayer } from './os7-layers';
 
 function positionT(index: number, count: number): number {
   if (count <= 1) {
@@ -350,6 +351,81 @@ function renderStripes(args: string[], count: number, timeMs: number): PixelBuff
   return buffer;
 }
 
+type PixelSequenceStep = {
+  pixel: number;
+  rgb: [number, number, number];
+  brightness: number;
+  ms: number;
+};
+
+function parsePixelSequenceSteps(spec: string): PixelSequenceStep[] {
+  const steps: PixelSequenceStep[] = [];
+  for (const part of spec.split('|')) {
+    const trimmed = part.trim();
+    if (!trimmed) {
+      continue;
+    }
+    const fields = trimmed.split(',').map((field) => field.trim());
+    if (fields.length < 6) {
+      continue;
+    }
+    const pixel = Number(fields[0]);
+    const r = Number(fields[1]);
+    const g = Number(fields[2]);
+    const b = Number(fields[3]);
+    const brightness = Number(fields[4]);
+    const ms = Number(fields[5]);
+    if (!Number.isFinite(pixel) || !Number.isFinite(ms) || ms <= 0) {
+      continue;
+    }
+    steps.push({
+      pixel,
+      rgb: [
+        Math.max(0, Math.min(255, r || 0)),
+        Math.max(0, Math.min(255, g || 0)),
+        Math.max(0, Math.min(255, b || 0)),
+      ],
+      brightness: Math.max(0, Math.min(255, brightness || 0)),
+      ms,
+    });
+  }
+  return steps;
+}
+
+function renderPixelSequence(args: string[], count: number, timeMs: number): PixelBuffer {
+  const defaultSpec = '0,0,255,0,60,150|0,255,0,0,60,150';
+  const steps = parsePixelSequenceSteps(args[0] ?? defaultSpec);
+  const buffer = createPixelBuffer(count);
+  if (steps.length === 0) {
+    return buffer;
+  }
+  const cycleMs = steps.reduce((sum, step) => sum + step.ms, 0);
+  let t = cycleMs > 0 ? timeMs % cycleMs : 0;
+  let active = steps[0]!;
+  for (const step of steps) {
+    if (t < step.ms) {
+      active = step;
+      break;
+    }
+    t -= step.ms;
+  }
+  const index = Math.max(0, Math.min(count - 1, active.pixel));
+  const scale = active.brightness / 255;
+  writePixel(buffer, index, [
+    Math.round(active.rgb[0] * scale),
+    Math.round(active.rgb[1] * scale),
+    Math.round(active.rgb[2] * scale),
+  ]);
+  return buffer;
+}
+
+function writePixel(buffer: PixelBuffer, index: number, rgb: [number, number, number]): void {
+  buffer.r[index] = rgb[0];
+  buffer.g[index] = rgb[1];
+  buffer.b[index] = rgb[2];
+  buffer.a[index] = 1;
+}
+
 function renderGradient(args: string[], count: number): PixelBuffer {
   const hilt = parseColor(args[0] ?? 'red');
   const tip = parseColor(args[1] ?? 'blue');
@@ -470,6 +546,9 @@ export function renderLayerPixels(
     case 'solid_bend':
       return renderSolidBase(args, count);
     case 'sparktip':
+    case 'flicker':
+    case 'sparkle_blade':
+      return renderStandardLike(args, count);
     case 'water_flow':
     case 'darksaber':
     case 'static_electricity':
@@ -484,9 +563,35 @@ export function renderLayerPixels(
     case 'kinetic_charge':
     case 'rotating_pulse':
     case 'trickle_blade':
-    case 'flicker':
-    case 'sparkle_blade':
+    case 'cylon': {
+      const os7 = renderOs7MonolithicBase(style, args, count, now, sim);
+      if (os7) {
+        return os7;
+      }
       return renderStandardLike(args, count);
+    }
+    case 'unstable_stripes':
+    case 'thunder_loop_layer':
+    case 'responsive_flame_layer':
+    case 'water_flow_layer':
+    case 'darksaber_layer':
+    case 'static_electricity_layer':
+    case 'power_wave_layer':
+    case 'fallen_order_layer':
+    case 'shimmer_blade_layer':
+    case 'rotoscope_layer':
+    case 'pulse_stripes_layer':
+    case 'kinetic_charge_layer':
+    case 'rotating_pulse_layer':
+    case 'trickle_blade_layer':
+    case 'cylon_layer':
+    case 'sparktip_layer': {
+      const layer = renderOs7TextureLayer(style, args, count, now, sim);
+      if (layer) {
+        return layer;
+      }
+      return renderStandardLike(args, count);
+    }
     case 'rainbow':
       return renderRainbow(args, count, timeMs);
     case 'fire':
@@ -531,6 +636,10 @@ export function renderLayerPixels(
       return renderAudioLayer(count, timeMs);
     case 'gradient_layer':
       return renderGradient(args, count);
+    case 'rainbow_layer':
+      return renderRainbow(args, count, timeMs);
+    case 'pixel_sequence':
+      return renderPixelSequence(args, count, timeMs);
     case 'noise_flicker': {
       const base = parseColor(args[0] ?? 'black');
       const flicker = parseColor(args[1] ?? 'white');

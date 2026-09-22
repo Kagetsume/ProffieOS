@@ -1,5 +1,7 @@
 /**
  * Board config editor — `config/board.ini` hardware fields.
+ *
+ * @module ui/elements/po-board-page
  */
 import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/card/card.js';

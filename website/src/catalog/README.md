@@ -10,7 +10,7 @@ Curated data shipped with the app — not fetched from a server. Update when fir
 | `pin-options.json` | **Power** FET names (`bladePowerPin1`–`6`) and **data/Free** pins with silkscreen labels |
 | `named-styles.json` | Layer style catalog: id, human label, argument schema, groups (base/overlay/texture/…) |
 | `colors.json` | Color groups: Standard (firmware names), Extended (Fett263 menu), Vivid (OS 8) |
-| `config-styles.json` | Starter **recipes** insertable from the Styles page library (`smoke_blade`, …) |
+| `config-styles.json` | Starter **recipes** insertable from the Styles page library (`smoke_blade`, `composable_checklist`, …) |
 
 ## Pin lists
 
@@ -21,7 +21,7 @@ Curated data shipped with the app — not fetched from a server. Update when fir
 ## Style / color catalogs
 
 - **named-styles.json** — `id` is the INI/firmware keyword; `label` is the UI display name. Used in **Add layer** dropdowns on the Styles page.
-- **config-styles.json** — full `[section]` recipes (vars + layer stack). INI equivalents and use cases: [BLADE_STYLES.md](../../BLADE_STYLES.md).
+- **config-styles.json** — full `[section]` recipes (vars + layer stack), including capstone **`composable_checklist`**. INI equivalents and use cases: [BLADE_STYLES.md](../../BLADE_STYLES.md). Keep in sync with **`examples/config/blade_styles.ini`** when adding composable layers.
 - **colors.json** — Standard colors export as names; extended/vivid export as `r,g,b` via `exportColorToken()` in `model/colors.ts`.
 
 ## Maintenance

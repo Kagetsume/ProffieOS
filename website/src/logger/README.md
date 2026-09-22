@@ -406,6 +406,32 @@ npm test -- src/logger/logger.test.ts
 
 ---
 
+## Stores and serializers
+
+Attach debug traces with `contextLogger` directly — no wrapper helpers:
+
+```ts
+import { contextLogger } from '../logger';
+
+bladeUpdated.watch(({ index, patch }) => {
+  contextLogger('wiring', 'bladeUpdated').debug('dispatched', {
+    index,
+    patchKeys: Object.keys(patch),
+  });
+});
+
+export function serializeBladesIni(blades: BladeDefinition[]): string {
+  contextLogger('bladesIni', 'serializeBladesIni').debug('export', {
+    bladeCount: blades.length,
+  });
+  // ...
+}
+```
+
+Filter with `configureContextLoggerFilter({ objectNames: ['wiring', 'bladesIni'] })`.
+
+---
+
 ## File layout
 
 ```

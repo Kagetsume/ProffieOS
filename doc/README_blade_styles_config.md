@@ -49,11 +49,42 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **fallen_order** | base, clash, extend ms, retract ms | `fallen_order silver white 300 800` |
 | **smoke_flow** | dark color, light color, extension ms, retraction ms | `smoke_flow black white {{ext}} {{ret}}` — **ext/ret must match base** (each multiply/screen line) |
 | **gradient_layer** | hilt color, tip color | `gradient_layer red blue` — no ext/ret (compositor follows base) |
-| **audio_layer** | (no args) | `audio_layer` — no ext/ret |
+| **rainbow_layer** | (no args) | `rainbow_layer` — animated rainbow tint; use **`normal`** blend + opacity |
+| **audio_layer** | (no args) | `audio_layer` — hum-reactive multiply mask; no ext/ret |
+| **pulse_layer** | pulse ms (optional) | `pulse_layer 3000` — breathing brightness mask |
+| **swing_layer** | speed threshold, delta % (optional) | `swing_layer 10 200` — swing brightening |
+| **per_led_flicker** / **base_flicker** / **noise_flicker** | varies | Crackle / flicker masks — see **blade_styles_config.md** |
+| **fire_mask** | warm, hot colors | `fire_mask white white` — scrolling fire multiply |
+| **stripes** / **hard_stripes** | width, speed, colors… | Scroll patterns — often **`add`** or **`multiply`** |
+| **pixel_sequence** | step config string | `pixel_sequence 0,255,0,0,100,200\|1,0,255,0,100,200` — see **pixel_sequencer.md** |
+| **sparktip_layer** | spark color, ext ms, ret ms | `sparktip_layer white {{ext}} {{ret}}` — spark band during extend only; stack with **`add`** |
 | **charging** | (no args) | `charging` |
 | **blast** | blast color only (overlay; timing fixed in template) | `blast white` |
+| **blast_wave_random** | blast color (optional) | OS7 random wave on blast |
+| **responsive_blast** | blast color (optional) | Blade-angle wave on blast |
+| **clash** / **localized_clash** | clash color | Standard clash overlays |
+| **responsive_clash** | clash color (optional) | Blade-angle bump on clash |
+| **real_clash** | clash color, duration (optional) | OS7 Real Clash V1 |
+| **lockup** / **responsive_lockup** | lockup colors… | Held lockup overlays |
+| **drag** / **melt** / **lb** | colors… | Lockup suite overlays |
+| **swing** | swing color | Swing brightening overlay |
+| **force_glow** | glow color (optional) | Audio-reactive glow on **`EFFECT_FORCE`** while blade is on |
+| **sparkle** / **pulse** | color, … | Idle/event overlays |
+| **preon_glow** / **preon_wipe** / **preon_sputter** | color… | Preon transition (blade off) |
+| **postoff_glow** / **postoff_wipe** / **postoff_sputter** | color… | Postoff transition (after retract) |
+| **ignition_flash** | flash color, ext ms, flash ms | Full-blade flash during extension |
 | **config** | section name (nested) | `config other_effect` |
 | **builtin** | preset index, blade index, … | `builtin 0 1` |
+
+**OS7 composable texture layers** (no ext/ret on layer line; need matching firmware):
+`water_flow_layer`, `darksaber_layer`, `static_electricity_layer`, `power_wave_layer`,
+`fallen_order_layer`, `shimmer_blade_layer`, `rotoscope_layer`, `pulse_stripes_layer`,
+`kinetic_charge_layer`, `rotating_pulse_layer`, `trickle_blade_layer`, `cylon_layer`,
+`thunder_loop_layer`, `responsive_flame_layer`.
+
+**Full layer inventory:** comment block above **`[composable_checklist]`** in
+**`examples/config/blade_styles.ini`**, or preset **`style = config composable_checklist`**.
+See **`examples/README.md`** for composable vs monolithic guidance.
 
 **Extend/retract auto timing:** On styles with extension/retraction ms args, use **`-1`** to match ignition or retraction soundfont length (e.g. `ext = -1`, `layer = solid {{base}} -1 -1`).
 
@@ -390,8 +421,23 @@ Use **`style = config <section>`** or direct named styles. Override base color w
 
 ---
 
+## Composable capstone demo
+
+**`[composable_checklist]`** in **`examples/config/blade_styles.ini`** is a working
+full stack (base + textures + transitions + OS7 clash/blast + lockup suite). Use
+**`style = config composable_checklist`** in presets, or
+**`style = config composable_checklist_responsive`** for Fett263 **`responsive_clash`** /
+**`responsive_blast`**. Prefer composable **`solid_bend`** + overlay layers over
+monolithic **`standard`** / **`rainbow`** when you need independent control of clash,
+blast, and idle textures.
+
+---
+
 ## See also
 
 - **blade_styles_config.md** — Format, “what you can layer”, opacity/blend/structured syntax, Fett263 approximations, limits, and pointers to **`examples/config/`**.
+- **pixel_sequencer.md** — **`pixel_sequence`** step format (usable as a composable layer).
 - **blade_config.md** — Blade hardware config (pins, blades) on the SD card.
+- **examples/README.md** — Full composable layer catalog and Fett263 approximation table.
 - **examples/config/** — Copy-ready SD layout; **`blade_styles.ini`** documents each feature inline.
+- **website/BLADE_STYLES.md** — User guide with functional examples and editor workflow.

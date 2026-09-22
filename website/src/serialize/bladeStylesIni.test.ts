@@ -42,4 +42,25 @@ describe('serializeBladeStylesIni', () => {
     expect(ini).toContain('layer = clash white');
     expect(ini).toContain('layer = multiply opacity 24000 pulse white 3000');
   });
+
+  it('skips reserved version var and serializes config layers', () => {
+    const configSection: StyleSection = {
+      id: 'nested',
+      vars: { version: '1', accent: 'red' },
+      layers: [
+        {
+          id: 'cfg',
+          styleName: 'config',
+          configSection: 'smoke_blade',
+          args: [],
+          blend: 'normal',
+          opacity: 32768,
+        },
+      ],
+    };
+    const ini = serializeBladeStylesIni([configSection]);
+    expect(ini).not.toContain('version =');
+    expect(ini).toContain('accent = red');
+    expect(ini).toContain('layer = config smoke_blade');
+  });
 });

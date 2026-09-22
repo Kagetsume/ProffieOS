@@ -7,6 +7,7 @@
  * @module stores/project
  */
 import { createEvent, createStore } from 'effector';
+import { contextLogger } from '../logger';
 import boardProfiles from '../catalog/board-profiles.json';
 import type { BladeDefinition } from '../model/blades';
 
@@ -44,3 +45,10 @@ export function getProfileName(profileId: string): string {
   const profile = boardProfiles.profiles.find((p) => p.id === profileId);
   return profile?.name ?? profileId;
 }
+
+boardProfileChanged.watch((id) => {
+  contextLogger('project', 'boardProfileChanged').debug('dispatched', { id });
+});
+numBladesChanged.watch((count) => {
+  contextLogger('project', 'numBladesChanged').debug('dispatched', { count });
+});

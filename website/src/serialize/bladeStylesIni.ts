@@ -5,6 +5,7 @@
  *
  * @module serialize/bladeStylesIni
  */
+import { contextLogger } from '../logger';
 import { exportColorToken } from '../model/colors';
 import type { StyleLayer, StyleSection } from '../model/style-sections';
 import { resolveLayerArgs, resolveVarTemplate } from '../model/style-sections';
@@ -63,6 +64,10 @@ function serializeSectionBlock(section: StyleSection): string[] {
  * @param sections - Ordered section list
  */
 export function serializeBladeStylesIni(sections: StyleSection[]): string {
+  contextLogger('bladeStylesIni', 'serializeBladeStylesIni').debug('export', {
+    sectionCount: sections.length,
+    layerCount: sections.reduce((sum, section) => sum + section.layers.length, 0),
+  });
   const header = iniHeader('config/blade_styles.ini - Config file styles (layer stacks)', [
     'Copy this file to the root of your SD card as:  config/blade_styles.ini',
     '',

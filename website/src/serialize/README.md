@@ -28,12 +28,16 @@ Comment block above each blade:
 1. `# ---- <board silkscreen label> ----` — from data pin catalog (read-only in UI)
 2. Optional `# <user note>` — when note field is non-empty
 
+## Debug logging
+
+Each `serialize*Ini` entry point calls `contextLogger('bladesIni', 'serializeBladesIni').debug('export', …)` (or the matching module/function name) with row counts. Filter DevTools with `configureContextLoggerFilter({ objectNames: ['bladesIni', 'presetsIni'] })`.
+
 ## Design rules
 
 - Serializers are **pure functions**: `(model) => string`.
 - Match firmware field names (`power_pin` vs `power_pin1`, `type = simple`, etc.).
 - Strip in-progress empty values via model helpers before writing lines (`exportablePowerPins`, `exportableSubBlades`).
-- **Presets** serializer not implemented yet.
+- **Presets** export via `presetsIni.ts` (preset blocks, `style =` per blade, `config` overrides).
 
 ## Tests
 
@@ -41,4 +45,5 @@ Comment block above each blade:
 |-----------|--------|
 | `bladesIni.test.ts` | Power pin formatting, comments, sub-blade lines |
 | `bladeStylesIni.test.ts` | Section/layer export |
+| `presetsIni.test.ts` | Preset blocks, multi-blade `style =` lines |
 | `boardIni.test.ts` | Board hardware fields |

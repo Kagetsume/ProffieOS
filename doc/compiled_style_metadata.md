@@ -96,6 +96,8 @@ A separate header **`common/compiled_style_to_config.h`** converts the parsed co
 
 The C++ template is not parsed, so exact colors/timings are not available; the output is an approximation you can paste into **`config/blade_styles.ini`** and then edit. Use in presets as **`config <section_name>`** (e.g. `config customblade`).
 
+**Composable alternatives:** Converted output tends toward monolithic bases (`rainbow`, `standard`, `fire`). For finer control, replace the base with **`solid_bend`** and add composable overlay layers (`real_clash`, `blast_wave_random`, `responsive_lockup`, …) and texture layers (`gradient_layer`, `audio_layer`, OS7 **`*_layer`**, …). See **`[composable_checklist]`** in **`examples/config/blade_styles.ini`** and **`examples/README.md`** for the current layer inventory.
+
 ## Hardening (malformed input)
 
 The metadata parser and converter are hardened so malformed content does not crash the board:

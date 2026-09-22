@@ -24,4 +24,10 @@ describe('data pin usage store', () => {
     expect(merged[2]?.dataPin).toBe('blade7Pin');
     expect(merged.find((blade) => blade.index === 1)?.dataPin).toBe('blade5Pin');
   });
+
+  it('getUsedDataPinsForPicker honors pending data pin before commit', () => {
+    const used = getUsedDataPinsForPicker(0, blades, 'blade7Pin');
+    expect(used.has('blade7Pin')).toBe(false);
+    expect(used.has('blade5Pin')).toBe(true);
+  });
 });

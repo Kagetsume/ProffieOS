@@ -58,7 +58,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 
 ### Layered accents (`config` on PWM blades)
 
-Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `lockup`, `swing`, `blast`, …). See **`examples/config/blade_styles.ini`** sections **`accent_glow_clash`**, **`accent_glow_lockup`**, and **`accent_reactive`**.
+Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `lockup`, `real_clash`, `drag`, `melt`, …) and **composable texture** layers (`audio_layer`, `pulse_layer`, `fire_mask`, `hard_stripes`, `responsive_flame_layer`, …). On one PWM LED, textures modulate uniform brightness. See **`examples/config/blade_styles.ini`** — GPIO ACCENT RECIPES (`accent_reactive`, `accent_os7_combat`, `accent_composable_audio`, `accent_composable_crackle`, …).
 
 Example preset line (Blade 5):
 
@@ -118,8 +118,10 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 |-------|---------|-----------|
 | `blast` | `blast white` | Transparent until blast (fixed wave timing) |
 | `blast_wave_random` | `blast_wave_random white` | Random wave position/duration (OS7-style; use instead of `blast`) |
+| `responsive_blast` | `responsive_blast white` | Blade-angle positioned blast wave |
 | `clash` | `clash white` | Transparent until clash |
-| `localized_clash` | `localized_clash white` | Positioned clash band |
+| `localized_clash` | `localized_clash white` | Positioned clash band (random position) |
+| `responsive_clash` | `responsive_clash white` | Blade-angle positioned clash bump |
 | `real_clash` | `real_clash white 16000` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
 | `lockup` | `lockup cyan` | Lockup / drag / melt tint |
 | `sparkle` | `add opacity 8000 sparkle white` | Random sparkles |
@@ -140,12 +142,18 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `stripes` | `add opacity 10000 stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 18000 hard_stripes 1200 -4000 black white` | Hard-edged bands |
 | `noise_flicker` | `multiply opacity 8000 noise_flicker black white` | Organic crackle texture |
-| `unstable_stripes` | `multiply opacity 16000 unstable_stripes silver` | UnstableBlades band only (not full `unstable_blades`) |
+| `gradient_layer` | `normal opacity 8000 gradient_layer blue cyan` | Hilt-to-tip gradient wash; opacity = mix vs base |
+| `rainbow_layer` | `normal opacity 12000 rainbow_layer` | Animated rainbow wash over base; opacity = mix vs base |
+| `unstable_stripes` | `normal opacity 32768 unstable_stripes silver` | Full UnstableBlades idle band — use in `[composable_unstable_blades]` |
+| `thunder_loop_layer` / `responsive_flame_layer` | `multiply opacity 20000 thunder_loop_layer blue` | OS7 idle loops as textures |
+| `water_flow_layer`, `darksaber_layer`, … | `normal opacity 32768 water_flow_layer blue` | OS7 idle extractions — see `[composable_water_flow]`, `[composable_darksaber]`, … |
+| `kinetic_charge_layer` | `normal opacity 32768 kinetic_charge_layer blue purple` | Clash/lockup charge stripes (base + kinetic colors) |
+| `cylon_layer` | `add opacity 32768 cylon_layer white 25 200` | Scanner band over `solid_bend` (add blend) |
 | `pixel_sequence` | `pixel_sequence config 0,255,0,0,80,100\|…` | Timed chase / segment pattern as a layer |
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
 
-Example sections in `examples/config/blade_styles.ini`: `[rainbow_pulse]`, `[standard_swing_sparkle]`, `[smoke_blade]`, `[composable_gradient]`, `[composable_audio]`, `[composable_breathe]`, `[composable_crackle]`, `[composable_shimmer]`, `[greyscale_mercenary]`, `[greyscale_coda]`, `[water_blade]`, `[energy_blade]`, `[rolling_surge]`, `[pulse_stripes]`, `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]`, plus Fett263 bases `[darksaber_blade]`, `[fallen_order_blade]`, etc.
+Example sections in `examples/config/blade_styles.ini`: start with **`[composable_checklist]`** (capstone full stack + layer catalog in comments), `[composable_checklist_responsive]` (angle-reactive clash/blast variant), then `[rainbow_pulse]`, `[smoke_blade]`, `[composable_gradient]`, `[composable_rainbow]`, `[composable_audio]`, … (full composable + OS7 set), `[greyscale_mercenary]`, `[energy_blade]`, plus monolithic Fett263 wrappers where needed.
 
 ### Fett263 OS7 style approximations
 
@@ -154,22 +162,25 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | OS7 style | SD section | Preset | Approximates well | Cannot replicate |
 |-----------|------------|--------|-------------------|------------------|
 | [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade | **`solid`** base + **`smoke_flow`** (multiply + screen; **same `{{ext}}`/`{{ret}}` as base**) + composable **`clash`** / **`blast`** / lockup overlays, drag/melt/LB | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
-| [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `water_blade` | Water Blade | **`water_flow`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
-| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `darksaber_blade` | Dark Saber | **`darksaber`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
-| [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `static_electricity_blade` | Static Electricity | **`static_electricity`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
-| [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `power_wave_blade` | Power Wave | **`power_wave`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
-| [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `unstable_blades` | Unstable Blades | **`unstable_blades`** + BendTimePow in/out | OS7 Real Clash V1, Bump lockup zones; **not** named style `unstable` |
-| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `fallen_order_blade` | Fallen Order | **`fallen_order`** + BendTimePow in/out | OS7 Real Clash V1, Bump lockup zones |
+| [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `composable_water_flow` or `water_blade` | Water Blade | **`water_flow_layer`** + `solid_bend` + OS7 overlays, or monolithic **`water_flow`** | Bump lockup absorb shapes |
+| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + composable combat, or monolithic **`darksaber`** | Bump lockup absorb shapes |
+| [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `composable_static_electricity` | Static Electricity | **`static_electricity_layer`** + composable combat | Bump lockup absorb shapes |
+| [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `composable_power_wave` or `power_wave_blade` | Power Wave | **`power_wave_layer`** + composable combat, or monolithic **`power_wave`** | Bump lockup absorb shapes |
+| [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `composable_unstable_blades` | Unstable Blades | **`unstable_stripes`** over `solid_bend` (~90%); or monolithic **`unstable_blades`** | **not** named style `unstable` |
+| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `composable_fallen_order` | Fallen Order | **`fallen_order_layer`** + composable combat | Bump lockup absorb shapes |
 | [EnergyBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#EnergyBlade) | `energy_blade` / `rotating_pulse_sd` / `energy_core` | Energy / Rotating / Core | **Surging:** SD stripes; **Rotating:** **`rotating_pulse`** firmware; **Core:** SD stripes + fire_mask + noise_flicker | Flickering core SD-only as `energy_core` (~70–80%) |
 | Rolling surge | `rolling_surge` | Rolling Surge | **Pure SD:** slow `stripes` 22000/-1400 + `audio` screen (~80–85%); [Fett263 OS7 Master Sol option](https://www.fett263.com/fett263-proffieOS7-style-library.html#Acolyte) | Five-band Mix stripe shading, exact AudioFlicker mix |
-| Pulse stripes | `pulse_stripes` / `pulse_stripes_sd` | Pulse Stripes | **`pulse_stripes`** HoldPeakF on ignition/alt-sound + StripesX + Pulsing 1400 ms; [Fett263 OS7 ignition-surge option](https://www.fett263.com/fett263-proffieOS7-style-library.html#JediSurvivor) | Full OS7 lockup absorb shapes |
+| Pulse stripes | `composable_pulse_stripes` / `pulse_stripes_sd` | Pulse Stripes | **`pulse_stripes_layer`** + composable combat, or monolithic **`pulse_stripes`** | Full OS7 lockup absorb shapes |
 | [Greyscale](https://www.fett263.com/fett263-proffieOS7-style-library.html#Greyscale) | `greyscale_mercenary` / `greyscale_coda` | Greyscale | **Mercenary:** fire_mask + stripes + swing; **CODA:** pulse + stripes + sparkle (SD only) | OS7 `STYLE_OPTION` switch; Sin-driven StripesX on CODA |
-| [ShimmerBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#ShimmerBlade) | `shimmer_blade` / `shimmer_blade_sd` | Shimmer Blade | **`shimmer_blade`** HoldPeakF swing shimmer + BendTimePow in/out | Full OS7 lockup absorb shapes |
-| [Rotoscope](https://www.fett263.com/fett263-proffieOS7-style-library.html#Rotoscope) | `rotoscope` / `rotoscope_sd` | Rotoscope | **`rotoscope`** SwingAcceleration + HoldPeakF rotoscope bands + BendTimePow in/out | Full OS7 lockup absorb shapes (Bump zones, melt twist) |
-| [BlackPanther](https://www.fett263.com/fett263-proffieOS7-style-library.html#BlackPanther) | `kinetic_charge` / `kinetic_charge_sd` | Kinetic Charge | **`kinetic_charge`** clash/lockup charge + configurable kinetic color | Full OS7 lockup absorb shapes; inverse of StaticElectricity |
+| [ShimmerBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#ShimmerBlade) | `composable_shimmer_blade` / `shimmer_blade_sd` | Shimmer Blade | **`shimmer_blade_layer`** + composable combat, or monolithic **`shimmer_blade`** | Full OS7 lockup absorb shapes |
+| [Rotoscope](https://www.fett263.com/fett263-proffieOS7-style-library.html#Rotoscope) | `composable_rotoscope` / `rotoscope_sd` | Rotoscope | **`rotoscope_layer`** + composable combat, or monolithic **`rotoscope`** | Bump zones, melt twist |
+| [BlackPanther](https://www.fett263.com/fett263-proffieOS7-style-library.html#BlackPanther) | `composable_kinetic_charge` / `kinetic_charge_sd` | Kinetic Charge | **`kinetic_charge_layer`** base + kinetic colors + composable combat | Full OS7 lockup absorb shapes |
 | [ThunderStorm](https://www.fett263.com/fett263-proffieOS7-style-library.html#ThunderStorm) | `thunder_storm` / `thunder_storm_sd` | Thunder Storm | **`thunder_loop`** + BendTimePow in/out; optional **`real_clash`** + **`blast_wave_random`** | Full OS7 lockup/drag/melt/LB shapes |
 | [ResponsiveFlame](https://www.fett263.com/fett263-proffieOS7-style-library.html#ResponsiveFlame) | `responsive_flame` / `responsive_flame_sd` | Responsive Flame | **`responsive_flame`** + BendTimePow in/out; optional **`real_clash`** + **`blast_wave_random`** | Full OS7 lockup absorb shapes, Remap-wrapped combat |
-| [Trickle blade](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ahsoka) | `trickle_blade` / `trickle_blade_sd` | Trickle Blade | **`trickle_blade`** StaticFire + BladeAngle StripesX + HoldPeakF swing | Fett263 OS7 energy-trickle idle base |
+| [Trickle blade](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ahsoka) | `composable_trickle_blade` / `trickle_blade_sd` | Trickle Blade | **`trickle_blade_layer`** + composable combat, or monolithic **`trickle_blade`** | Fett263 OS7 energy-trickle idle base |
+| Cylon scanner | `composable_cylon` | Cylon | **`cylon_layer`** add over `solid_bend` | Monolithic **`cylon`** includes built-in combat |
+| Spark tip | `composable_sparktip` | Spark tip | **`sparktip_layer`** + `solid_bend` + composable combat, or monolithic **`sparktip`** | InOutSparkTip at extension front |
+| Cycle / Advanced | — | — | No composable layer — use monolithic **`cycle`** / **`advanced`** | ColorCycle / OnSpark multi-gradient |
 | [Ghostbusters](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ghostbusters) | `particle_beam` | Particle Beam | **Pure SD:** silver stripes + blue stream bands + fire scroll (~70–85%) | Nested Stripe mix, SmoothStep core weight, exact StaticFire tuning |
 
 **Usage:** `style = config fallen_order_blade`, or direct: `style = fallen_order silver white 300 800`. ThunderStorm: **`style = thunder_loop blue white 300 800`** or **`style = config thunder_storm_sd`**. ResponsiveFlame: **`style = responsive_flame orange white 300 800`** or **`style = config responsive_flame_sd`**. Greyscale: **`style = config greyscale_mercenary`** or **`style = config greyscale_coda`**. ShimmerBlade: **`style = shimmer_blade cyan white 300 800`** or **`style = config shimmer_blade_sd`**. Rotoscope: **`style = rotoscope silver white 300 800`** or **`style = config rotoscope_sd`**. Kinetic charge: **`style = kinetic_charge blue purple white 300 800`** or **`style = config kinetic_charge kinetic=gold`**. EnergyBlade surging (SD-only): **`style = config energy_blade`**. Rolling surge (SD-only): **`style = config rolling_surge`**. Pulse stripes: **`style = pulse_stripes blue white 300 800`** or **`style = config pulse_stripes_sd`**. Rotating Pulse: **`style = rotating_pulse blue white 300 800`** or **`style = config rotating_pulse_sd`**. Energy core (SD-only): **`style = config energy_core`**. Particle beam (SD-only): **`style = config particle_beam`**. Trickle blade: **`style = trickle_blade green white 300 800`** or **`style = config trickle_blade_sd`**. Also: `config smoke_blade`. Red crackle variant: **`config chaos_inferno`**.
@@ -249,7 +260,7 @@ That is why preon/postoff work as **ordinary** `layer =` entries next to `standa
 | Layer | Pass `{{ext}}` / `{{ret}}`? |
 |-------|----------------------------|
 | Base (`solid`, `solid_bend`, …) | **Yes** |
-| `gradient_layer`, `stripes` (add), … | **No** — compositor follows base (including `-1`) |
+| `gradient_layer`, `rainbow_layer`, `stripes` (add), … | **No** — compositor follows base (including `-1`) |
 | `audio_layer`, `pulse_layer`, `fire_mask`, … | **No** |
 | **`smoke_flow`** (each line) | **Yes — must match base** |
 | Full InOut styles as layers (`audio`, `flicker`, …) | **Yes — when args include ext/ret** |

@@ -2,6 +2,8 @@
  * Register ProffieOS config editor Lit custom elements (`po-*`).
  *
  * Side-effect imports — load once from `main.ts`.
+ *
+ * @module ui/elements
  */
 import './po-sidebar-nav.js';
 import './po-home-page.js';

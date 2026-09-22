@@ -43,6 +43,28 @@ describe('preset-styles', () => {
     expect(parsed.args).toEqual(['300', '800']);
   });
 
+  it('returns defaults for empty lines and formats custom lines', () => {
+    expect(parsePresetStyleLine('   ').ref).toBe('standard');
+    expect(
+      formatPresetStyleLine({
+        kind: 'custom',
+        ref: '',
+        args: [],
+        overrides: {},
+        customLine: '  StylePtr<Blue>  ',
+      }),
+    ).toBe('StylePtr<Blue>');
+    expect(
+      formatPresetStyleLine({
+        kind: 'config',
+        ref: 'section',
+        args: [],
+        overrides: { '': 'x', valid: ' ' },
+        customLine: '',
+      }),
+    ).toBe('config section');
+  });
+
   it('labels preset slots for five-blade layouts', () => {
     expect(presetSlotLabel(0, 5)).toContain('main strip');
     expect(presetSlotLabel(2, 5)).toContain('Free1');

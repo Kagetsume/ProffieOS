@@ -7,6 +7,7 @@
  * @module stores/wiring
  */
 import { createEvent, createStore, sample } from 'effector';
+import { contextLogger } from '../logger';
 import type { BladeDefinition } from '../model/blades';
 import { MAX_BLADES } from '../validation/limits';
 import { $boardProfileId, getProfileBlades } from './project';
@@ -58,4 +59,20 @@ sample({
   source: $boardProfileId,
   fn: (profileId) => getProfileBlades(profileId),
   target: $wiring,
+});
+
+bladeUpdated.watch(({ index, patch }) => {
+  contextLogger('wiring', 'bladeUpdated').debug('dispatched', {
+    index,
+    patchKeys: Object.keys(patch),
+  });
+});
+bladeAdded.watch(() => {
+  contextLogger('wiring', 'bladeAdded').debug('dispatched');
+});
+bladeRemoved.watch((index) => {
+  contextLogger('wiring', 'bladeRemoved').debug('dispatched', { index });
+});
+applyProfileDefaults.watch(() => {
+  contextLogger('wiring', 'applyProfileDefaults').debug('dispatched');
 });

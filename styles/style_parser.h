@@ -512,6 +512,10 @@ NamedStyle named_styles[] = {
       EFFECT_BLAST>>(),
     "Blast overlay: OS7-style random wave (TrWaveX + EffectRandomF + EffectPosition); flash_color (default white). Transparent until blast"
   },
+  { "responsive_blast",
+    StylePtr<ResponsiveBlastWaveL<RgbArg<1, White>> >(),
+    "Responsive blast overlay: blade-angle positioned wave (ResponsiveBlastWaveL). flash_color (default white). Transparent until blast"
+  },
   { "clash",
     StylePtr<SimpleClashL<RgbArg<1, White>> >(),
     "Clash flash overlay layer: flash_color (transparent until clash)"
@@ -519,6 +523,10 @@ NamedStyle named_styles[] = {
   { "localized_clash",
     StylePtr<LocalizedClashL<RgbArg<1, White>> >(),
     "Localized clash overlay: flash_color (positioned band; transparent until clash)"
+  },
+  { "responsive_clash",
+    StylePtr<ResponsiveClashL<RgbArg<1, White>> >(),
+    "Responsive clash overlay: blade-angle positioned bump band (ResponsiveClashL). flash_color (default white). Transparent until clash"
   },
   { "real_clash",
     StylePtr<RealClashConfigL<RgbArg<1, White>, IntArg<2, 16000>> >(),
@@ -629,6 +637,77 @@ NamedStyle named_styles[] = {
     "Hilt-to-tip gradient over layers below: hilt_color tip_color. No ext/ret on layer line "
     "(normal blend auto-clips to base in/out). Use normal blend; layer opacity controls mix (32768=full, 3277~10%% tint). "
     "Example: layer = normal opacity 8000 gradient_layer blue cyan"
+  },
+  { "rainbow_layer",
+    StylePtr<RainbowLayer>(),
+    "Animated RGB rainbow over layers below (no args). No ext/ret on layer line. "
+    "Use normal blend; layer opacity controls mix vs base (32768=full rainbow, 3277~10%% tint). "
+    "Example: layer = normal opacity 12000 rainbow_layer"
+  },
+  { "water_flow_layer",
+    StylePtr<WaterFlowLayer<RgbArg<1, Blue>> >(),
+    "WaterBlade idle texture (Fett263 OS7): angle-reactive stripes + swing flow reversal. "
+    "base_color (default blue). Stack normal/multiply over solid_bend; add composable clash/lockup overlays."
+  },
+  { "darksaber_layer",
+    StylePtr<DarkSaberLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
+    "DarkSaber idle texture (Fett263 OS7): metallic stripes + brown-noise + audio flicker + swing gleam. "
+    "base_color (default silver). Stack over solid_bend."
+  },
+  { "static_electricity_layer",
+    StylePtr<StaticElectricityLayer<RgbArg<1, Rgb<0, 135, 255>>> >(),
+    "StaticElectricity idle/charge texture (Fett263 OS7): swing builds charge stripes/sparks; clash/lockup resets. "
+    "base_color (default deepskyblue). Stack normal over solid_bend."
+  },
+  { "power_wave_layer",
+    StylePtr<PowerWaveLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
+    "PowerWave idle texture (Fett263 OS7): wide slow reverse stripes. base_color (default silver). "
+    "Stack normal/multiply over solid_bend."
+  },
+  { "fallen_order_layer",
+    StylePtr<FallenOrderLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
+    "FallenOrder idle texture (Fett263 OS7): wide stripes with pulsing mid-band (800 ms). "
+    "base_color (default silver). Stack normal over solid_bend."
+  },
+  { "shimmer_blade_layer",
+    StylePtr<ShimmerBladeLayer<RgbArg<1, Cyan>> >(),
+    "ShimmerBlade idle texture (Fett263 OS7): HoldPeakF swing shimmer + RandomFlicker stripes. "
+    "base_color (default cyan). Stack normal over solid_bend."
+  },
+  { "rotoscope_layer",
+    StylePtr<RotoscopeLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
+    "Rotoscope idle texture (Fett263 OS7): SwingAcceleration-driven OT stripe bands. "
+    "base_color (default silver). Stack normal over solid_bend."
+  },
+  { "pulse_stripes_layer",
+    StylePtr<PulseStripesLayer<RgbArg<1, Blue>> >(),
+    "PulseStripes idle texture (Fett263 OS7): ignition-surge stripe width/speed + pulsing mid-band. "
+    "base_color (default blue). Stack normal over solid_bend."
+  },
+  { "kinetic_charge_layer",
+    StylePtr<KineticChargeLayer<RgbArg<1, Blue>, RgbArg<2, Rgb<118, 0, 194>>> >(),
+    "KineticCharge idle/charge texture (Fett263 OS7): clash/lockup build kinetic stripes; swing decay releases. "
+    "base_color kinetic_color (default blue purple). Stack normal over solid_bend."
+  },
+  { "rotating_pulse_layer",
+    StylePtr<RotatingPulseLayer<RgbArg<1, Blue>> >(),
+    "RotatingPulse idle texture (Fett263 OS7 EnergyBlade): Saw-modulated stripe speed reverses direction. "
+    "base_color (default blue). Stack normal over solid_bend."
+  },
+  { "trickle_blade_layer",
+    StylePtr<TrickleBladeLayer<RgbArg<1, Green>> >(),
+    "TrickleBlade idle texture (Fett263 OS7): angle stripes + StaticFire tip trickle + swing bands. "
+    "base_color (default green). Stack normal over solid_bend."
+  },
+  { "cylon_layer",
+    StylePtr<CylonLayer<RgbArg<1, Red>, IntArg<2, 25>, IntArg<3, 200>> >(),
+    "Cylon scanner band texture: scan_color on_percent on_rpm (default red 25 200). "
+    "Stack with add over solid_bend (black sections add nothing)."
+  },
+  { "sparktip_layer",
+    StylePtr<SparkTipLayer<RgbArg<1, White>, IntArg<2, 300>, IntArg<3, 800>> >(),
+    "Spark tip during extension (InOutSparkTip spark band only): spark_color extend_ms retract_ms. "
+    "Match ext/ret to solid_bend base (-1 = sound length). Stack add over base."
   },
   { "charging", &style_charging, "Charging style" },
   // Simple accent: pulse while saber is on, off when retracted.

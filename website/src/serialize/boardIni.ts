@@ -3,6 +3,7 @@
  *
  * @module serialize/boardIni
  */
+import { contextLogger } from '../logger';
 import type { BoardFeaturesState } from '../model/board';
 import { iniHeader } from './format';
 
@@ -12,6 +13,7 @@ function onOff(value: boolean): string {
 
 /** Generate `board.ini` contents. */
 export function serializeBoardIni(state: BoardFeaturesState): string {
+  contextLogger('boardIni', 'serializeBoardIni').debug('export', { buttons: state.buttons });
   const header = iniHeader('config/board.ini - Board hardware configuration', [
     'Copy this file to the root of your SD card as:  config/board.ini',
     '',

@@ -36,6 +36,8 @@ User guides (repo root under `website/`): [BLADES.md](../BLADES.md) (wiring), [B
 
 ## Conventions
 
+- **File headers** — non-test modules use `@module path/to/module` JSDoc; public exports get brief `@param` / `@returns` where non-obvious.
+- **Debug logging** — use `contextLogger('component', 'function')` directly at user handlers, store `event.watch` callbacks, serializer entry points, and preview sim transitions. Do **not** log render loops, rAF ticks, or hot-path recomputes — see [logger/README.md](./logger/README.md).
 - **Models** are plain TypeScript; keep side-effect-free helpers here.
 - **Stores** own mutable app state; UI dispatches events, never assigns to stores directly.
 - **Lit wiring elements** use **Light DOM** (`createRenderRoot() { return this; }`) so Web Awesome form controls work reliably.

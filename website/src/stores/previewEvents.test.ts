@@ -52,4 +52,19 @@ describe('previewEvents store', () => {
     syncPreviewClock(performance.now() + 100);
     expect($previewSim.getState().powered).toBe(true);
   });
+
+  it('uses default timing when section is null', () => {
+    previewPowerOffClicked(section);
+    previewSimTick(performance.now() + 10000);
+    previewPowerOnClicked(null);
+    expect($previewSim.getState().transition).toBe('extending');
+    previewSimTick(performance.now() + 20000);
+    previewPowerOffClicked(null);
+    expect($previewSim.getState().transition).toBe('retracting');
+  });
+
+  it('triggers force events', () => {
+    previewEventTriggered({ event: 'force', section });
+    expect($previewSim.getState().forceUntil).toBeGreaterThan(0);
+  });
 });

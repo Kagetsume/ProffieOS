@@ -4,6 +4,7 @@
  * @module stores/presets
  */
 import { createEvent, createStore, sample } from 'effector';
+import { contextLogger } from '../logger';
 import {
   clonePreset,
   createDefaultPresets,
@@ -139,3 +140,28 @@ sample({
 export function getActivePreset(state: PresetsState): PresetDefinition | undefined {
   return findPreset(state.presets, state.activePresetId);
 }
+
+activePresetChanged.watch((id) => {
+  contextLogger('presets', 'activePresetChanged').debug('dispatched', { id });
+});
+presetAdded.watch(() => {
+  contextLogger('presets', 'presetAdded').debug('dispatched');
+});
+presetDuplicated.watch((id) => {
+  contextLogger('presets', 'presetDuplicated').debug('dispatched', { id });
+});
+presetRemoved.watch((id) => {
+  contextLogger('presets', 'presetRemoved').debug('dispatched', { id });
+});
+presetUpdated.watch(({ id, patch }) => {
+  contextLogger('presets', 'presetUpdated').debug('dispatched', {
+    id,
+    patchKeys: Object.keys(patch),
+  });
+});
+presetStyleUpdated.watch((payload) => {
+  contextLogger('presets', 'presetStyleUpdated').debug('dispatched', payload);
+});
+presetsResetToDefaults.watch(() => {
+  contextLogger('presets', 'presetsResetToDefaults').debug('dispatched');
+});

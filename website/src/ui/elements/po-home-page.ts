@@ -1,5 +1,7 @@
 /**
  * Intro / overview — what the SD Config Editor is for.
+ *
+ * @module ui/elements/po-home-page
  */
 import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';

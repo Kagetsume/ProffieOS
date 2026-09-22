@@ -2,6 +2,8 @@
  * Color picker — firmware named colors with swatch, plus custom hex or r,g,b.
  *
  * @fires color-change - `{ value: string }` when the committed color changes
+ *
+ * @module ui/elements/po-color-input
  */
 import { LitElement, html } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';

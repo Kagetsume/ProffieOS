@@ -6,6 +6,8 @@
  *
  * @fires blade-patch - `{ index: number, patch: Partial<BladeDefinition> }`
  * @fires blade-remove - `{ index: number }`
+ *
+ * @module ui/elements/po-blade-card
  */
 import { LitElement, html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';

@@ -2,6 +2,8 @@
 #define STYLES_CYLON_H
 
 #include "../common/range.h"
+#include "../functions/int_arg.h"
+#include "colors.h"
 #include "rgb.h"
 
 // Usage: Cylon<COLOR, PERCENT, RPM>
@@ -96,6 +98,42 @@ public:
     auto on_c = on_c_.getColor(led);
     auto base_c = base_c_.getColor(led);
     return MixColors(base_c, MixColors(off_c, on_c, fade_int_, 14),  black_mix, 14);
+  }
+};
+
+// ConfigLayersStyle adapter — runtime percent/rpm (IntArg); black base for add-blend over solid_bend.
+template<class SCAN_COLOR,
+         class ON_PERCENT = IntArg<2, 25>,
+         class ON_RPM = IntArg<3, 200>>
+class CylonConfigL : private CylonBase {
+  Black off_c_;
+  Black base_c_;
+  SCAN_COLOR scan_color_;
+  ON_PERCENT on_percent_;
+  ON_RPM on_rpm_;
+
+public:
+  bool run(BladeBase* blade) {
+    off_c_.run(blade);
+    base_c_.run(blade);
+    scan_color_.run(blade);
+    on_percent_.run(blade);
+    on_rpm_.run(blade);
+    const int pct = on_percent_.getInteger(0);
+    const int rpm = on_rpm_.getInteger(0);
+    return CylonBase::run(blade, 0, 0, pct, rpm, 300, true);
+  }
+  auto getColor(int led) -> decltype(MixColors(
+      base_c_.getColor(0),
+      MixColors(off_c_.getColor(0), scan_color_.getColor(0), 1, 14),
+      1, 14)) {
+    Range led_range(led * 16384, led * 16384 + 16384);
+    const int black_mix = (Range(start_, end_) & led_range).size();
+    const auto scan_c = scan_color_.getColor(led);
+    return MixColors(
+        base_c_.getColor(led),
+        MixColors(off_c_.getColor(led), scan_c, fade_int_, 14),
+        black_mix, 14);
   }
 };
 

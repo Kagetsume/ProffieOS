@@ -80,6 +80,19 @@ describe('renderLayerPixels', () => {
     expect(base.b[0]).toBeGreaterThan(100);
   });
 
+  it('rainbow_layer mixes with base via normal opacity and animates', () => {
+    const base = createPixelBuffer(8);
+    fillSolid(base, [0, 0, 200]);
+    const tinted = createPixelBuffer(8);
+    fillSolid(tinted, [0, 0, 200]);
+    const rainbowEarly = renderLayerPixels(layer('rainbow_layer'), {}, 8, 0, sim);
+    const rainbowLater = renderLayerPixels(layer('rainbow_layer'), {}, 8, 2000, sim);
+    compositeLayer(tinted, rainbowEarly, 'normal', 3277);
+    expect(tinted.r[0]).toBeGreaterThan(0);
+    expect(tinted.b[0]).toBeGreaterThan(100);
+    expect(rainbowEarly.r.some((value, index) => value !== rainbowLater.r[index])).toBe(true);
+  });
+
   it('per_led_flicker varies brightness independently per LED', () => {
     const overlay = renderLayerPixels(layer('per_led_flicker'), {}, 16, 1200, sim);
     expect(new Set(overlay.r).size).toBeGreaterThan(1);

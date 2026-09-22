@@ -48,6 +48,13 @@ describe('EffectorController', () => {
     host.remove();
   });
 
+  it('hostDisconnected is safe when no watch was established', () => {
+    tick(0);
+    const host = document.createElement('test-effector-host') as TestHost;
+    host.counterController.hostDisconnected();
+    expect(host.counterController.value).toBe(0);
+  });
+
   it('stops requesting updates after the host disconnects', async () => {
     tick(0);
     const host = document.createElement('test-effector-host') as TestHost;

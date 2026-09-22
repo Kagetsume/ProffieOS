@@ -6,6 +6,7 @@
 import { getNamedStyle } from '../model/style-catalog';
 import type { StyleSection } from '../model/style-sections';
 import { resolveLayerArgs } from '../model/style-sections';
+import { contextLogger } from '../logger';
 
 export type PreviewTransition = 'none' | 'preon' | 'extending' | 'retracting' | 'postoff';
 
@@ -40,12 +41,14 @@ export type PreviewSimState = {
   /** Held lightning-block overlay until toggled off. */
   lbActive: boolean;
   ignitionUntil: number;
+  forceUntil: number;
 };
 
 export const PREVIEW_DURATIONS = {
   blast: 400,
   clash: 280,
   swing: 900,
+  force: 800,
   preon: 750,
   postoff: 750,
   ignition: 500,
@@ -146,6 +149,7 @@ export function createInitialPreviewSim(): PreviewSimState {
     bladeAngleNorm: 0.5,
     lbActive: false,
     ignitionUntil: 0,
+    forceUntil: 0,
   };
 }
 
@@ -273,6 +277,7 @@ function startRetracting(state: PreviewSimState, now: number): PreviewSimState {
     meltActive: false,
     lbActive: false,
     ignitionUntil: 0,
+    forceUntil: 0,
   };
 }
 
@@ -332,6 +337,7 @@ export function previewPowerOn(
   hasIgnition: boolean,
 ): PreviewSimState {
   if (state.powered && state.transition === 'none') {
+    contextLogger('preview', 'previewPowerOn').debug('skipped', { reason: 'already on' });
     return state;
   }
 
@@ -350,10 +356,16 @@ export function previewPowerOn(
     next.transition = 'preon';
     next.transitionStartedAt = now;
     next.transitionUntil = now + PREVIEW_DURATIONS.preon;
+    contextLogger('preview', 'previewPowerOn').debug('transition', { transition: 'preon', hasIgnition });
     return next;
   }
 
-  return startExtending(next, now);
+  const extending = startExtending(next, now);
+  contextLogger('preview', 'previewPowerOn').debug('transition', {
+    transition: extending.transition,
+    hasIgnition,
+  });
+  return extending;
 }
 
 export function previewPowerOff(
@@ -363,10 +375,15 @@ export function previewPowerOff(
   hasPostoff: boolean,
 ): PreviewSimState {
   if (!state.powered && state.transition === 'none') {
+    contextLogger('preview', 'previewPowerOff').debug('skipped', { reason: 'already off' });
     return state;
   }
 
   if (state.transition === 'preon') {
+    contextLogger('preview', 'previewPowerOff').debug('cancelled', {
+      transition: 'none',
+      cancelled: 'preon',
+    });
     return {
       ...state,
       powered: false,
@@ -379,6 +396,10 @@ export function previewPowerOff(
   }
 
   if (state.transition === 'extending') {
+    contextLogger('preview', 'previewPowerOff').debug('cancelled', {
+      transition: 'none',
+      cancelled: 'extending',
+    });
     return {
       ...createInitialPreviewSim(),
       ...timing,
@@ -394,10 +415,14 @@ export function previewPowerOff(
     },
     now,
   );
+  contextLogger('preview', 'previewPowerOff').debug('transition', {
+    transition: next.transition,
+    hasPostoff,
+  });
   return next;
 }
 
-export type PreviewTriggerEvent = 'blast' | 'clash' | 'swing';
+export type PreviewTriggerEvent = 'blast' | 'clash' | 'swing' | 'force';
 
 function canSimulateCombat(state: PreviewSimState): boolean {
   return state.powered && state.transition === 'none';
@@ -447,6 +472,7 @@ export function previewTriggerEvent(
   now: number,
 ): PreviewSimState {
   if (!state.powered || state.transition !== 'none') {
+    contextLogger('preview', 'previewTriggerEvent').debug('ignored', { event, applied: false });
     return state;
   }
 
@@ -461,9 +487,13 @@ export function previewTriggerEvent(
     case 'swing':
       next.swingUntil = now + PREVIEW_DURATIONS.swing;
       break;
+    case 'force':
+      next.forceUntil = now + PREVIEW_DURATIONS.force;
+      break;
     default:
       break;
   }
+  contextLogger('preview', 'previewTriggerEvent').debug('applied', { event, applied: true });
   return next;
 }
 
@@ -478,13 +508,16 @@ export type OverlayPhase =
   | 'preon'
   | 'postoff'
   | 'ignition'
+  | 'force'
   | 'idle_on';
 
 const OVERLAY_PHASE: Record<string, OverlayPhase> = {
   blast: 'blast',
   blast_wave_random: 'blast',
+  responsive_blast: 'blast',
   clash: 'clash',
   localized_clash: 'clash',
+  responsive_clash: 'clash',
   real_clash: 'clash',
   swing: 'swing',
   lockup: 'lockup',
@@ -499,7 +532,7 @@ const OVERLAY_PHASE: Record<string, OverlayPhase> = {
   postoff_glow: 'postoff',
   postoff_wipe: 'postoff',
   postoff_sputter: 'postoff',
-  force_glow: 'idle_on',
+  force_glow: 'force',
   ignition_flash: 'ignition',
 };
 
@@ -533,6 +566,8 @@ export function isOverlayPhaseActive(
       return isPostoffActive(state, now);
     case 'ignition':
       return isIgnitionActive(state, now) || state.transition === 'extending';
+    case 'force':
+      return isSimEventActive(state.forceUntil, now);
     case 'idle_on':
       return state.powered && state.transition === 'none';
     default:

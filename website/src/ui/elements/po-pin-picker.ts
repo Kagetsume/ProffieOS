@@ -5,6 +5,8 @@
  * Options are rendered declaratively so Lit re-renders keep selection + disabled state.
  * Parent passes fresh `.usedPresets` when `$wiring` changes — options re-render declaratively.
  *
+ * @module ui/elements/po-pin-picker
+ *
  * @fires pin-change - `{ value: string }` when the committed pin changes
  */
 import { LitElement, html } from 'lit';

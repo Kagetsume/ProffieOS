@@ -10,6 +10,7 @@ export const bladePreviewKeys = {
   blast: 'blast',
   clash: 'clash',
   swing: 'swing',
+  force: 'force',
   lockup: 'lockup',
   lightningBlock: 'lightningBlock',
   drag: 'drag',

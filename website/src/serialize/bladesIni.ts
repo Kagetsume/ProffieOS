@@ -9,6 +9,7 @@
  *
  * @module serialize/bladesIni
  */
+import { contextLogger } from '../logger';
 import type { BladeDefinition } from '../model/blades';
 import { boardPinReferenceLabel } from '../model/data-pins';
 import { exportablePowerPins } from '../model/power-pins';
@@ -77,6 +78,7 @@ function serializeBladeBlock(blade: BladeDefinition): string[] {
  * Blades are sorted by index ascending before export.
  */
 export function serializeBladesIni(blades: BladeDefinition[]): string {
+  contextLogger('bladesIni', 'serializeBladesIni').debug('export', { bladeCount: blades.length });
   const header = iniHeader('config/blades.ini - Blade wiring (data pin, pixels, power pins)', [
     'Copy this file to the root of your SD card as:  config/blades.ini',
     '',

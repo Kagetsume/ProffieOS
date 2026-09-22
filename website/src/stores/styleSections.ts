@@ -4,6 +4,7 @@
  * @module stores/styleSections
  */
 import { createEvent, createStore } from 'effector';
+import { contextLogger } from '../logger';
 import { defaultArgsForStyle, getNamedStyle } from '../model/style-catalog';
 import {
   getConfigStyle,
@@ -248,7 +249,7 @@ export function suggestedBlendForStyle(styleName: string): {
   if (styleName === 'base_flicker' || styleName === 'pulse_layer' || styleName === 'swing_layer') {
     return { blend: 'multiply', opacity: 32768 };
   }
-  if (styleName === 'gradient_layer') {
+  if (styleName === 'gradient_layer' || styleName === 'rainbow_layer') {
     return { blend: 'normal', opacity: 16384 };
   }
   const def = getNamedStyle(styleName);
@@ -262,3 +263,43 @@ export function suggestedBlendForStyle(styleName: string): {
 }
 
 export { createLayerId };
+
+activeSectionChanged.watch((id) => {
+  contextLogger('styleSections', 'activeSectionChanged').debug('dispatched', { id });
+});
+activeLayerChanged.watch((layerId) => {
+  contextLogger('styleSections', 'activeLayerChanged').debug('dispatched', { layerId });
+});
+styleSectionAdded.watch(() => {
+  contextLogger('styleSections', 'styleSectionAdded').debug('dispatched');
+});
+styleSectionRemoved.watch((sectionId) => {
+  contextLogger('styleSections', 'styleSectionRemoved').debug('dispatched', { sectionId });
+});
+sectionVarChanged.watch((payload) => {
+  contextLogger('styleSections', 'sectionVarChanged').debug('dispatched', payload);
+});
+sectionVarAdded.watch((payload) => {
+  contextLogger('styleSections', 'sectionVarAdded').debug('dispatched', payload);
+});
+sectionVarRemoved.watch((payload) => {
+  contextLogger('styleSections', 'sectionVarRemoved').debug('dispatched', payload);
+});
+styleLayerAdded.watch((payload) => {
+  contextLogger('styleSections', 'styleLayerAdded').debug('dispatched', payload);
+});
+styleLayerRemoved.watch((payload) => {
+  contextLogger('styleSections', 'styleLayerRemoved').debug('dispatched', payload);
+});
+styleLayerUpdated.watch(({ patch, ...rest }) => {
+  contextLogger('styleSections', 'styleLayerUpdated').debug('dispatched', {
+    ...rest,
+    patchKeys: Object.keys(patch),
+  });
+});
+styleLayerMoved.watch((payload) => {
+  contextLogger('styleSections', 'styleLayerMoved').debug('dispatched', payload);
+});
+configStyleAdded.watch((styleId) => {
+  contextLogger('styleSections', 'configStyleAdded').debug('dispatched', { styleId });
+});
