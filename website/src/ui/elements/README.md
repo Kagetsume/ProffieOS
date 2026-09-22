@@ -86,11 +86,8 @@ Do not use CSS class names or Web Awesome tag names in tests when a `data-testid
 
 ## Tests
 
-All `<po-*>` elements mount under jsdom (`test.environment: 'jsdom'` in `vite.config.ts`).
+All `<po-*>` elements have a colocated `po-*.test.ts` beside the component (jsdom via `vite.config.ts`).
 
-- `po-components.test.ts` — every element mounts and renders core markup (loads `po-*.styles.ts` too)
-- `po-components.behavior.test.ts` — route highlight, store patches, clipboard, preview clash, pin-change events
-- `pin-picker-utils.test.ts` — option init, disabled flags, data mode mapping
-- `po-power-pin-editor.test.ts` — add/remove rows, cross-blade disable
-- `po-blade-card.test.ts` — data pin picker, silkscreen labels
-- `po-component-i18n.test.ts` — every `po-*.i18n.ts` / `po-*.keys.ts` bundle loads
+Each spec imports its element (and any child elements the template needs), uses `data-testid` + `getByTestId` from `src/test/lit-host-utils.ts`, and covers mount smoke tests plus behavior where relevant.
+
+Shared non-component tests: `pin-picker-utils.test.ts`, `po-component-i18n.test.ts`.
