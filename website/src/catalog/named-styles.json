@@ -1304,7 +1304,7 @@
       "label": "Pulse layer",
       "group": "overlay",
       "overlay": true,
-      "description": "Smooth breathing brightness pulse over layers below — scales all pixel colors equally (multiply).",
+      "description": "Smooth breathing brightness pulse over layers below — scales all pixel colors equally (multiply). No ext/ret on layer line.",
       "args": [
         {
           "slot": "pulse_ms",
@@ -1319,7 +1319,7 @@
       "id": "swing_layer",
       "label": "Swing layer",
       "group": "texture",
-      "description": "Uniform swing brightening over layers below — preserves hue (multiply). Clipped to base extend/retract automatically.",
+      "description": "Uniform swing brightening over layers below — preserves hue (multiply). No ext/ret on layer line (compositor does not clip multiply overlays).",
       "args": [
         {
           "slot": "delta_percent",
@@ -1508,7 +1508,7 @@
       "id": "smoke_flow",
       "label": "Smoke flow",
       "group": "texture",
-      "description": "Clipped to base extend/retract automatically when stacked in config layers.",
+      "description": "Parallax rolling smoke wisps. extend_ms and retract_ms must match the solid/solid_bend base layer.",
       "args": [
         {
           "slot": "warm",
@@ -1521,6 +1521,20 @@
           "label": "Light color",
           "type": "color",
           "default": "white"
+        },
+        {
+          "slot": "extend",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300",
+          "hint": "-1 uses ignition sound length; must match solid/solid_bend base"
+        },
+        {
+          "slot": "retract",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800",
+          "hint": "-1 uses retraction sound length; must match solid/solid_bend base"
         }
       ]
     },
@@ -1590,19 +1604,19 @@
       "id": "per_led_flicker",
       "label": "Per-LED flicker",
       "group": "texture",
-      "description": "Independent random brightness per LED — multiply over any base to preserve hue."
+      "description": "Independent random brightness per LED — multiply over any base to preserve hue. No ext/ret on layer line."
     },
     {
       "id": "audio_layer",
       "label": "Audio layer",
       "group": "texture",
-      "description": "Hum-reactive uniform brightness — multiply over any base (composable alternative to the audio base style)."
+      "description": "Hum-reactive uniform brightness — multiply over any base (composable alternative to the audio base style). No ext/ret on layer line."
     },
     {
       "id": "gradient_layer",
       "label": "Gradient layer",
       "group": "texture",
-      "description": "Hilt-to-tip gradient over layers below. Clipped to base extend/retract automatically. Use normal blend; layer opacity controls mix (32768 = full, ~3277 = 10%).",
+      "description": "Hilt-to-tip gradient over layers below. No ext/ret on layer line (normal blend auto-clips to base in/out). Use normal blend; layer opacity controls mix (32768 = full, ~3277 = 10%).",
       "args": [
         {
           "slot": "hilt",

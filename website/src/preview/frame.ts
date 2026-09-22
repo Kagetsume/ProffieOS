@@ -37,7 +37,7 @@ export function renderStylePreview(
     if (overlay.r.length !== count) {
       continue;
     }
-    if (layerIndex > 0) {
+    if (layerIndex > 0 && (layer.blend === 'normal' || layer.blend === 'add')) {
       clipOverlayToBaseLit(overlay, pixels);
     }
     compositeLayer(pixels, overlay, layer.blend, layer.opacity);

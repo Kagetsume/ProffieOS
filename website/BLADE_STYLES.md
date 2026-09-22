@@ -18,9 +18,10 @@ Accent styles (PWM blades): [`examples/README.md`](../examples/README.md)
 | Fire with blast flash | [§2 Fire + blast](#2-fire--blast-two-layers) | `style = config fire_blast` |
 | Recolor without editing INI | [§3 Variables](#3-section-variables-recolor-from-presets) | `style = config with_vars base=magenta` |
 | Smoke / texture blade (SD-only) | [§8 Smoke blade](#8-smoke-blade-texture-stack) | `style = config smoke_blade` |
+| Composable gradient / audio / pulse | [§12 Composable textures](#12-composable-texture-recipes) | `style = config composable_gradient` |
 | Fett263 OS7 water look | [§9 Water blade](#9-water-blade-firmware-base--overlays) | `style = config water_blade` |
-| Preon glow + postoff wipe | [§12 Preon / postoff](#12-preon--postoff-transitions) | `style = config mystic_awakening` |
-| PWM accent (motor, bar graph) | [§15 Accent on simple blade](#15-accent-recipes-on-pwm-blades) | `style = accent_pulse 1500` (in presets, not this file) |
+| Preon glow + postoff wipe | [§13 Preon / postoff](#13-preon--postoff-transitions) | `style = config mystic_awakening` |
+| PWM accent (motor, bar graph) | [§16 Accent on simple blade](#16-accent-recipes-on-pwm-blades) | `style = accent_pulse 1500` (in presets, not this file) |
 | Reuse a sub-recipe | [§7 Nested config](#7-nested-config-reusable-sub-recipes) | `style = config nested_config_demo` |
 
 **Rule of thumb:** **`blade_styles.ini`** = reusable **recipes** (layer stacks).
@@ -61,7 +62,7 @@ Layers composite **bottom → top** (first `layer =` is the base; each next line
 |------|----------|----------|
 | **Base (opaque)** | `standard`, `solid`, `fire`, `rainbow`, `water_flow`, `darksaber`, … | Fills the blade when ignited |
 | **Overlay (event-driven)** | `blast`, `clash`, `lockup`, `swing`, `drag`, `melt`, `preon_glow`, … | Mostly transparent until triggered |
-| **Texture (mask)** | `fire_mask`, `stripes`, `noise_flicker`, … | Usually stacked with `multiply` / `screen` / `add` + `opacity` |
+| **Texture (mask)** | `fire_mask`, `stripes`, `noise_flicker`, `smoke_flow`, composable `*_layer`, … | Usually stacked with `multiply` / `screen` / `add` + `opacity`; **`smoke_flow` needs `{{ext}}`/`{{ret}}`** |
 
 **Composable base:** Use **`solid`** or **`solid_bend`** when you want extend/retract and color
 but **no built-in clash/lockup/blast** — then add `clash`, `blast`, `responsive_lockup`, etc. as
@@ -109,6 +110,39 @@ ext = -1
 ret = -1
 layer = solid {{base}} {{ext}} {{ret}}
 ```
+
+### Extend/retract: who needs timing on the layer line?
+
+When layers are stacked, **`ConfigLayersStyle`** uses **layer 0** (the base) as the extend/retract
+reference for **`normal`** and **`add`** overlays — those textures **do not** need `ext`/`ret` on
+their lines and automatically follow the base, including **`-1`** sound sync.
+
+| Layer | Pass `{{ext}}` / `{{ret}}`? |
+|-------|----------------------------|
+| Base (`solid`, `solid_bend`, …) | **Yes** |
+| `gradient_layer`, `stripes` (add), … | **No** — auto-clipped to base |
+| Composable `*_layer` textures (`audio_layer`, `pulse_layer`, `swing_layer`, `fire_mask`, …) | **No** |
+| **`smoke_flow`** (each multiply/screen line) | **Yes — same values as base** |
+| Full styles with InOut stacked as a layer (`audio`, `flicker`, …) | **Yes** — pass matching ext/ret in that style's args |
+
+**`smoke_flow`** has its own InOut wrapper. You **must** pass matching extend/retract on every
+`smoke_flow` line. Use section variables so preset overrides stay in sync:
+
+```ini
+style = config smoke_blade ext=-1 ret=-1
+```
+
+Composable example (gradient follows base; no extra timing on textures):
+
+```ini
+ext = -1
+ret = -1
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = normal opacity 32768 gradient_layer {{hilt}} {{tip}}
+layer = multiply opacity 32768 audio_layer
+```
+
+See also [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
 
 ### Palettes and includes
 
@@ -249,9 +283,11 @@ layer = add opacity 16000 strobe black white 15 1 300 800
 
 ### 8. Smoke blade (texture stack)
 
-**Use for:** Fett263 SmokeBlade-style look **without recompiling** — **`solid`** composable base
-+ rolling smoke masks + separate **`clash`** / **`blast`** / lockup overlay layers. Pure SD layers.
-Use **`ext = -1`** / **`ret = -1`** to sync in/out with your ignition/retraction sounds.
+**Use for:** Fett263 SmokeBlade-style look — **`solid`** composable base + **`smoke_flow`**
+(offset dual-band sine smoke) + separate **`clash`** / **`blast`** / lockup overlay layers.
+
+**Important:** **`smoke_flow`** has its own extend/retract. Pass **`{{ext}} {{ret}}` on every
+`smoke_flow` line** — same values as the base (including **`-1`** for soundfont length).
 
 ```ini
 [smoke_blade]
@@ -259,24 +295,24 @@ base = blue
 ext = 300
 ret = 800
 layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 24000 smoke_up black white
-layer = multiply opacity 22000 smoke_down black white
-layer = screen opacity 8000 smoke_up black {{base}}
-layer = screen opacity 7000 smoke_down black {{base}}
+layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}
+layer = screen opacity 4000 smoke_flow black {{base}} {{ext}} {{ret}}
 layer = add opacity 6000 swing white 200
+layer = real_clash white 16000
 layer = blast white
-layer = clash white
 layer = responsive_lockup white
 layer = drag white
 layer = melt orange
 layer = lb white
 ```
 
-**multiply** uses **`black white`** (dim only). **screen** bright wisps use **`black {{base}}`** so highlights stay the base color, not white.
+**multiply** uses **`black white`** (dim smoke). **screen** wisps use **`black {{base}}`** so
+highlights stay the base hue.
 
 ```ini
 style = config smoke_blade
 style = config smoke_blade base=purple
+style = config smoke_blade ext=-1 ret=-1
 ```
 
 Also in the editor **recipe library** as a starter template.
@@ -300,11 +336,14 @@ layer = water_flow {{base}} {{clash}} {{ext}} {{ret}}
 layer = screen opacity 8000 audio {{base}} {{tip}} {{clash}} {{ext}} {{ret}}
 layer = multiply opacity 12000 pulse {{tip}} {{pulse_ms}}
 layer = add opacity 3000 sparkle white
-layer = responsive_lockup white
 layer = drag white
 layer = melt orange
 layer = lb white
 ```
+
+**Note:** The **`audio`** line uses the full blade style (with its own InOut), not composable
+**`audio_layer`** — so it takes **`{{ext}}`/`{{ret}}`**. **`water_flow`** already includes
+lockup/clash; this recipe adds drag/melt/LB overlays only.
 
 Direct preset alternative: `style = water_flow blue white 300 800`
 
@@ -361,7 +400,45 @@ layer = real_clash white 16000
 
 ---
 
-### 12. Preon / postoff transitions
+### 12. Composable texture recipes
+
+**Use for:** Build **`gradient`**, **`audio`**, or **`pulse`** looks from a **`solid_bend`**
+composable base plus **`gradient_layer`**, **`audio_layer`**, **`pulse_layer`**, etc. — without
+monolithic base styles.
+
+**Extend/retract:** Only the base line needs **`{{ext}}`/`{{ret}}`**. Composable **`*_layer`**
+textures do not. Exception: if you stack a **full** InOut style (e.g. **`audio`**) as a layer,
+pass matching ext/ret in that style's args (see [water blade §9](#9-water-blade-firmware-base--overlays)).
+
+```ini
+[composable_gradient]
+base = red
+hilt = red
+tip = orange
+ext = 300
+ret = 800
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = normal opacity 32768 gradient_layer {{hilt}} {{tip}}
+layer = real_clash white 16000
+layer = blast white
+
+[composable_audio]
+base = blue
+ext = 300
+ret = 800
+layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = multiply opacity 32768 audio_layer
+layer = real_clash white 16000
+layer = blast white
+```
+
+Shipped sections: **`[composable_gradient]`**, **`[composable_gradient_tint]`**,
+**`[composable_audio]`**, **`[composable_breathe]`**, **`[composable_crackle]`**,
+**`[composable_shimmer]`** in **`examples/config/blade_styles.ini`**.
+
+---
+
+### 13. Preon / postoff transitions
 
 **Use for:** Glow or wipe during preon sound (before extension) and postoff sound (after
 retraction). Needs matching **`preon/`** and **`pstoff/`** folders in the font.
@@ -385,7 +462,7 @@ More examples: `spectral_gate`, `inferno_ritual`, `sputter_gate` in
 
 ---
 
-### 13. Ignition flash overlay
+### 14. Ignition flash overlay
 
 **Use for:** Full-blade flash during extension (SeismicCharge-style).
 
@@ -398,7 +475,7 @@ layer = ignition_flash white 300 600
 
 ---
 
-### 14. Chaos inferno (aggressive multi-layer)
+### 15. Chaos inferno (aggressive multi-layer)
 
 **Use for:** Unstable crackling base + fire warmth + rainbow tint + strobe + audio shimmer.
 
@@ -414,7 +491,7 @@ layer = add opacity 4000 solid blue 300 800
 
 ---
 
-### 15. Accent recipes on PWM blades
+### 16. Accent recipes on PWM blades
 
 **Simple PWM outputs** (`type = simple` in `blades.ini`) do **not** use layer recipes in this
 file for basic accents. Set styles **directly in presets**:

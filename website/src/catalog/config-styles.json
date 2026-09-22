@@ -44,7 +44,7 @@
     {
       "id": "smoke_blade",
       "label": "smoke_blade",
-      "description": "Blue solid base through rolling smoke masks + composable clash/blast/lockup overlays (Fett263 SmokeBlade-style SD recipe).",
+      "description": "Blue solid base + smoke_flow (multiply + screen; ext/ret match base) + composable clash/blast/lockup overlays (Fett263 SmokeBlade-style SD recipe).",
       "vars": {
         "base": "blue",
         "ext": "300",
@@ -59,8 +59,8 @@
         { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
         { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
-        { "styleName": "blast", "args": ["white"] },
         { "styleName": "real_clash", "args": ["white", "16000"] },
+        { "styleName": "blast", "args": ["white"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
         { "styleName": "melt", "args": ["{{melt}}"] },
@@ -70,7 +70,7 @@
     {
       "id": "smoke_laser",
       "label": "smoke_laser",
-      "description": "Solid base through rolling smoke masks + composable clash/blast/lockup overlays (variant of smoke_blade; default base green).",
+      "description": "Solid base + smoke_flow (multiply + screen; ext/ret match base) + composable clash/blast/lockup overlays (variant of smoke_blade; default base green).",
       "vars": {
         "base": "green",
         "ext": "300",
@@ -95,7 +95,7 @@
     {
       "id": "greyscale_mercenary",
       "label": "greyscale_mercenary",
-      "description": "Fett263 Greyscale OS7 Mercenary — smoke masks, stripes, swing, and OS7 combat overlays.",
+      "description": "Fett263 Greyscale OS7 Mercenary — fire_mask texture, stripes, swing, audio, and OS7 combat overlays.",
       "vars": {
         "base": "silver",
         "clash": "white",
@@ -157,7 +157,6 @@
         },
         { "styleName": "pulse", "args": ["{{tip}}", "{{pulse_ms}}"], "blend": "multiply", "opacity": 12000 },
         { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 3000 },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
         { "styleName": "melt", "args": ["{{melt}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
