@@ -42,6 +42,74 @@ export class PoColorInput extends LitElement {
   }
 
   /**
+   * Handles named-color or custom selection from the color `wa-select`.
+   *
+   * @param event - Change event from the color select control.
+   */
+  private onSelectChange = (event: Event): void => {
+    const log = contextLogger('po-color-input', 'onSelectChange');
+    const chosen = (event.target as HTMLSelectElement).value;
+    log.entry({ chosen });
+    if (chosen === CUSTOM_COLOR_VALUE) {
+      log.debug('branch: custom color selected', { chosen });
+      this.customMode = true;
+      this.commit(this.value.trim());
+      this.updateComplete.then(() => {
+        this.renderRoot
+          .querySelector<HTMLElement & { focus(): void }>('[data-testid="color-input-custom"]')
+          ?.focus();
+      });
+      log.exit('custom');
+      return;
+    }
+    this.customMode = false;
+    this.commit(chosen);
+    log.exit({ chosen });
+  };
+
+  /**
+   * Handles custom color text input when custom mode is active.
+   *
+   * @param event - Change event from the custom color `wa-input`.
+   */
+  private onCustomChange = (event: Event): void => {
+    const log = contextLogger('po-color-input', 'onCustomChange');
+    log.entry({ customMode: this.customMode });
+    if (!this.customMode) {
+      log.debug('branch: not in custom mode, ignoring', { customMode: this.customMode });
+      log.exit('ignored');
+      return;
+    }
+    const value = (event.target as HTMLInputElement).value;
+    this.commit(value);
+    log.exit({ value });
+  };
+
+  /**
+   * Normalizes and dispatches `color-change` when the value differs from the current property.
+   *
+   * @param next - Raw color string to normalize and commit.
+   */
+  private commit(next: string): void {
+    const log = contextLogger('po-color-input', 'commit');
+    log.entry({ next, current: this.value.trim() });
+    const normalized = normalizeColorValue(next);
+    if (normalized === this.value.trim()) {
+      log.debug('branch: unchanged value, skipping dispatch', { normalized });
+      log.exit('unchanged');
+      return;
+    }
+    this.dispatchEvent(
+      new CustomEvent('color-change', {
+        detail: { value: normalized },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+    log.exit({ normalized });
+  }
+
+  /**
    * Builds the color input — swatch, grouped named-color select, and optional custom field.
    *
    * @returns Lit template for the color picker UI.
@@ -119,10 +187,11 @@ export class PoColorInput extends LitElement {
           display: none;
         }
       </style>
-      <div class="color-input">
+      <div class="color-input" data-testid="color-input">
         <span class="color-swatch" style="background: ${swatch}" aria-hidden="true"></span>
         <wa-select
           class="color-select"
+          data-testid="color-input-select"
           placeholder=${colorInputI18n.translate(colorInputKeys.placeholderColor)}
           .value=${selectValue}
           @wa-change=${this.onSelectChange}
@@ -153,6 +222,7 @@ export class PoColorInput extends LitElement {
           </wa-option>
         </wa-select>
         <wa-input
+          data-testid="color-input-custom"
           class="color-custom ${customVisible ? '' : 'color-custom--hidden'}"
           placeholder=${colorInputI18n.translate(colorInputKeys.placeholderCustom)}
           .value=${customVisible ? committed : ''}
@@ -160,72 +230,6 @@ export class PoColorInput extends LitElement {
         ></wa-input>
       </div>
     `;
-  }
-
-  /**
-   * Handles named-color or custom selection from the color `wa-select`.
-   *
-   * @param event - Change event from the color select control.
-   */
-  private onSelectChange = (event: Event): void => {
-    const log = contextLogger('po-color-input', 'onSelectChange');
-    const chosen = (event.target as HTMLSelectElement).value;
-    log.entry({ chosen });
-    if (chosen === CUSTOM_COLOR_VALUE) {
-      log.debug('branch: custom color selected', { chosen });
-      this.customMode = true;
-      this.commit(this.value.trim());
-      this.updateComplete.then(() => {
-        this.renderRoot.querySelector<HTMLElement & { focus(): void }>('.color-custom')?.focus();
-      });
-      log.exit('custom');
-      return;
-    }
-    this.customMode = false;
-    this.commit(chosen);
-    log.exit({ chosen });
-  };
-
-  /**
-   * Handles custom color text input when custom mode is active.
-   *
-   * @param event - Change event from the custom color `wa-input`.
-   */
-  private onCustomChange = (event: Event): void => {
-    const log = contextLogger('po-color-input', 'onCustomChange');
-    log.entry({ customMode: this.customMode });
-    if (!this.customMode) {
-      log.debug('branch: not in custom mode, ignoring', { customMode: this.customMode });
-      log.exit('ignored');
-      return;
-    }
-    const value = (event.target as HTMLInputElement).value;
-    this.commit(value);
-    log.exit({ value });
-  };
-
-  /**
-   * Normalizes and dispatches `color-change` when the value differs from the current property.
-   *
-   * @param next - Raw color string to normalize and commit.
-   */
-  private commit(next: string): void {
-    const log = contextLogger('po-color-input', 'commit');
-    log.entry({ next, current: this.value.trim() });
-    const normalized = normalizeColorValue(next);
-    if (normalized === this.value.trim()) {
-      log.debug('branch: unchanged value, skipping dispatch', { normalized });
-      log.exit('unchanged');
-      return;
-    }
-    this.dispatchEvent(
-      new CustomEvent('color-change', {
-        detail: { value: normalized },
-        bubbles: true,
-        composed: true,
-      }),
-    );
-    log.exit({ normalized });
   }
 }
 

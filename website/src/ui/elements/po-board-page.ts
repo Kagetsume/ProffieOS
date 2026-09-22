@@ -21,6 +21,19 @@ export class PoBoardPage extends PoElement {
   private readonly featuresController = new EffectorController(this, $boardFeatures);
 
   /**
+   * Applies a partial update to the board features store.
+   *
+   * @param partial Fields to merge into the current board features state.
+   * @returns Nothing; updates are dispatched via the Effector store.
+   */
+  private patch(partial: Partial<BoardFeaturesState>): void {
+    const log = contextLogger('po-board-page', 'patch');
+    log.entry({ partial });
+    boardFeaturesChanged(partial);
+    log.exit();
+  }
+
+  /**
    * Renders the board config form bound to the current board features store state.
    *
    * @returns Lit template for the board.ini editor page.
@@ -28,7 +41,7 @@ export class PoBoardPage extends PoElement {
   render() {
     const state = this.featuresController.value;
     return html`
-      <section class="page">
+      <section class="page" data-testid="board-page">
         <h2>${boardPageI18n.translate(boardPageKeys.title)}</h2>
         <p class="config-lead">${boardPageI18n.translate(boardPageKeys.lead)}</p>
 
@@ -37,6 +50,7 @@ export class PoBoardPage extends PoElement {
             <label>
               ${boardPageI18n.translate(boardPageKeys.labelButtonCount)}
               <wa-select
+                data-testid="board-page-button-count"
                 .value=${String(state.buttons)}
                 @wa-change=${(event: Event) =>
                   this.patch({
@@ -72,19 +86,6 @@ export class PoBoardPage extends PoElement {
         <p class="hint">${boardPageI18n.translate(boardPageKeys.hintExportAs, { filename: 'board.ini' })}</p>
       </section>
     `;
-  }
-
-  /**
-   * Applies a partial update to the board features store.
-   *
-   * @param partial Fields to merge into the current board features state.
-   * @returns Nothing; updates are dispatched via the Effector store.
-   */
-  private patch(partial: Partial<BoardFeaturesState>): void {
-    const log = contextLogger('po-board-page', 'patch');
-    log.entry({ partial });
-    boardFeaturesChanged(partial);
-    log.exit();
   }
 }
 

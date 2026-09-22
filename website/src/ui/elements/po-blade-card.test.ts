@@ -4,13 +4,9 @@
 import { describe, expect, it } from 'vitest';
 import type { BladeDefinition } from '../../model/blades';
 import { getUsedDataPinsForPicker } from '../../stores/data-pin-usage';
+import { getByTestId, mount } from '../../test/lit-host-utils.js';
 import './po-pin-picker.js';
 import './po-blade-card.js';
-import { PoBladeCard } from './po-blade-card.js';
-
-async function updateComplete(el: HTMLElement & { updateComplete?: Promise<boolean> }): Promise<void> {
-  await el.updateComplete;
-}
 
 describe('po-blade-card', () => {
   it('renders a data pin picker with labeled options for simple PWM', async () => {
@@ -19,19 +15,18 @@ describe('po-blade-card', () => {
       { index: 3, type: 'simple', dataPin: 'blade6Pin', led: 'CreeXPE2White', activeState: 'high' },
     ];
 
-    const card = document.createElement('po-blade-card') as PoBladeCard;
+    const card = document.createElement('po-blade-card') as HTMLElement & {
+      blade: BladeDefinition;
+      blades: BladeDefinition[];
+    };
     card.blade = blades[0];
     card.blades = blades;
-    document.body.appendChild(card);
-    await updateComplete(card);
+    const { unmount } = await mount(card);
 
-    const picker = card.querySelector('po-pin-picker')!;
+    const picker = getByTestId(card, 'blade-card-data-pin-picker');
     expect((picker as HTMLElement & { mode: string }).mode).toBe('data');
-    await updateComplete(picker as HTMLElement & { updateComplete?: Promise<boolean> });
 
-    const select = picker.querySelector('wa-select.pin-picker-select')!;
-    expect(select).toBeTruthy();
-
+    const select = getByTestId(picker, 'pin-picker-select');
     const blade5 = Array.from(select.querySelectorAll('wa-option')).find(
       (o) => (o as HTMLElement & { value: string }).value === 'blade5Pin',
     ) as (HTMLElement & { textContent: string; disabled: boolean }) | undefined;
@@ -45,6 +40,6 @@ describe('po-blade-card', () => {
     expect(used.has('blade6Pin')).toBe(true);
     expect(blade6?.disabled).toBe(true);
 
-    card.remove();
+    unmount();
   });
 });

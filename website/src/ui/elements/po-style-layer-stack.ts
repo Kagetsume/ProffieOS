@@ -43,19 +43,6 @@ export class PoStyleLayerStack extends PoElement {
   private scrollTargetId = '';
 
   /**
-   * Renders the expandable layer stack for the active style recipe section.
-   *
-   * @returns Lit template for the layer stack, or `nothing` when no section is active.
-   */
-  render() {
-    const section = getActiveSection(this.stylesController.value);
-    if (!section) {
-      return nothing;
-    }
-    return this.renderLayerStack(section);
-  }
-
-  /**
    * Scrolls the expanded layer into view after the active layer changes.
    *
    * @returns Nothing; schedules scroll via `updateComplete` when a target is set.
@@ -95,7 +82,7 @@ export class PoStyleLayerStack extends PoElement {
     const layers = [...section.layers].reverse();
     const canRemove = section.layers.length > 1;
     return html`
-      <div class="layer-stack" role="list">
+      <div class="layer-stack" data-testid="style-layer-stack" role="list">
         ${layers.map((layer, index) => {
           const stackIndex = section.layers.length - index;
           const layerIndex = section.layers.findIndex((row) => row.id === layer.id);
@@ -514,6 +501,19 @@ export class PoStyleLayerStack extends PoElement {
         ? html`<span class="hint">${styleLayerStackI18n.translate(styleLayerStackKeys.hintSectionVar, { varName })}</span>`
         : nothing}
     `;
+  }
+
+  /**
+   * Renders the expandable layer stack for the active style recipe section.
+   *
+   * @returns Lit template for the layer stack, or `nothing` when no section is active.
+   */
+  render() {
+    const section = getActiveSection(this.stylesController.value);
+    if (!section) {
+      return nothing;
+    }
+    return this.renderLayerStack(section);
   }
 }
 

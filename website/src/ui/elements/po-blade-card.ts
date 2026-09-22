@@ -49,113 +49,6 @@ export class PoBladeCard extends LitElement {
   }
 
   /**
-   * Builds the blade card form — type selector, pin pickers, and type-specific fields.
-   *
-   * @returns Lit template for the full blade card UI.
-   */
-  render() {
-    const blade = this.blade;
-    const isSimple = blade.type === 'simple';
-    const usedDataPins = getUsedDataPinsForPicker(blade.index, this.blades);
-    const boardPinLabel = boardPinReferenceLabel(blade.dataPin);
-
-    return html`
-      <wa-card class="blade-card" data-blade-index="${blade.index}">
-        <div slot="header" class="blade-card-header">
-          <strong>${bladeCardI18n.translate(bladeCardKeys.header, { index: blade.index })}</strong>
-          ${boardPinLabel
-            ? html`<span class="blade-label">${boardPinLabel}</span>`
-            : nothing}
-          <wa-button size="small" variant="danger" @click=${this.onRemove}
-            >${bladeCardI18n.translate(bladeCardKeys.remove)}</wa-button
-          >
-        </div>
-        <div class="form-grid">
-          <label>
-            ${bladeCardI18n.translate(bladeCardKeys.labelType)}
-            <wa-select
-              .value=${blade.type}
-              @wa-change=${this.onTypeChange}
-            >
-              <wa-option value="ws2811">${bladeCardI18n.translate(bladeCardKeys.optionWs2811)}</wa-option>
-              <wa-option value="simple">${bladeCardI18n.translate(bladeCardKeys.optionSimple)}</wa-option>
-            </wa-select>
-          </label>
-          <label class="data-pin-field">
-            ${bladeCardI18n.translate(bladeCardKeys.labelDataPin)}
-            <po-pin-picker
-              .mode=${'data'}
-              .value=${blade.dataPin}
-              .usedPresets=${usedDataPins}
-              @pin-change=${this.onDataPinChange}
-            ></po-pin-picker>
-          </label>
-          <label class="board-pin-field">
-            ${bladeCardI18n.translate(bladeCardKeys.labelBoardPin)}
-            <wa-input
-              class="readonly-field"
-              .value=${boardPinLabel}
-              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderDataPin)}
-              readonly
-            ></wa-input>
-          </label>
-          <label class="comment-field span-2">
-            ${bladeCardI18n.translate(bladeCardKeys.labelComment)}
-            <wa-input
-              .value=${blade.comment ?? ''}
-              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderComment)}
-              @wa-input=${this.onCommentInput}
-            ></wa-input>
-          </label>
-          ${isSimple
-            ? html`
-                <label>
-                  ${bladeCardI18n.translate(bladeCardKeys.labelLed)}
-                  <wa-input
-                    .value=${blade.led ?? 'CreeXPE2White'}
-                    @wa-input=${this.onLedInput}
-                  ></wa-input>
-                </label>
-                <label>
-                  ${bladeCardI18n.translate(bladeCardKeys.labelActiveState)}
-                  <wa-select
-                    .value=${blade.activeState ?? 'high'}
-                    @wa-change=${this.onActiveStateChange}
-                  >
-                    <wa-option value="high">${bladeCardI18n.translate(bladeCardKeys.optionHigh)}</wa-option>
-                    <wa-option value="low">${bladeCardI18n.translate(bladeCardKeys.optionLow)}</wa-option>
-                  </wa-select>
-                </label>
-              `
-            : html`
-                <label>
-                  ${bladeCardI18n.translate(bladeCardKeys.labelPixels)}
-                  <wa-input
-                    type="number"
-                    .value=${String(blade.pixels ?? 144)}
-                    @wa-input=${this.onPixelsInput}
-                  ></wa-input>
-                </label>
-                <po-power-pin-editor
-                  class="span-2"
-                  blade-index=${blade.index}
-                  .pins=${effectivePowerPins(blade.powerPins)}
-                  .blades=${this.blades}
-                  @pins-change=${this.onPinsChange}
-                ></po-power-pin-editor>
-                <po-sub-blade-editor
-                  class="span-2"
-                  .pixels=${blade.pixels ?? 144}
-                  .subBlades=${blade.subBlades ?? []}
-                  @sub-blades-change=${this.onSubBladesChange}
-                ></po-sub-blade-editor>
-              `}
-        </div>
-      </wa-card>
-    `;
-  }
-
-  /**
    * Dispatches a partial blade update to the parent wiring editor.
    *
    * @param patch - Fields to merge into the current {@link blade} definition.
@@ -317,6 +210,114 @@ export class PoBladeCard extends LitElement {
     }
     log.exit();
   };
+
+  /**
+   * Builds the blade card form — type selector, pin pickers, and type-specific fields.
+   *
+   * @returns Lit template for the full blade card UI.
+   */
+  render() {
+    const blade = this.blade;
+    const isSimple = blade.type === 'simple';
+    const usedDataPins = getUsedDataPinsForPicker(blade.index, this.blades);
+    const boardPinLabel = boardPinReferenceLabel(blade.dataPin);
+
+    return html`
+      <wa-card class="blade-card" data-testid="blade-card" data-blade-index="${blade.index}">
+        <div slot="header" class="blade-card-header">
+          <strong>${bladeCardI18n.translate(bladeCardKeys.header, { index: blade.index })}</strong>
+          ${boardPinLabel
+            ? html`<span class="blade-label">${boardPinLabel}</span>`
+            : nothing}
+          <wa-button size="small" variant="danger" @click=${this.onRemove}
+            >${bladeCardI18n.translate(bladeCardKeys.remove)}</wa-button
+          >
+        </div>
+        <div class="form-grid">
+          <label>
+            ${bladeCardI18n.translate(bladeCardKeys.labelType)}
+            <wa-select
+              .value=${blade.type}
+              @wa-change=${this.onTypeChange}
+            >
+              <wa-option value="ws2811">${bladeCardI18n.translate(bladeCardKeys.optionWs2811)}</wa-option>
+              <wa-option value="simple">${bladeCardI18n.translate(bladeCardKeys.optionSimple)}</wa-option>
+            </wa-select>
+          </label>
+          <label class="data-pin-field">
+            ${bladeCardI18n.translate(bladeCardKeys.labelDataPin)}
+            <po-pin-picker
+              data-testid="blade-card-data-pin-picker"
+              .mode=${'data'}
+              .value=${blade.dataPin}
+              .usedPresets=${usedDataPins}
+              @pin-change=${this.onDataPinChange}
+            ></po-pin-picker>
+          </label>
+          <label class="board-pin-field">
+            ${bladeCardI18n.translate(bladeCardKeys.labelBoardPin)}
+            <wa-input
+              class="readonly-field"
+              .value=${boardPinLabel}
+              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderDataPin)}
+              readonly
+            ></wa-input>
+          </label>
+          <label class="comment-field span-2">
+            ${bladeCardI18n.translate(bladeCardKeys.labelComment)}
+            <wa-input
+              .value=${blade.comment ?? ''}
+              placeholder=${bladeCardI18n.translate(bladeCardKeys.placeholderComment)}
+              @wa-input=${this.onCommentInput}
+            ></wa-input>
+          </label>
+          ${isSimple
+            ? html`
+                <label>
+                  ${bladeCardI18n.translate(bladeCardKeys.labelLed)}
+                  <wa-input
+                    .value=${blade.led ?? 'CreeXPE2White'}
+                    @wa-input=${this.onLedInput}
+                  ></wa-input>
+                </label>
+                <label>
+                  ${bladeCardI18n.translate(bladeCardKeys.labelActiveState)}
+                  <wa-select
+                    .value=${blade.activeState ?? 'high'}
+                    @wa-change=${this.onActiveStateChange}
+                  >
+                    <wa-option value="high">${bladeCardI18n.translate(bladeCardKeys.optionHigh)}</wa-option>
+                    <wa-option value="low">${bladeCardI18n.translate(bladeCardKeys.optionLow)}</wa-option>
+                  </wa-select>
+                </label>
+              `
+            : html`
+                <label>
+                  ${bladeCardI18n.translate(bladeCardKeys.labelPixels)}
+                  <wa-input
+                    type="number"
+                    .value=${String(blade.pixels ?? 144)}
+                    @wa-input=${this.onPixelsInput}
+                  ></wa-input>
+                </label>
+                <po-power-pin-editor
+                  class="span-2"
+                  blade-index=${blade.index}
+                  .pins=${effectivePowerPins(blade.powerPins)}
+                  .blades=${this.blades}
+                  @pins-change=${this.onPinsChange}
+                ></po-power-pin-editor>
+                <po-sub-blade-editor
+                  class="span-2"
+                  .pixels=${blade.pixels ?? 144}
+                  .subBlades=${blade.subBlades ?? []}
+                  @sub-blades-change=${this.onSubBladesChange}
+                ></po-sub-blade-editor>
+              `}
+        </div>
+      </wa-card>
+    `;
+  }
 }
 
 customElements.define('po-blade-card', PoBladeCard);

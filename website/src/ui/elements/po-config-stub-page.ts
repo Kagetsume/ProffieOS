@@ -34,9 +34,11 @@ export class PoConfigStubPage extends PoElement {
    */
   render() {
     return html`
-      <section class="page">
-        <h2>${this.title}</h2>
-        ${this.sdPath ? html`<p class="config-path">${this.sdPath}</p>` : ''}
+      <section class="page" data-testid="config-stub-page">
+        <h2 data-testid="config-stub-page-title">${this.title}</h2>
+        ${this.sdPath
+          ? html`<p class="config-path" data-testid="config-stub-page-sd-path">${this.sdPath}</p>`
+          : ''}
         <wa-card class="stub-card">
           <p>${this.description}</p>
           <p class="hint">${configStubPageI18n.translate(configStubPageKeys.stubHint)}</p>

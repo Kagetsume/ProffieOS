@@ -54,37 +54,6 @@ export class PoPresetStyleRow extends PoElement {
   };
 
   /**
-   * Renders one logical blade's preset style editor with mode picker and preview.
-   *
-   * @returns Lit template for the style row header and input grid.
-   */
-  render() {
-    const preview = formatPresetStyleLine(this.presetStyle);
-    const isCustom = this.presetStyle.kind === 'custom';
-    return html`
-      <div class="style-row">
-        <div class="style-row-header">
-          <span class="slot-label">${presetSlotLabel(this.slotIndex, this.slotCount)}</span>
-          <code class="style-preview"
-            >${presetStyleRowI18n.translate(presetStyleRowKeys.stylePreview, { preview })}</code
-          >
-        </div>
-        <div class="style-grid">
-          <label>
-            ${presetStyleRowI18n.translate(presetStyleRowKeys.labelStyleMode)}
-            <wa-select .value=${isCustom ? 'custom' : 'preset'} @wa-change=${this.onStyleModeChange}>
-              <wa-option value="preset">${presetStyleRowI18n.translate(presetStyleRowKeys.optionPreset)}</wa-option>
-              <wa-option value="custom">${presetStyleRowI18n.translate(presetStyleRowKeys.optionCustom)}</wa-option>
-            </wa-select>
-          </label>
-
-          ${isCustom ? this.renderCustom() : this.renderPreset()}
-        </div>
-      </div>
-    `;
-  }
-
-  /**
    * Builds grouped `<wa-option>` nodes for preset, config, and library styles.
    *
    * @returns Array of Lit template nodes for the style picker dropdown.
@@ -119,7 +88,11 @@ export class PoPresetStyleRow extends PoElement {
     return html`
       <label class="span-2">
         ${presetStyleRowI18n.translate(presetStyleRowKeys.labelStyle)}
-        <wa-select .value=${pickerValue} @wa-change=${this.onStylePickerChange}>
+        <wa-select
+          data-testid="preset-style-row-style-select"
+          .value=${pickerValue}
+          @wa-change=${this.onStylePickerChange}
+        >
           ${this.renderPresetStyleOptions()}
         </wa-select>
       </label>
@@ -338,6 +311,41 @@ export class PoPresetStyleRow extends PoElement {
       }),
     );
     log.exit();
+  }
+
+  /**
+   * Renders one logical blade's preset style editor with mode picker and preview.
+   *
+   * @returns Lit template for the style row header and input grid.
+   */
+  render() {
+    const preview = formatPresetStyleLine(this.presetStyle);
+    const isCustom = this.presetStyle.kind === 'custom';
+    return html`
+      <div class="style-row" data-testid="preset-style-row">
+        <div class="style-row-header">
+          <span class="slot-label">${presetSlotLabel(this.slotIndex, this.slotCount)}</span>
+          <code class="style-preview"
+            >${presetStyleRowI18n.translate(presetStyleRowKeys.stylePreview, { preview })}</code
+          >
+        </div>
+        <div class="style-grid">
+          <label>
+            ${presetStyleRowI18n.translate(presetStyleRowKeys.labelStyleMode)}
+            <wa-select
+              data-testid="preset-style-row-mode-select"
+              .value=${isCustom ? 'custom' : 'preset'}
+              @wa-change=${this.onStyleModeChange}
+            >
+              <wa-option value="preset">${presetStyleRowI18n.translate(presetStyleRowKeys.optionPreset)}</wa-option>
+              <wa-option value="custom">${presetStyleRowI18n.translate(presetStyleRowKeys.optionCustom)}</wa-option>
+            </wa-select>
+          </label>
+
+          ${isCustom ? this.renderCustom() : this.renderPreset()}
+        </div>
+      </div>
+    `;
   }
 }
 

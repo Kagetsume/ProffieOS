@@ -64,13 +64,43 @@ export class PoSidebarNav extends PoElement {
   }
 
   /**
+   * Renders one sidebar navigation link with optional SD path and stub badge.
+   *
+   * @param id Route identifier used for href and active-state comparison.
+   * @param sdPath Optional SD card config file path shown under the label.
+   * @param stub When true, appends a "coming soon" badge for unimplemented routes.
+   * @returns Lit template for a single `<li>` navigation item.
+   */
+  private renderLink(id: RouteId, sdPath?: string, stub?: boolean) {
+    const current = this.activeId === id;
+    const label = sidebarNavI18n.translate(sidebarNavRouteKeys[id]);
+    return html`
+      <li>
+        <a
+          class="nav-link ${stub ? 'nav-link--stub' : ''}"
+          data-testid="sidebar-nav-link-${id}"
+          href="#/${id}"
+          aria-current=${current ? 'page' : 'false'}
+        >
+          <span class="nav-label"
+            >${label}${stub
+              ? html`<span class="nav-stub-soon">${sidebarNavI18n.translate(sidebarNavKeys.navStubSoon)}</span>`
+              : nothing}</span
+          >
+          ${sdPath ? html`<span class="nav-path">${sdPath}</span>` : nothing}
+        </a>
+      </li>
+    `;
+  }
+
+  /**
    * Renders grouped sidebar navigation links for intro, config, and export routes.
    *
    * @returns Lit template for the full sidebar navigation tree.
    */
   render() {
     return html`
-      <nav aria-label=${sidebarNavI18n.translate(sidebarNavKeys.navAriaLabel)}>
+      <nav data-testid="sidebar-nav" aria-label=${sidebarNavI18n.translate(sidebarNavKeys.navAriaLabel)}>
         <div>
           <ul class="nav-list">
             ${introRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
@@ -89,35 +119,6 @@ export class PoSidebarNav extends PoElement {
           </ul>
         </div>
       </nav>
-    `;
-  }
-
-  /**
-   * Renders one sidebar navigation link with optional SD path and stub badge.
-   *
-   * @param id Route identifier used for href and active-state comparison.
-   * @param sdPath Optional SD card config file path shown under the label.
-   * @param stub When true, appends a "coming soon" badge for unimplemented routes.
-   * @returns Lit template for a single `<li>` navigation item.
-   */
-  private renderLink(id: RouteId, sdPath?: string, stub?: boolean) {
-    const current = this.activeId === id;
-    const label = sidebarNavI18n.translate(sidebarNavRouteKeys[id]);
-    return html`
-      <li>
-        <a
-          class="nav-link ${stub ? 'nav-link--stub' : ''}"
-          href="#/${id}"
-          aria-current=${current ? 'page' : 'false'}
-        >
-          <span class="nav-label"
-            >${label}${stub
-              ? html`<span class="nav-stub-soon">${sidebarNavI18n.translate(sidebarNavKeys.navStubSoon)}</span>`
-              : nothing}</span
-          >
-          ${sdPath ? html`<span class="nav-path">${sdPath}</span>` : nothing}
-        </a>
-      </li>
     `;
   }
 }

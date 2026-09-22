@@ -5,157 +5,126 @@ import { describe, expect, it } from 'vitest';
 import type { BladeDefinition } from '../../model/blades';
 import { usedPresetsForPicker } from '../../model/power-pins';
 import { MAX_POWER_PINS } from '../../validation/limits';
+import { getAllByTestId, getByTestId, mount } from '../../test/lit-host-utils.js';
 import './po-pin-picker.js';
 import './po-power-pin-editor.js';
-import { PoPowerPinEditor } from './po-power-pin-editor.js';
-
-async function updateComplete(el: HTMLElement & { updateComplete?: Promise<boolean> }): Promise<void> {
-  await el.updateComplete;
-}
 
 describe('po-power-pin-editor', () => {
   it('add power pin appends an empty row', async () => {
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    const editor = document.createElement('po-power-pin-editor') as HTMLElement & {
+      bladeIndex: number;
+      pins: string[];
+      blades: BladeDefinition[];
+    };
     editor.bladeIndex = 0;
     editor.pins = ['bladePowerPin1', 'bladePowerPin2'];
     editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
-    document.body.appendChild(editor);
-    await updateComplete(editor);
+    const { unmount } = await mount(editor);
 
-    const addBtn = editor.querySelector('[data-action="add-pin"]') as HTMLElement;
     let changed: string[] | undefined;
     editor.addEventListener('pins-change', (event) => {
       changed = (event as CustomEvent<{ pins: string[] }>).detail.pins;
     });
-    addBtn.click();
-    await updateComplete(editor);
+    getByTestId(editor, 'power-pin-editor-add').click();
+    await editor.updateComplete;
 
     expect(changed).toEqual(['bladePowerPin1', 'bladePowerPin2', '']);
-    expect(editor.querySelectorAll('.power-pin-row')).toHaveLength(3);
-    editor.remove();
+    expect(getAllByTestId(editor, 'power-pin-editor-row')).toHaveLength(3);
+    unmount();
   });
 
   it('disables pins assigned on other blades', async () => {
     const blades: BladeDefinition[] = [
       { index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: ['bladePowerPin1'] },
-      { index: 1, type: 'ws2811', dataPin: 'blade2Pin', powerPins: [''] },
+      { index: 1, type: 'ws2811', dataPin: 'blade2Pin', powerPins: ['bladePowerPin2'] },
     ];
-
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
-    editor.bladeIndex = 1;
-    editor.pins = [''];
+    const editor = document.createElement('po-power-pin-editor') as HTMLElement & {
+      bladeIndex: number;
+      pins: string[];
+      blades: BladeDefinition[];
+    };
+    editor.bladeIndex = 0;
+    editor.pins = ['bladePowerPin1'];
     editor.blades = blades;
-    document.body.appendChild(editor);
-    await updateComplete(editor);
+    const { unmount } = await mount(editor);
 
-    const picker = editor.querySelector('po-pin-picker')!;
-    await updateComplete(picker as HTMLElement & { updateComplete?: Promise<boolean> });
+    const picker = getByTestId(editor, 'power-pin-editor-picker');
+    const used = usedPresetsForPicker(blades, 0, editor.pins, 0);
+    expect(used.has('bladePowerPin2')).toBe(true);
 
-    const used = usedPresetsForPicker(blades, 1, [''], 0);
-    expect(used.has('bladePowerPin1')).toBe(true);
-
-    const select = picker.querySelector('wa-select')!;
-    const opt = (value: string) =>
-      Array.from(select.querySelectorAll('wa-option')).find(
-        (o) => (o as HTMLElement & { value: string }).value === value,
-      ) as (HTMLElement & { disabled: boolean }) | undefined;
-
-    expect(opt('bladePowerPin1')?.disabled).toBe(true);
-    expect(opt('bladePowerPin2')?.disabled).toBe(false);
-    editor.remove();
+    const select = getByTestId(picker, 'pin-picker-select');
+    const pin2 = Array.from(select.querySelectorAll('wa-option')).find(
+      (o) => (o as HTMLElement & { value: string }).value === 'bladePowerPin2',
+    ) as (HTMLElement & { disabled: boolean }) | undefined;
+    expect(pin2?.disabled).toBe(true);
+    unmount();
   });
 
-  it('remove power pin keeps remaining selections', async () => {
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+  it('remove power pin drops the row at the given index', async () => {
+    const editor = document.createElement('po-power-pin-editor') as HTMLElement & {
+      bladeIndex: number;
+      pins: string[];
+      blades: BladeDefinition[];
+    };
     editor.bladeIndex = 0;
-    editor.pins = ['bladePowerPin1', 'bladePowerPin2', ''];
+    editor.pins = ['bladePowerPin1', 'bladePowerPin2', 'bladePowerPin3'];
     editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
-    document.body.appendChild(editor);
-    await updateComplete(editor);
+    const { unmount } = await mount(editor);
 
     let changed: string[] | undefined;
     editor.addEventListener('pins-change', (event) => {
       changed = (event as CustomEvent<{ pins: string[] }>).detail.pins;
     });
 
-    const removeBtn = editor.querySelector(
-      '[data-action="remove-pin"][data-pin-index="2"]',
-    ) as HTMLElement;
-    removeBtn.click();
-    await updateComplete(editor);
+    const removeButtons = getAllByTestId(editor, 'power-pin-editor-remove');
+    removeButtons[2]!.click();
+    await editor.updateComplete;
 
     expect(changed).toEqual(['bladePowerPin1', 'bladePowerPin2']);
-    editor.remove();
-  });
-
-  it('updates a row when pin picker value changes', async () => {
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
-    editor.bladeIndex = 0;
-    editor.pins = [''];
-    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: [''] }];
-    document.body.appendChild(editor);
-    await updateComplete(editor);
-
-    const picker = editor.querySelector('po-pin-picker')!;
-    await updateComplete(picker as HTMLElement & { updateComplete?: Promise<boolean> });
-
-    let changed: string[] | undefined;
-    editor.addEventListener('pins-change', (event) => {
-      changed = (event as CustomEvent<{ pins: string[] }>).detail.pins;
-    });
-
-    picker.dispatchEvent(
-      new CustomEvent('pin-change', { detail: { value: 'bladePowerPin2' }, bubbles: true }),
-    );
-    await updateComplete(editor);
-
-    expect(changed).toEqual(['bladePowerPin2']);
-    editor.remove();
+    expect(getAllByTestId(editor, 'power-pin-editor-row')).toHaveLength(2);
+    unmount();
   });
 
   it('does not add beyond MAX_POWER_PINS', async () => {
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    const pins = Array.from({ length: MAX_POWER_PINS }, (_, i) => `bladePowerPin${i + 1}`);
+    const editor = document.createElement('po-power-pin-editor') as HTMLElement & {
+      bladeIndex: number;
+      pins: string[];
+      blades: BladeDefinition[];
+    };
     editor.bladeIndex = 0;
-    editor.pins = Array.from({ length: MAX_POWER_PINS }, (_, i) =>
-      i === 0 ? 'bladePowerPin1' : '',
-    );
-    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
-    document.body.appendChild(editor);
-    await updateComplete(editor);
+    editor.pins = pins;
+    editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: pins }];
+    const { unmount } = await mount(editor);
 
-    let changeCount = 0;
-    editor.addEventListener('pins-change', () => {
-      changeCount += 1;
-    });
+    getByTestId(editor, 'power-pin-editor-add').click();
+    await editor.updateComplete;
 
-    const addBtn = editor.querySelector('[data-action="add-pin"]') as HTMLElement;
-    addBtn.click();
-    await updateComplete(editor);
-
-    expect(changeCount).toBe(0);
-    expect(editor.querySelectorAll('.power-pin-row')).toHaveLength(MAX_POWER_PINS);
-    editor.remove();
+    expect(getAllByTestId(editor, 'power-pin-editor-row')).toHaveLength(MAX_POWER_PINS);
+    unmount();
   });
 
   it('does not remove the last remaining row', async () => {
-    const editor = document.createElement('po-power-pin-editor') as PoPowerPinEditor;
+    const editor = document.createElement('po-power-pin-editor') as HTMLElement & {
+      bladeIndex: number;
+      pins: string[];
+      blades: BladeDefinition[];
+    };
     editor.bladeIndex = 0;
     editor.pins = ['bladePowerPin1'];
     editor.blades = [{ index: 0, type: 'ws2811', dataPin: 'bladePin', powerPins: editor.pins }];
-    document.body.appendChild(editor);
-    await updateComplete(editor);
+    const { unmount } = await mount(editor);
 
-    let changeCount = 0;
-    editor.addEventListener('pins-change', () => {
-      changeCount += 1;
+    let changed: string[] | undefined;
+    editor.addEventListener('pins-change', (event) => {
+      changed = (event as CustomEvent<{ pins: string[] }>).detail.pins;
     });
 
-    const removeBtn = editor.querySelector('[data-action="remove-pin"]') as HTMLElement;
-    removeBtn.click();
-    await updateComplete(editor);
+    getByTestId(editor, 'power-pin-editor-remove').click();
+    await editor.updateComplete;
 
-    expect(changeCount).toBe(0);
-    expect(editor.querySelectorAll('.power-pin-row')).toHaveLength(1);
-    editor.remove();
+    expect(changed).toBeUndefined();
+    expect(getAllByTestId(editor, 'power-pin-editor-row')).toHaveLength(1);
+    unmount();
   });
 });

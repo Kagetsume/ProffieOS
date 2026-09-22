@@ -114,8 +114,8 @@ export class PoBladePreview extends PoElement {
    */
   protected firstUpdated(changed: PropertyValues): void {
     super.firstUpdated(changed);
-    const stack = this.renderRoot.querySelector<HTMLElement>('.saber-stack');
-    const hilt = this.renderRoot.querySelector<HTMLImageElement>('.hilt-img');
+    const stack = this.renderRoot.querySelector<HTMLElement>('[data-testid="blade-preview-stack"]');
+    const hilt = this.renderRoot.querySelector<HTMLImageElement>('[data-testid="blade-preview-hilt"]');
 
     this.hiltLoadAbort?.abort();
     this.hiltLoadAbort = new AbortController();
@@ -130,6 +130,14 @@ export class PoBladePreview extends PoElement {
       this.resizeObserver.observe(stack);
     }
 
+    this.scheduleLayout();
+  }
+
+  /**
+   * Schedules a layout pass whenever Lit finishes an update that may affect sizing.
+   */
+  protected updated(changed: PropertyValues): void {
+    super.updated(changed);
     this.scheduleLayout();
   }
 
@@ -156,14 +164,6 @@ export class PoBladePreview extends PoElement {
   }
 
   /**
-   * Schedules a layout pass whenever Lit finishes an update that may affect sizing.
-   */
-  protected updated(changed: PropertyValues): void {
-    super.updated(changed);
-    this.scheduleLayout();
-  }
-
-  /**
    * Pixel count for preview rendering — prefers the first NeoPixel blade, else the first blade.
    *
    * @returns Number of LEDs to simulate on the preview canvas.
@@ -172,132 +172,6 @@ export class PoBladePreview extends PoElement {
     const blades = this.wiringController.value;
     const main = blades.find((b) => b.type === 'ws2811');
     return main?.pixels ?? blades[0]?.pixels ?? DEFAULT_PIXEL_COUNT;
-  }
-
-  /**
-   * Builds the saber stack, preview controls, and status caption from store state.
-   *
-   * @returns Lit template for the full blade preview UI.
-   */
-  render() {
-    const simState = this.simController.value;
-    const activeSectionId = this.stylesController.value.activeSectionId;
-    const { transition, powered } = simState;
-    const combatReady = powered && transition === 'none';
-    const canPowerOn =
-      (!powered && transition === 'none') || transition === 'postoff';
-    const canPowerOff =
-      (powered && transition === 'none') ||
-      transition === 'preon' ||
-      transition === 'extending';
-    const showBladeAngle = combatReady && simState.lockupActive;
-
-    return html`
-      <div class="saber-stack">
-        <div class="blade-slot">
-          <canvas class="preview-blade" aria-label=${bladePreviewI18n.translate(bladePreviewKeys.ariaLabel)}></canvas>
-        </div>
-        <div class="hilt-stage">
-          <div class="hilt-rotator">
-            <img
-              class="hilt-img"
-              src=${HILT_SVG_URL}
-              alt=""
-              width="${HILT_SVG_NATURAL_WIDTH}"
-              height="${HILT_SVG_NATURAL_HEIGHT}"
-              decoding="async"
-            />
-          </div>
-        </div>
-      </div>
-
-      <div class="preview-controls">
-        <div class="preview-controls-row preview-controls-row--buttons">
-          <wa-button size="small" variant="brand" ?disabled=${!canPowerOn} @click=${this.onPowerOn}>
-            ${bladePreviewI18n.translate(bladePreviewKeys.powerOn)}
-          </wa-button>
-          <wa-button size="small" variant="neutral" ?disabled=${!canPowerOff} @click=${this.onPowerOff}>
-            ${bladePreviewI18n.translate(bladePreviewKeys.powerOff)}
-          </wa-button>
-          <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onBlast}>
-            ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
-          </wa-button>
-          <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onClash}>
-            ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
-          </wa-button>
-          <wa-button size="small" variant="neutral" ?disabled=${!combatReady} @click=${this.onSwing}>
-            ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
-          </wa-button>
-        </div>
-        <div class="preview-controls-row preview-controls-row--toggles">
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.lockupActive}
-              ?disabled=${!combatReady}
-              @change=${this.onLockupChange}
-            ></wa-switch>
-          </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.lbActive}
-              ?disabled=${!combatReady}
-              @change=${this.onLbChange}
-            ></wa-switch>
-          </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.dragActive}
-              ?disabled=${!combatReady}
-              @change=${this.onDragChange}
-            ></wa-switch>
-          </div>
-          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.meltActive}
-              ?disabled=${!combatReady}
-              @change=${this.onMeltChange}
-            ></wa-switch>
-          </div>
-        </div>
-        ${showBladeAngle
-          ? html`
-              <label class="blade-angle-control">
-                <span class="blade-angle-label">
-                  ${bladePreviewI18n.translate(bladePreviewKeys.bladeAngle)}
-                  <span class="blade-angle-value"
-                    >${Math.round(simState.bladeAngleNorm * 100)}%</span
-                  >
-                </span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  .value=${String(Math.round(simState.bladeAngleNorm * 100))}
-                  @input=${this.onBladeAngleInput}
-                />
-                <span class="blade-angle-hint">${bladePreviewI18n.translate(bladePreviewKeys.bladeAngleHint)}</span>
-              </label>
-            `
-          : nothing}
-      </div>
-
-      <p class="preview-caption">
-        ${bladePreviewI18n.translate(bladePreviewKeys.caption, {
-          sectionId: activeSectionId || '—',
-          transitionSuffix:
-            simState.transition !== 'none' ? ` · ${simState.transition}` : '',
-        })}
-      </p>
-    `;
   }
 
   /**
@@ -495,7 +369,7 @@ export class PoBladePreview extends PoElement {
    * @returns Hilt display width and height in CSS pixels.
    */
   private measureHiltBox(): { width: number; height: number } {
-    const stage = this.renderRoot.querySelector<HTMLElement>('.hilt-stage');
+    const stage = this.renderRoot.querySelector<HTMLElement>('[data-testid="blade-preview-hilt-stage"]');
 
     if (stage) {
       const rect = stage.getBoundingClientRect();
@@ -512,7 +386,9 @@ export class PoBladePreview extends PoElement {
    * Sizes the preview canvas from hilt layout and draws the current style frame.
    */
   private layoutAndDraw(): void {
-    const canvas = this.renderRoot.querySelector<HTMLCanvasElement>('.preview-blade');
+    const canvas = this.renderRoot.querySelector<HTMLCanvasElement>(
+      '[data-testid="blade-preview-canvas"]',
+    );
     if (!canvas) {
       return;
     }
@@ -615,6 +491,167 @@ export class PoBladePreview extends PoElement {
     }
     this.bladeSharpCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return this.bladeSharpCtx;
+  }
+
+  /**
+   * Builds the saber stack, preview controls, and status caption from store state.
+   *
+   * @returns Lit template for the full blade preview UI.
+   */
+  render() {
+    const simState = this.simController.value;
+    const activeSectionId = this.stylesController.value.activeSectionId;
+    const { transition, powered } = simState;
+    const combatReady = powered && transition === 'none';
+    const canPowerOn =
+      (!powered && transition === 'none') || transition === 'postoff';
+    const canPowerOff =
+      (powered && transition === 'none') ||
+      transition === 'preon' ||
+      transition === 'extending';
+    const showBladeAngle = combatReady && simState.lockupActive;
+
+    return html`
+      <div class="saber-stack" data-testid="blade-preview-stack">
+        <div class="blade-slot">
+          <canvas
+            class="preview-blade"
+            data-testid="blade-preview-canvas"
+            aria-label=${bladePreviewI18n.translate(bladePreviewKeys.ariaLabel)}
+          ></canvas>
+        </div>
+        <div class="hilt-stage" data-testid="blade-preview-hilt-stage">
+          <div class="hilt-rotator">
+            <img
+              class="hilt-img"
+              data-testid="blade-preview-hilt"
+              src=${HILT_SVG_URL}
+              alt=""
+              width="${HILT_SVG_NATURAL_WIDTH}"
+              height="${HILT_SVG_NATURAL_HEIGHT}"
+              decoding="async"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="preview-controls" data-testid="blade-preview-controls">
+        <div class="preview-controls-row preview-controls-row--buttons">
+          <wa-button
+            data-testid="blade-preview-power-on"
+            size="small"
+            variant="brand"
+            ?disabled=${!canPowerOn}
+            @click=${this.onPowerOn}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.powerOn)}
+          </wa-button>
+          <wa-button
+            data-testid="blade-preview-power-off"
+            size="small"
+            variant="neutral"
+            ?disabled=${!canPowerOff}
+            @click=${this.onPowerOff}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.powerOff)}
+          </wa-button>
+          <wa-button
+            data-testid="blade-preview-blast"
+            size="small"
+            variant="neutral"
+            ?disabled=${!combatReady}
+            @click=${this.onBlast}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
+          </wa-button>
+          <wa-button
+            data-testid="blade-preview-clash"
+            size="small"
+            variant="neutral"
+            ?disabled=${!combatReady}
+            @click=${this.onClash}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
+          </wa-button>
+          <wa-button
+            data-testid="blade-preview-swing"
+            size="small"
+            variant="neutral"
+            ?disabled=${!combatReady}
+            @click=${this.onSwing}
+          >
+            ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
+          </wa-button>
+        </div>
+        <div class="preview-controls-row preview-controls-row--toggles">
+          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
+            <wa-switch
+              size="small"
+              .checked=${simState.lockupActive}
+              ?disabled=${!combatReady}
+              @change=${this.onLockupChange}
+            ></wa-switch>
+          </div>
+          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
+            <wa-switch
+              size="small"
+              .checked=${simState.lbActive}
+              ?disabled=${!combatReady}
+              @change=${this.onLbChange}
+            ></wa-switch>
+          </div>
+          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
+            <wa-switch
+              size="small"
+              .checked=${simState.dragActive}
+              ?disabled=${!combatReady}
+              @change=${this.onDragChange}
+            ></wa-switch>
+          </div>
+          <div class="combat-toggle ${combatReady ? '' : 'combat-toggle--disabled'}">
+            <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
+            <wa-switch
+              size="small"
+              .checked=${simState.meltActive}
+              ?disabled=${!combatReady}
+              @change=${this.onMeltChange}
+            ></wa-switch>
+          </div>
+        </div>
+        ${showBladeAngle
+          ? html`
+              <label class="blade-angle-control">
+                <span class="blade-angle-label">
+                  ${bladePreviewI18n.translate(bladePreviewKeys.bladeAngle)}
+                  <span class="blade-angle-value"
+                    >${Math.round(simState.bladeAngleNorm * 100)}%</span
+                  >
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  .value=${String(Math.round(simState.bladeAngleNorm * 100))}
+                  @input=${this.onBladeAngleInput}
+                />
+                <span class="blade-angle-hint">${bladePreviewI18n.translate(bladePreviewKeys.bladeAngleHint)}</span>
+              </label>
+            `
+          : nothing}
+      </div>
+
+      <p class="preview-caption">
+        ${bladePreviewI18n.translate(bladePreviewKeys.caption, {
+          sectionId: activeSectionId || '—',
+          transitionSuffix:
+            simState.transition !== 'none' ? ` · ${simState.transition}` : '',
+        })}
+      </p>
+    `;
   }
 }
 

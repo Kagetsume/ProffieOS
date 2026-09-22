@@ -57,6 +57,9 @@ See `elements/README.md`.
 
 | File | Covers |
 |------|--------|
+| `elements/po-components.test.ts` | Mount smoke tests for every `<po-*>` element |
+| `elements/po-components.behavior.test.ts` | Store wiring, events, user actions |
 | `elements/pin-picker-utils.test.ts` | Option init, disabled flags, data mode |
 | `elements/po-power-pin-editor.test.ts` | Add/remove rows, cross-blade disable |
 | `elements/po-blade-card.test.ts` | Data pin picker on blade card |
+| `elements/po-component-i18n.test.ts` | All component i18n bundles |

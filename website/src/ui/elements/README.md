@@ -33,6 +33,17 @@ ProffieOS config editor UI. Registered via `index.ts` (imported from `main.ts`).
 |-----|------|
 | `<po-color-input>` | Grouped color select with per-option swatches |
 
+## Component file layout
+
+Each `po-*.ts` class follows this order:
+
+1. Static fields (`static styles`, `static properties`, …)
+2. Instance fields
+3. Lit lifecycle (`connectedCallback`, `disconnectedCallback`, `createRenderRoot`, `willUpdate`, `firstUpdated`, `updated`, …)
+4. Other methods (helpers, handlers, private `renderXxx` template builders)
+5. **`render()`** — always the last method in the class
+6. **`customElements.define(...)`** — after the class (manual registration; no `@customElement` decorators)
+
 ## Infrastructure
 
 | Module | Role |
@@ -63,8 +74,23 @@ Global layout classes live in `app.css`.
 - Empty list = full strip (no `sub_blade` lines exported).
 - Up to 8 ranges (`MAX_SUB_BLADES`).
 
+## Test IDs
+
+Interactive and structural nodes expose stable `data-testid` attributes for jsdom tests and automation.
+
+**Naming:** `{area}-{role}` in kebab-case — e.g. `blade-preview-clash`, `copy-panel-content`, `sidebar-nav-link-styles`.
+
+**Query helpers:** `getByTestId`, `getAllByTestId`, and `getAllByTestIdPrefix` in `src/test/lit-host-utils.ts` (search light DOM or shadow root as appropriate).
+
+Do not use CSS class names or Web Awesome tag names in tests when a `data-testid` exists for that node.
+
 ## Tests
 
+All `<po-*>` elements mount under jsdom (`test.environment: 'jsdom'` in `vite.config.ts`).
+
+- `po-components.test.ts` — every element mounts and renders core markup (loads `po-*.styles.ts` too)
+- `po-components.behavior.test.ts` — route highlight, store patches, clipboard, preview clash, pin-change events
 - `pin-picker-utils.test.ts` — option init, disabled flags, data mode mapping
 - `po-power-pin-editor.test.ts` — add/remove rows, cross-blade disable
 - `po-blade-card.test.ts` — data pin picker, silkscreen labels
+- `po-component-i18n.test.ts` — every `po-*.i18n.ts` / `po-*.keys.ts` bundle loads

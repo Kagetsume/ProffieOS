@@ -45,76 +45,6 @@ export class PoWiringPage extends LitElement {
   }
 
   /**
-   * Renders the blades wiring page with profile selector, toolbar, and blade cards.
-   *
-   * @returns Lit template for the full wiring editor section.
-   */
-  render() {
-    const blades = this.wiringController.value;
-    const profileId = this.profileController.value;
-    const profileName = getProfileName(profileId);
-
-    return html`
-      <section class="page">
-        <h2>${wiringPageI18n.translate(wiringPageKeys.title, { profileName })}</h2>
-        <p>${wiringPageI18n.translate(wiringPageKeys.lead)}</p>
-        <details class="blades-help">
-          <summary>${wiringPageI18n.translate(wiringPageKeys.helpSummary)}</summary>
-          <ul>
-            <li>${wiringPageI18n.translate(wiringPageKeys.helpNeopixel)}</li>
-            <li>${wiringPageI18n.translate(wiringPageKeys.helpSimple)}</li>
-            <li>${wiringPageI18n.translate(wiringPageKeys.helpSubBlades)}</li>
-          </ul>
-          <p>${wiringPageI18n.translate(wiringPageKeys.helpWiringNote)}</p>
-          <p>
-            ${wiringPageI18n.translate(wiringPageKeys.helpExamplesPrefix)}
-            <a href="https://github.com/profezzorn/ProffieOS/blob/main/website/BLADES.md"
-              >${wiringPageI18n.translate(wiringPageKeys.helpExamplesLink)}</a
-            >
-            ${wiringPageI18n.translate(wiringPageKeys.helpExamplesSuffix)}
-          </p>
-        </details>
-        <div class="toolbar">
-          <label>
-            ${wiringPageI18n.translate(wiringPageKeys.labelBoardProfile)}
-            <wa-select .value=${profileId} @wa-change=${this.onProfileChange}>
-              ${boardProfiles.profiles.map(
-                (profile) => html`
-                  <wa-option value=${profile.id}>${profile.name}</wa-option>
-                `,
-              )}
-            </wa-select>
-          </label>
-          <wa-button variant="neutral" @click=${this.onApplyProfile}>
-            ${wiringPageI18n.translate(wiringPageKeys.resetProfile)}
-          </wa-button>
-          <wa-button variant="brand" @click=${this.onAddBlade}
-            >${wiringPageI18n.translate(wiringPageKeys.addBlade)}</wa-button
-          >
-        </div>
-        <div class="blade-list">
-          ${blades.map(
-            (blade) => html`
-              <po-blade-card
-                .blade=${blade}
-                .blades=${blades}
-                @blade-patch=${this.onBladePatch}
-                @blade-remove=${this.onBladeRemove}
-              ></po-blade-card>
-            `,
-          )}
-        </div>
-        <p class="hint">
-          ${wiringPageI18n.translate(wiringPageKeys.hintFooter, {
-            maxBlades: MAX_BLADES,
-            logicalCount: totalLogicalBladeSlots(blades),
-          })}
-        </p>
-      </section>
-    `;
-  }
-
-  /**
    * Handles board profile selection and updates the project store.
    *
    * @param event Change event from the profile `<wa-select>`.
@@ -177,6 +107,76 @@ export class PoWiringPage extends LitElement {
     bladeRemoved(event.detail.index);
     log.exit();
   };
+
+  /**
+   * Renders the blades wiring page with profile selector, toolbar, and blade cards.
+   *
+   * @returns Lit template for the full wiring editor section.
+   */
+  render() {
+    const blades = this.wiringController.value;
+    const profileId = this.profileController.value;
+    const profileName = getProfileName(profileId);
+
+    return html`
+      <section class="page" data-testid="wiring-page">
+        <h2>${wiringPageI18n.translate(wiringPageKeys.title, { profileName })}</h2>
+        <p>${wiringPageI18n.translate(wiringPageKeys.lead)}</p>
+        <details class="blades-help">
+          <summary>${wiringPageI18n.translate(wiringPageKeys.helpSummary)}</summary>
+          <ul>
+            <li>${wiringPageI18n.translate(wiringPageKeys.helpNeopixel)}</li>
+            <li>${wiringPageI18n.translate(wiringPageKeys.helpSimple)}</li>
+            <li>${wiringPageI18n.translate(wiringPageKeys.helpSubBlades)}</li>
+          </ul>
+          <p>${wiringPageI18n.translate(wiringPageKeys.helpWiringNote)}</p>
+          <p>
+            ${wiringPageI18n.translate(wiringPageKeys.helpExamplesPrefix)}
+            <a href="https://github.com/profezzorn/ProffieOS/blob/main/website/BLADES.md"
+              >${wiringPageI18n.translate(wiringPageKeys.helpExamplesLink)}</a
+            >
+            ${wiringPageI18n.translate(wiringPageKeys.helpExamplesSuffix)}
+          </p>
+        </details>
+        <div class="toolbar">
+          <label>
+            ${wiringPageI18n.translate(wiringPageKeys.labelBoardProfile)}
+            <wa-select .value=${profileId} @wa-change=${this.onProfileChange}>
+              ${boardProfiles.profiles.map(
+                (profile) => html`
+                  <wa-option value=${profile.id}>${profile.name}</wa-option>
+                `,
+              )}
+            </wa-select>
+          </label>
+          <wa-button variant="neutral" @click=${this.onApplyProfile}>
+            ${wiringPageI18n.translate(wiringPageKeys.resetProfile)}
+          </wa-button>
+          <wa-button variant="brand" @click=${this.onAddBlade}
+            >${wiringPageI18n.translate(wiringPageKeys.addBlade)}</wa-button
+          >
+        </div>
+        <div class="blade-list" data-testid="wiring-page-blade-list">
+          ${blades.map(
+            (blade) => html`
+              <po-blade-card
+                .blade=${blade}
+                .blades=${blades}
+                @blade-patch=${this.onBladePatch}
+                @blade-remove=${this.onBladeRemove}
+              ></po-blade-card>
+            `,
+          )}
+        </div>
+        <p class="hint">
+          ${wiringPageI18n.translate(wiringPageKeys.hintFooter, {
+            maxBlades: MAX_BLADES,
+            logicalCount: totalLogicalBladeSlots(blades),
+          })}
+        </p>
+      </section>
+    `;
+  }
 }
 
 customElements.define('po-wiring-page', PoWiringPage);

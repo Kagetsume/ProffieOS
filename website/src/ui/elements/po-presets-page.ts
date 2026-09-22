@@ -43,83 +43,6 @@ export class PoPresetsPage extends PoElement {
   private readonly wiringController = new EffectorController(this, $wiring);
 
   /**
-   * Renders the presets editor with toolbar, active preset form, and style rows.
-   *
-   * @returns Lit template for the full presets.ini editor page.
-   */
-  render() {
-    const presetsState = this.presetsController.value;
-    const styleSections = this.stylesController.value.sections;
-    const slotCount = totalLogicalBladeSlots(this.wiringController.value);
-    const preset = getActivePreset(presetsState);
-    const presetCount = presetsState.presets.length;
-    return html`
-      <section class="page">
-        <h2>${presetsPageI18n.translate(presetsPageKeys.title)}</h2>
-        <p class="config-lead">${presetsPageI18n.translate(presetsPageKeys.lead)}</p>
-        <details class="presets-help">
-          <summary>${presetsPageI18n.translate(presetsPageKeys.helpSummary)}</summary>
-          <ul>
-            <li>${presetsPageI18n.translate(presetsPageKeys.helpBladeCount, { slotCount })}</li>
-            <li>${presetsPageI18n.translate(presetsPageKeys.helpConfigRecipe)}</li>
-            <li>${presetsPageI18n.translate(presetsPageKeys.helpOverrides)}</li>
-            <li>${presetsPageI18n.translate(presetsPageKeys.helpAccents)}</li>
-          </ul>
-        </details>
-
-        <wa-card>
-          <div class="section-toolbar">
-            <label>
-              ${presetsPageI18n.translate(presetsPageKeys.labelPreset)}
-              <wa-select
-                .value=${presetsState.activePresetId}
-                @wa-change=${this.onPresetSelect}
-              >
-                ${presetsState.presets.map(
-                  (row) => html`
-                    <wa-option value=${row.id}>${row.name || row.id}</wa-option>
-                  `,
-                )}
-              </wa-select>
-            </label>
-            <wa-button variant="brand" ?disabled=${presetCount >= MAX_PRESETS} @click=${presetAdded}>
-              ${presetsPageI18n.translate(presetsPageKeys.addPreset)}
-            </wa-button>
-            <wa-button
-              variant="neutral"
-              ?disabled=${!preset}
-              @click=${() => preset && presetDuplicated(preset.id)}
-            >
-              ${presetsPageI18n.translate(presetsPageKeys.duplicate)}
-            </wa-button>
-            <wa-button
-              variant="neutral"
-              ?disabled=${presetCount <= 1}
-              @click=${() => preset && presetRemoved(preset.id)}
-            >
-              ${presetsPageI18n.translate(presetsPageKeys.remove)}
-            </wa-button>
-            <wa-button variant="neutral" @click=${presetsResetToDefaults}>
-              ${presetsPageI18n.translate(presetsPageKeys.reset)}
-            </wa-button>
-          </div>
-
-          ${preset ? this.renderPresetForm(preset, slotCount, styleSections) : nothing}
-        </wa-card>
-
-        <p class="hint">
-          ${presetsPageI18n.translate(presetsPageKeys.hintFooter, {
-            presetCount,
-            presetSuffix: presetCount === 1 ? '' : 's',
-            slotCount,
-            styleSuffix: slotCount === 1 ? '' : 's',
-          })}
-        </p>
-      </section>
-    `;
-  }
-
-  /**
    * Renders metadata fields and per-slot style rows for one preset.
    *
    * @param preset Active preset definition being edited.
@@ -272,6 +195,84 @@ export class PoPresetsPage extends PoElement {
     });
     log.exit();
   };
+
+  /**
+   * Renders the presets editor with toolbar, active preset form, and style rows.
+   *
+   * @returns Lit template for the full presets.ini editor page.
+   */
+  render() {
+    const presetsState = this.presetsController.value;
+    const styleSections = this.stylesController.value.sections;
+    const slotCount = totalLogicalBladeSlots(this.wiringController.value);
+    const preset = getActivePreset(presetsState);
+    const presetCount = presetsState.presets.length;
+    return html`
+      <section class="page" data-testid="presets-page">
+        <h2>${presetsPageI18n.translate(presetsPageKeys.title)}</h2>
+        <p class="config-lead">${presetsPageI18n.translate(presetsPageKeys.lead)}</p>
+        <details class="presets-help">
+          <summary>${presetsPageI18n.translate(presetsPageKeys.helpSummary)}</summary>
+          <ul>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpBladeCount, { slotCount })}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpConfigRecipe)}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpOverrides)}</li>
+            <li>${presetsPageI18n.translate(presetsPageKeys.helpAccents)}</li>
+          </ul>
+        </details>
+
+        <wa-card>
+          <div class="section-toolbar" data-testid="presets-page-toolbar">
+            <label>
+              ${presetsPageI18n.translate(presetsPageKeys.labelPreset)}
+              <wa-select
+                data-testid="presets-page-preset-select"
+                .value=${presetsState.activePresetId}
+                @wa-change=${this.onPresetSelect}
+              >
+                ${presetsState.presets.map(
+                  (row) => html`
+                    <wa-option value=${row.id}>${row.name || row.id}</wa-option>
+                  `,
+                )}
+              </wa-select>
+            </label>
+            <wa-button variant="brand" ?disabled=${presetCount >= MAX_PRESETS} @click=${presetAdded}>
+              ${presetsPageI18n.translate(presetsPageKeys.addPreset)}
+            </wa-button>
+            <wa-button
+              variant="neutral"
+              ?disabled=${!preset}
+              @click=${() => preset && presetDuplicated(preset.id)}
+            >
+              ${presetsPageI18n.translate(presetsPageKeys.duplicate)}
+            </wa-button>
+            <wa-button
+              variant="neutral"
+              ?disabled=${presetCount <= 1}
+              @click=${() => preset && presetRemoved(preset.id)}
+            >
+              ${presetsPageI18n.translate(presetsPageKeys.remove)}
+            </wa-button>
+            <wa-button variant="neutral" @click=${presetsResetToDefaults}>
+              ${presetsPageI18n.translate(presetsPageKeys.reset)}
+            </wa-button>
+          </div>
+
+          ${preset ? this.renderPresetForm(preset, slotCount, styleSections) : nothing}
+        </wa-card>
+
+        <p class="hint">
+          ${presetsPageI18n.translate(presetsPageKeys.hintFooter, {
+            presetCount,
+            presetSuffix: presetCount === 1 ? '' : 's',
+            slotCount,
+            styleSuffix: slotCount === 1 ? '' : 's',
+          })}
+        </p>
+      </section>
+    `;
+  }
 }
 
 customElements.define('po-presets-page', PoPresetsPage);

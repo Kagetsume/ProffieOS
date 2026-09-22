@@ -30,29 +30,6 @@ export class PoFeaturesPage extends PoElement {
   private readonly featuresController = new EffectorController(this, $boardFeatures);
 
   /**
-   * Renders the features config form with toggle switches for gesture and twist settings.
-   *
-   * @returns Lit template for the features.ini editor page.
-   */
-  render() {
-    const state = this.featuresController.value;
-    return html`
-      <section class="page">
-        <h2>${featuresPageI18n.translate(featuresPageKeys.title)}</h2>
-        <p class="config-lead">${featuresPageI18n.translate(featuresPageKeys.lead)}</p>
-
-        <wa-card>
-          <div class="feature-list">
-            ${FEATURE_FIELDS.map((field) => this.renderField(field, state))}
-          </div>
-        </wa-card>
-
-        <p class="hint">${featuresPageI18n.translate(featuresPageKeys.hintExportAs, { filename: 'features.ini' })}</p>
-      </section>
-    `;
-  }
-
-  /**
    * Renders a labeled feature toggle with description text.
    *
    * @param field Feature metadata identifying which board feature to edit.
@@ -62,10 +39,11 @@ export class PoFeaturesPage extends PoElement {
   private renderField(field: FeatureField, state: BoardFeaturesState) {
     const checked = state[field.key];
     return html`
-      <div class="feature-field">
+      <div class="feature-field" data-testid="features-field-${field.key}">
         <span class="feature-label">${featuresPageI18n.translate(featuresPageFieldKeys[field.key].label)}</span>
         <p class="feature-description">${featuresPageI18n.translate(featuresPageFieldKeys[field.key].description)}</p>
         <wa-switch
+          data-testid="features-switch-${field.key}"
           .checked=${checked}
           @change=${(event: Event) =>
             this.patch({ [field.key]: (event.target as HTMLInputElement).checked })}
@@ -85,6 +63,29 @@ export class PoFeaturesPage extends PoElement {
     log.entry({ partial });
     boardFeaturesChanged(partial);
     log.exit();
+  }
+
+  /**
+   * Renders the features config form with toggle switches for gesture and twist settings.
+   *
+   * @returns Lit template for the features.ini editor page.
+   */
+  render() {
+    const state = this.featuresController.value;
+    return html`
+      <section class="page" data-testid="features-page">
+        <h2>${featuresPageI18n.translate(featuresPageKeys.title)}</h2>
+        <p class="config-lead">${featuresPageI18n.translate(featuresPageKeys.lead)}</p>
+
+        <wa-card>
+          <div class="feature-list">
+            ${FEATURE_FIELDS.map((field) => this.renderField(field, state))}
+          </div>
+        </wa-card>
+
+        <p class="hint">${featuresPageI18n.translate(featuresPageKeys.hintExportAs, { filename: 'features.ini' })}</p>
+      </section>
+    `;
   }
 }
 

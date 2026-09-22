@@ -32,14 +32,32 @@ export class PoHomePage extends PoElement {
   static styles = [poHostStyles, poPageStyles, poHomePageStyles];
 
   /**
+   * Renders one table row describing a config file and its editor status.
+   *
+   * @param row Config file metadata including id and readiness status.
+   * @returns Lit template for a single `<tr>` in the config files table.
+   */
+  private renderFileRow(row: ConfigFileRow) {
+    return html`
+      <tr>
+        <td class="file-path">${homePageI18n.translate(homePageConfigFilePathKeys[row.id])}</td>
+        <td>${homePageI18n.translate(homePageConfigFilePurposeKeys[row.id])}</td>
+        <td class="status status--${row.status}">
+          ${homePageI18n.translate(homePageStatusKeys[row.status])}
+        </td>
+      </tr>
+    `;
+  }
+
+  /**
    * Renders the home/overview page with intro copy, config file table, and workflow steps.
    *
    * @returns Lit template for the full home page section.
    */
   render() {
     return html`
-      <section class="page">
-        <h2>${homePageI18n.translate(homePageKeys.title)}</h2>
+      <section class="page" data-testid="home-page">
+        <h2 data-testid="home-page-title">${homePageI18n.translate(homePageKeys.title)}</h2>
         <p class="lead">${homePageI18n.translate(homePageKeys.lead)}</p>
         <p class="requirement">${homePageI18n.translate(homePageKeys.requirement)}</p>
 
@@ -51,7 +69,7 @@ export class PoHomePage extends PoElement {
 
         <wa-card>
           <h3>${homePageI18n.translate(homePageKeys.cardConfigFilesTitle)}</h3>
-          <table class="file-table">
+          <table class="file-table" data-testid="home-page-config-table">
             <thead>
               <tr>
                 <th scope="col">${homePageI18n.translate(homePageKeys.tableFile)}</th>
@@ -87,24 +105,6 @@ export class PoHomePage extends PoElement {
           </div>
         </wa-card>
       </section>
-    `;
-  }
-
-  /**
-   * Renders one table row describing a config file and its editor status.
-   *
-   * @param row Config file metadata including id and readiness status.
-   * @returns Lit template for a single `<tr>` in the config files table.
-   */
-  private renderFileRow(row: ConfigFileRow) {
-    return html`
-      <tr>
-        <td class="file-path">${homePageI18n.translate(homePageConfigFilePathKeys[row.id])}</td>
-        <td>${homePageI18n.translate(homePageConfigFilePurposeKeys[row.id])}</td>
-        <td class="status status--${row.status}">
-          ${homePageI18n.translate(homePageStatusKeys[row.status])}
-        </td>
-      </tr>
     `;
   }
 }

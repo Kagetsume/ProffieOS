@@ -62,88 +62,6 @@ export class PoStylesPage extends PoElement {
   }
 
   /**
-   * Renders the blade styles editor with recipe toolbar, vars, layer stack, and preview.
-   *
-   * @returns Lit template for the full styles page layout.
-   */
-  render() {
-    const section = getActiveSection(this.stylesState);
-    return html`
-      <section class="page">
-        <h2>${stylesPageI18n.translate(stylesPageKeys.title)}</h2>
-        <p class="config-lead">${stylesPageI18n.translate(stylesPageKeys.lead)}</p>
-        <details class="styles-help">
-          <summary>${stylesPageI18n.translate(stylesPageKeys.helpSummary)}</summary>
-          <ul>
-            <li>${stylesPageI18n.translate(stylesPageKeys.helpRecipe)}</li>
-            <li>${stylesPageI18n.translate(stylesPageKeys.helpBaseLayer)}</li>
-            <li>${stylesPageI18n.translate(stylesPageKeys.helpOverlays)}</li>
-            <li>${stylesPageI18n.translate(stylesPageKeys.helpTextures)}</li>
-            <li>${stylesPageI18n.translate(stylesPageKeys.helpVariables)}</li>
-          </ul>
-          <p>
-            ${stylesPageI18n.translate(stylesPageKeys.helpPreviewNotePrefix)}
-            <a href="https://github.com/profezzorn/ProffieOS/blob/main/website/BLADE_STYLES.md"
-              >${stylesPageI18n.translate(stylesPageKeys.helpPreviewNoteLink)}</a
-            >.
-          </p>
-        </details>
-
-        <div class="styles-layout">
-          <div class="editor-pane">
-            <wa-card>
-              <div class="section-toolbar">
-                <label>
-                  ${stylesPageI18n.translate(stylesPageKeys.labelRecipe)}
-                  <wa-select
-                    .value=${this.stylesState.activeSectionId}
-                    @wa-change=${this.onRecipePickerChange}
-                    @change=${this.onRecipePickerChange}
-                  >
-                    ${this.renderRecipePickerOptions()}
-                  </wa-select>
-                </label>
-                <wa-button variant="neutral" @click=${this.onNewSection}
-                  >${stylesPageI18n.translate(stylesPageKeys.newRecipe)}</wa-button
-                >
-                <wa-button
-                  variant="neutral"
-                  ?disabled=${this.stylesState.sections.length <= 1}
-                  @click=${this.onRemoveSection}
-                >
-                  ${stylesPageI18n.translate(stylesPageKeys.remove)}
-                </wa-button>
-              </div>
-
-              ${section ? this.renderRecipeSummary(section) : nothing}
-
-              ${section ? this.renderVars(section) : nothing}
-
-              <p class="vars-heading">${stylesPageI18n.translate(stylesPageKeys.headingRecipeStack)}</p>
-              <p class="hint">${stylesPageI18n.translate(stylesPageKeys.hintRecipeStack)}</p>
-              ${section ? html`<po-style-layer-stack></po-style-layer-stack>` : nothing}
-
-              <div class="layer-toolbar">
-                <wa-button variant="brand" @click=${this.onAddLayer}
-                  >${stylesPageI18n.translate(stylesPageKeys.addLayer)}</wa-button
-                >
-              </div>
-            </wa-card>
-          </div>
-
-          <div class="preview-pane">
-            <wa-card>
-              <po-blade-preview></po-blade-preview>
-            </wa-card>
-          </div>
-        </div>
-
-        <p class="hint">${stylesPageI18n.translate(stylesPageKeys.hintExport)}</p>
-      </section>
-    `;
-  }
-
-  /**
    * Builds grouped `<wa-option>` nodes for in-file and library style recipes.
    *
    * @returns Lit template fragment containing recipe picker options.
@@ -366,6 +284,89 @@ export class PoStylesPage extends PoElement {
     `;
   }
 
+  /**
+   * Renders the blade styles editor with recipe toolbar, vars, layer stack, and preview.
+   *
+   * @returns Lit template for the full styles page layout.
+   */
+  render() {
+    const section = getActiveSection(this.stylesState);
+    return html`
+      <section class="page" data-testid="styles-page">
+        <h2>${stylesPageI18n.translate(stylesPageKeys.title)}</h2>
+        <p class="config-lead">${stylesPageI18n.translate(stylesPageKeys.lead)}</p>
+        <details class="styles-help">
+          <summary>${stylesPageI18n.translate(stylesPageKeys.helpSummary)}</summary>
+          <ul>
+            <li>${stylesPageI18n.translate(stylesPageKeys.helpRecipe)}</li>
+            <li>${stylesPageI18n.translate(stylesPageKeys.helpBaseLayer)}</li>
+            <li>${stylesPageI18n.translate(stylesPageKeys.helpOverlays)}</li>
+            <li>${stylesPageI18n.translate(stylesPageKeys.helpTextures)}</li>
+            <li>${stylesPageI18n.translate(stylesPageKeys.helpVariables)}</li>
+          </ul>
+          <p>
+            ${stylesPageI18n.translate(stylesPageKeys.helpPreviewNotePrefix)}
+            <a href="https://github.com/profezzorn/ProffieOS/blob/main/website/BLADE_STYLES.md"
+              >${stylesPageI18n.translate(stylesPageKeys.helpPreviewNoteLink)}</a
+            >.
+          </p>
+        </details>
+
+        <div class="styles-layout">
+          <div class="editor-pane">
+            <wa-card>
+              <div class="section-toolbar">
+                <label>
+                  ${stylesPageI18n.translate(stylesPageKeys.labelRecipe)}
+                  <wa-select
+                    .value=${this.stylesState.activeSectionId}
+                    @wa-change=${this.onRecipePickerChange}
+                    @change=${this.onRecipePickerChange}
+                  >
+                    ${this.renderRecipePickerOptions()}
+                  </wa-select>
+                </label>
+                <wa-button variant="neutral" @click=${this.onNewSection}
+                  >${stylesPageI18n.translate(stylesPageKeys.newRecipe)}</wa-button
+                >
+                <wa-button
+                  variant="neutral"
+                  ?disabled=${this.stylesState.sections.length <= 1}
+                  @click=${this.onRemoveSection}
+                >
+                  ${stylesPageI18n.translate(stylesPageKeys.remove)}
+                </wa-button>
+              </div>
+
+              ${section ? this.renderRecipeSummary(section) : nothing}
+
+              ${section ? this.renderVars(section) : nothing}
+
+              <p class="vars-heading">${stylesPageI18n.translate(stylesPageKeys.headingRecipeStack)}</p>
+              <p class="hint">${stylesPageI18n.translate(stylesPageKeys.hintRecipeStack)}</p>
+              ${section
+                ? html`<po-style-layer-stack data-testid="styles-page-layer-stack"></po-style-layer-stack>`
+                : nothing}
+
+              <div class="layer-toolbar">
+                <wa-button variant="brand" @click=${this.onAddLayer}
+                  >${stylesPageI18n.translate(stylesPageKeys.addLayer)}</wa-button
+                >
+              </div>
+            </wa-card>
+          </div>
+
+          <div class="preview-pane" data-testid="styles-page-preview-pane">
+            <wa-card>
+              <po-blade-preview data-testid="styles-page-blade-preview"></po-blade-preview>
+            </wa-card>
+          </div>
+        </div>
+
+        <p class="hint">${stylesPageI18n.translate(stylesPageKeys.hintExport)}</p>
+      </section>
+    `;
+  }
 }
 
 customElements.define('po-styles-page', PoStylesPage);

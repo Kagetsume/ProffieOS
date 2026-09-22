@@ -1,6 +1,15 @@
 /**
  * Vitest + jsdom setup — polyfills for Web Awesome form-associated custom elements.
  */
+
+/** jsdom may lack Clipboard API — used by `<po-copy-panel>`. */
+if (typeof navigator !== 'undefined' && !navigator.clipboard) {
+  Object.assign(navigator, {
+    clipboard: {
+      writeText: async (): Promise<void> => {},
+    },
+  });
+}
 function createValidityState(flags: Partial<ValidityState> = {}): ValidityState {
   return {
     badInput: false,
@@ -58,20 +67,53 @@ if (typeof HTMLElement !== 'undefined') {
   };
 }
 
-/** jsdom has no working 2d canvas — stub enough for layout/preview tests. */
+/** jsdom has no working 2d canvas — stub enough for layout/preview/component tests. */
+function createCanvas2DStub(): CanvasRenderingContext2D {
+  const noop = (): void => {};
+  const gradient = { addColorStop: noop };
+  return {
+    setTransform: noop,
+    clearRect: noop,
+    fillRect: noop,
+    beginPath: noop,
+    moveTo: noop,
+    arc: noop,
+    lineTo: noop,
+    closePath: noop,
+    clip: noop,
+    save: noop,
+    restore: noop,
+    drawImage: noop,
+    createLinearGradient: () => gradient,
+    fillStyle: '',
+    globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
+    filter: 'none',
+    imageSmoothingEnabled: true,
+  } as unknown as CanvasRenderingContext2D;
+}
+
 if (typeof HTMLCanvasElement !== 'undefined') {
   HTMLCanvasElement.prototype.getContext = function getContext(type: string) {
     if (type !== '2d') {
       return null;
     }
-    return {
-      setTransform: () => {},
-      beginPath: () => {},
-      moveTo: () => {},
-      arc: () => {},
-      lineTo: () => {},
-      closePath: () => {},
-      clip: () => {},
-    } as unknown as CanvasRenderingContext2D;
+    return createCanvas2DStub();
   };
+}
+
+/** jsdom may lack ResizeObserver — required by `<po-blade-preview>`. */
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  class ResizeObserverStub implements ResizeObserver {
+    constructor(private readonly callback: ResizeObserverCallback) {}
+
+    observe(): void {
+      this.callback([], this);
+    }
+
+    unobserve(): void {}
+
+    disconnect(): void {}
+  }
+  globalThis.ResizeObserver = ResizeObserverStub;
 }

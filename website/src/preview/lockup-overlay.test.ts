@@ -15,12 +15,13 @@ import { renderStylePreview } from './frame';
 
 describe('lockup and melt overlays', () => {
   const section = instantiateConfigStyle(getConfigStyle('smoke_blade')!, 'smoke_blade');
+  const clashSection = instantiateConfigStyle(getConfigStyle('with_vars')!, 'with_vars');
 
   it('flashes most of the blade on clash', () => {
     const idle = createInitialPreviewSim();
     const clashing = previewTriggerEvent(idle, 'clash', 1000);
-    const off = renderStylePreview(section, 48, 1000, idle);
-    const on = renderStylePreview(section, 48, 1000, clashing);
+    const off = renderStylePreview(clashSection, 48, 1000, idle);
+    const on = renderStylePreview(clashSection, 48, 1000, clashing);
     let brightened = 0;
     for (let i = 0; i < 48; i += 1) {
       const before = off.pixels.r[i]! + off.pixels.g[i]! + off.pixels.b[i]!;

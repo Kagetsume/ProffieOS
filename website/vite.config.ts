@@ -41,6 +41,7 @@ export default defineConfig({
         'src/model/blades.ts',
         'src/ui/elements/index.ts',
         'src/ui/pages/**',
+        // Lit UI — covered by jsdom component tests; excluded from threshold math (glue + DOM).
         'src/ui/elements/po-*-page.ts',
         'src/ui/elements/po-copy-panel.ts',
         'src/ui/elements/po-style-layer-stack.ts',

@@ -60,94 +60,6 @@ export class PoSubBladeEditor extends LitElement {
   }
 
   /**
-   * Builds the sub-blade range editor — rows with first/last inputs, validation, and add/remove actions.
-   *
-   * @returns Lit template for the sub-blade editor UI.
-   */
-  render() {
-    const rows = this.localSubBlades;
-    const logicalCount = rows.length > 0 ? rows.length : 1;
-
-    return html`
-      <div class="sub-blade-editor" data-field="subBlades">
-        <div class="sub-blade-heading">
-          ${subBladeEditorI18n.translate(subBladeEditorKeys.heading)}
-          <span class="sub-blade-hint"
-            >${subBladeEditorI18n.translate(subBladeEditorKeys.hint, {
-              logicalCount,
-              logicalSuffix: logicalCount === 1 ? '' : 's',
-              maxSubBlades: MAX_SUB_BLADES,
-            })}</span
-          >
-        </div>
-        ${rows.length === 0
-          ? html`<p class="sub-blade-empty">${subBladeEditorI18n.translate(subBladeEditorKeys.empty)}</p>`
-          : html`
-              <div class="sub-blade-rows">
-                ${rows.map(
-                  (row, index) => html`
-                    <div class="sub-blade-row" data-sub-blade-row="${index}">
-                      <span class="sub-blade-slot">${subBladeEditorI18n.translate(subBladeEditorKeys.slotLabel)}</span>
-                      <label>
-                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelFirst)}
-                        <wa-input
-                          type="number"
-                          min="0"
-                          .value=${String(row.first)}
-                          @wa-input=${(event: Event) =>
-                            this.onFieldInput(index, 'first', event)}
-                        ></wa-input>
-                      </label>
-                      <label>
-                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelLast)}
-                        <wa-input
-                          type="number"
-                          min="0"
-                          .value=${String(row.last)}
-                          @wa-input=${(event: Event) =>
-                            this.onFieldInput(index, 'last', event)}
-                        ></wa-input>
-                      </label>
-                      <span
-                        class="sub-blade-meta ${isValidSubBladeRange(row, this.pixels)
-                          ? ''
-                          : 'sub-blade-meta--invalid'}"
-                      >
-                        ${isValidSubBladeRange(row, this.pixels)
-                          ? subBladeEditorI18n.translate(subBladeEditorKeys.metaLedCount, {
-                              count: subBladeLedCount(row),
-                              ledSuffix: subBladeLedCount(row) === 1 ? '' : 's',
-                            })
-                          : subBladeEditorI18n.translate(subBladeEditorKeys.metaInvalid, { pixels: this.pixels })}
-                      </span>
-                      <wa-button
-                        size="small"
-                        variant="neutral"
-                        data-action="remove-sub-blade"
-                        @click=${() => this.removeRow(index)}
-                      >
-                        ${subBladeEditorI18n.translate(subBladeEditorKeys.remove)}
-                      </wa-button>
-                    </div>
-                  `,
-                )}
-              </div>
-            `}
-        <wa-button
-          class="sub-blade-add"
-          size="small"
-          variant="brand"
-          data-action="add-sub-blade"
-          ?disabled=${rows.length >= MAX_SUB_BLADES}
-          @click=${this.addRow}
-        >
-          ${subBladeEditorI18n.translate(subBladeEditorKeys.addRange)}
-        </wa-button>
-      </div>
-    `;
-  }
-
-  /**
    * Updates local state and notifies the parent of a new sub-blade range list.
    *
    * @param next - Complete sub-blade range array after an edit.
@@ -211,6 +123,94 @@ export class PoSubBladeEditor extends LitElement {
     this.emitSubBlades(removeSubBladeRow(this.localSubBlades, index));
     log.exit({ rowCount: this.localSubBlades.length });
   };
+
+  /**
+   * Builds the sub-blade range editor — rows with first/last inputs, validation, and add/remove actions.
+   *
+   * @returns Lit template for the sub-blade editor UI.
+   */
+  render() {
+    const rows = this.localSubBlades;
+    const logicalCount = rows.length > 0 ? rows.length : 1;
+
+    return html`
+      <div class="sub-blade-editor" data-testid="sub-blade-editor" data-field="subBlades">
+        <div class="sub-blade-heading">
+          ${subBladeEditorI18n.translate(subBladeEditorKeys.heading)}
+          <span class="sub-blade-hint"
+            >${subBladeEditorI18n.translate(subBladeEditorKeys.hint, {
+              logicalCount,
+              logicalSuffix: logicalCount === 1 ? '' : 's',
+              maxSubBlades: MAX_SUB_BLADES,
+            })}</span
+          >
+        </div>
+        ${rows.length === 0
+          ? html`<p class="sub-blade-empty">${subBladeEditorI18n.translate(subBladeEditorKeys.empty)}</p>`
+          : html`
+              <div class="sub-blade-rows">
+                ${rows.map(
+                  (row, index) => html`
+                    <div class="sub-blade-row" data-sub-blade-row="${index}">
+                      <span class="sub-blade-slot">${subBladeEditorI18n.translate(subBladeEditorKeys.slotLabel)}</span>
+                      <label>
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelFirst)}
+                        <wa-input
+                          type="number"
+                          min="0"
+                          .value=${String(row.first)}
+                          @wa-input=${(event: Event) =>
+                            this.onFieldInput(index, 'first', event)}
+                        ></wa-input>
+                      </label>
+                      <label>
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.labelLast)}
+                        <wa-input
+                          type="number"
+                          min="0"
+                          .value=${String(row.last)}
+                          @wa-input=${(event: Event) =>
+                            this.onFieldInput(index, 'last', event)}
+                        ></wa-input>
+                      </label>
+                      <span
+                        class="sub-blade-meta ${isValidSubBladeRange(row, this.pixels)
+                          ? ''
+                          : 'sub-blade-meta--invalid'}"
+                      >
+                        ${isValidSubBladeRange(row, this.pixels)
+                          ? subBladeEditorI18n.translate(subBladeEditorKeys.metaLedCount, {
+                              count: subBladeLedCount(row),
+                              ledSuffix: subBladeLedCount(row) === 1 ? '' : 's',
+                            })
+                          : subBladeEditorI18n.translate(subBladeEditorKeys.metaInvalid, { pixels: this.pixels })}
+                      </span>
+                      <wa-button
+                        size="small"
+                        variant="neutral"
+                        data-testid="sub-blade-editor-remove"
+                        @click=${() => this.removeRow(index)}
+                      >
+                        ${subBladeEditorI18n.translate(subBladeEditorKeys.remove)}
+                      </wa-button>
+                    </div>
+                  `,
+                )}
+              </div>
+            `}
+        <wa-button
+          class="sub-blade-add"
+          size="small"
+          variant="brand"
+          data-testid="sub-blade-editor-add"
+          ?disabled=${rows.length >= MAX_SUB_BLADES}
+          @click=${this.addRow}
+        >
+          ${subBladeEditorI18n.translate(subBladeEditorKeys.addRange)}
+        </wa-button>
+      </div>
+    `;
+  }
 }
 
 customElements.define('po-sub-blade-editor', PoSubBladeEditor);

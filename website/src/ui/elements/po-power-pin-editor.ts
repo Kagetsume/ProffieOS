@@ -73,62 +73,6 @@ export class PoPowerPinEditor extends LitElement {
   }
 
   /**
-   * Builds the power-pin editor — one pin picker per row plus add/remove controls.
-   *
-   * @returns Lit template for the power-pin editor UI.
-   */
-  render() {
-    const rows = this.localPins.map(
-      (pin, index) => html`
-        <div class="power-pin-row" data-pin-row="${index}">
-          <span class="power-pin-slot">${powerPinFieldLabel(index, this.localPins.length)}</span>
-          <po-pin-picker
-            .value=${pin}
-            .usedPresets=${usedPresetsForPicker(
-              this.blades,
-              this.bladeIndex,
-              this.localPins,
-              index,
-            )}
-            @pin-change=${(event: CustomEvent<{ value: string }>) =>
-              this.onPinChange(index, event.detail.value)}
-          ></po-pin-picker>
-          <wa-button
-            size="small"
-            variant="neutral"
-            data-action="remove-pin"
-            data-pin-index="${index}"
-            ?disabled=${this.localPins.length <= 1}
-            @click=${() => this.removeRow(index)}
-          >
-            ${powerPinEditorI18n.translate(powerPinEditorKeys.remove)}
-          </wa-button>
-        </div>
-      `,
-    );
-
-    return html`
-      <div class="power-pin-editor" data-field="powerPins">
-        <div class="power-pin-heading">
-          ${powerPinEditorI18n.translate(powerPinEditorKeys.heading)}
-          <span class="power-pin-hint">${powerPinEditorI18n.translate(powerPinEditorKeys.hint)}</span>
-        </div>
-        <div class="power-pin-rows">${rows}</div>
-        <wa-button
-          class="power-pin-add"
-          size="small"
-          variant="brand"
-          data-action="add-pin"
-          ?disabled=${this.localPins.length >= MAX_POWER_PINS}
-          @click=${this.addRow}
-        >
-          ${powerPinEditorI18n.translate(powerPinEditorKeys.addPowerPin)}
-        </wa-button>
-      </div>
-    `;
-  }
-
-  /**
    * Updates local state and notifies the parent of a new power-pin list.
    *
    * @param next - Complete power-pin id array after an edit.
@@ -192,6 +136,63 @@ export class PoPowerPinEditor extends LitElement {
     this.emitPins(removePowerPinRow(this.localPins, index));
     log.exit({ pinCount: this.localPins.length });
   };
+
+  /**
+   * Builds the power-pin editor — one pin picker per row plus add/remove controls.
+   *
+   * @returns Lit template for the power-pin editor UI.
+   */
+  render() {
+    const rows = this.localPins.map(
+      (pin, index) => html`
+        <div class="power-pin-row" data-testid="power-pin-editor-row" data-pin-row="${index}">
+          <span class="power-pin-slot">${powerPinFieldLabel(index, this.localPins.length)}</span>
+          <po-pin-picker
+            data-testid="power-pin-editor-picker"
+            .value=${pin}
+            .usedPresets=${usedPresetsForPicker(
+              this.blades,
+              this.bladeIndex,
+              this.localPins,
+              index,
+            )}
+            @pin-change=${(event: CustomEvent<{ value: string }>) =>
+              this.onPinChange(index, event.detail.value)}
+          ></po-pin-picker>
+          <wa-button
+            size="small"
+            variant="neutral"
+            data-testid="power-pin-editor-remove"
+            data-pin-index="${index}"
+            ?disabled=${this.localPins.length <= 1}
+            @click=${() => this.removeRow(index)}
+          >
+            ${powerPinEditorI18n.translate(powerPinEditorKeys.remove)}
+          </wa-button>
+        </div>
+      `,
+    );
+
+    return html`
+      <div class="power-pin-editor" data-testid="power-pin-editor" data-field="powerPins">
+        <div class="power-pin-heading">
+          ${powerPinEditorI18n.translate(powerPinEditorKeys.heading)}
+          <span class="power-pin-hint">${powerPinEditorI18n.translate(powerPinEditorKeys.hint)}</span>
+        </div>
+        <div class="power-pin-rows" data-testid="power-pin-editor-rows">${rows}</div>
+        <wa-button
+          class="power-pin-add"
+          size="small"
+          variant="brand"
+          data-testid="power-pin-editor-add"
+          ?disabled=${this.localPins.length >= MAX_POWER_PINS}
+          @click=${this.addRow}
+        >
+          ${powerPinEditorI18n.translate(powerPinEditorKeys.addPowerPin)}
+        </wa-button>
+      </div>
+    `;
+  }
 }
 
 customElements.define('po-power-pin-editor', PoPowerPinEditor);

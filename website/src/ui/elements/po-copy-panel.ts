@@ -47,33 +47,6 @@ export class PoCopyPanel extends PoElement {
   }
 
   /**
-   * Renders a read-only INI preview with copy and download actions.
-   *
-   * @returns Lit template for the copy panel card and textarea.
-   */
-  render() {
-    return html`
-      <wa-card>
-        <div slot="header" class="copy-panel-header">
-          <strong>${this.title}</strong>
-          <span class="copy-panel-filename">${this.filename}</span>
-        </div>
-        <textarea readonly spellcheck="false" .value=${this.content}></textarea>
-        <div class="copy-panel-actions">
-          <wa-button variant="brand" @click=${this.onCopy}>
-            <wa-icon name="copy" label=${copyPanelI18n.translate(copyPanelKeys.copy)}></wa-icon>
-            ${this.copyLabel}
-          </wa-button>
-          <wa-button variant="neutral" @click=${this.onDownload}>
-            <wa-icon name="download" label=${copyPanelI18n.translate(copyPanelKeys.download)}></wa-icon>
-            ${copyPanelI18n.translate(copyPanelKeys.download)}
-          </wa-button>
-        </div>
-      </wa-card>
-    `;
-  }
-
-  /**
    * Copies panel content to the clipboard and briefly shows a confirmation label.
    *
    * @returns Promise that resolves when the copy attempt finishes (success or failure).
@@ -120,6 +93,38 @@ export class PoCopyPanel extends PoElement {
     URL.revokeObjectURL(url);
     log.exit({ filename: this.filename });
   };
+
+  /**
+   * Renders a read-only INI preview with copy and download actions.
+   *
+   * @returns Lit template for the copy panel card and textarea.
+   */
+  render() {
+    return html`
+      <wa-card data-testid="copy-panel">
+        <div slot="header" class="copy-panel-header">
+          <strong>${this.title}</strong>
+          <span class="copy-panel-filename">${this.filename}</span>
+        </div>
+        <textarea
+          data-testid="copy-panel-content"
+          readonly
+          spellcheck="false"
+          .value=${this.content}
+        ></textarea>
+        <div class="copy-panel-actions">
+          <wa-button data-testid="copy-panel-copy-button" variant="brand" @click=${this.onCopy}>
+            <wa-icon name="copy" label=${copyPanelI18n.translate(copyPanelKeys.copy)}></wa-icon>
+            ${this.copyLabel}
+          </wa-button>
+          <wa-button data-testid="copy-panel-download-button" variant="neutral" @click=${this.onDownload}>
+            <wa-icon name="download" label=${copyPanelI18n.translate(copyPanelKeys.download)}></wa-icon>
+            ${copyPanelI18n.translate(copyPanelKeys.download)}
+          </wa-button>
+        </div>
+      </wa-card>
+    `;
+  }
 }
 
 customElements.define('po-copy-panel', PoCopyPanel);

@@ -48,54 +48,6 @@ export class PoPinPicker extends LitElement {
   }
 
   /**
-   * Builds the pin picker — preset options (with in-use disabling) and optional custom input.
-   *
-   * @returns Lit template for the pin picker UI.
-   */
-  render() {
-    const stored = this.value.trim();
-    const selectValue = selectValueForPin(stored, this.mode);
-    const showCustom = selectValue === CUSTOM_PIN_VALUE;
-    const catalog = pinCatalogForMode(this.mode);
-
-    return html`
-      <div class="pin-picker">
-        <wa-select
-          class="pin-picker-select"
-          .value=${selectValue}
-          placeholder=${pinPickerI18n.translate(
-            this.mode === 'data' ? pinPickerKeys.placeholderData : pinPickerKeys.placeholderPower,
-          )}
-          @wa-change=${this.onSelectChange}
-          @change=${this.onSelectChange}
-        >
-          ${catalog.map(
-            (entry) => html`
-              <wa-option
-                value=${entry.id}
-                ?disabled=${this.usedPresets.has(entry.id)}
-              >
-                ${this.usedPresets.has(entry.id)
-                  ? pinPickerI18n.translate(pinPickerKeys.optionInUse, { label: entry.label })
-                  : entry.label}
-              </wa-option>
-            `,
-          )}
-          <wa-option value=${CUSTOM_PIN_VALUE}
-            >${pinPickerI18n.translate(pinPickerKeys.optionCustom)}</wa-option
-          >
-        </wa-select>
-        <wa-input
-          class="pin-picker-custom ${showCustom ? '' : 'pin-picker-custom--hidden'}"
-          .value=${showCustom ? stored : ''}
-          placeholder=${pinPickerI18n.translate(pinPickerKeys.placeholderCustom)}
-          @wa-input=${this.onCustomInput}
-        ></wa-input>
-      </div>
-    `;
-  }
-
-  /**
    * Handles preset or custom selection from the pin `wa-select`.
    *
    * @param event - Change event from the pin select control.
@@ -163,6 +115,55 @@ export class PoPinPicker extends LitElement {
       }),
     );
     log.exit({ trimmed });
+  }
+
+  /**
+   * Builds the pin picker — preset options (with in-use disabling) and optional custom input.
+   *
+   * @returns Lit template for the pin picker UI.
+   */
+  render() {
+    const stored = this.value.trim();
+    const selectValue = selectValueForPin(stored, this.mode);
+    const showCustom = selectValue === CUSTOM_PIN_VALUE;
+    const catalog = pinCatalogForMode(this.mode);
+
+    return html`
+      <div class="pin-picker" data-testid="pin-picker">
+        <wa-select
+          class="pin-picker-select"
+          data-testid="pin-picker-select"
+          .value=${selectValue}
+          placeholder=${pinPickerI18n.translate(
+            this.mode === 'data' ? pinPickerKeys.placeholderData : pinPickerKeys.placeholderPower,
+          )}
+          @wa-change=${this.onSelectChange}
+          @change=${this.onSelectChange}
+        >
+          ${catalog.map(
+            (entry) => html`
+              <wa-option
+                value=${entry.id}
+                ?disabled=${this.usedPresets.has(entry.id)}
+              >
+                ${this.usedPresets.has(entry.id)
+                  ? pinPickerI18n.translate(pinPickerKeys.optionInUse, { label: entry.label })
+                  : entry.label}
+              </wa-option>
+            `,
+          )}
+          <wa-option value=${CUSTOM_PIN_VALUE}
+            >${pinPickerI18n.translate(pinPickerKeys.optionCustom)}</wa-option
+          >
+        </wa-select>
+        <wa-input
+          class="pin-picker-custom ${showCustom ? '' : 'pin-picker-custom--hidden'}"
+          .value=${showCustom ? stored : ''}
+          placeholder=${pinPickerI18n.translate(pinPickerKeys.placeholderCustom)}
+          @wa-input=${this.onCustomInput}
+        ></wa-input>
+      </div>
+    `;
   }
 }
 
