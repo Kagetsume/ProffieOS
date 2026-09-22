@@ -1,6 +1,8 @@
 #ifndef STYLES_LEGACY_STYLES_H
 #define STYLES_LEGACY_STYLES_H
 
+#include "../functions/inout_ms.h"
+
 // This macro has a problem with commas, please don't use it.
 #define EASYBLADE(COLOR, CLASH_COLOR) \
   SimpleClash<Lockup<Blast<COLOR, WHITE>, AudioFlicker<COLOR, WHITE> >, CLASH_COLOR>
@@ -47,7 +49,15 @@ StyleAllocator StyleNormalPtrX() {
   typedef Blast<base_color, blast_color> AddBlast;
   typedef Lockup<AddBlast, AddFlicker> AddLockup;
   typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelperX<AddClash, InOutFuncX<out_millis, in_millis>> >();
+  return StylePtr<InOutHelperX<AddClash, InOutFuncAuto<out_millis, in_millis>> >();
+}
+
+// Solid blade base: extend/retract only — stack clash/lockup/blast overlay layers separately.
+template<class base_color,
+         class out_millis,
+         class in_millis>
+StyleAllocator StyleSolidPtrX() {
+  return StylePtr<InOutHelperX<base_color, InOutFuncAuto<out_millis, in_millis>>>();
 }
 
 // Rainbow blade.
@@ -73,7 +83,7 @@ StyleAllocator StyleRainbowPtrX() {
   typedef AudioFlicker<Rainbow, lockup_flicker_color> AddFlicker;
   typedef Lockup<Rainbow, AddFlicker> AddLockup;
   typedef SimpleClash<AddLockup, clash_color> AddClash;
-  return StylePtr<InOutHelperX<AddClash, InOutFuncX<out_millis, in_millis>> >();
+  return StylePtr<InOutHelperX<AddClash, InOutFuncAuto<out_millis, in_millis>> >();
 }
 
 // Stroboscope, flickers the blade at the desired frequency.

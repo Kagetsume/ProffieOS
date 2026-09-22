@@ -2,6 +2,24 @@
 
 A **blade configuration file** on the SD card defines which **data line** controls which blade, how many **pixels** are in that blade, and which **FET/power lines** are mapped to that blade.
 
+## What this file is for
+
+| You want to… | Configure in `blades.ini` | Configure elsewhere |
+|--------------|---------------------------|---------------------|
+| Wire the main NeoPixel strip | `data_pin`, `pixels`, `power_pin` | — |
+| Add PWM accents (Free1–3) | `type=simple`, `data_pin`, `led` | `style = accent_*` in `presets.ini` |
+| Split one strip into hilt + chamber | `sub_blade = first, last` | One `style =` per range in `presets.ini` |
+| Change blade colors/effects | — | `presets.ini`, `blade_styles.ini` |
+
+**Blade index** (`blade=0`, `blade=1`, …) is the wiring slot in this file. Each index (or each
+**sub_blade** range on a strip) needs a matching **`style =`** line in `presets.ini`. Set
+**`NUM_BLADES`** in your compiled firmware config to the total logical blade count.
+
+When this file is **missing**, the saber uses blade drivers compiled into your `CONFIG_FILE`.
+When it is **present** (Proffieboard), it **replaces** that wiring at runtime.
+
+Editor guide with more examples: [`website/BLADES.md`](../website/BLADES.md).
+
 ## Location and name
 
 - Path: **`config/blades.ini`** in the **root** of the SD card (same level as `Fonts`, `tracks`, `config/presets.ini`, etc.).
@@ -122,9 +140,18 @@ Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.
 
 ## Sub-blades
 
-You can split one physical strip into multiple LED ranges (sub-blades) so each segment can be styled independently:
+You can split one physical strip into multiple LED ranges (sub-blades) so each segment can be styled independently. This matches compiled `SubBlade(first, last, ...)` in `blades/sub_blade.h`.
+
+**Typical uses:**
+
+| Layout | Example ranges | Why |
+|--------|----------------|-----|
+| Main + crystal on one chain | `0, 119` and `120, 143` | Different styles on body vs chamber |
+| Hilt PCB + crystal + accents (one data line) | `0, 2`, `3, 3`, `4, 8` | One physical chain, multiple logical blades |
+| Shorter “effective” main blade | `0, 99` only (rest unused) | Style only part of a long strip |
 
 ```ini
+# Main body + crystal chamber — two preset style = lines for blade 0
 blade = 0
 data_pin = bladePin
 pixels = 144
@@ -133,9 +160,56 @@ sub_blade = 0, 99
 sub_blade = 100, 143
 ```
 
+```ini
+# Single strip, no sub-blades — entire 144 LEDs share one style
+blade = 0
+data_pin = bladePin
+pixels = 144
+power_pin = bladePowerPin1
+```
+
 - **sub_blade = first, last** — One LED range: `first` and `last` are inclusive indices (0-based). Add multiple lines for multiple segments. Up to **8** sub-blades per blade.
-- When any `sub_blade` lines are present, the blade is built as a SubBlade chain (same as compiled `SubBlade(first, last, ...)`). Ranges must be within `0` … `pixels - 1`.
-- When no sub_blade lines are given, the full strip is used as one blade.
+- When any `sub_blade` lines are present, the blade is built as a SubBlade chain. Ranges must be within `0` … `pixels - 1`.
+- When no sub_blade lines are given, the full strip is used as one logical blade.
+
+## Five-blade example (NeoPixel + accents)
+
+Matches [`examples/config/blades.ini`](../examples/config/blades.ini) when `NUM_BLADES` is 5:
+
+```ini
+blade = 0
+data_pin = bladePin
+pixels = 144
+power_pin = bladePowerPin1
+
+blade = 1
+data_pin = blade2Pin
+pixels = 60
+power_pin1 = bladePowerPin2
+power_pin2 = bladePowerPin3
+
+blade = 2
+type = simple
+data_pin = blade5Pin
+led = CreeXPE2White
+active_state = high
+
+blade = 3
+type = simple
+data_pin = blade6Pin
+led = CreeXPE2White
+active_state = high
+
+blade = 4
+type = simple
+data_pin = blade7Pin
+led = CreeXPE2White
+active_state = high
+
+end
+```
+
+Indices 2–4 are **simple PWM** accents on Free1–Free3. Pair with `accent_pulse`, `accent_sound_on`, `accent_glow`, etc. in `presets.ini`.
 
 ## Limits
 

@@ -2,6 +2,8 @@
 
 Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc.) using **`config/blade_styles.ini`** on the SD card. **INI recipes** can be edited on the SD card without recompiling. **New firmware named styles** (e.g. **`water_flow`**, **`fallen_order`**) need a one-time reflash; colors and overlays remain SD-editable afterward.
 
+**User guide (examples + use cases):** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md).
+
 **Use in presets:** set the style to **`config <effect_name>`** where `effect_name` is a section name in the config file. Optional **`key=value`** tokens after the section name override **`{{name}}`** for that preset only (up to 16 pairs).
 
 **Local variables:** In a section, lines like **`base = cyan`** define names; use **`{{base}}`** inside **`layer = ...`** lines. **Named palettes:** **`[palette_<id>]`** blocks and **`palette = <id>`** in an effect section merge shared colors. **`include = path`** loads palette sections (top-level) or merges **`layer` / palette / vars** from a fragment file into a section — see **blade_styles_config.md**.
@@ -30,6 +32,8 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 | Style | Arguments (in order) | Example |
 |-------|----------------------|---------|
+| **solid** | base color, extension ms, retraction ms | `solid cyan 300 800` — composable base; stack `clash` / `blast` overlays |
+| **solid_bend** | base color, extension ms, retraction ms | `solid_bend cyan 300 800` — like **solid** with OS7 BendTimePow in/out |
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
 | **fire** | warm color, hot color | `fire red yellow` |
@@ -43,10 +47,37 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
 | **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
 | **fallen_order** | base, clash, extend ms, retract ms | `fallen_order silver white 300 800` |
+| **smoke_flow** | dark color, light color, extension ms, retraction ms | `smoke_flow black white {{ext}} {{ret}}` — **ext/ret must match base** (each multiply/screen line) |
+| **gradient_layer** | hilt color, tip color | `gradient_layer red blue` — no ext/ret (compositor follows base) |
+| **audio_layer** | (no args) | `audio_layer` — no ext/ret |
 | **charging** | (no args) | `charging` |
 | **blast** | blast color only (overlay; timing fixed in template) | `blast white` |
 | **config** | section name (nested) | `config other_effect` |
 | **builtin** | preset index, blade index, … | `builtin 0 1` |
+
+**Extend/retract auto timing:** On styles with extension/retraction ms args, use **`-1`** to match ignition or retraction soundfont length (e.g. `ext = -1`, `layer = solid {{base}} -1 -1`).
+
+### Extend/retract in layered recipes
+
+| Layer kind | `ext` / `ret` on texture line? | Why |
+|------------|-------------------------------|-----|
+| **Base** (`solid`, `solid_bend`, …) | **Yes** — `layer = solid {{base}} {{ext}} {{ret}}` | Drives extend/retract for the stack |
+| **normal/add textures** (`gradient_layer`, `stripes` with add, …) | **No** | `ConfigLayersStyle` auto-clips to base lit pixels (follows base timing, including **`-1`**) |
+| **multiply/screen textures** (`audio_layer`, `pulse_layer`, `fire_mask`, …) | **No** | No internal InOut; compositor does not clip multiply (safe over black) |
+| **`smoke_flow`** (multiply + screen) | **Yes — must match base** | Own InOut alpha; pass **`{{ext}} {{ret}}`** on **each** `smoke_flow` line |
+| Full InOut styles as layers (`audio`, `flicker`, …) | **Yes — when args include ext/ret** | Not the same as composable **`audio_layer`** (no ext/ret) |
+
+**Smoke recipe rule:** use **`smoke_flow` only** (not `smoke_up`/`smoke_down`). Example with sound sync:
+
+```ini
+ext = -1
+ret = -1
+layer = solid {{base}} {{ext}} {{ret}}
+layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}
+layer = screen opacity 4000 smoke_flow black {{base}} {{ext}} {{ret}}
+```
+
+Full details: **blade_styles_config.md** (section *Extend/retract in layered recipes*).
 
 ---
 
@@ -347,7 +378,7 @@ Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 O
 
 | Section | Preset example | Notes |
 |---------|----------------|-------|
-| `[smoke_blade]` / `[smoke_laser]` | Smoke Blade | Pure SD layers (no firmware change) |
+| `[smoke_blade]` / `[smoke_laser]` | Smoke Blade | **`solid`** base + **`smoke_flow`** (multiply + screen; **same `{{ext}}`/`{{ret}}` as base**) + composable **`clash`** / **`blast`** overlays (needs **`smoke_flow`** in firmware) |
 | `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
 | `[darksaber_blade]` | Dark Saber | Needs **`darksaber`** in firmware |
 | `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |

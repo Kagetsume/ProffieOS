@@ -13,8 +13,8 @@ The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `bl
 |------|---------|
 | **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
 | **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
-| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). |
-| **blade_styles.ini** | Named style "recipes" as layers. See table below for full feature list. |
+| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). **Guide:** [`website/BLADES.md`](../website/BLADES.md) (examples + use cases). |
+| **blade_styles.ini** | Named style "recipes" as layers. **Guide:** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md). See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |
 | **presets.ini** | Preset list: font, track, style, name. Includes examples of **`config <section>`**, variable overrides, nested configs, preon/postoff, and direct named styles. |
@@ -82,7 +82,9 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 | Style | Example | Notes |
 |-------|---------|-------|
-| `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast |
+| `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / lockup overlays for composable recipes |
+| `solid_bend` | `solid_bend cyan 300 800` | Like `solid` with OS7 BendTimePow in/out |
+| `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
 | `fire` | `fire red yellow` | Rolling flame (no extend/retract animation) |
 | `rainbow` | `rainbow 300 800 white white` | Extend, retract, clash, lockup |
 | `gradient` | `gradient red blue white white white 300 800` | Hilt, tip, blast, lockup, clash, extend, retract |
@@ -134,6 +136,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | Style | Example | Notes |
 |-------|---------|-------|
 | `fire_mask` | `multiply opacity 20000 fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
+| `smoke_flow` | multiply `black white {{ext}} {{ret}}`; screen `black <base> {{ext}} {{ret}}` | Smoke blade recipe; **ext/ret must match base** (use `{{ext}}`/`{{ret}}`; `-1` = sound length) |
 | `stripes` | `add opacity 10000 stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 18000 hard_stripes 1200 -4000 black white` | Hard-edged bands |
 | `noise_flicker` | `multiply opacity 8000 noise_flicker black white` | Organic crackle texture |
@@ -142,15 +145,15 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
 
-Example sections in `examples/config/blade_styles.ini`: `[rainbow_pulse]`, `[standard_swing_sparkle]`, `[smoke_blade]`, `[greyscale_mercenary]`, `[greyscale_coda]`, `[water_blade]`, `[energy_blade]`, `[rolling_surge]`, `[pulse_stripes]`, `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]`, plus Fett263 bases `[darksaber_blade]`, `[fallen_order_blade]`, etc.
+Example sections in `examples/config/blade_styles.ini`: `[rainbow_pulse]`, `[standard_swing_sparkle]`, `[smoke_blade]`, `[composable_gradient]`, `[composable_audio]`, `[composable_breathe]`, `[composable_crackle]`, `[composable_shimmer]`, `[greyscale_mercenary]`, `[greyscale_coda]`, `[water_blade]`, `[energy_blade]`, `[rolling_surge]`, `[pulse_stripes]`, `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]`, plus Fett263 bases `[darksaber_blade]`, `[fallen_order_blade]`, etc.
 
 ### Fett263 OS7 style approximations
 
-These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) compiled styles via **`config/blade_styles.ini`**. **`smoke_blade`** is pure SD layers; the others need one firmware reflash for their base named styles, then remain SD-editable.
+These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) compiled styles via **`config/blade_styles.ini`**. **`smoke_blade`** is pure SD layers (**`solid`** base + **`smoke_flow`** + composable overlays); the others need one firmware reflash for their base named styles, then remain SD-editable.
 
 | OS7 style | SD section | Preset | Approximates well | Cannot replicate |
 |-----------|------------|--------|-------------------|------------------|
-| [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade | Rolling smoke masks, warm scatter, drag/melt/LB | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
+| [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade | **`solid`** base + **`smoke_flow`** (multiply + screen; **same `{{ext}}`/`{{ret}}` as base**) + composable **`clash`** / **`blast`** / lockup overlays, drag/melt/LB | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
 | [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `water_blade` | Water Blade | **`water_flow`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
 | [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `darksaber_blade` | Dark Saber | **`darksaber`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
 | [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `static_electricity_blade` | Static Electricity | **`static_electricity`** + BendTimePow in/out, drag/melt/LB | OS7 Real Clash V1, Bump lockup zones |
@@ -160,7 +163,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | [EnergyBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#EnergyBlade) | `energy_blade` / `rotating_pulse_sd` / `energy_core` | Energy / Rotating / Core | **Surging:** SD stripes; **Rotating:** **`rotating_pulse`** firmware; **Core:** SD stripes + fire_mask + noise_flicker | Flickering core SD-only as `energy_core` (~70–80%) |
 | Rolling surge | `rolling_surge` | Rolling Surge | **Pure SD:** slow `stripes` 22000/-1400 + `audio` screen (~80–85%); [Fett263 OS7 Master Sol option](https://www.fett263.com/fett263-proffieOS7-style-library.html#Acolyte) | Five-band Mix stripe shading, exact AudioFlicker mix |
 | Pulse stripes | `pulse_stripes` / `pulse_stripes_sd` | Pulse Stripes | **`pulse_stripes`** HoldPeakF on ignition/alt-sound + StripesX + Pulsing 1400 ms; [Fett263 OS7 ignition-surge option](https://www.fett263.com/fett263-proffieOS7-style-library.html#JediSurvivor) | Full OS7 lockup absorb shapes |
-| [Greyscale](https://www.fett263.com/fett263-proffieOS7-style-library.html#Greyscale) | `greyscale_mercenary` / `greyscale_coda` | Greyscale | **Mercenary:** smoke + stripes + swing; **CODA:** pulse + stripes + sparkle (SD only) | OS7 `STYLE_OPTION` switch; Sin-driven StripesX on CODA |
+| [Greyscale](https://www.fett263.com/fett263-proffieOS7-style-library.html#Greyscale) | `greyscale_mercenary` / `greyscale_coda` | Greyscale | **Mercenary:** fire_mask + stripes + swing; **CODA:** pulse + stripes + sparkle (SD only) | OS7 `STYLE_OPTION` switch; Sin-driven StripesX on CODA |
 | [ShimmerBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#ShimmerBlade) | `shimmer_blade` / `shimmer_blade_sd` | Shimmer Blade | **`shimmer_blade`** HoldPeakF swing shimmer + BendTimePow in/out | Full OS7 lockup absorb shapes |
 | [Rotoscope](https://www.fett263.com/fett263-proffieOS7-style-library.html#Rotoscope) | `rotoscope` / `rotoscope_sd` | Rotoscope | **`rotoscope`** SwingAcceleration + HoldPeakF rotoscope bands + BendTimePow in/out | Full OS7 lockup absorb shapes (Bump zones, melt twist) |
 | [BlackPanther](https://www.fett263.com/fett263-proffieOS7-style-library.html#BlackPanther) | `kinetic_charge` / `kinetic_charge_sd` | Kinetic Charge | **`kinetic_charge`** clash/lockup charge + configurable kinetic color | Full OS7 lockup absorb shapes; inverse of StaticElectricity |
@@ -177,10 +180,10 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 
 | Feature | Description |
 |---------|-------------|
-| **Layer styles** | Full blades (`standard`, `fire`, `rainbow`, `gradient`, `audio`, …) plus overlay layers (`blast`, `clash`, `pulse`, `sparkle`, `swing`, …). |
+| **Layer styles** | Full blades (`solid`, `solid_bend`, `standard`, `fire`, `rainbow`, `gradient`, `audio`, …) plus overlay layers (`blast`, `clash`, `pulse`, `sparkle`, `swing`, …). Composable recipes use **`solid`** + overlay `clash`/`blast`. |
 | **Preon/postoff** | `preon_glow`, `preon_wipe`, `preon_sputter`, `postoff_glow`, `postoff_wipe`, `postoff_sputter` -- transparent transition layers that play before ignition or after retraction, with duration and intensity driven by sound files. See section below. |
 | **Ignition flash** | `ignition_flash` -- full-blade color flash during `EFFECT_IGNITION` (SeismicCharge OS7). Args: `color extend_ms fade_ms`. |
-| **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`** (linear **`standard`** unchanged). |
+| **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`**, **`solid_bend`** (linear **`standard`** / **`solid`** unchanged). |
 | **Blend modes** | `normal`, `multiply`, `screen`, `add` -- control how layers combine. |
 | **Opacity** | `opacity <0-32768>` -- per-layer transparency control. |
 | **Variables** | `name = value` + `{{name}}` -- section-local variables with preset overrides (`config section key=value`). |
@@ -238,6 +241,20 @@ In firmware, these SD “named styles” are built from **`TransitionEffectConfi
 That is why preon/postoff work as **ordinary** `layer =` entries next to `standard` or `fire`: they do not need a separate wiring path beyond being listed in the section.
 
 ### Duration: `WavLen` matches the sound file
+
+**Extend/retract auto timing:** On named styles with **`extend_ms`** / **`retract_ms`** args (e.g. **`solid`**, **`standard`**, **`rainbow`**), use **`-1`** to match ignition or retraction soundfont length instead of a fixed millisecond value. Example: `ext = -1`, `ret = -1`, or `layer = solid {{base}} -1 -1`.
+
+**Layered recipes — who needs `ext`/`ret` on the line?**
+
+| Layer | Pass `{{ext}}` / `{{ret}}`? |
+|-------|----------------------------|
+| Base (`solid`, `solid_bend`, …) | **Yes** |
+| `gradient_layer`, `stripes` (add), … | **No** — compositor follows base (including `-1`) |
+| `audio_layer`, `pulse_layer`, `fire_mask`, … | **No** |
+| **`smoke_flow`** (each line) | **Yes — must match base** |
+| Full InOut styles as layers (`audio`, `flicker`, …) | **Yes — when args include ext/ret** |
+
+Smoke blades use **`smoke_flow`** only (not `smoke_up`/`smoke_down`). Composable **`audio_layer`** does not take ext/ret; stacked **`audio`** does. See **`doc/blade_styles_config.md`**.
 
 All six built-in preon/postoff styles use **`WavLen<EFFECT_PREON>`** or **`WavLen<EFFECT_POSTOFF>`** for their timed phases. In practice:
 

@@ -70,6 +70,16 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
   return base << blended;
 }
 
+// When stacking config layers, clip overlay layers (index >= 1) to lit pixels on the base
+// layer (index 0) for normal/add blends only (prevents ghosting on gradient_layer etc.).
+// Skip multiply/screen — they don't ghost on black bases, and clipping fights smoke_flow's
+// own InOut alpha (double-clip caused unstable retract/extend on smoke blades).
+inline uint16_t OverlayClipFactorFromBase(RGBA_um base) {
+  if (!base.alpha) return 0;
+  if (!(base.c.r | base.c.g | base.c.b)) return 0;
+  return CONFIG_LAYER_ALPHA_OPAQUE;
+}
+
 // CompositeConfigLayer produces premultiplied RGBA (see RGBA ctor from RGBA_um in color.h).
 // RGBA_premul_to_overdrive / RGBA_to_RGBA_um: common/color.h
 
@@ -207,10 +217,19 @@ public:
 
 private:
   RGBA CompositeConfigLayersRGBA(int led) {
+    RGBA_um base_rgba = RGBA_um::Transparent();
+    if (num_layers_ > 0 && layers_[0]) base_rgba = layers_[0]->getLayerColor(led);
+    const uint16_t overlay_clip = (num_layers_ > 1) ? OverlayClipFactorFromBase(base_rgba) : CONFIG_LAYER_ALPHA_OPAQUE;
+
     RGBA result(RGBA_um::Transparent());
     for (int i = 0; i < num_layers_; i++) {
       if (layers_[i]) {
         RGBA_um layer_rgba = layers_[i]->getLayerColor(led);
+        if (i > 0 && overlay_clip != CONFIG_LAYER_ALPHA_OPAQUE &&
+            (layer_blend_[i] == CONFIG_LAYER_BLEND_NORMAL ||
+             layer_blend_[i] == CONFIG_LAYER_BLEND_ADD)) {
+          layer_rgba.alpha = (uint32_t)layer_rgba.alpha * overlay_clip >> 15;
+        }
         if (layer_alpha_[i] != CONFIG_LAYER_ALPHA_OPAQUE) {
           layer_rgba.alpha = (uint32_t)layer_rgba.alpha * layer_alpha_[i] >> 15;
         }

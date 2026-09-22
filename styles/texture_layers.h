@@ -2,7 +2,9 @@
 #define STYLES_TEXTURE_LAYERS_H
 
 // Non-opaque-friendly texture overlays for config/blade_styles.ini layering.
-// Use over an opaque base (standard, gradient, rainbow, …) with multiply, screen, or add.
+// Use over an opaque base (solid, solid_bend, standard, …) with multiply, screen, or add.
+// ConfigLayersStyle automatically clips overlay layers (index >= 1) to lit pixels on the
+// base layer during extend/retract — no ext/ret args on texture lines needed.
 //
 // Examples:
 //   layer = standard blue white 300 800
@@ -10,13 +12,57 @@
 //   layer = multiply opacity 12000 stripes 800 -1500 black white
 //   layer = add opacity 6000 noise_flicker black cyan
 
+#include "alpha.h"
+#include "colors.h"
 #include "fire.h"
+#include "gradient.h"
+#include "mix.h"
+#include "smoke_mask.h"
 #include "stripes.h"
 #include "unstable_blades.h"
-
+#include "../functions/inout_ms.h"
+#include "../functions/scale.h"
+#include "../functions/random.h"
+#include "../functions/sound_level.h"
+#include "../functions/uniform_brightness_overlay.h"
 // Rolling heat texture (StaticFire — no clash/lockup/off fire configs). Same color args as fire.
 template<class WARM, class HOT>
 using FireMaskLayer = StaticFire<WARM, HOT>;
+
+// Wide rolling smoke toward tip (hilt→tip). Slow heat, low rand — blobs not per-LED flicker.
+template<class WARM, class HOT>
+using SmokeUpLayer = StyleSmokeLuminance<
+  WARM, HOT, 0, 1,
+  FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>>;
+
+// Wide rolling smoke toward hilt (tip→hilt). Slightly stronger rand — drives upper-blade activity.
+template<class WARM, class HOT>
+using SmokeDownLayer = StyleSmokeLuminanceReverse<
+  WARM, HOT, 0, 1,
+  FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>>;
+
+// Opposing wide sine smoke rolls (offset dual bands, not fire merge).
+template<class WARM, class HOT>
+using SmokeFlowLayer = StyleSmokeFlow<
+  WARM, HOT, 0, 1,
+  FireConfig<0, 400, 1>, FireConfig<0, 550, 1>>;
+
+// Clip smoke to the lit blade during extend/retract. Uses AlphaL + inverted InOutHelperF
+// (NOT InOutHelperX — that pattern masks opaque bases with black and inverts on overlays).
+template<class WARM, class HOT, class EXT, class RET>
+using SmokeFlowInOutLayer = AlphaL<
+  SmokeFlowLayer<WARM, HOT>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+
+template<class WARM, class HOT, class EXT, class RET>
+using SmokeUpInOutLayer = AlphaL<
+  SmokeUpLayer<WARM, HOT>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+
+template<class WARM, class HOT, class EXT, class RET>
+using SmokeDownInOutLayer = AlphaL<
+  SmokeDownLayer<WARM, HOT>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
 
 // Moving soft stripes (width, speed, color1, color2).
 template<class WIDTH, class SPEED, class C1, class C2>
@@ -29,5 +75,41 @@ using HardStripesLayer = HardStripesX<WIDTH, SPEED, C1, C2>;
 // UnstableBlades stripe/noise band only (no full InOutHelper wrapper).
 template<class BASE>
 using UnstableStripesLayer = UnstableBladesStripesBase<BASE>;
+
+// Uniform whole-blade brightness overlay (multiply over layers below).
+// WAVE: 0–32768 driver (sine, random hold, …); DELTA: +/- brightness percent.
+template<class WAVE, class DELTA = Int<10>>
+using BrightnessOverlayLayer = Mix<
+  UniformBrightnessOverlayF<WAVE, DELTA>,
+  Black,
+  White>;
+
+// Random +/- flicker — delta_percent min_period_ms max_period_ms.
+template<class DELTA, class MIN_MS, class MAX_MS>
+using BaseFlickerOverlay = BrightnessOverlayLayer<
+  RandomHoldWaveF<MIN_MS, MAX_MS>,
+  DELTA>;
+
+// Smooth breathing pulse — pulse_ms (delta defaults to 10%).
+template<class PULSE_MS>
+using PulseLayerOverlay = BrightnessOverlayLayer<
+  PulsingF<PULSE_MS>>;
+
+// Uniform swing brightening — idle = no change, harder swing = up to +delta% (multiply preserves hue).
+template<class DELTA = Int<10>, class THRESHOLD = Int<200>>
+using SwingLayerOverlay = Mix<
+  SwingBoostOverlayF<THRESHOLD, DELTA>,
+  Black,
+  White>;
+
+// Per-LED random brightness mask — multiply over layers below preserves underlying hue.
+using PerLedFlickerLayer = Mix<RandomPerLEDF, Black, White>;
+
+// Hum-reactive uniform brightness — same driver as AudioFlicker, as multiply mask.
+using AudioLayerOverlay = Mix<NoisySoundLevelCompat, Black, White>;
+
+// Hilt-to-tip color gradient — stack with normal blend; layer opacity sets mix vs base below.
+template<class HILT, class TIP>
+using GradientLayer = Gradient<HILT, TIP>;
 
 #endif  // STYLES_TEXTURE_LAYERS_H

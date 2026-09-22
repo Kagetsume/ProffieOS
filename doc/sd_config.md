@@ -46,7 +46,10 @@ installed=Dec 25 2024 12:00:00
 
 Use the same style names and arguments as in the serial/editor:
 
+- **solid** – e.g. `solid cyan 300 800` (base, extension ms, retraction ms) — composable; stack `clash` / `blast` in layered recipes.
 - **standard** – e.g. `standard cyan white 300 800` (base, clash, extension ms, retraction ms).
+- **Extend/retract `-1`** – on styles with ms args, `-1` matches ignition/retraction soundfont length.
+- **Layered extend/retract** – base layer sets timing; **`normal`/`add` textures** and composable **`*_layer`** textures follow without extra args; **`smoke_flow`** and other **own-InOut** styles must receive the **same `{{ext}}`/`{{ret}}` as the base** on each layer line (see **blade_styles_config.md**).
 - **fire** – e.g. `fire red yellow`.
 - **rainbow** – e.g. `rainbow 300 800`.
 - **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
@@ -58,7 +61,7 @@ Run `list_named_styles` over serial to see available styles and their arguments.
 
 ### Config-driven layered styles (`config/blade_styles.ini`)
 
-You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Texture overlays **`fire_mask`**, **`stripes`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** over an opaque base. See **blade_styles_config.md** and **README_blade_styles_config.md**. Shipped recipes include **`[smoke_blade]`**, **`[solid_lava]`**, **`[solid_unstable]`**, **`[solid_chase]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
+You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Use composable **`solid`** / **`solid_bend`** bases plus overlay **`clash`** / **`blast`** layers, or monolithic bases like **`standard`**. Texture overlays **`fire_mask`**, **`stripes`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** over an opaque base. Extend/retract can use **`-1`** to match ignition/retraction soundfont length. See **blade_styles_config.md** and **README_blade_styles_config.md**. Shipped recipes include **`[smoke_blade]`**, **`[solid_lava]`**, **`[solid_unstable]`**, **`[solid_chase]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
 
 ## Behavior
 
@@ -87,8 +90,8 @@ The other config files use very little RAM: **board.ini** / **features.ini** onl
 new_preset
 font=Kyber
 track=tracks/hum.wav
-style=standard cyan white 300 800
-name=Cyan
+style=config smoke_laser
+name=Smoke Laser
 variation=0
 new_preset
 font=Kyber
@@ -105,4 +108,4 @@ variation=0
 end
 ```
 
-This gives you three presets (Cyan, Red, Fire) without recompiling.
+Preset 0 applies **`[smoke_laser]`** from **`config/blade_styles.ini`** — copy both INI files to the SD **`config/`** folder. Built-in styles (`standard`, `fire`, …) need only **`presets.ini`**.
