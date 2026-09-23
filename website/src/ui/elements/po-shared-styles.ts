@@ -64,6 +64,35 @@ export const poPageStyles = css`
   }
 `;
 
+/** Consistent section card padding, title, and lead text pattern. */
+export const poSectionCardStyles = css`
+  wa-card.section-card {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  wa-card.section-card h3,
+  .section-title {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: 650;
+    line-height: 1.3;
+  }
+
+  wa-card.section-card p,
+  .section-lead {
+    margin: 0 0 0.75rem;
+    max-width: 65ch;
+    line-height: 1.45;
+  }
+
+  wa-card.section-card p:last-child,
+  .section-lead:last-child {
+    margin-bottom: 0;
+  }
+`;
+
 /** Board and features config form grid, labels, switches, and card layout (shadow DOM). */
 export const poConfigFormStyles = css`
   .form-grid {

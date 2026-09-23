@@ -5,8 +5,13 @@
  */
 import { css } from 'lit';
 
-/** Two-pane layout, section toolbar, base vars grid, and recipe summary. */
+/** Intro lead, two-pane layout, section toolbar, base vars grid, and recipe summary. */
 export const poStylesPageStyles = css`
+  /* Shared page lead is capped at 75ch; this intro spans the content width. */
+  .page .config-lead {
+    max-width: none;
+  }
+
   .styles-layout {
     display: grid;
     grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
@@ -32,12 +37,29 @@ export const poStylesPageStyles = css`
 
   .preview-pane {
     position: sticky;
-    top: 1rem;
+    top: 4.5rem;
+    align-self: start;
+    box-sizing: border-box;
+    /* App-bar sticky offset used by the sidebar in app.css and this pane. */
+    max-height: calc(100vh - 4.5rem);
+    max-height: calc(100dvh - 4.5rem);
+    overflow: auto;
+  }
+
+  .preview-well {
+    display: block;
+    box-sizing: border-box;
+    padding: 1rem;
+    border-radius: var(--wa-border-radius-medium, 6px);
+    background: var(--wa-color-neutral-20, #27272a);
   }
 
   .preview-pane wa-card {
     display: block;
-    min-height: 22rem;
+    padding: 0;
+    overflow: hidden;
+    background: var(--wa-color-neutral-25, #3f3f46);
+    border-color: var(--wa-color-neutral-30, #52525b);
   }
 
   wa-card {
@@ -47,28 +69,57 @@ export const poStylesPageStyles = css`
 
   .section-toolbar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: end;
-    margin-bottom: 1rem;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.25rem;
+    margin: -0.25rem 0 1rem;
+    padding: 0.65rem 0;
+    position: sticky;
+    top: 4.5rem;
+    z-index: 2;
+    background: var(--wa-color-neutral-98, #fafafa);
+    border-bottom: 1px solid var(--wa-color-neutral-88, #e4e4e7);
+  }
+
+  :host-context(html.wa-dark) .section-toolbar {
+    background: var(--wa-color-neutral-12, #1c1c1f);
+    border-bottom-color: var(--wa-color-neutral-25, #3f3f46);
   }
 
   .section-toolbar label {
     display: flex;
     flex-direction: column;
+    align-items: start;
     gap: 0.25rem;
     font-size: 0.875rem;
     font-weight: 600;
-    min-width: min(100%, 14rem);
-    flex: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Field grows; buttons stay on the right. align-items: start keeps the
+     row at the closed wa-select height instead of the inlined option list. */
+  .recipe-controls {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    width: 100%;
+    min-width: 0;
   }
 
   .section-toolbar wa-select,
   .section-toolbar wa-input {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
     min-width: 0;
+    align-self: start;
     font-weight: normal;
     box-sizing: border-box;
+  }
+
+  .recipe-controls wa-button {
+    flex: 0 0 auto;
+    align-self: start;
   }
 
   .layer-toolbar {

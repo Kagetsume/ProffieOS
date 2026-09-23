@@ -7,12 +7,22 @@
     <meta name="description" content="Frontend-only editor for ProffieOS SD card config INI files" />
     <title>ProffieOS SD Config Editor</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem('po-theme');
+        var dark =
+          stored === 'dark' ||
+          (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('wa-dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app">
-      <header class="app-header">
-        <h1>ProffieOS SD Config Editor</h1>
-        <p class="app-tagline">Edit ProffieOS SD card config — export INI, copy to your saber</p>
+      <header class="app-bar">
+        <po-app-shell></po-app-shell>
       </header>
       <div class="app-body">
         <aside class="app-sidebar">

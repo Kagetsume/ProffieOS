@@ -42,11 +42,70 @@ import { PoElement } from './po-element.js';
 import { bladePreviewI18n } from './po-blade-preview.i18n.js';
 import { bladePreviewKeys } from './po-blade-preview.keys.js';
 import {
+  BLADE_HILT_OVERLAP_PX,
   HILT_ROTATOR_WIDTH_REM,
   poBladePreviewStyles,
 } from './po-blade-preview.styles.js';
 
+/** Same sticky offset as `.preview-pane` / the app sidebar (`4.5rem`). */
+const PREVIEW_VIEWPORT_OFFSET_REM = 4.5;
+/** Keep the fitted pane a hair under the viewport cap so it does not self-scroll. */
+const PREVIEW_PANE_INSET_PX = 8;
+
 const DEFAULT_PIXEL_COUNT = 144;
+
+/**
+ * Border-box height plus vertical margins.
+ *
+ * @param el - Element to measure, or null.
+ * @returns Outer vertical size in CSS pixels.
+ */
+function verticalOuterHeight(el: HTMLElement | null): number {
+  if (!el) {
+    return 0;
+  }
+  const style = getComputedStyle(el);
+  return el.offsetHeight + (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+}
+
+/**
+ * Vertical padding and border of a wrapping box (preview well / card).
+ *
+ * @param el - Element to measure, or null.
+ * @returns Chrome height in CSS pixels.
+ */
+function verticalBoxChrome(el: HTMLElement | null): number {
+  if (!el) {
+    return 0;
+  }
+  const style = getComputedStyle(el);
+  return (
+    (parseFloat(style.paddingTop) || 0) +
+    (parseFloat(style.paddingBottom) || 0) +
+    (parseFloat(style.borderTopWidth) || 0) +
+    (parseFloat(style.borderBottomWidth) || 0)
+  );
+}
+
+/**
+ * CSS height of lit pixels when extend length is 0 (preon/postoff). Index 0 is the hilt.
+ *
+ * @param alphas - Per-LED alpha, hilt at index 0.
+ * @param pixelCssHeight - CSS height of one LED row.
+ * @returns Height from the hilt through the last lit pixel, or 0 when nothing is lit.
+ */
+function litSpanCssHeight(alphas: ArrayLike<number>, pixelCssHeight: number): number {
+  let maxIndex = -1;
+  for (let i = 0; i < alphas.length; i += 1) {
+    if (alphas[i]! > 0) {
+      maxIndex = i;
+    }
+  }
+  if (maxIndex < 0) {
+    return 0;
+  }
+  return (maxIndex + 1) * pixelCssHeight;
+}
 
 /**
  * Live saber style preview — vertical blade canvas, hilt graphic, and preview simulation controls.
@@ -68,6 +127,8 @@ export class PoBladePreview extends PoElement {
   private bladeSharpCanvas: HTMLCanvasElement | null = null;
   private bladeSharpCtx: CanvasRenderingContext2D | null = null;
   private stylesWatch?: () => void;
+  /** Padding around the preview host, cached so an internal pane scroll does not resize the blade. */
+  private paneChromePx = 0;
 
   /**
    * Starts the preview animation loop when the element is attached to the document.
@@ -402,6 +463,65 @@ export class PoBladePreview extends PoElement {
   }
 
   /**
+   * Blade CSS height that leaves the hilt, controls, and caption inside the viewport
+   * below the app bar. The hilt size is not reduced.
+   *
+   * @param hiltCssHeight - Measured hilt display height in CSS pixels.
+   * @returns Max blade height, or `undefined` when the viewport size is unknown.
+   */
+  private viewportBladeBudget(hiltCssHeight: number): number | undefined {
+    if (window.innerHeight <= 0) {
+      return undefined;
+    }
+
+    const rootFont = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const paneBudget = window.innerHeight - PREVIEW_VIEWPORT_OFFSET_REM * rootFont;
+    if (paneBudget <= 0) {
+      return undefined;
+    }
+
+    const controls = this.renderRoot.querySelector<HTMLElement>(
+      '[data-testid="blade-preview-controls"]',
+    );
+    const caption = this.renderRoot.querySelector<HTMLElement>('.preview-caption');
+    const available =
+      paneBudget -
+      PREVIEW_PANE_INSET_PX -
+      this.measurePaneChrome() -
+      verticalOuterHeight(controls) -
+      verticalOuterHeight(caption) -
+      hiltCssHeight +
+      BLADE_HILT_OVERLAP_PX;
+
+    return available;
+  }
+
+  /**
+   * Vertical padding and border between the preview pane and this host.
+   * Includes card shadow padding. Skipped while the pane itself is scrolled.
+   *
+   * @returns Chrome height in CSS pixels.
+   */
+  private measurePaneChrome(): number {
+    const pane = this.closest<HTMLElement>('[data-testid="styles-page-preview-pane"]');
+    if (!pane || pane.scrollTop > 0) {
+      return this.paneChromePx;
+    }
+
+    const paneRect = pane.getBoundingClientRect();
+    const hostRect = this.getBoundingClientRect();
+    if (paneRect.height <= 0 || hostRect.height <= 0) {
+      return this.paneChromePx || verticalBoxChrome(this.parentElement);
+    }
+
+    const chrome = hostRect.top - paneRect.top + (paneRect.bottom - hostRect.bottom);
+    if (chrome >= 0) {
+      this.paneChromePx = chrome;
+    }
+    return this.paneChromePx;
+  }
+
+  /**
    * Sizes the preview canvas from hilt layout and draws the current style frame.
    */
   private layoutAndDraw(): void {
@@ -413,11 +533,13 @@ export class PoBladePreview extends PoElement {
     }
 
     const hilt = this.measureHiltBox();
+    const maxBladeCssHeight = this.viewportBladeBudget(hilt.height);
     const layout = measureVerticalSaberLayout({
       hiltDisplayWidth: hilt.width,
       hiltDisplayHeight: hilt.height,
       pixelCount: this.pixelCount,
       devicePixelRatio: window.devicePixelRatio || 1,
+      ...(maxBladeCssHeight != null ? { maxBladeCssHeight } : {}),
     });
 
     const ctx = applyVerticalBladeCanvas(canvas, layout);
@@ -439,6 +561,7 @@ export class PoBladePreview extends PoElement {
     const section = getActiveSection($styleSections.getState());
 
     if (!section) {
+      this.paintBladeGlow(0, 0, 0);
       return;
     }
 
@@ -449,15 +572,21 @@ export class PoBladePreview extends PoElement {
       $previewSim.getState(),
     );
     const lengthFraction = frame.lengthFraction;
+    const visibleHeight =
+      lengthFraction > 0
+        ? bladeCssHeight * lengthFraction
+        : litSpanCssHeight(frame.pixels.a, pixelCssHeight);
 
-    if (lengthFraction <= 0) {
+    if (visibleHeight <= 0) {
       ctx.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
+      this.paintBladeGlow(0, 0, 0);
       return;
     }
 
+    this.paintBladeGlow(visibleHeight, bladeCssWidth, bladeTipRadius);
+
     const sharpCtx = this.ensureBladeSharpContext(layout);
     sharpCtx.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
-    const visibleHeight = bladeCssHeight * lengthFraction;
     sharpCtx.save();
     clipBladeVisibleLength(
       sharpCtx,
@@ -479,7 +608,25 @@ export class PoBladePreview extends PoElement {
 
     featherBladeSides(sharpCtx, bladeCssWidth, bladeCssHeight);
     sharpCtx.restore();
-    drawBladeWithSoftEdges(ctx, this.bladeSharpCanvas!, layout);
+    drawBladeWithSoftEdges(ctx, this.bladeSharpCanvas!, layout, visibleHeight);
+  }
+
+  /**
+   * Sizes the glow strip to the lit blade. Height 0 hides it so the empty length stays dark.
+   */
+  private paintBladeGlow(height: number, width: number, tipRadius: number): void {
+    const glow = this.renderRoot.querySelector<HTMLElement>('[data-testid="blade-preview-glow"]');
+    if (!glow) {
+      return;
+    }
+    if (height <= 0) {
+      glow.hidden = true;
+      return;
+    }
+    glow.hidden = false;
+    glow.style.width = `${width}px`;
+    glow.style.height = `${height}px`;
+    glow.style.borderRadius = `${tipRadius}px ${tipRadius}px 0 0`;
   }
 
   /**
@@ -544,6 +691,7 @@ export class PoBladePreview extends PoElement {
     return html`
       <div class="saber-stack" data-testid="blade-preview-stack">
         <div class="blade-slot">
+          <div class="blade-glow" data-testid="blade-preview-glow" hidden></div>
           <canvas
             class="preview-blade"
             data-testid="blade-preview-canvas"
@@ -566,98 +714,119 @@ export class PoBladePreview extends PoElement {
       </div>
 
       <div class="preview-controls" data-testid="blade-preview-controls">
-        <div class="preview-controls-row preview-controls-row--buttons">
-          <wa-button
-            data-testid="blade-preview-power-on"
-            size="small"
-            variant="brand"
-            ?disabled=${!canPowerOn}
-            @click=${this.onPowerOn}
+        <div class="control-group" data-testid="blade-preview-group-power">
+          <span class="control-group-label"
+            >${bladePreviewI18n.translate(bladePreviewKeys.sectionPower)}</span
           >
-            ${bladePreviewI18n.translate(bladePreviewKeys.powerOn)}
-          </wa-button>
-          <wa-button
-            data-testid="blade-preview-power-off"
-            size="small"
-            variant="neutral"
-            ?disabled=${!canPowerOff}
-            @click=${this.onPowerOff}
-          >
-            ${bladePreviewI18n.translate(bladePreviewKeys.powerOff)}
-          </wa-button>
-          <wa-button
-            data-testid="blade-preview-blast"
-            size="small"
-            variant="neutral"
-            ?disabled=${!canBlast}
-            @click=${this.onBlast}
-          >
-            ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
-          </wa-button>
-          <wa-button
-            data-testid="blade-preview-clash"
-            size="small"
-            variant="neutral"
-            ?disabled=${!canClash}
-            @click=${this.onClash}
-          >
-            ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
-          </wa-button>
-          <wa-button
-            data-testid="blade-preview-swing"
-            size="small"
-            variant="neutral"
-            ?disabled=${!canSwing}
-            @click=${this.onSwing}
-          >
-            ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
-          </wa-button>
-          <wa-button
-            data-testid="blade-preview-force"
-            size="small"
-            variant="neutral"
-            ?disabled=${!canForce}
-            @click=${this.onForce}
-          >
-            ${bladePreviewI18n.translate(bladePreviewKeys.force)}
-          </wa-button>
+          <div class="control-group-body">
+            <wa-button
+              data-testid="blade-preview-power-on"
+              size="small"
+              variant="brand"
+              ?disabled=${!canPowerOn}
+              @click=${this.onPowerOn}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.powerOn)}
+            </wa-button>
+            <wa-button
+              data-testid="blade-preview-power-off"
+              size="small"
+              variant="neutral"
+              ?disabled=${!canPowerOff}
+              @click=${this.onPowerOff}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.powerOff)}
+            </wa-button>
+          </div>
         </div>
-        <div class="preview-controls-row preview-controls-row--toggles">
-          <div class="combat-toggle ${canLockup ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
-            <wa-switch
+        <div class="control-group" data-testid="blade-preview-group-combat">
+          <span class="control-group-label"
+            >${bladePreviewI18n.translate(bladePreviewKeys.sectionCombat)}</span
+          >
+          <div class="control-group-body">
+            <wa-button
+              data-testid="blade-preview-blast"
               size="small"
-              .checked=${simState.lockupActive}
-              ?disabled=${!canLockup}
-              @change=${this.onLockupChange}
-            ></wa-switch>
+              variant="neutral"
+              ?disabled=${!canBlast}
+              @click=${this.onBlast}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.blast)}
+            </wa-button>
+            <wa-button
+              data-testid="blade-preview-clash"
+              size="small"
+              variant="neutral"
+              ?disabled=${!canClash}
+              @click=${this.onClash}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.clash)}
+            </wa-button>
+            <wa-button
+              data-testid="blade-preview-swing"
+              size="small"
+              variant="neutral"
+              ?disabled=${!canSwing}
+              @click=${this.onSwing}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.swing)}
+            </wa-button>
+            <wa-button
+              data-testid="blade-preview-force"
+              size="small"
+              variant="neutral"
+              ?disabled=${!canForce}
+              @click=${this.onForce}
+            >
+              ${bladePreviewI18n.translate(bladePreviewKeys.force)}
+            </wa-button>
           </div>
-          <div class="combat-toggle ${canLb ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.lbActive}
-              ?disabled=${!canLb}
-              @change=${this.onLbChange}
-            ></wa-switch>
-          </div>
-          <div class="combat-toggle ${canDrag ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.dragActive}
-              ?disabled=${!canDrag}
-              @change=${this.onDragChange}
-            ></wa-switch>
-          </div>
-          <div class="combat-toggle ${canMelt ? '' : 'combat-toggle--disabled'}">
-            <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
-            <wa-switch
-              size="small"
-              .checked=${simState.meltActive}
-              ?disabled=${!canMelt}
-              @change=${this.onMeltChange}
-            ></wa-switch>
+        </div>
+        <div class="control-group" data-testid="blade-preview-group-lockup">
+          <span class="control-group-label"
+            >${bladePreviewI18n.translate(bladePreviewKeys.sectionLockup)}</span
+          >
+          <div class="control-group-body">
+            <div class="combat-toggle ${canLockup ? '' : 'combat-toggle--disabled'}">
+              <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
+              <wa-switch
+                data-testid="blade-preview-lockup"
+                size="small"
+                .checked=${simState.lockupActive}
+                ?disabled=${!canLockup}
+                @change=${this.onLockupChange}
+              ></wa-switch>
+            </div>
+            <div class="combat-toggle ${canLb ? '' : 'combat-toggle--disabled'}">
+              <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
+              <wa-switch
+                data-testid="blade-preview-lb"
+                size="small"
+                .checked=${simState.lbActive}
+                ?disabled=${!canLb}
+                @change=${this.onLbChange}
+              ></wa-switch>
+            </div>
+            <div class="combat-toggle ${canDrag ? '' : 'combat-toggle--disabled'}">
+              <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
+              <wa-switch
+                data-testid="blade-preview-drag"
+                size="small"
+                .checked=${simState.dragActive}
+                ?disabled=${!canDrag}
+                @change=${this.onDragChange}
+              ></wa-switch>
+            </div>
+            <div class="combat-toggle ${canMelt ? '' : 'combat-toggle--disabled'}">
+              <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
+              <wa-switch
+                data-testid="blade-preview-melt"
+                size="small"
+                .checked=${simState.meltActive}
+                ?disabled=${!canMelt}
+                @change=${this.onMeltChange}
+              ></wa-switch>
+            </div>
           </div>
         </div>
         ${showBladeAngle

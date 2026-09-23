@@ -17,7 +17,7 @@
   "nav.configFiles": "Config files",
   "nav.output": "Output",
   "nav.ariaLabel": "Application sections",
-  "nav.stubSoon": " · soon",
+  "nav.stubSoon": "Soon",
   "hint.exportFooter": "Changes appear on the Export page as ${filename}.",
   "hint.exportAs": "Changes appear on the Export page as ${filename}."
 }

@@ -25,7 +25,7 @@
   "card.workflow.title": "Typical workflow",
   "workflow.step1": "Set up <strong>Board</strong> and <strong>Features</strong> for your chassis and contest rules.",
   "workflow.step2": "Define <strong>Blades</strong> — data pins, pixel counts, and power FET assignments.",
-  "workflow.step3": "Add <strong>Blade styles</strong> and <strong>Presets</strong> (coming soon).",
+  "workflow.step3": "Add <strong>Blade styles</strong> and <strong>Presets</strong> — layer recipes and named looks for each blade.",
   "workflow.step4": "Open <strong>Export</strong>, copy or download INI files, and copy them to the SD card.",
   "workflow.step5": "Boot the saber with your <code>config-files-config.h</code> profile and verify on hardware.",
   "action.startBoard": "Start with Board",

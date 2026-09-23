@@ -580,9 +580,9 @@ NamedStyle named_styles[] = {
     "multiply black white; screen black <base>; pair with smoke_up"
   },
   { "smoke_flow",
-    StylePtr<SmokeFlowInOutLayer<RgbArg<1, Black>, RgbArg<2, White>, IntArg<3, 300>, IntArg<4, 800>> >(),
-    "Wide rolling smoke (offset dual sine bands); dark light extend_ms retract_ms (match solid base). "
-    "multiply black white = dim smoke; screen black <base> = bright wisps"
+    StylePtr<SmokeFlowInOutLayer<RgbArg<1, Black>, RgbArg<2, White>, IntArg<3, 300>, IntArg<4, 800>, IntArg<5, 1>> >(),
+    "Wide rolling smoke (offset dual sine bands); dark light extend_ms retract_ms speed (match solid base). "
+    "speed 1 = default roll; higher = faster. multiply black white = dim smoke; screen black <base> = bright wisps"
   },
   { "stripes",
     StylePtr<StripesLayer<IntArg<1, 1000>, IntArg<2, -2000>, RgbArg<3, Blue>, RgbArg<4, Cyan>> >(),

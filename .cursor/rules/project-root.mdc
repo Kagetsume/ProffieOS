@@ -1,0 +1,10 @@
+﻿---
+description: ProffieOS workspace root (canonical path)
+alwaysApply: true
+---
+
+# Project root
+
+The canonical workspace root is `d:\projects\ProffieOS`.
+
+Do not reference the legacy path `d:\Lightsabers\proffie-project\ProffieOS` — that folder no longer exists.

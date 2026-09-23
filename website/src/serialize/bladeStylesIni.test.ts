@@ -63,4 +63,22 @@ describe('serializeBladeStylesIni', () => {
     expect(ini).toContain('accent = red');
     expect(ini).toContain('layer = config smoke_blade');
   });
+
+  it('writes smoke_flow roll speed with the other layer args', () => {
+    const section: StyleSection = {
+      id: 'smoke',
+      vars: {},
+      layers: [
+        {
+          id: 'flow',
+          styleName: 'smoke_flow',
+          args: ['black', 'white', '300', '800', '2'],
+          blend: 'multiply',
+          opacity: 24000,
+        },
+      ],
+    };
+    const ini = serializeBladeStylesIni([section]);
+    expect(ini).toContain('layer = multiply opacity 24000 smoke_flow black white 300 800 2');
+  });
 });

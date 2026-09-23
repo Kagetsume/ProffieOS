@@ -7,6 +7,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { I18nClient } from '../../i18n/client.js';
+import { appShellI18n } from './po-app-shell.i18n.js';
+import { appShellKeys } from './po-app-shell.keys.js';
 import { bladeCardI18n } from './po-blade-card.i18n.js';
 import { bladeCardKeys } from './po-blade-card.keys.js';
 import { bladePreviewI18n } from './po-blade-preview.i18n.js';
@@ -51,6 +53,7 @@ type ComponentI18nCase = {
 };
 
 const COMPONENT_I18N: ComponentI18nCase[] = [
+  { id: 'po-app-shell', i18n: appShellI18n, keys: appShellKeys },
   { id: 'po-blade-card', i18n: bladeCardI18n, keys: bladeCardKeys },
   { id: 'po-blade-preview', i18n: bladePreviewI18n, keys: bladePreviewKeys },
   { id: 'po-board-page', i18n: boardPageI18n, keys: boardPageKeys },

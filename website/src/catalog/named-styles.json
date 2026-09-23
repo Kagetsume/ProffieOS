@@ -1565,6 +1565,13 @@
           "type": "number",
           "default": "800",
           "hint": "-1 uses retraction sound length; must match solid/solid_bend base"
+        },
+        {
+          "slot": "speed",
+          "label": "Roll speed",
+          "type": "number",
+          "default": "1",
+          "hint": "1 matches the current roll; higher rolls faster, lower rolls slower"
         }
       ]
     },

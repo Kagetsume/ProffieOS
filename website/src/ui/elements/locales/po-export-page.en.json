@@ -1,4 +1,10 @@
 {
   "title": "Export",
-  "lead": "Copy or download generated INI files for your SD card <code>config/</code> folder."
+  "lead": "Copy or download generated INI files for your SD card <code>config/</code> folder.",
+  "summary": "<strong>${count}</strong> config files ready to copy",
+  "tab.blades": "blades.ini",
+  "tab.bladeStyles": "blade_styles.ini",
+  "tab.presets": "presets.ini",
+  "tab.board": "board.ini",
+  "tab.features": "features.ini"
 }

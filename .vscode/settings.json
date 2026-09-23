@@ -1,0 +1,9 @@
+﻿{
+  "files.associations": {
+    "*.ino": "cpp"
+  },
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/common",
+    "${workspaceFolder}/config"
+  ]
+}

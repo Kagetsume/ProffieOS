@@ -71,6 +71,25 @@ describe('style-picker', () => {
     const options = listLayerStylePickerOptions(sections);
     expect(options.some((option) => option.value === encodeLayerStyle('fire'))).toBe(true);
     expect(options.some((option) => option.value === encodeNestedRecipe('nested'))).toBe(true);
+    const baseLabels = options
+      .filter((option) => option.group === 'Base blades')
+      .map((option) => option.label);
+    const sortedBase = [...baseLabels].sort((left, right) =>
+      left.localeCompare(right, undefined, { sensitivity: 'base' }),
+    );
+    expect(baseLabels).toEqual(sortedBase);
+  });
+
+  it('sorts nested recipe options case-insensitively', () => {
+    const sections: StyleSection[] = [
+      { id: 'zeta', vars: {}, layers: [] },
+      { id: 'Alpha', vars: {}, layers: [] },
+      { id: 'mid', vars: {}, layers: [] },
+    ];
+    const nested = listLayerStylePickerOptions(sections).filter(
+      (option) => option.group === 'Nest recipe (layer = config …)',
+    );
+    expect(nested.map((option) => option.label)).toEqual(['Alpha', 'mid', 'zeta']);
   });
 
   it('decodes recipe and layer picker values', () => {

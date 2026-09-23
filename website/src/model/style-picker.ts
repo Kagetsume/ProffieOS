@@ -242,27 +242,34 @@ export function resolveRecipePickerSelection(
   return null;
 }
 
+function byPickerLabel(left: { label: string }, right: { label: string }): number {
+  return left.label.localeCompare(right.label, undefined, { sensitivity: 'base' });
+}
+
 /** Layer-style options for one row in a recipe stack (named styles + nest another recipe). */
 export function listLayerStylePickerOptions(sections: StyleSection[]): LayerStylePickerOption[] {
   const options: LayerStylePickerOption[] = [];
 
   for (const group of listStyleGroups()) {
+    const groupOptions: LayerStylePickerOption[] = [];
     for (const style of listStylesInGroup(group.id)) {
-      options.push({
+      groupOptions.push({
         value: encodeLayerStyle(style.id),
         label: stylePickerLabel(style),
         group: group.label,
       });
     }
+    groupOptions.sort(byPickerLabel);
+    options.push(...groupOptions);
   }
 
-  for (const section of sections) {
-    options.push({
-      value: encodeNestedRecipe(section.id),
-      label: section.id,
-      group: 'Nest recipe (layer = config …)',
-    });
-  }
+  const nested = sections.map((section) => ({
+    value: encodeNestedRecipe(section.id),
+    label: section.id,
+    group: 'Nest recipe (layer = config …)',
+  }));
+  nested.sort(byPickerLabel);
+  options.push(...nested);
 
   return options;
 }

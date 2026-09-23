@@ -1,5 +1,8 @@
 {
   "ariaLabel": "Blade preview",
+  "sectionPower": "Power",
+  "sectionCombat": "Combat",
+  "sectionLockup": "Lockup",
   "powerOn": "Power on",
   "powerOff": "Power off",
   "blast": "Blast",

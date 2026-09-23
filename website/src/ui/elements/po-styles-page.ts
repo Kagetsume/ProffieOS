@@ -318,24 +318,26 @@ export class PoStylesPage extends PoElement {
               <div class="section-toolbar">
                 <label>
                   ${stylesPageI18n.translate(stylesPageKeys.labelRecipe)}
-                  <wa-select
-                    .value=${this.stylesState.activeSectionId}
-                    @wa-change=${this.onRecipePickerChange}
-                    @change=${this.onRecipePickerChange}
-                  >
-                    ${this.renderRecipePickerOptions()}
-                  </wa-select>
+                  <div class="recipe-controls">
+                    <wa-select
+                      .value=${this.stylesState.activeSectionId}
+                      @wa-change=${this.onRecipePickerChange}
+                      @change=${this.onRecipePickerChange}
+                    >
+                      ${this.renderRecipePickerOptions()}
+                    </wa-select>
+                    <wa-button variant="neutral" @click=${this.onNewSection}
+                      >${stylesPageI18n.translate(stylesPageKeys.newRecipe)}</wa-button
+                    >
+                    <wa-button
+                      variant="neutral"
+                      ?disabled=${this.stylesState.sections.length <= 1}
+                      @click=${this.onRemoveSection}
+                    >
+                      ${stylesPageI18n.translate(stylesPageKeys.remove)}
+                    </wa-button>
+                  </div>
                 </label>
-                <wa-button variant="neutral" @click=${this.onNewSection}
-                  >${stylesPageI18n.translate(stylesPageKeys.newRecipe)}</wa-button
-                >
-                <wa-button
-                  variant="neutral"
-                  ?disabled=${this.stylesState.sections.length <= 1}
-                  @click=${this.onRemoveSection}
-                >
-                  ${stylesPageI18n.translate(stylesPageKeys.remove)}
-                </wa-button>
               </div>
 
               ${section ? this.renderRecipeSummary(section) : nothing}
@@ -358,7 +360,9 @@ export class PoStylesPage extends PoElement {
 
           <div class="preview-pane" data-testid="styles-page-preview-pane">
             <wa-card>
-              <po-blade-preview data-testid="styles-page-blade-preview"></po-blade-preview>
+              <div class="preview-well">
+                <po-blade-preview data-testid="styles-page-blade-preview"></po-blade-preview>
+              </div>
             </wa-card>
           </div>
         </div>

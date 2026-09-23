@@ -8,7 +8,7 @@ import { sectionHasDedicatedLockupLayer } from '../model/style-sections';
 import { clipOverlayToBaseLit, compositeLayer, createPixelBuffer, type PixelBuffer } from './composite';
 import { renderLayerPixels } from './renderers/basic';
 import type { PreviewSimState } from './simulation';
-import { bladeLengthFraction, createInitialPreviewSim } from './simulation';
+import { bladeLengthFraction, createInitialPreviewSim, overlayPhaseForStyle } from './simulation';
 
 export type StylePreviewFrame = {
   pixels: PixelBuffer;
@@ -37,16 +37,29 @@ export function renderStylePreview(
     if (overlay.r.length !== count) {
       continue;
     }
-    if (layerIndex > 0 && (layer.blend === 'normal' || layer.blend === 'add')) {
+    if (
+      layerIndex > 0 &&
+      (layer.blend === 'normal' || layer.blend === 'add') &&
+      !layerShowsWhileBladeOff(layer.styleName)
+    ) {
       clipOverlayToBaseLit(overlay, pixels);
     }
     compositeLayer(pixels, overlay, layer.blend, layer.opacity);
   }
 
   const lengthFraction = bladeLengthFraction(sim, timeMs);
-  applyBladeLengthMask(pixels, lengthFraction);
+  // Preon/postoff run at length 0. Their pixels are the light; the extend mask would erase them.
+  if (sim.transition !== 'preon' && sim.transition !== 'postoff') {
+    applyBladeLengthMask(pixels, lengthFraction);
+  }
 
   return { pixels, pixelCount: count, lengthFraction };
+}
+
+/** Preon/postoff layers light the blade before extend and after retract. */
+function layerShowsWhileBladeOff(styleName: string): boolean {
+  const phase = overlayPhaseForStyle(styleName);
+  return phase === 'preon' || phase === 'postoff';
 }
 
 /** Hide pixels above the current extend/retract length (index 0 = hilt). */

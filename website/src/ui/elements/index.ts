@@ -5,6 +5,7 @@
  *
  * @module ui/elements
  */
+import './po-app-shell.js';
 import './po-sidebar-nav.js';
 import './po-home-page.js';
 import './po-board-page.js';

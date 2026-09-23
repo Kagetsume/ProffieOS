@@ -24,6 +24,42 @@ describe('measureVerticalSaberLayout', () => {
     expect(layout.bladeTipRadius).toBe(layout.bladeCssWidth / 2);
   });
 
+  it('shrinks blade height to a viewport cap and still maps every LED', () => {
+    const layout = measureVerticalSaberLayout({
+      hiltDisplayWidth: 40,
+      hiltDisplayHeight: 120,
+      pixelCount: 144,
+      maxBladeCssHeight: 180,
+    });
+
+    expect(layout.bladeCssHeight).toBe(180);
+    expect(layout.hiltCssHeight).toBe(120);
+    expect(layout.pixelCssHeight * 144).toBeCloseTo(180, 5);
+    expect(layout.bladeBackingHeight).toBe(180);
+  });
+
+  it('keeps the 3× blade when the viewport cap is taller than the ideal', () => {
+    const layout = measureVerticalSaberLayout({
+      hiltDisplayWidth: 40,
+      hiltDisplayHeight: 120,
+      pixelCount: 48,
+      maxBladeCssHeight: 2000,
+    });
+
+    expect(layout.bladeCssHeight).toBe(120 * BLADE_HEIGHT_TO_HILT_RATIO);
+  });
+
+  it('does not shrink the blade below its width when the cap is tiny', () => {
+    const layout = measureVerticalSaberLayout({
+      hiltDisplayWidth: 40,
+      hiltDisplayHeight: 120,
+      pixelCount: 48,
+      maxBladeCssHeight: 4,
+    });
+
+    expect(layout.bladeCssHeight).toBe(layout.bladeCssWidth);
+  });
+
   it('divides blade height across pixel count', () => {
     const layout = measureVerticalSaberLayout({
       hiltDisplayWidth: 30,

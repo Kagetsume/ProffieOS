@@ -98,8 +98,12 @@ function inOutFromLayerArgs(styleName: string, args: string[]): InOutTiming | nu
   if (!def) {
     return null;
   }
-  const extIdx = def.args.findIndex((arg) => arg.slot === 'ext' || arg.slot === 'extend_ms');
-  const retIdx = def.args.findIndex((arg) => arg.slot === 'ret' || arg.slot === 'retract_ms');
+  const extIdx = def.args.findIndex(
+    (arg) => arg.slot === 'ext' || arg.slot === 'extend_ms' || arg.slot === 'extend',
+  );
+  const retIdx = def.args.findIndex(
+    (arg) => arg.slot === 'ret' || arg.slot === 'retract_ms' || arg.slot === 'retract',
+  );
   if (extIdx < 0 || retIdx < 0) {
     return null;
   }

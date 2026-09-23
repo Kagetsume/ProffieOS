@@ -160,4 +160,63 @@ describe('renderLayerPixels', () => {
     const overlay = renderLayerPixels(layer('blast', ['white']), {}, 16, 1000, retracted);
     expect(overlay.a.every((alpha) => alpha === 0)).toBe(true);
   });
+
+  it('smoke_flow color, roll speed, and extend/retract change pixels', () => {
+    const mono = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800']), {}, 24, 2000, sim);
+    const tinted = renderLayerPixels(layer('smoke_flow', ['red', 'yellow', '300', '800']), {}, 24, 2000, sim);
+    expect(
+      tinted.r.some((value, index) => value !== mono.r[index] || tinted.g[index] !== mono.g[index] || tinted.b[index] !== mono.b[index]),
+    ).toBe(true);
+
+    const implicitSpeed = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800']), {}, 24, 2000, sim);
+    const unitSpeed = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800', '1']), {}, 24, 2000, sim);
+    const fast = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800', '4']), {}, 24, 2000, sim);
+    expect(unitSpeed.r).toEqual(implicitSpeed.r);
+    expect(unitSpeed.g).toEqual(implicitSpeed.g);
+    expect(unitSpeed.b).toEqual(implicitSpeed.b);
+    expect(fast.r.some((value, index) => value !== unitSpeed.r[index] || fast.g[index] !== unitSpeed.g[index])).toBe(
+      true,
+    );
+
+    const extending = {
+      ...sim,
+      transition: 'extending' as const,
+      transitionStartedAt: 1000,
+      transitionUntil: 2000,
+      extendMs: 300,
+      retractMs: 800,
+    };
+    const matched = renderLayerPixels(
+      layer('smoke_flow', ['black', 'white', '300', '800']),
+      {},
+      32,
+      1500,
+      extending,
+    );
+    const slowerExtend = renderLayerPixels(
+      layer('smoke_flow', ['black', 'white', '3000', '800']),
+      {},
+      32,
+      1500,
+      extending,
+    );
+    const lit = (buffer: { a: number[] }) => buffer.a.filter((alpha) => alpha > 0).length;
+    expect(lit(matched)).toBeGreaterThan(lit(slowerExtend));
+  });
+
+  it('smoke_flow opacity and blend change the composite', () => {
+    const overlay = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800']), {}, 16, 1500, sim);
+    const full = createPixelBuffer(16);
+    const faint = createPixelBuffer(16);
+    fillSolid(full, [0, 0, 255]);
+    fillSolid(faint, [0, 0, 255]);
+    compositeLayer(full, overlay, 'multiply', 32768);
+    compositeLayer(faint, overlay, 'multiply', 1000);
+    expect(full.b.some((value, index) => value !== faint.b[index])).toBe(true);
+
+    const screened = createPixelBuffer(16);
+    fillSolid(screened, [0, 0, 255]);
+    compositeLayer(screened, overlay, 'screen', 32768);
+    expect(screened.b.some((value, index) => value !== full.b[index])).toBe(true);
+  });
 });

@@ -9,6 +9,7 @@ import { resolveLayerArgs } from '../../model/style-sections';
 import { createPixelBuffer, fillSolid, type PixelBuffer } from '../composite';
 import { lerpRgb, parseColor } from '../colors';
 import {
+  bladeLengthFraction,
   eventIntensity,
   isBaseBladeVisible,
   isOverlayPhaseActive,
@@ -139,17 +140,61 @@ function renderSmokeFlowMask(
   return buffer;
 }
 
+/** 1 keeps the firmware scroll (`time * 9/10` up, `time * 5/14` down). */
+const SMOKE_FLOW_ROLL_SPEED = 1;
+
+function smokeRollSpeed(raw: string | undefined): number {
+  if (raw == null || raw.trim() === '') {
+    return SMOKE_FLOW_ROLL_SPEED;
+  }
+  const speed = Number(raw);
+  return Number.isFinite(speed) ? speed : SMOKE_FLOW_ROLL_SPEED;
+}
+
+/** Positive ms, or the simulator fallback when the arg is missing or soundfont auto (`-1`). */
+function smokeTimingMs(raw: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(raw ?? '', 10);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return Math.max(1, fallback);
+  }
+  return parsed;
+}
+
+/**
+ * How far this smoke layer has extended, relative to the blade.
+ * Matching extend/retract tracks {@link bladeLengthFraction}. A longer time lags behind.
+ */
+function smokeFlowLengthFraction(args: string[], timeMs: number, sim: PreviewSimState): number {
+  const blade = bladeLengthFraction(sim, timeMs);
+  if (sim.transition === 'extending') {
+    const extendMs = smokeTimingMs(args[2], sim.extendMs);
+    return Math.min(1, blade * (Math.max(1, sim.extendMs) / extendMs));
+  }
+  if (sim.transition === 'retracting') {
+    const retractMs = smokeTimingMs(args[3], sim.retractMs);
+    const pulled = (1 - blade) * (Math.max(1, sim.retractMs) / retractMs);
+    return Math.max(0, Math.min(1, 1 - pulled));
+  }
+  return blade;
+}
+
 /** smoke_flow: opposing multi-band rolls with spatial width/phase warp. */
-function renderSmokeFlowBlend(args: string[], count: number, timeMs: number): PixelBuffer {
+function renderSmokeFlowBlend(
+  args: string[],
+  count: number,
+  timeMs: number,
+  sim: PreviewSimState,
+): PixelBuffer {
   const buffer = createPixelBuffer(count);
   const dark = parseColor(args[0] ?? 'black');
   const bright = parseColor(args[1] ?? 'white');
   const luminanceOnly =
     args[0] === args[1] ||
     (bright[0] === dark[0] && bright[1] === dark[1] && bright[2] === dark[2]);
+  const speed = smokeRollSpeed(args[4]);
   const downTimeMs = timeMs + 4800;
-  const scrollUp = (timeMs * 9) / 10;
-  const scrollDown = (downTimeMs * 5) / 14;
+  const scrollUp = ((timeMs * 9) / 10) * speed;
+  const scrollDown = ((downTimeMs * 5) / 14) * speed;
   for (let i = 0; i < count; i += 1) {
     const pos = Math.round(positionT(i, count) * 32768);
     const heat = rollFlowShade(pos, scrollUp, scrollDown, timeMs, downTimeMs);
@@ -165,6 +210,10 @@ function renderSmokeFlowBlend(args: string[], count: number, timeMs: number): Pi
       buffer.b[i] = b;
     }
     buffer.a[i] = 1;
+  }
+  const lit = Math.max(0, Math.min(count, Math.ceil(count * smokeFlowLengthFraction(args, timeMs, sim))));
+  for (let i = lit; i < count; i += 1) {
+    buffer.a[i] = 0;
   }
   return buffer;
 }
@@ -602,7 +651,7 @@ export function renderLayerPixels(
     case 'smoke_down':
       return renderSmokeFlowMask(args, count, timeMs, -1);
     case 'smoke_flow':
-      return renderSmokeFlowBlend(args, count, timeMs);
+      return renderSmokeFlowBlend(args, count, timeMs, sim);
     case 'strobe':
       return renderStrobe(args, count, timeMs);
     case 'pulse':

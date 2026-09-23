@@ -129,6 +129,7 @@ export const poStyleLayerStackStyles = css`
   .layer-form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    align-items: start;
     gap: 0.75rem;
     margin-top: 0.75rem;
   }
@@ -136,6 +137,7 @@ export const poStyleLayerStackStyles = css`
   .layer-form-grid label {
     display: flex;
     flex-direction: column;
+    align-self: start;
     gap: 0.25rem;
     font-size: 0.8125rem;
     font-weight: 600;
@@ -144,5 +146,15 @@ export const poStyleLayerStackStyles = css`
   .layer-form-grid wa-input,
   .layer-form-grid wa-select {
     font-weight: normal;
+  }
+
+  .layer-form-grid wa-select {
+    align-self: start;
+  }
+
+  /* Style/Blend/Opacity only. The next grid is Color; keep one 0.75rem margin between them. */
+  .layer-form > .layer-form-grid:first-child {
+    max-height: 5.5rem;
+    overflow: hidden;
   }
 `;

@@ -5,6 +5,9 @@
  */
 export const bladePreviewKeys = {
   ariaLabel: 'ariaLabel',
+  sectionPower: 'sectionPower',
+  sectionCombat: 'sectionCombat',
+  sectionLockup: 'sectionLockup',
   powerOn: 'powerOn',
   powerOff: 'powerOff',
   blast: 'blast',

@@ -25,6 +25,7 @@ export const poBladePreviewStyles = css`
     display: block;
     width: 100%;
     box-sizing: border-box;
+    color: #f4f6f8;
   }
 
   .saber-stack {
@@ -44,14 +45,31 @@ export const poBladePreviewStyles = css`
     flex-shrink: 0;
     position: relative;
     z-index: 1;
+    overflow: visible;
     margin-bottom: calc(-1 * ${BLADE_HILT_OVERLAP_PX}px);
     transform: translate(${BLADE_HORIZONTAL_OFFSET_PX}px, ${BLADE_EMITTER_OFFSET_PX}px);
   }
 
+  /* Height is the current extended length (set from the draw path). Shadow hugs this strip only. */
+  .blade-glow {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    z-index: 0;
+    transform: translateX(-50%);
+    pointer-events: none;
+    box-shadow: 0 0 14px 4px rgba(100, 200, 255, 0.9);
+  }
+
+  .blade-glow[hidden] {
+    display: none;
+  }
+
   .preview-blade {
     display: block;
+    position: relative;
+    z-index: 1;
     flex-shrink: 0;
-    box-shadow: 0 0 14px rgba(100, 200, 255, 0.4);
   }
 
   .hilt-stage {
@@ -83,22 +101,59 @@ export const poBladePreviewStyles = css`
   .preview-controls {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.45rem;
+    align-items: stretch;
+    gap: 0.65rem;
     margin: 0.75rem 0 0;
     width: 100%;
+    max-width: 100%;
+    margin-inline: auto;
+    color: #f4f6f8;
   }
 
-  .preview-controls-row {
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--wa-color-neutral-35, #52525b);
+    border-radius: var(--wa-border-radius-medium, 6px);
+    background: rgba(0, 0, 0, 0.15);
+  }
+
+  .control-group-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #f4f6f8;
+    opacity: 1;
+  }
+
+  .control-group-body {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
     justify-content: center;
-    width: 100%;
   }
 
-  .preview-controls-row--buttons wa-button {
+  .control-group-body wa-button {
     min-width: 4.5rem;
+    color: #f4f6f8;
+    --wa-color-on-loud: #f4f6f8;
+    --wa-color-neutral-on-loud: #f4f6f8;
+    --wa-color-on-normal: #f4f6f8;
+    --wa-color-neutral-on-normal: #f4f6f8;
+    --wa-color-on-quiet: #f4f6f8;
+    --wa-color-neutral-on-quiet: #f4f6f8;
+    --wa-color-brand-on-loud: #f4f6f8;
+  }
+
+  .control-group-body wa-button::part(button) {
+    color: #f4f6f8;
+  }
+
+  .control-group-body wa-button[disabled] {
+    opacity: 1;
   }
 
   .combat-toggle {
@@ -108,11 +163,13 @@ export const poBladePreviewStyles = css`
     font-size: 0.8125rem;
     font-weight: 600;
     padding: 0.15rem 0.35rem;
-    opacity: 0.85;
+    color: #f4f6f8;
+    opacity: 1;
   }
 
   .combat-toggle--disabled {
-    opacity: 0.45;
+    color: #f4f6f8;
+    opacity: 1;
     pointer-events: none;
   }
 
@@ -135,7 +192,8 @@ export const poBladePreviewStyles = css`
   .blade-angle-value {
     font-weight: normal;
     font-variant-numeric: tabular-nums;
-    opacity: 0.75;
+    color: #f4f6f8;
+    opacity: 1;
   }
 
   .blade-angle-control input[type='range'] {
@@ -147,14 +205,16 @@ export const poBladePreviewStyles = css`
   .blade-angle-hint {
     font-weight: normal;
     font-size: 0.75rem;
-    opacity: 0.7;
+    color: #f4f6f8;
+    opacity: 1;
     line-height: 1.35;
   }
 
   .preview-caption {
     margin: 0.5rem 0 0;
     font-size: 0.7rem;
-    opacity: 0.6;
+    color: #f4f6f8;
+    opacity: 1;
     text-align: center;
   }
 `;

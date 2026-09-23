@@ -24,23 +24,26 @@ public:
     RunFunction(&extension_, blade);
     on_ = blade->is_on();
     thres_ = (extension_.calculate(blade) * (blade->num_leds() + 4)) >> 7;
+    black_.run(blade);
     spark_color_.run(blade);
     if (thres_ == 0) return false;
     return true;
   }
 
-  auto getColor(int led) -> decltype(MixColors(Black, spark_color_.getColor(0), 1, 8)) {
-    if (!on_) return Black;
-    int spark_mix = clampi32(thres_ - 1024 - led * 256, 0, 255);
-    if (spark_mix <= 0) return Black;
-    return MixColors(Black, spark_color_.getColor(led), spark_mix, 8);
-  }
-
 private:
   PONUA SVFWrapper<InOutFuncAuto<EXT, RET>> extension_;
+  Black black_;
   SPARK_COLOR spark_color_;
   bool on_ = false;
   int thres_ = 0;
+
+public:
+  auto getColor(int led) -> decltype(MixColors(black_.getColor(0), spark_color_.getColor(0), 1, 8)) {
+    if (!on_) return black_.getColor(led);
+    int spark_mix = clampi32(thres_ - 1024 - led * 256, 0, 255);
+    if (spark_mix <= 0) return black_.getColor(led);
+    return MixColors(black_.getColor(led), spark_color_.getColor(led), spark_mix, 8);
+  }
 };
 
 template<class SPARK_COLOR, class EXT, class RET>

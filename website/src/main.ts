@@ -10,6 +10,7 @@ import '@awesome.me/webawesome/dist/styles/webawesome.css';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 
 import './app.css';
+import { initTheme } from './ui/theme.js';
 import './ui/elements/index.js';
 import { ROUTE_CATALOG, type RouteId } from './route-config';
 import { registerRoute, startRouter } from './router';
@@ -38,6 +39,8 @@ for (const meta of ROUTE_CATALOG) {
     mount: PAGE_MOUNTS[meta.id],
   });
 }
+
+initTheme();
 
 const pageRoot = document.querySelector<HTMLElement>('#page-root')!;
 

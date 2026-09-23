@@ -14,7 +14,7 @@ export const BLADE_WIDTH_EXTRA_PX = 6;
 export const BLADE_HEIGHT_TO_HILT_RATIO = 3;
 
 /** Blur (px) for edge/tip glow underlay — sharp pass drawn on top afterward. */
-export const BLADE_GLOW_BLUR_PX = 4;
+export const BLADE_GLOW_BLUR_PX = 12;
 
 /** Horizontal alpha feather (px) at left/right inside the clipped blade. */
 export const BLADE_SIDE_FEATHER_PX = 3;
@@ -43,26 +43,44 @@ export type MeasureVerticalSaberLayoutOptions = {
   /** LED count from wiring (simulation). */
   pixelCount: number;
   devicePixelRatio?: number;
+  /**
+   * Upper bound on blade CSS height (viewport fit). The 3× hilt ratio still applies
+   * when this is omitted or larger than that ideal. The hilt box is not changed.
+   */
+  maxBladeCssHeight?: number;
 };
 
 /**
  * Blade sits above the hilt, centered.
- * Width = 15% of hilt width; height = 3× hilt height; rounded cap at the tip (top).
+ * Width = 15% of hilt width; height = 3× hilt height, or shorter when
+ * `maxBladeCssHeight` is set so the preview pane can fit the viewport.
+ * Rounded cap at the tip (top).
  */
 export function measureVerticalSaberLayout(
   options: MeasureVerticalSaberLayoutOptions,
 ): VerticalSaberLayout {
-  const { hiltDisplayWidth, hiltDisplayHeight, pixelCount, devicePixelRatio = 1 } = options;
+  const {
+    hiltDisplayWidth,
+    hiltDisplayHeight,
+    pixelCount,
+    devicePixelRatio = 1,
+    maxBladeCssHeight,
+  } = options;
 
   const hiltCssWidth = Math.max(0, hiltDisplayWidth);
   const hiltCssHeight = Math.max(0, hiltDisplayHeight);
 
   const bladeCssWidth = Math.max(2, hiltCssWidth * BLADE_WIDTH_RATIO + BLADE_WIDTH_EXTRA_PX);
-  const bladeCssHeight = Math.max(bladeCssWidth, hiltCssHeight * BLADE_HEIGHT_TO_HILT_RATIO);
+  const idealBladeCssHeight = Math.max(bladeCssWidth, hiltCssHeight * BLADE_HEIGHT_TO_HILT_RATIO);
+  const bladeCssHeight =
+    maxBladeCssHeight != null && Number.isFinite(maxBladeCssHeight)
+      ? Math.max(bladeCssWidth, Math.min(idealBladeCssHeight, maxBladeCssHeight))
+      : idealBladeCssHeight;
   const bladeTipRadius = bladeCssWidth / 2;
 
-  const pixelCssHeight =
-    pixelCount > 0 ? Math.max(1, bladeCssHeight / pixelCount) : bladeCssHeight;
+  // Divide the full blade height across LEDs, including sub-pixel rows, so a
+  // viewport-shrunk canvas still draws the tip instead of clipping it.
+  const pixelCssHeight = pixelCount > 0 ? bladeCssHeight / pixelCount : bladeCssHeight;
 
   const bladeBackingWidth = Math.max(1, Math.round(bladeCssWidth * devicePixelRatio));
   const bladeBackingHeight = Math.max(1, Math.round(bladeCssHeight * devicePixelRatio));
@@ -177,23 +195,41 @@ export function featherBladeSides(
 
 /**
  * Sharp clipped blade on top; blurred underlay only peeks at edges and tip halo.
+ *
+ * `visibleCssHeight` is the current extended length (hilt → tip). Glow is clipped
+ * to that span plus the blur radius so the halo grows and shrinks with the blade
+ * and does not outline the unlit length.
  */
 export function drawBladeWithSoftEdges(
   dest: CanvasRenderingContext2D,
   source: CanvasImageSource,
   layout: Pick<VerticalSaberLayout, 'bladeCssWidth' | 'bladeCssHeight' | 'bladeTipRadius'>,
+  visibleCssHeight?: number,
 ): void {
   const { bladeCssWidth, bladeCssHeight } = layout;
+  const visible = Math.max(0, Math.min(bladeCssHeight, visibleCssHeight ?? bladeCssHeight));
   dest.clearRect(0, 0, bladeCssWidth, bladeCssHeight);
+  dest.filter = 'none';
+  dest.globalAlpha = 1;
+  if (visible <= 0) {
+    return;
+  }
   dest.imageSmoothingEnabled = true;
 
-  // Glow underlay — visible only where the sharp layer is transparent (edges / tip fringe).
+  // Keep blur pixels past the lit tip. A silhouette clip the same size as the blade erases the halo.
+  const glowHeight = Math.min(bladeCssHeight, visible + BLADE_GLOW_BLUR_PX * 2);
+  const yTop = bladeCssHeight - glowHeight;
+  dest.save();
+  dest.beginPath();
+  dest.rect(0, yTop, bladeCssWidth, glowHeight);
+  dest.clip();
+
   dest.filter = `blur(${BLADE_GLOW_BLUR_PX}px)`;
-  dest.globalAlpha = 0.55;
+  dest.globalAlpha = 0.9;
   dest.drawImage(source, 0, 0, bladeCssWidth, bladeCssHeight);
 
-  // Crisp round tip + solid core on top.
   dest.filter = 'none';
   dest.globalAlpha = 1;
   dest.drawImage(source, 0, 0, bladeCssWidth, bladeCssHeight);
+  dest.restore();
 }

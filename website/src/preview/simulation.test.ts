@@ -37,6 +37,23 @@ describe('preview simulation', () => {
     expect(bladeLengthFraction(sim, 0)).toBe(1);
   });
 
+  it('reads smoke_flow extend and retract slots', () => {
+    const section: StyleSection = {
+      id: 'smoke_only',
+      vars: {},
+      layers: [
+        {
+          id: 'smoke',
+          styleName: 'smoke_flow',
+          args: ['black', 'white', '450', '900'],
+          blend: 'multiply',
+          opacity: 24000,
+        },
+      ],
+    };
+    expect(sectionInOutTimes(section)).toEqual({ extendMs: 450, retractMs: 900 });
+  });
+
   it('reads extend/retract from section vars', () => {
     const section: StyleSection = {
       id: 'with_vars',

@@ -4,9 +4,11 @@
  * @module ui/elements/po-sidebar-nav
  */
 import { html, nothing } from 'lit';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import { parseRoute } from '../../router';
 import {
   configRoutes,
+  getRouteMeta,
   introRoutes,
   toolRoutes,
   type RouteId,
@@ -66,14 +68,15 @@ export class PoSidebarNav extends PoElement {
   }
 
   /**
-   * Renders one sidebar navigation link with optional SD path and stub badge.
+   * Renders one sidebar navigation link with icon, optional SD path, and stub badge.
    *
    * @param id Route identifier used for href and active-state comparison.
+   * @param icon Font Awesome icon name for `wa-icon`.
    * @param sdPath Optional SD card config file path shown under the label.
-   * @param stub When true, appends a "coming soon" badge for unimplemented routes.
+   * @param stub When true, shows a subtle "soon" badge for unimplemented routes.
    * @returns Lit template for a single `<li>` navigation item.
    */
-  private renderLink(id: RouteId, sdPath?: string, stub?: boolean) {
+  private renderLink(id: RouteId, icon: string, sdPath?: string, stub?: boolean) {
     const current = this.activeId === id;
     const label = sidebarNavI18n.translate(sidebarNavRouteKeys[id]);
     return html`
@@ -84,11 +87,15 @@ export class PoSidebarNav extends PoElement {
           href="#/${id}"
           aria-current=${current ? 'page' : 'false'}
         >
-          <span class="nav-label"
-            >${label}${stub
-              ? html`<span class="nav-stub-soon">${sidebarNavI18n.translate(sidebarNavKeys.navStubSoon)}</span>`
-              : nothing}</span
-          >
+          <span class="nav-link-row">
+            <wa-icon class="nav-icon" name=${icon} label=""></wa-icon>
+            <span class="nav-label">${label}</span>
+            ${stub
+              ? html`<span class="nav-stub-badge" data-testid="sidebar-nav-stub-${id}"
+                  >${sidebarNavI18n.translate(sidebarNavKeys.navStubSoon)}</span
+                >`
+              : nothing}
+          </span>
           ${sdPath ? html`<span class="nav-path">${sdPath}</span>` : nothing}
         </a>
       </li>
@@ -101,23 +108,28 @@ export class PoSidebarNav extends PoElement {
    * @returns Lit template for the full sidebar navigation tree.
    */
   render() {
+    const renderRouteLink = (id: RouteId) => {
+      const meta = getRouteMeta(id);
+      return this.renderLink(id, meta?.icon ?? 'circle', meta?.sdPath, meta?.stub);
+    };
+
     return html`
       <nav data-testid="sidebar-nav" aria-label=${sidebarNavI18n.translate(sidebarNavKeys.navAriaLabel)}>
         <div>
           <ul class="nav-list">
-            ${introRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
+            ${introRoutes().map((route) => renderRouteLink(route.id))}
           </ul>
         </div>
         <div>
           <h2 class="nav-group-title">${sidebarNavI18n.translate(sidebarNavKeys.navConfigFiles)}</h2>
           <ul class="nav-list">
-            ${configRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
+            ${configRoutes().map((route) => renderRouteLink(route.id))}
           </ul>
         </div>
         <div>
           <h2 class="nav-group-title">${sidebarNavI18n.translate(sidebarNavKeys.navOutput)}</h2>
           <ul class="nav-list">
-            ${toolRoutes().map((route) => this.renderLink(route.id, route.sdPath, route.stub))}
+            ${toolRoutes().map((route) => renderRouteLink(route.id))}
           </ul>
         </div>
       </nav>

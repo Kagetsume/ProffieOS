@@ -18,39 +18,42 @@ export const poHomePageStyles = css`
     line-height: 1.45;
   }
 
-  wa-card {
-    display: block;
-    width: 100%;
-    margin-bottom: 1rem;
+  :host-context(html.wa-dark) .requirement {
+    background: var(--wa-color-neutral-20, #27272a);
+    color: inherit;
   }
 
-  wa-card h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
+  .hub-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
   }
 
-  wa-card p {
-    margin: 0 0 0.75rem;
-    max-width: 65ch;
-    line-height: 1.45;
+  @media (min-width: 880px) {
+    .hub-grid {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    }
   }
 
-  wa-card p:last-child {
-    margin-bottom: 0;
+  :host {
+    color: inherit;
   }
 
   .file-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
+    color: var(--wa-color-text-normal, inherit);
   }
 
   .file-table th,
   .file-table td {
     text-align: left;
     padding: 0.5rem 0.65rem;
-    border-bottom: 1px solid var(--wa-color-neutral-85, #d4d4d8);
+    border-bottom: 1px solid var(--wa-color-surface-border, var(--wa-color-neutral-85, #d4d4d8));
     vertical-align: top;
+    color: inherit;
   }
 
   .file-table th {
@@ -64,6 +67,16 @@ export const poHomePageStyles = css`
     font-family: ui-monospace, monospace;
     font-size: 0.8125rem;
     white-space: nowrap;
+  }
+
+  .file-link {
+    color: var(--wa-color-brand-50, #0ea5e9);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .file-link:hover {
+    text-decoration: underline;
   }
 
   .status {

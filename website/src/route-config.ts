@@ -14,10 +14,12 @@ export type RouteGroup = 'intro' | 'config' | 'tools';
 export type RouteMeta = {
   id: RouteId;
   label: string;
+  /** Font Awesome icon name for sidebar navigation (`wa-icon`). */
+  icon: string;
   sdPath?: string;
   group: RouteGroup;
   description: string;
-  /** Stub pages show a phase note in the sidebar. */
+  /** Stub pages show a subtle badge in the sidebar. */
   stub?: boolean;
 };
 
@@ -34,12 +36,14 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'home',
     label: 'Overview',
+    icon: 'house',
     group: 'intro',
     description: 'What this editor is for and how to use it.',
   },
   {
     id: 'board',
     label: 'Board',
+    icon: 'microchip',
     sdPath: 'config/board.ini',
     group: 'config',
     description: 'Button count, OLED, and Bluetooth serial.',
@@ -47,6 +51,7 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'features',
     label: 'Features',
+    icon: 'toggle-on',
     sdPath: 'config/features.ini',
     group: 'config',
     description: 'Gesture and twist on/off — overrides the same keys from board.ini when present.',
@@ -54,6 +59,7 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'blades',
     label: 'Blades',
+    icon: 'bolt',
     sdPath: 'config/blades.ini',
     group: 'config',
     description: 'NeoPixel and simple accent wiring — data pins, pixels, power FETs.',
@@ -61,6 +67,7 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'styles',
     label: 'Blade styles',
+    icon: 'wand-magic-sparkles',
     sdPath: 'config/blade_styles.ini',
     group: 'config',
     description: 'Layer recipes referenced by presets (`config <section>`).',
@@ -68,6 +75,7 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'presets',
     label: 'Presets',
+    icon: 'list',
     sdPath: 'config/presets.ini',
     group: 'config',
     description: 'Font, track, preset name, and one style line per blade.',
@@ -75,6 +83,7 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
   {
     id: 'export',
     label: 'Export',
+    icon: 'file-export',
     group: 'tools',
     description: 'Preview, copy, and download generated INI files.',
   },

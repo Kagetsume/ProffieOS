@@ -240,7 +240,7 @@ export class PoStyleLayerStack extends PoElement {
             ? html`
                 <div class="layer-form-grid">
                   ${styleDef.args.map((arg, index) => html`
-                    <label>
+                    <label data-testid=${`style-layer-arg-${arg.slot}`}>
                       ${arg.label}
                       ${this.renderLayerArgInput(section, layer, index, arg)}
                     </label>

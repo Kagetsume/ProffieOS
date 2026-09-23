@@ -5,7 +5,12 @@ import { describe, expect, it } from 'vitest';
 import type { StyleSection } from '../model/style-sections';
 import { applyBladeLengthMask, renderStylePreview } from './frame';
 import { clipOverlayToBaseLit, createPixelBuffer } from './composite';
-import { createInitialPreviewSim, previewPowerOff } from './simulation';
+import {
+  advancePreviewSim,
+  createInitialPreviewSim,
+  previewPowerOff,
+  previewPowerOn,
+} from './simulation';
 
 describe('renderStylePreview', () => {
   it('composites a fire base layer', () => {
@@ -84,6 +89,48 @@ describe('renderStylePreview', () => {
     applyBladeLengthMask(pixels, 0.5);
     expect(pixels.a[9]).toBe(0);
     expect(pixels.a[4]).toBe(1);
+  });
+
+  it('keeps preon and postoff pixels while blade length is zero', () => {
+    const section: StyleSection = {
+      id: 'preon_demo',
+      vars: {},
+      layers: [
+        {
+          id: 'base',
+          styleName: 'solid',
+          args: ['cyan'],
+          blend: 'normal',
+          opacity: 32768,
+        },
+        {
+          id: 'pre',
+          styleName: 'preon_glow',
+          args: ['blue'],
+          blend: 'add',
+          opacity: 32768,
+        },
+        {
+          id: 'post',
+          styleName: 'postoff_wipe',
+          args: ['red'],
+          blend: 'add',
+          opacity: 32768,
+        },
+      ],
+    };
+    const off = { ...createInitialPreviewSim(), powered: false };
+    const preon = previewPowerOn(off, 1000, { extendMs: 300, retractMs: 800 }, true, false);
+    const duringPreon = renderStylePreview(section, 8, 1200, preon);
+    expect(duringPreon.lengthFraction).toBe(0);
+    expect(duringPreon.pixels.a.some((alpha) => alpha > 0)).toBe(true);
+
+    const on = createInitialPreviewSim();
+    const retracting = previewPowerOff(on, 2000, { extendMs: 300, retractMs: 400 }, true);
+    const postoff = advancePreviewSim(retracting, retracting.transitionUntil);
+    const duringPostoff = renderStylePreview(section, 8, postoff.transitionStartedAt + 400, postoff);
+    expect(duringPostoff.lengthFraction).toBe(0);
+    expect(duringPostoff.pixels.a.some((alpha) => alpha > 0)).toBe(true);
   });
 
   it('skips mismatched layer buffer sizes', () => {

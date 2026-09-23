@@ -8,6 +8,8 @@
 // smoke_flow: wide bands rolling opposite directions; spatial width/phase warp for organic look
 
 #include "../common/sin_table.h"
+#include "../functions/int.h"
+#include "../functions/svf.h"
 #include "fire.h"
 
 // heat_[0] = tip. Injects at the tip and diffuses toward the hilt (opposite of StyleFireBase).
@@ -372,7 +374,7 @@ private:
 
 // Opposing offset dual sine rolls; sizes drift slowly along the blade.
 template<class COLOR1, class COLOR2,
-  int DELAY = 0, int SPEED = 1,
+  int DELAY = 0, class ROLL_SPEED = Int<1>,
   class UP_NORM = FireConfig<0, 400, 1>,
   class DOWN_NORM = FireConfig<0, 550, 1>>
 class StyleSmokeFlow {
@@ -380,16 +382,17 @@ public:
   bool run(BladeBase* blade) {
     c1_.run(blade);
     c2_.run(blade);
+    roll_speed_.run(blade);
     num_leds_ = blade->num_leds();
     (void)DELAY;
-    (void)SPEED;
     (void)UP_NORM::get();
     (void)DOWN_NORM::get();
     // One time sample per frame — getColor must not call micros() per LED (unstable flicker).
     time_us_ = micros();
     time_us_down_ = time_us_ + 4800000u;
-    scroll_up_ = (int)(((int64_t)time_us_ * 9) / 10000);
-    scroll_down_ = (int)(((int64_t)time_us_down_ * 5) / 14000);
+    int speed = roll_speed_.calculate(blade);
+    scroll_up_ = (int)(((int64_t)time_us_ * 9 * speed) / 10000);
+    scroll_down_ = (int)(((int64_t)time_us_down_ * 5 * speed) / 14000);
     return true;
   }
 
@@ -408,6 +411,7 @@ public:
 private:
   COLOR1 c1_;
   COLOR2 c2_;
+  PONUA SVFWrapper<ROLL_SPEED> roll_speed_;
   int num_leds_ = 0;
   int scroll_up_ = 0;
   int scroll_down_ = 0;

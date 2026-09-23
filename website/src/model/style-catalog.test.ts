@@ -32,6 +32,7 @@ describe('style-catalog', () => {
     const args = defaultArgsForStyle('solid');
     expect(args.length).toBeGreaterThan(0);
     expect(defaultArgsForStyle('unknown_style_xyz')).toEqual([]);
+    expect(defaultArgsForStyle('smoke_flow').at(-1)).toBe('1');
   });
 
   it('describes layers with blend and config sections', () => {
