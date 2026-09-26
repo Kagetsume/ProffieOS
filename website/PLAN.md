@@ -589,7 +589,7 @@ Page mounts stay thin: `mountWiringPage(root)` appends `<po-wiring-page>` and re
 
 ## Documentation links (in-app)
 
-- [`examples/README.md`](../examples/README.md) — accent styles, NUM_BLADES 5 layout.
+- [`examples/README.md`](../examples/README.md) — accent styles, NUM_BLADES 4 layout.
 - [`doc/blade_config.md`](../doc/blade_config.md) — blades.ini grammar.
 - [`doc/blade_styles_config.md`](../doc/blade_styles_config.md) — layer blends, Fett263 SD recipes.
 

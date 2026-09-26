@@ -61,7 +61,9 @@ Run `list_named_styles` over serial to see available styles and their arguments.
 
 ### Config-driven layered styles (`config/blade_styles.ini`)
 
-You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Use composable **`solid`** / **`solid_bend`** bases plus overlay **`clash`** / **`blast`** / **`responsive_clash`** / **`responsive_blast`** / **`real_clash`** / **`blast_wave_random`** layers, or monolithic bases like **`standard`**. Composable texture layers (**`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`**, **`pixel_sequence`**, **`sparktip_layer`**, …) and masks **`fire_mask`**, **`stripes`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** / **normal** over an opaque base. Extend/retract can use **`-1`** to match ignition/retraction soundfont length. See **blade_styles_config.md**, **README_blade_styles_config.md**, and **examples/README.md**. Capstone demo: **`style = config composable_checklist`**. Shipped recipes include **`[smoke_blade]`**, **`[composable_rainbow]`**, **`[solid_lava]`**, **`[solid_unstable]`**, **`[solid_chase]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
+You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Use composable **`solid`** / **`solid_bend`** bases plus overlay **`clash`** / **`blast`** / **`responsive_clash`** / **`responsive_blast`** / **`real_clash`** / **`blast_wave_random`** layers, or monolithic bases like **`standard`**. Composable texture layers (**`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`**, **`pixel_sequence`**, **`sparktip_layer`**, …) and multiply masks **`fire_mask`**, **`stripes`**, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** / **normal** over an opaque base. Extend/retract can use **`-1`** to match ignition/retraction soundfont length. See **blade_styles_config.md**, **README_blade_styles_config.md**, and **examples/README.md**. Capstone demo: **`style = config composable_checklist`**. Shipped recipes include **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_sine_waves]`** … **`[demo_chirp]`**, **`[smoke_blade]`**, **`[composable_rainbow]`**, **`[solid_lava]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
+
+**Edit Mode vs layer stacks:** Fett263 Edit Mode and OS8 **`MENU_SPEC_TEMPLATE`** menus read and write **only each preset’s `style=` line** (via **`style_parser.SetArgument`**), then save **`presets.ini`**. They do **not** edit **`blade_styles.ini`** or individual **`layer =`** rows. **`style = config section base=magenta`** is the on-saber-friendly recolor path (override tokens); full layer editing is SD card or website Blade styles editor. Full write-up: **README_blade_styles_config.md** (*Edit Mode and on-saber menus vs layer stacks*).
 
 ## Behavior
 
@@ -86,26 +88,37 @@ The other config files use very little RAM: **board.ini** / **features.ini** onl
 
 ## Example `config/presets.ini`
 
+Minimal excerpt ( **`NUM_BLADES` 4** in **`config/config-files-config.h`** — four `style=` lines per preset; see **`examples/config/presets.ini`** for the full list):
+
 ```
 new_preset
 font=Kyber
 track=tracks/hum.wav
+style=config sine_waves_cyan
+style=accent_pulse 1500
+style=accent_sound_on white 4096
+style=accent_glow
+name=Sine Waves Cyan
+variation=0
+new_preset
+font=Kyber
+track=tracks/hum.wav
 style=config smoke_laser
+style=accent_pulse 1500
+style=accent_sound_on white 4096
+style=accent_glow
 name=Smoke Laser
 variation=0
 new_preset
 font=Kyber
 track=tracks/hum.wav
 style=standard red white 300 800
+style=accent_pulse 1500
+style=accent_sound_on white 4096
+style=accent_glow
 name=Red
-variation=0
-new_preset
-font=Kyber
-track=tracks/hum.wav
-style=fire red yellow
-name=Fire
 variation=0
 end
 ```
 
-Preset 0 applies **`[smoke_laser]`** from **`config/blade_styles.ini`** — copy both INI files to the SD **`config/`** folder. Built-in styles (`standard`, `fire`, …) need only **`presets.ini`**.
+Preset 0 → **`[sine_waves_cyan]`**, preset 1 → **`[smoke_laser]`**, preset 2 → **`[smoke_sine_cyan]`** in **`config/blade_styles.ini`**. Copy **`blade_styles.ini`** (and any **`include =`** fragments) to SD **`config/`** when using **`style = config …`**. Built-in styles (`standard`, `fire`, …) need only **`presets.ini`**.

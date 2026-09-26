@@ -1,6 +1,8 @@
 #ifndef MODE_STYLE_ARGUMENT_HELPERS
 #define MODE_STYLE_ARGUMENT_HELPERS
 
+#include "../styles/parse_color_arg.h"
+
 const char* GetStyle(int blade);
 void SetStyle(int blade, LSPtr<char> style);
 
@@ -30,12 +32,9 @@ Color16 GetColorArg(int blade, int arg) {
   PVLOG_DEBUG << "GetColorArg: blade=" << blade << " arg=" << arg << "\n";
   char argspace[32];
   if (GetArg(blade, arg, argspace)) {
-    char* tmp;
-    int r = strtol(argspace, &tmp, 0);
-    int g = strtol(tmp+1, &tmp, 0);
-    int b = strtol(tmp+1, NULL, 0);
-    PVLOG_DEBUG << "GetColorArg: argument=" << argspace << "  r=" << r << " g=" << g << " b=" << b << "\n";
-    return Color16(r,g,b);
+    Color16 c = ParseColorArg(argspace);
+    PVLOG_DEBUG << "GetColorArg: argument=" << argspace << "  r=" << c.r << " g=" << c.g << " b=" << c.b << "\n";
+    return c;
   }
   PVLOG_DEBUG << "GetColorArg: not found!\n";
   return Color16(65535,0,0);

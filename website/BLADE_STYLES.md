@@ -63,7 +63,7 @@ Layers composite **bottom → top** (first `layer =` is the base; each next line
 |------|----------|----------|
 | **Base (opaque)** | `standard`, `solid`, `fire`, `rainbow`, `water_flow`, `darksaber`, … | Fills the blade when ignited |
 | **Overlay (event-driven)** | `blast`, `clash`, `lockup`, `swing`, `drag`, `melt`, `preon_glow`, … | Mostly transparent until triggered |
-| **Texture (mask)** | `fire_mask`, `stripes`, `noise_flicker`, `smoke_flow`, composable `*_layer`, … | Usually stacked with `multiply` / `screen` / `add` + `opacity`; **`smoke_flow` needs `{{ext}}`/`{{ret}}`** |
+| **Texture (mask)** | `fire_mask`, `stripes`, `random_bands`, `sine_waves`, `saw_waves`, `pulse_train`, `chirp`, `smoothstep_bands`, `value_noise`, `fbm_noise`, `moire_mask`, `blade_envelope`, `sine_waves_swing`, `noise_flicker`, `smoke_flow`, composable `*_layer`, … | Usually stacked with `multiply` / `screen` / `add` + `opacity`; **`smoke_flow` needs `{{ext}}`/`{{ret}}`** |
 
 **Composable base:** Use **`solid`** or **`solid_bend`** when you want extend/retract and color
 but **no built-in clash/lockup/blast** — then add `clash`, `blast`, `responsive_lockup`, etc. as
@@ -562,7 +562,7 @@ Full tables: [`examples/README.md`](../examples/README.md) and the header of
 | Composable base | `solid`, `solid_bend` | Extend/retract + color only; stack overlays below |
 | Monolithic base | `standard`, `fire`, `rainbow`, `water_flow`, `fallen_order`, … | Full blade with built-in combat |
 | Overlays | `blast`, `clash`, `real_clash`, `responsive_clash`, `blast_wave_random`, `responsive_blast`, `lockup`, `responsive_lockup`, `swing`, `drag`, `melt`, `lb`, `force_glow`, … | Combat and motion reactions |
-| Composable textures | `gradient_layer`, `rainbow_layer`, `audio_layer`, `pulse_layer`, `swing_layer`, `fire_mask`, `stripes`, `pixel_sequence`, OS7 `*_layer` (`water_flow_layer`, `cylon_layer`, `sparktip_layer`, …) | Masks and idle motion stacked over base |
+| Composable textures | `gradient_layer`, `rainbow_layer`, `audio_layer`, `pulse_layer`, `swing_layer`, `fire_mask`, `stripes`, `random_bands`, `sine_waves`, `saw_waves`, `pulse_train`, `chirp`, `smoothstep_bands`, `value_noise`, `fbm_noise`, `moire_mask`, `blade_envelope`, `sine_waves_swing`, `pixel_sequence`, OS7 `*_layer` (`water_flow_layer`, `cylon_layer`, `sparktip_layer`, …) | Masks and idle motion stacked over base |
 | Smoke (matched ext/ret) | `smoke_flow` | Multiply/screen bands — pass **`{{ext}}`/`{{ret}}`** on each line |
 | Preon/postoff | `preon_glow`, `preon_wipe`, `postoff_wipe`, `ignition_flash`, … | Startup/shutdown tied to font sounds |
 | Accents | `accent_pulse`, `accent_glow`, … | PWM blades in presets (usually not layered here) |
@@ -581,7 +581,9 @@ font = MyFont
 track = tracks/hum.wav
 style = config smoke_blade base=purple
 style = accent_pulse 1500
-name = Smoke + pulse accent
+style = accent_sound_on white 4096
+style = accent_glow
+name = Smoke + accents
 variation = 0
 end
 ```
@@ -589,9 +591,9 @@ end
 | Line | Blade index | Source |
 |------|-------------|--------|
 | 1st `style =` | 0 (main NeoPixel) | `[smoke_blade]` in `blade_styles.ini` |
-| 2nd `style =` | 1 (accent) | Direct `accent_*` named style |
+| 2nd–4th `style =` | 1–3 (PWM accents) | Direct `accent_*` named styles |
 
-Multi-blade presets need one `style =` per logical blade (see [BLADES.md](./BLADES.md)).
+Shipped **`examples/config/presets.ini`** uses **`NUM_BLADES` 4** the same way (presets 0–2: **`sine_waves_cyan`**, **`smoke_laser`**, **`smoke_sine_cyan`**). One `style =` per logical blade — see [BLADES.md](./BLADES.md).
 
 ---
 
@@ -605,8 +607,9 @@ Multi-blade presets need one `style =` per logical blade (see [BLADES.md](./BLAD
 6. **Export** → copy or download `blade_styles.ini` to SD `config/`.
 7. Reference sections in `presets.ini`: `style = config your_section`.
 
-**Recipe library:** The picker includes bundled starters (`smoke_blade`, `water_blade`, … from
-`catalog/config-styles.json`) you can insert as new sections.
+**Recipe library:** Bundled starters from `catalog/config-styles.json` / `DEFAULT_CONFIG_STYLE_IDS`
+include **`sine_waves_cyan`**, **`smoke_laser`**, **`smoke_sine_cyan`**, texture demos
+(`demo_sine_waves`, `demo_random_bands`, …), **`smoke_blade`**, **`water_blade`**, and others.
 
 ---
 

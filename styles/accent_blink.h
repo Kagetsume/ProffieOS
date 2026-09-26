@@ -5,7 +5,7 @@
 // Args: color on_ms off_ms (default white 500 500)
 
 #include "blade_style.h"
-#include "rgb_arg.h"
+#include "parse_color_arg.h"
 #include "../common/arg_parser.h"
 #include "../common/math.h"
 #include <string.h>
@@ -57,13 +57,7 @@ static Color16 ParseAccentColorArg(int argnum, Color16 default_color) {
   itoa(default_color.b >> 8, default_value + strlen(default_value), 10);
   const char* arg = CurrentArgParser->GetArg(argnum, "COLOR", default_value);
   if (!arg) return default_color;
-  Color16 named;
-  if (ParseColorName(arg, &named)) return named;
-  char* tmp;
-  int r = strtol(arg, &tmp, 0);
-  int g = strtol(tmp + 1, &tmp, 0);
-  int b = strtol(tmp + 1, NULL, 0);
-  return Color16(r, g, b);
+  return ParseColorArg(arg);
 }
 
 class AccentBlinkFactory : public StyleFactory {

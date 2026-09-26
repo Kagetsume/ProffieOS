@@ -7,7 +7,7 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `blades.ini` defines NeoPixel strips on **blade indices 0–1**, plus **simple PWM** accents on **index 2** (Blade 3 / Free1 / `accent_pulse 1500`), **index 3** (Blade 4 / Free2 / `accent_sound_on white 4096`), and **index 4** (Blade 5 / Free3 / `accent_glow`). `presets.ini` has **five** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
+The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 4096`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
 | File | Purpose |
 |------|---------|
@@ -17,7 +17,7 @@ The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `bl
 | **blade_styles.ini** | Named style "recipes" as layers. **Guide:** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md). See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |
-| **presets.ini** | Preset list: font, track, style, name. Includes examples of **`config <section>`**, variable overrides, nested configs, preon/postoff, and direct named styles. |
+| **presets.ini** | Preset list: font, track, style, name. Includes examples of **`config <section>`**, variable overrides, nested configs, preon/postoff, and direct named styles. On-saber Edit Mode changes **`style=`** lines only — not **`blade_styles.ini`** layers; see **`doc/README_blade_styles_config.md`** (*Edit Mode and on-saber menus vs layer stacks*). |
 
 ## GPIO accent named styles
 
@@ -25,8 +25,8 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 
 **SD config checklist (accents dark but main blades work):**
 
-1. **`config/blades.ini`** — define **every** accent blade index (`blade = 2` … `blade = 4` for Free1–Free3). Wiring alone is not enough; missing indices are not activated at boot.
-2. **`config/presets.ini`** — **five** `style =` lines per preset when `NUM_BLADES` is 5 (lines 3–5: `accent_pulse 1500`, `accent_sound_on white 4096`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
+1. **`config/blades.ini`** — define **every** accent blade index (`blade = 1` … `blade = 3` for Free1–Free3). Wiring alone is not enough; missing indices are not activated at boot.
+2. **`config/presets.ini`** — **four** `style =` lines per preset when `NUM_BLADES` is 4 (lines 2–4: `accent_pulse 1500`, `accent_sound_on white 4096`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
 3. **Firmware** — `accent_*` styles must exist in `named_styles[]` (reflash after adding them). Over serial, `list_named_styles` should list `accent_pulse`, `accent_sound_on`, etc. A failed parse logs `Blade N: failed to parse style "…"`.
 4. **Compiled fallback** — without `presets.ini`, accents use `builtin <preset> <blade>` from compiled `config-files-config.h` (always works after flash). With `presets.ini`, styles come from the SD strings above.
 
@@ -141,6 +141,13 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `smoke_flow` | multiply `black white {{ext}} {{ret}}`; screen `black <base> {{ext}} {{ret}}` | Smoke blade recipe; **ext/ret must match base** (use `{{ext}}`/`{{ret}}`; `-1` = sound length) |
 | `stripes` | `add opacity 10000 stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 18000 hard_stripes 1200 -4000 black white` | Hard-edged bands |
+| `random_bands` | `multiply opacity 22000 random_bands -600 green black 3000` | Irregular rolling bands — **`[smoke_laser]`** (not **`stripes`** like **`[smoke_blade]`**) |
+| `sine_waves` / `saw_waves` | `multiply opacity 22000 sine_waves 2400 0 8192 65535 -2000` | Up to 4 wave slots; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
+| `pulse_train` / `chirp` | `multiply opacity 22000 pulse_train 2400 -2000 0 65535 16384` | Square bands / frequency-sweep sine — presets 21–22 |
+| `smoothstep_bands` | `multiply opacity 20000 smoothstep_bands 2400 -2000 8192 65535 400` | Soft rolling bands — preset 13 |
+| `value_noise` / `fbm_noise` | `multiply opacity 18000 value_noise 2400 -2000 8192 65535 0` | Hash / FBM noise masks — presets 14–15 |
+| `moire_mask` / `blade_envelope` | `multiply opacity 20000 moire_mask …` | Beating ramps / center bump — presets 16–17 |
+| `sine_waves_swing` | long arg list (see **`[demo_sine_waves_swing]`**) | Swing/twist compresses wavelength — preset 18 |
 | `noise_flicker` | `multiply opacity 8000 noise_flicker black white` | Organic crackle texture |
 | `gradient_layer` | `normal opacity 8000 gradient_layer blue cyan` | Hilt-to-tip gradient wash; opacity = mix vs base |
 | `rainbow_layer` | `normal opacity 12000 rainbow_layer` | Animated rainbow wash over base; opacity = mix vs base |
@@ -153,7 +160,9 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
 
-Example sections in `examples/config/blade_styles.ini`: start with **`[composable_checklist]`** (capstone full stack + layer catalog in comments), `[composable_checklist_responsive]` (angle-reactive clash/blast variant), then `[rainbow_pulse]`, `[smoke_blade]`, `[composable_gradient]`, `[composable_rainbow]`, `[composable_audio]`, … (full composable + OS7 set), `[greyscale_mercenary]`, `[energy_blade]`, plus monolithic Fett263 wrappers where needed.
+Example sections in `examples/config/blade_styles.ini`: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`** (first presets in **`presets.ini`**), texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`** (presets 12–22), then **`[composable_checklist]`** (capstone + layer catalog in comments), `[rainbow_pulse]`, `[smoke_blade]`, composable + OS7 sections, `[greyscale_mercenary]`, `[energy_blade]`, and monolithic Fett263 wrappers.
+
+**First presets (main blade / blade 0 only):** 0 = Sine Waves Cyan, 1 = Smoke Laser, 2 = Smoke Sine Cyan, 3 = Red (`standard`), … 11 = Smoke Blade, 12–22 = texture demos. Each preset in **`examples/config/presets.ini`** uses **four** `style =` lines when **`NUM_BLADES` is 4** (accent lines 2–4).
 
 ### Fett263 OS7 style approximations
 
@@ -161,7 +170,9 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 
 | OS7 style | SD section | Preset | Approximates well | Cannot replicate |
 |-----------|------------|--------|-------------------|------------------|
-| [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade | **`solid`** base + **`smoke_flow`** (multiply + screen; **same `{{ext}}`/`{{ret}}` as base**) + composable **`clash`** / **`blast`** / lockup overlays, drag/melt/LB | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
+| [SmokeBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#SmokeBlade) | `smoke_blade` | Smoke Blade (preset 11) | **`solid`** + **`smoke_flow`** + **`stripes`** + **`swing`** + OS7 combat overlays | StaticFire base texture, Sin/StripesX bands, OS7 lockup Bump |
+| Smoke laser (SD) | `smoke_laser` | Smoke Laser (preset 1) | Green base + **`smoke_flow`** + **`random_bands`** + classic clash/blast | Same gaps as SmokeBlade; band mask differs from **`smoke_blade`** |
+| Sine waves (SD) | `sine_waves_cyan` | Sine Waves Cyan (preset 0) | Four **`sine_waves`** multiply slots + OS7 combat | N/A (demo / builder recipe) |
 | [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `composable_water_flow` or `water_blade` | Water Blade | **`water_flow_layer`** + `solid_bend` + OS7 overlays, or monolithic **`water_flow`** | Bump lockup absorb shapes |
 | [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + composable combat, or monolithic **`darksaber`** | Bump lockup absorb shapes |
 | [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `composable_static_electricity` | Static Electricity | **`static_electricity_layer`** + composable combat | Bump lockup absorb shapes |
@@ -377,10 +388,10 @@ layer = postoff_wipe red
 
 ### Example sections in this repo
 
-- **[mystic_awakening]** — `preon_glow` + `postoff_wipe` (Preset 10).
-- **[spectral_gate]** — `preon_wipe` + `postoff_wipe` (Preset 11).
-- **[inferno_ritual]** — `preon_glow` + `postoff_wipe` on a **fire** base (Preset 12).
-- **[sputter_gate]** — `preon_sputter` + `postoff_sputter` (Preset 13).
+- **[mystic_awakening]** — `preon_glow` + `postoff_wipe` (Preset 30).
+- **[spectral_gate]** — `preon_wipe` + `postoff_wipe` (Preset 31).
+- **[inferno_ritual]** — `preon_glow` + `postoff_wipe` on a **fire** base (Preset 32).
+- **[sputter_gate]** — `preon_sputter` + `postoff_sputter` (Preset 33).
 
 ### Tips
 

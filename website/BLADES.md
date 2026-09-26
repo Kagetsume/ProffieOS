@@ -16,7 +16,7 @@ Example file: [`examples/config/blades.ini`](../examples/config/blades.ini)
 | One NeoPixel strip only | [§1 Single main blade](#1-single-main-blade-beginner) | 1 | Simplest; one `style =` per preset |
 | Main strip + crystal on same wire | [§2 Main + crystal sub-blade](#2-main--crystal-sub-blade-one-strip-two-styles) | 2 | Two styles, one `data_pin` |
 | Main + second strip (e.g. pixel pommel) | [§3 Two NeoPixel strips](#3-two-neopixel-strips) | 2 | Two wiring entries |
-| Main + Free1–3 accents (repo default) | [§4 Full five-blade saber](#4-full-five-blade-saber-example-repo-default) | 5 | Match `examples/config/blades.ini` |
+| Main + Free1–3 accents (repo default) | [§4 Full four-blade saber](#4-full-four-blade-saber-example-repo-default) | 4 | Match `examples/config/blades.ini` |
 | Main strip + one accent LED | [§5 NeoPixel + one accent](#5-neopixel-main--one-accent-only) | 2 | Drop unused Free pins |
 | Motor / bar graph on a Free pin | [§6 Motor or sound-driven accent](#6-motor-or-sound-driven-accent) | 2+ | `type=simple` + `accent_on` or `accent_sound_on` |
 | RGB LED star (no pixels) | [§7 RGB star (simple PWM)](#7-rgb-led-star-simple-pwm) | 1 | `pin1`…`pin3`, not NeoPixel |
@@ -258,44 +258,39 @@ end
 
 ---
 
-### 4. Full five-blade saber (example repo default)
+### 4. Full four-blade saber (example repo default)
 
 Matches [`examples/config/blades.ini`](../examples/config/blades.ini) and Proffie V3
 **Reset to profile defaults** in the editor.
 
 | Index | Type | Hardware | Typical preset style |
 |-------|------|----------|----------------------|
-| 0 | NeoPixel | Main 144 LED | `config …` or `standard …` |
-| 1 | NeoPixel | Second strip 60 LED | secondary effect |
-| 2 | Simple | Free1 (`blade5Pin`) | `accent_pulse 1500` |
-| 3 | Simple | Free2 (`blade6Pin`) | `accent_sound_on …` |
-| 4 | Simple | Free3 (`blade7Pin`) | `accent_glow …` |
+| 0 | NeoPixel | Main 144 LED (power FETs 1–3) | `config …` or `standard …` |
+| 1 | Simple | Free1 (`blade5Pin`) | `accent_pulse 1500` |
+| 2 | Simple | Free2 (`blade6Pin`) | `accent_sound_on …` |
+| 3 | Simple | Free3 (`blade7Pin`) | `accent_glow …` |
 
 ```ini
 blade = 0
 data_pin = bladePin
 pixels = 144
-power_pin = bladePowerPin1
+power_pin1 = bladePowerPin1
+power_pin2 = bladePowerPin2
+power_pin3 = bladePowerPin3
 
 blade = 1
-data_pin = blade2Pin
-pixels = 60
-power_pin1 = bladePowerPin2
-power_pin2 = bladePowerPin3
-
-blade = 2
 type = simple
 data_pin = blade5Pin
 led = CreeXPE2White
 active_state = high
 
-blade = 3
+blade = 2
 type = simple
 data_pin = blade6Pin
 led = CreeXPE2White
 active_state = high
 
-blade = 4
+blade = 3
 type = simple
 data_pin = blade7Pin
 led = CreeXPE2White
@@ -304,8 +299,10 @@ active_state = high
 end
 ```
 
-**Important:** All five indices must appear in `blades.ini` when `NUM_BLADES` is 5.
+**Important:** All four indices must appear in `blades.ini` when `NUM_BLADES` is 4.
 Missing accent indices are **not** activated at boot even if `presets.ini` has styles for them.
+
+For a **second NeoPixel strip** plus three accents, use `NUM_BLADES` 5 — see [§3 Two NeoPixel strips](#3-two-neopixel-strips) and add simple accents on indices 2–4.
 
 ---
 
@@ -437,9 +434,10 @@ want the same wiring baked into firmware for SD-less boot.
 
 ---
 
-## How presets connect (one preset, three blades)
+## How presets connect (one preset, N logical blades)
 
-Example preset block when `NUM_BLADES` is 3 (main + crystal sub-blade + one accent):
+Shipped **`examples/config/presets.ini`** assumes **`NUM_BLADES` 4** (main strip + three PWM accents).
+Example when `NUM_BLADES` is 3 (main + crystal sub-blade + one accent):
 
 ```ini
 new_preset

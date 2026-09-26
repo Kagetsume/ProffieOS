@@ -6,7 +6,7 @@ Curated data shipped with the app — not fetched from a server. Update when fir
 
 | File | Purpose |
 |------|---------|
-| `board-profiles.json` | Board presets with default `BladeDefinition[]` (Proffie V3 five-blade layout) |
+| `board-profiles.json` | Board presets with default `BladeDefinition[]` (Proffie V3 four-blade layout) |
 | `pin-options.json` | **Power** FET names (`bladePowerPin1`–`6`) and **data/Free** pins with silkscreen labels |
 | `named-styles.json` | Layer style catalog: id, human label, argument schema, groups (base/overlay/texture/…) |
 | `colors.json` | Color groups: Standard (firmware names), Extended (Fett263 menu), Vivid (OS 8) |

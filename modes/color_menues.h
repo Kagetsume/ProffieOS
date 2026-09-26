@@ -273,11 +273,7 @@ struct ResetColorToDefaultEntry : public MenuEntry {
     LSPtr<char> builtin = style_parser.ResetArguments(GetStyle(menu_current_blade));
     char argspace[32];
     style_parser.GetArgument(builtin.get(), menu_current_arg, argspace, sizeof(argspace));
-    char* tmp;
-    int r = strtol(argspace, &tmp, 0);
-    int g = strtol(tmp+1, &tmp, 0);
-    int b = strtol(tmp+1, NULL, 0);
-    ShowColorStyle::SetColor(Color16(r,g,b));
+    ShowColorStyle::SetColor(ParseColorArg(argspace));
   }
 };
 

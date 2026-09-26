@@ -23,15 +23,15 @@
  * per blade in BladeConfig, (3) one style = line per blade in config/presets.ini, (4) blade count
  * in config/blades.ini when you use SD blade wiring.
  *
- * Blade 3 — simple accent on Free1 (blade5Pin), accent_pulse 1500.
- * Blade 4 — simple accent on Free2 (blade6Pin), accent_sound_on (motor while audio plays).
- * Blade 5 — simple accent on Free3 (blade7Pin), accent_glow.
+ * Blade 2 — simple accent on Free1 (blade5Pin), accent_pulse 1500.
+ * Blade 3 — simple accent on Free2 (blade6Pin), accent_sound_on (motor while audio plays).
+ * Blade 4 — simple accent on Free3 (blade7Pin), accent_glow.
  * Simple accents can be defined in config/blades.ini with type=simple (see examples/config/blades.ini).
  */
 
 #ifdef CONFIG_TOP
 #include "proffieboard_v3_config.h"
-#define NUM_BLADES 5
+#define NUM_BLADES 4
 #define NUM_BUTTONS 2
 #define VOLUME 1000
 const unsigned int maxLedsPerStrip = 144;
@@ -40,15 +40,14 @@ const unsigned int maxLedsPerStrip = 144;
 #define ENABLE_MOTION
 #define ENABLE_WS2811
 #define ENABLE_SD
-#define MOUNT_SD_SETTING
+//#define MOUNT_SD_SETTING
 #define ENABLE_SERIAL
 
 // Compiled blade wiring (blades[] below; WS2811 blades overridden by config/blades.ini on SD):
-//   Blade 1 — 144 px NeoPixel on bladePin, FET bladePowerPin1
-//   Blade 2 —  60 px NeoPixel on blade2Pin, FET bladePowerPin2 + bladePowerPin3
-//   Blade 3 —  accent on blade5Pin (Free1 / PB3), SimpleBladePtr, accent_pulse 1500
-//   Blade 4 —  accent on blade6Pin (Free2 / PB10), SimpleBladePtr, accent_sound_on
-//   Blade 5 —  accent on blade7Pin (Free3 / PB11), SimpleBladePtr, accent_glow
+//   Blade 1 — 144 px NeoPixel on bladePin, FET bladePowerPin1 + bladePowerPin2 + bladePowerPin3
+//   Blade 2 —  accent on blade5Pin (Free1 / PB3), SimpleBladePtr, accent_pulse 1500
+//   Blade 3 —  accent on blade6Pin (Free2 / PB10), SimpleBladePtr, accent_sound_on
+//   Blade 4 —  accent on blade7Pin (Free3 / PB11), SimpleBladePtr, accent_glow
 #endif
 
 #ifdef CONFIG_PRESETS
@@ -61,97 +60,82 @@ StyleAllocator accent_glow_style = StylePtr<InOutHelper<AlphaL<WHITE, SmoothSoun
 Preset presets[] = {
    { "TeensySF", "tracks/venus.wav",
     StyleNormalPtr<CYAN, WHITE, 300, 800>(),
-    StyleNormalPtr<CYAN, WHITE, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "cyan"},
    { "SmthJedi", "tracks/mars.wav",
-    StylePtr<InOutSparkTip<EASYBLADE(BLUE, WHITE), 300, 800> >(),
     StylePtr<InOutSparkTip<EASYBLADE(BLUE, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "blue"},
    { "SmthGrey", "tracks/mercury.wav",
     StyleFirePtr<RED, YELLOW>(),
-    StyleFirePtr<RED, YELLOW>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "fire"},
    { "SmthFuzz", "tracks/uranus.wav",
-    StyleNormalPtr<RED, WHITE, 300, 800>(),
     StyleNormalPtr<RED, WHITE, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "red"},
    { "RgueCmdr", "tracks/venus.wav",
     StyleFirePtr<BLUE, CYAN>(),
-    StyleFirePtr<BLUE, CYAN>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "blue fire"},
    { "TthCrstl", "tracks/mars.wav",
-    StylePtr<InOutHelper<EASYBLADE(OnSpark<GREEN>, WHITE), 300, 800> >(),
     StylePtr<InOutHelper<EASYBLADE(OnSpark<GREEN>, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "green"},
    { "TeensySF", "tracks/mercury.wav",
     StyleNormalPtr<WHITE, RED, 300, 800, RED>(),
-    StyleNormalPtr<WHITE, RED, 300, 800, RED>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "white"},
    { "SmthJedi", "tracks/uranus.wav",
-    StyleNormalPtr<AudioFlicker<YELLOW, WHITE>, BLUE, 300, 800>(),
     StyleNormalPtr<AudioFlicker<YELLOW, WHITE>, BLUE, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "yellow"},
    { "SmthGrey", "tracks/venus.wav",
     StylePtr<InOutSparkTip<EASYBLADE(MAGENTA, WHITE), 300, 800> >(),
-    StylePtr<InOutSparkTip<EASYBLADE(MAGENTA, WHITE), 300, 800> >(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "magenta"},
    { "SmthFuzz", "tracks/mars.wav",
-    StyleNormalPtr<Gradient<RED, BLUE>, Gradient<CYAN, YELLOW>, 300, 800>(),
     StyleNormalPtr<Gradient<RED, BLUE>, Gradient<CYAN, YELLOW>, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "gradient"},
    { "RgueCmdr", "tracks/mercury.wav",
     StyleRainbowPtr<300, 800>(),
-    StyleRainbowPtr<300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "rainbow"},
    { "TthCrstl", "tracks/uranus.wav",
-    StyleStrobePtr<WHITE, Rainbow, 15, 300, 800>(),
     StyleStrobePtr<WHITE, Rainbow, 15, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "strobe"},
    { "TeensySF", "tracks/venus.wav",
     &style_pov,
-    StyleNormalPtr<BLACK, BLACK, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "POV"},
    { "SmthJedi", "tracks/mars.wav",
     &style_charging,
-    StyleNormalPtr<BLACK, BLACK, 300, 800>(),
     accent_pulse_fast_style,
     accent_sound_on_style,
     accent_glow_style, "Battery\nLevel"}
 };
-// Blade 1–2: NeoPixel strips. Blade 3–5: simple accents on Free1 / Free2 / Free3 (active-high FET gate).
+// Blade 1: NeoPixel strip. Blade 2–4: simple accents on Free1 / Free2 / Free3 (active-high FET gate).
 BladeConfig blades[] = {
  { 0,
-  WS281XBladePtr<144, bladePin, Color8::GRB, PowerPINS<bladePowerPin1> >(),       // blade 1
-  WS281XBladePtr<60, blade2Pin, Color8::GRB, PowerPINS<bladePowerPin2, bladePowerPin3> >(),  // blade 2
-  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade5Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 3 (Free1)
-  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade6Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 4 (Free2)
-  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade7Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 5 (Free3)
+  WS281XBladePtr<144, bladePin, Color8::GRB, PowerPINS<bladePowerPin1, bladePowerPin2, bladePowerPin3> >(),  // blade 1
+  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade5Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 2 (Free1)
+  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade6Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 3 (Free2)
+  SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade7Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 4 (Free3)
   CONFIGARRAY(presets) },
 };
 #endif

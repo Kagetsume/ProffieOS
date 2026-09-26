@@ -124,6 +124,17 @@ Monitoring monitor;
 #include "edit_mode.h"
 #include "remap.h"
 #include "stripes.h"
+#include "random_bands.h"
+#include "sine_waves.h"
+#include "saw_waves.h"
+#include "pulse_train.h"
+#include "chirp.h"
+#include "smoothstep_bands.h"
+#include "value_noise.h"
+#include "fbm_noise.h"
+#include "moire_mask.h"
+#include "blade_envelope.h"
+#include "sine_waves_swing.h"
 #include "water_flow.h"
 #include "darksaber.h"
 #include "static_electricity.h"
@@ -316,6 +327,113 @@ void test_style(BladeStyle* s, uint32_t m, int black, int white, float balance) 
     exit(1);
   }
   fprintf(stderr, "PASS\n");
+}
+
+void test_random_bands() {
+  Style<RandomBandsX<Int<-600>, Rgb<0, 65535, 0>, Black, Int<3000>>> style;
+  MockBlade mock_blade;
+  mock_blade.colors.resize(48);
+  style.run(&mock_blade);
+  bool saw_band = false;
+  bool saw_gap = false;
+  for (int i = 0; i < 48; i++) {
+    Color16 c = mock_blade.colors[i];
+    if (c.g > 60000) saw_band = true;
+    if (c.r + c.g + c.b < 1000) saw_gap = true;
+  }
+  CHECK(saw_band && saw_gap);
+  micros_ += 500000;
+  style.run(&mock_blade);
+}
+
+void test_sine_waves() {
+  Style<SineWavesX<
+    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<65535>
+  >> style;
+  MockBlade mock_blade;
+  mock_blade.num_leds = 48;
+  mock_blade.colors.resize(48);
+  style.run(&mock_blade);
+  uint16_t min_g = 65535;
+  uint16_t max_g = 0;
+  for (int i = 0; i < 48; i++) {
+    Color16 c = mock_blade.colors[i];
+    if (c.g < min_g) min_g = c.g;
+    if (c.g > max_g) max_g = c.g;
+  }
+  CHECK(max_g > min_g + 1000);
+  Style<SineWavesX<
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<65535>
+  >> passthrough;
+  passthrough.run(&mock_blade);
+  Color16 p = mock_blade.colors[10];
+  CHECK(p.r == 65535 && p.g == 65535 && p.b == 65535);
+}
+
+void test_composable_texture_masks() {
+  MockBlade mock_blade;
+  mock_blade.num_leds = 48;
+  mock_blade.colors.resize(48);
+
+  Style<SawWavesX<
+    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<65535>
+  >> saw;
+  saw.run(&mock_blade);
+  CHECK(mock_blade.colors[0].g != mock_blade.colors[24].g);
+
+  Style<SmoothstepBandsX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<400>> > bands;
+  bands.run(&mock_blade);
+  CHECK(mock_blade.colors[10].g > 0);
+
+  Style<ValueNoiseX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<0>> > vnoise;
+  vnoise.run(&mock_blade);
+  CHECK(mock_blade.colors[5].g >= 0);
+
+  Style<FbmNoiseX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<65535>> > fbm;
+  fbm.run(&mock_blade);
+  CHECK(mock_blade.colors[7].g >= 0);
+
+  Style<MoireMaskX<Int<2400>, Int<2450>, Int<-2000>, Int<2100>, Int<0>, Int<65535>> > moire;
+  moire.run(&mock_blade);
+  CHECK(mock_blade.colors[12].g > 0);
+
+  Style<BladeEnvelopeX<Int<16384>, Int<6000>, Int<0>, Int<65535>, Int<0>> > env;
+  env.run(&mock_blade);
+  CHECK(mock_blade.colors[24].g > mock_blade.colors[0].g);
+
+  Style<SineWavesSwingX<
+    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
+    Int<65535>, Int<12000>, Int<8000>
+  >> swing_waves;
+  swing_waves.run(&mock_blade);
+  CHECK(mock_blade.colors[8].g > 0);
+
+  Style<PulseTrainX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<16384>> > pulse;
+  pulse.run(&mock_blade);
+  CHECK(mock_blade.colors[0].g != mock_blade.colors[1].g);
+
+  Style<ChirpX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<64>> > chirp;
+  chirp.run(&mock_blade);
+  CHECK(mock_blade.colors[0].g != mock_blade.colors[40].g);
+
+  Style<PulseTrainX<Int<0>, Int<0>, Int<0>, Int<65535>, Int<16384>> > passthrough;
+  passthrough.run(&mock_blade);
+  CHECK(mock_blade.colors[0].g == 65535);
 }
 
 void test_cylon() {
@@ -842,45 +960,56 @@ void test_argument_parsing() {
 
   clear_test_colors();
   testGetArg("builtin 0 1", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 1, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 0, 1, 0, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 1, 0, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 257, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 0, 257, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 257, 0, 0, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 1,2,3", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 1, 2, 3, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 0, 1, 0, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 1, 0, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 257, 514, 771, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 0, 257, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 257, 0, 0, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 1,2,3 4,5,6", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 1, 2, 3, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 4, 5, 6, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 1, 0, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 257, 514, 771, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 1028, 1285, 1542, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 257, 0, 0, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 1,2,3 4,5,6 7,8,9", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 1, 2, 3, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 4, 5, 6, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 7, 8, 9, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 257, 514, 771, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 1028, 1285, 1542, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 1799, 2056, 2313, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 ~ 4,5,6 7,8,9", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 1, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 4, 5, 6, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 7, 8, 9, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 257, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 1028, 1285, 1542, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 1799, 2056, 2313, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 ~ ~ 7,8,9", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 1, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 0, 1, 0, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 7, 8, 9, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 257, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 0, 257, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 1799, 2056, 2313, 0);
 
   clear_test_colors();
   testGetArg("builtin 0 1 ~ ~ 7,8,9", 0, "builtin");
-  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 1, 0);
-  CHECK_COLOR(TestRgbArgColors[2], 0, 1, 0, 0);
-  CHECK_COLOR(TestRgbArgColors[3], 7, 8, 9, 0);
+  CHECK_COLOR(TestRgbArgColors[1], 0, 0, 257, 0);
+  CHECK_COLOR(TestRgbArgColors[2], 0, 257, 0, 0);
+  CHECK_COLOR(TestRgbArgColors[3], 1799, 2056, 2313, 0);
+
+  clear_test_colors();
+  testGetArg("builtin 0 1 255,111,64", 0, "builtin");
+  CHECK_COLOR(TestRgbArgColors[1], 65535, 28527, 16448, 0);
+
+  Color16 green_name = ParseColorArg("green");
+  Color16 green_rgb = ParseColorArg("0,255,0");
+  CHECK_COLOR(green_name, 0, 65535, 0, 0);
+  CHECK_COLOR(green_rgb, 0, 65535, 0, 0);
+  CHECK_COLOR(ParseColorArg("46,111,64"), 11822, 28527, 16448, 0);
+  CHECK_COLOR(ParseColorArg("65535,0,0"), 65535, 0, 0, 0);
 }
 
 void test_gradient() {
@@ -967,6 +1096,9 @@ int main() {
   test_style6();
   test_style5();
   test_style4();
+  test_random_bands();
+  test_sine_waves();
+  test_composable_texture_masks();
   test_cylon();
   test_inouthelper();
   test_style1();

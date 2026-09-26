@@ -56,6 +56,15 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **per_led_flicker** / **base_flicker** / **noise_flicker** | varies | Crackle / flicker masks — see **blade_styles_config.md** |
 | **fire_mask** | warm, hot colors | `fire_mask white white` — scrolling fire multiply |
 | **stripes** / **hard_stripes** | width, speed, colors… | Scroll patterns — often **`add`** or **`multiply`** |
+| **random_bands** | speed, band color, gap color, scale | `random_bands -600 green black 3000` — irregular rolling bands (multiply) |
+| **sine_waves** / **saw_waves** | period, phase, min, max, speed, … | Up to 4 wave slots; **`saw_waves`** = triangle ramps. See **`[sine_waves_cyan]`** |
+| **pulse_train** | period, speed, min, max, duty | Hard square bands along the blade |
+| **chirp** | period, speed, min, max, chirp_rate | Sine mask with spatial frequency sweep |
+| **smoothstep_bands** | period, speed, min, max, edge_width | Soft rolling bands |
+| **value_noise** / **fbm_noise** | scale, speed, min, max, … | 1D hash noise / cheap FBM multiply masks |
+| **moire_mask** | period1, period2, speed1, speed2, min, max | Beating linear ramps |
+| **blade_envelope** | center, width, min, max, speed | Bump along blade (center 0=hilt, 32768=tip) |
+| **sine_waves_swing** | sine_waves args + swing/twist scale | Motion shortens wavelength |
 | **pixel_sequence** | step config string | `pixel_sequence 0,255,0,0,100,200\|1,0,255,0,100,200` — see **pixel_sequencer.md** |
 | **sparktip_layer** | spark color, ext ms, ret ms | `sparktip_layer white {{ext}} {{ret}}` — spark band during extend only; stack with **`add`** |
 | **charging** | (no args) | `charging` |
@@ -409,7 +418,10 @@ Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 O
 
 | Section | Preset example | Notes |
 |---------|----------------|-------|
-| `[smoke_blade]` / `[smoke_laser]` | Smoke Blade | **`solid`** base + **`smoke_flow`** (multiply + screen; **same `{{ext}}`/`{{ret}}` as base**) + composable **`clash`** / **`blast`** overlays (needs **`smoke_flow`** in firmware) |
+| `[smoke_blade]` | Smoke Blade (preset 11) | **`solid`** base + **`smoke_flow`** + **`stripes`** multiply + **`swing`** add + OS7 combat overlays |
+| `[smoke_laser]` | Smoke Laser (preset 1) | Same smoke stack; green **`{{base}}`** + **`random_bands`** (not **`stripes`**) + classic **`clash`** / **`blast`** |
+| `[sine_waves_cyan]` / `[smoke_sine_cyan]` | Sine Waves Cyan / Smoke Sine Cyan (presets 0 / 2) | **`sine_waves`** multiply masks + OS7 combat; **`[smoke_sine_cyan]`** adds **`smoke_flow`** on **`solid_bend`** |
+| Texture demos | Presets 12–22 | **`[demo_saw_waves]`** … **`[demo_chirp]`** — one composable mask each (see **`examples/config/presets.ini`**) |
 | `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
 | `[darksaber_blade]` | Dark Saber | Needs **`darksaber`** in firmware |
 | `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |
@@ -430,6 +442,56 @@ full stack (base + textures + transitions + OS7 clash/blast + lockup suite). Use
 **`responsive_blast`**. Prefer composable **`solid_bend`** + overlay layers over
 monolithic **`standard`** / **`rainbow`** when you need independent control of clash,
 blast, and idle textures.
+
+---
+
+## Edit Mode and on-saber menus vs layer stacks
+
+Saber builders often mix **Fett263 Edit Mode** (or the OS8 **`MENU_SPEC_TEMPLATE`** menu) with **`config/blade_styles.ini`** recipes. They solve different problems. This section is the honest “what works today” guide.
+
+### How preset layers work
+
+There are **two places** style data can live:
+
+| Source | What you edit | What the preset stores |
+|--------|----------------|-------------------------|
+| **Direct named style** | Nothing extra | One line per blade, e.g. `style = standard cyan white 300 800` — the whole effect is in that string. |
+| **Config recipe** | `[section]` in **`blade_styles.ini`** (`layer = …`, `base = …`, palettes) | One line per blade: `style = config <section>` plus optional **`key=value`** overrides (e.g. `style = config with_vars base=magenta`). |
+
+At runtime, **`ConfigStyleFactory`** loads the section, parses each **`layer =`** into sub-styles, and **`ConfigLayersStyle`** composites them bottom → top. Overrides on the preset line replace section **`{{name}}`** values for that preset only (see **`[with_vars]`** in **`examples/config/blade_styles.ini`**). The INI file is **not** rewritten when you change presets — only **`presets.ini`** (or save-dir copy) holds per-preset overrides.
+
+### How Edit Mode works
+
+With **Fett263 Edit Mode** (`FETT263_EDIT_MODE_MENU`) or **Edit Settings**, or the newer **OS8 menu** (`MENU_SPEC_TEMPLATE`, e.g. **`FETT263_MENU_SPEC`**), color and style-option changes go through **`GetArg` / `SetArg`** in **`modes/style_argument_helpers.h`**. Those helpers read and write **only the preset’s style string** for the current blade (`current_preset_.GetStyle` → **`style_parser.SetArgument`** → save **`presets.ini`**).
+
+Edit Mode does **not** open **`blade_styles.ini`**, does not pick a layer index, and does not edit individual **`layer =`** lines inside a section.
+
+**Mutually exclusive menus:** firmware **`#error`s** if **`MENU_SPEC_TEMPLATE`** is combined with **`FETT263_EDIT_MODE_MENU`** or **`FETT263_EDIT_SETTINGS_MENU`**. Pick one on-saber menu system in your config.
+
+### What works together today
+
+- **`style = config <section>`** with **no color overrides** — blade looks correct; Edit Mode may offer **little or nothing** useful (the preset string may only contain the section name).
+- **`style = config <section> base=red clash=white …`** — overrides are **words on the preset line**. You can change those values on the SD card or, in principle, via **`SetArgument`** on argument indices **after** `config` and the section name (same mechanism as **`base=magenta`** in **`examples/config/presets.ini`**).
+- **Direct named styles** on the preset (`standard`, `fire`, `fallen_order`, …) — Edit Mode color menus match **positional args** in that string (Fett263 “Edit Mode color editing” styles). Saving updates **`presets.ini`** as builders expect.
+- **Twist / color-change** — if the **composed** blade style reports handled color change (or smooth/stepped variation applies), twist can still shift hue on some stacks; that is **not** the same as editing each layer’s colors in the INI.
+- **Website SD Config Editor** — the **Blade styles** page (`website/BLADE_STYLES.md`, `#/styles`) is the **layer-aware** path: edit **`blade_styles.ini`**, export, copy to SD. Preset lines still choose **`config <section>`** and optional overrides.
+
+### What does not work today
+
+- **Per-layer color editing in the INI via Edit Mode** — inner colors live in **`layer = standard {{base}} …`** (or nested styles). Menus never traverse into **`ConfigLayersStyle`** sub-layers.
+- **Saving recipe structure from the saber** — adding/removing **`layer =`** lines, opacity, or blend keywords requires editing **`blade_styles.ini`** (or the website editor), not Edit Mode.
+- **Assuming Edit Mode “sees” the same args as the website layer editor** — the parser’s **`config`** style exposes the **preset-line** tokens (section name + override pairs), not a flat list of every color in the stack.
+
+### Could deeper integration work?
+
+| Approach | Idea | Effort / risk (brief) |
+|----------|------|-------------------------|
+| **(a) Preset `key=value` overrides only** | Document and standardize names (`base`, `clash`, `ext`, …) in recipes; builders recolor via preset line or SD edit. **Already supported.** | Low risk; limited to vars you expose as **`{{name}}`**. |
+| **(b) Expose selected args on the config wrapper** | Firmware maps Edit Mode arg slots to specific overrides or layer args when building **`config`**. | Medium–high; must stay in sync with INI templates and **`get_max_arg`**; easy to break mixed presets. |
+| **(c) Menu picks layer index** | Edit Mode chooses layer 0…N−1, then edits that sub-style’s args (still saved into preset string or a new encoding). | High; UX, save format, and parser changes; backward compatibility hard. |
+| **(d) Website-only layer editing** | Keep on-saber menus for **flat** preset strings; treat **`blade_styles.ini`** as author-time config. **Matches today’s architecture.** | Lowest risk; builders use PC/phone for recipes, saber for preset tweaks and ignition settings. |
+
+**Practical recommendation:** use **`style = config … base=… clash=…`** (or duplicate presets with different override lines) for on-saber-friendly recoloring; use **Edit Mode** fully with **direct** named styles; use the **website editor** when you need to change **which layers** exist or how they blend.
 
 ---
 

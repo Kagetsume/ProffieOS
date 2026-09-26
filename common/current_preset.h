@@ -57,13 +57,17 @@ public:
     return true;
   }
 
-  // Default GPIO accent styles for config-files-config.h NUM_BLADES 5 layout
-  // (indices 2–4 = Free1/Free2/Free3). Used when presets.ini omits accent style lines.
+  // Default GPIO accent styles for config-files-config.h NUM_BLADES 4 layout
+  // (indices 1–3 = Free1/Free2/Free3). Used when presets.ini omits accent style lines.
   static const char* DefaultAccentStyleForBladeIndex(size_t blade_index) {
 #if NUM_BLADES >= 5
     if (blade_index == 2) return "accent_pulse 1500";
     if (blade_index == 3) return "accent_sound_on white 4096";
     if (blade_index == 4) return "accent_glow";
+#elif NUM_BLADES >= 4
+    if (blade_index == 1) return "accent_pulse 1500";
+    if (blade_index == 2) return "accent_sound_on white 4096";
+    if (blade_index == 3) return "accent_glow";
 #endif
     return nullptr;
   }
@@ -125,7 +129,7 @@ public:
       current_style_[N] = (p->style[N].get() && p->style[N].get()[0]) ? ValidateStyleString(mkstr(StringPiece(p->style[N].get()))) : "";
     // If presets.ini has fewer style= lines than NUM_BLADES, fill gaps:
     // - blade index 1: duplicate strip 0 (common 2-strip oversight)
-    // - accent indices (2+ on NUM_BLADES 5): accent_* defaults, not the NeoPixel style
+    // - accent indices (1+ on NUM_BLADES 4, 2+ on NUM_BLADES 5): accent_* defaults, not the NeoPixel style
     for (size_t N = 1; N < NUM_BLADES; N++) {
       if (current_style_[N].get() && current_style_[N].get()[0]) continue;
       const char* fill = DefaultAccentStyleForBladeIndex(N);

@@ -1396,6 +1396,7 @@ struct FETT263_MENU_SPEC : public DefaultMenuSpec<SPEC> {
 
 #ifdef FETT263_EDIT_MODE_MENU
 #include "../common/color.h"
+#include "../styles/parse_color_arg.h"
 #include "../styles/edit_mode.h"
 #endif
 
@@ -1843,11 +1844,7 @@ SaberFett263Buttons() : PropBase() {}
   Color16 GetColorArg(int blade, int arg) {
     char argspace[32];
     if (style_parser.GetArgument(current_preset_.GetStyle(blade), arg + 2, argspace, sizeof(argspace))) {
-      char* tmp;
-      int r = strtol(argspace, &tmp, 0);
-      int g = strtol(tmp+1, &tmp, 0);
-      int b = strtol(tmp+1, NULL, 0);
-      return Color16(r,g,b);
+      return ParseColorArg(argspace);
     }
     return Color16(65535,0,0);
   }

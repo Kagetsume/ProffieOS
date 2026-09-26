@@ -103,7 +103,7 @@ Firmware and example configs this editor targets:
 - **[BLADES.md](./BLADES.md)** — blades guide: types, examples, sub-blades, accents, presets
 - **[BLADE_STYLES.md](./BLADE_STYLES.md)** — layer recipes: base/overlay, blends, build-from examples
 - [`examples/config/`](../examples/config/) — example INI files
-- [`examples/README.md`](../examples/README.md) — accent styles and NUM_BLADES 5 layout
+- [`examples/README.md`](../examples/README.md) — accent styles and NUM_BLADES 4 layout
 - [`doc/blade_config.md`](../doc/blade_config.md) — firmware parser grammar
 - [`config/proffieboard_v3_config.h`](../config/proffieboard_v3_config.h) — pin name source
 
