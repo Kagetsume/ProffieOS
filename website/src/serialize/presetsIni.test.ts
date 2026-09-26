@@ -8,9 +8,9 @@ describe('serializePresetsIni', () => {
     const ini = serializePresetsIni(presets);
     expect(ini).toContain('new_preset');
     expect(ini).toContain('font = LiquidStatic');
-    expect(ini).toContain('style = config smoke_laser');
+    expect(ini).toContain('style = config sine_waves_cyan');
     expect(ini).toContain('style = accent_pulse 1500');
-    expect(ini).toContain('name = Smoke Laser');
+    expect(ini).toContain('name = Sine Waves Cyan');
     expect(ini).toContain('end');
   });
 

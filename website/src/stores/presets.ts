@@ -21,7 +21,7 @@ export type PresetsState = {
   activePresetId: string;
 };
 
-const defaultSlotCount = 5;
+const defaultSlotCount = 4;
 const defaultPresets = createDefaultPresets(defaultSlotCount);
 
 export const activePresetChanged = createEvent<string>();

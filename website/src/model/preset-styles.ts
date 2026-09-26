@@ -20,7 +20,7 @@ export type PresetStyle = {
   customLine: string;
 };
 
-/** Default accent lines for the Proffie V3 five-blade profile (indices 2–4). */
+/** Default accent lines for the Proffie V3 four-blade profile (indices 1–3). */
 const ACCENT_DEFAULTS: PresetStyle[] = [
   {
     kind: 'named',
@@ -60,6 +60,9 @@ export function defaultNeoPixelStyle(): PresetStyle {
 export function defaultPresetStyleForSlot(index: number, slotCount: number): PresetStyle {
   if (slotCount >= 5 && index >= 2) {
     return { ...ACCENT_DEFAULTS[index - 2]! };
+  }
+  if (slotCount >= 4 && index >= 1) {
+    return { ...ACCENT_DEFAULTS[index - 1]! };
   }
   return defaultNeoPixelStyle();
 }
@@ -140,6 +143,20 @@ export function presetSlotLabel(index: number, slotCount: number): string {
     }
     if (index === 4) {
       return 'Blade 4 · accent Free3';
+    }
+  }
+  if (slotCount >= 4) {
+    if (index === 0) {
+      return 'Blade 0 · main strip';
+    }
+    if (index === 1) {
+      return 'Blade 1 · accent Free1';
+    }
+    if (index === 2) {
+      return 'Blade 2 · accent Free2';
+    }
+    if (index === 3) {
+      return 'Blade 3 · accent Free3';
     }
   }
   return `Blade ${index}`;

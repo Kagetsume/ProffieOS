@@ -44,6 +44,19 @@ describe('config-styles', () => {
   it('seeds defaults from config file styles', () => {
     const sections = createDefaultConfigStyles();
     expect(sections.map((section) => section.id)).toEqual([
+      'sine_waves_cyan',
+      'smoke_sine_cyan',
+      'demo_saw_waves',
+      'demo_smoothstep_bands',
+      'demo_value_noise',
+      'demo_fbm_noise',
+      'demo_moire_mask',
+      'demo_blade_envelope',
+      'demo_sine_waves_swing',
+      'demo_sine_waves',
+      'demo_random_bands',
+      'demo_pulse_train',
+      'demo_chirp',
       'smoke_laser',
       'rainbow_strobe',
       'smoke_blade',

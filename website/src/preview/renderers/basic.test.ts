@@ -204,6 +204,76 @@ describe('renderLayerPixels', () => {
     expect(lit(matched)).toBeGreaterThan(lit(slowerExtend));
   });
 
+  it('sine_waves composable catalog args render lit pixels', () => {
+    const buffer = renderLayerPixels(
+      { id: '1', styleName: 'sine_waves', args: ['2400', '0', '8192', '65535', '-2000'], blend: 'multiply', opacity: 32768 },
+      {},
+      24,
+      1200,
+      sim,
+    );
+    expect(buffer.a.some((v) => v > 0)).toBe(true);
+    expect(buffer.r.some((v) => v > 0)).toBe(true);
+  });
+
+  it('sine_waves varies along blade and scrolls over time', () => {
+    const a = renderLayerPixels(layer('sine_waves', ['2400', '0', '0', '65535', '-2000']), {}, 64, 1000, sim);
+    const b = renderLayerPixels(layer('sine_waves', ['2400', '0', '0', '65535', '-2000']), {}, 64, 5000, sim);
+    const greys = a.r;
+    expect(Math.max(...greys) - Math.min(...greys)).toBeGreaterThan(40);
+    expect(greys.some((g, i) => g !== b.r[i])).toBe(true);
+    const passthrough = renderLayerPixels(layer('sine_waves', ['0']), {}, 16, 1000, sim);
+    expect(passthrough.r.every((v) => v === 255)).toBe(true);
+  });
+
+  it('sine_waves speed arg shifts pattern at fixed timeMs', () => {
+    const timeMs = 50_000;
+    const slow = renderLayerPixels(
+      layer('sine_waves', ['2400', '0', '0', '65535', '-2000']),
+      {},
+      64,
+      timeMs,
+      sim,
+    );
+    const fast = renderLayerPixels(
+      layer('sine_waves', ['2400', '0', '0', '65535', '-6000']),
+      {},
+      64,
+      timeMs,
+      sim,
+    );
+    expect(slow.r.some((v, i) => v !== fast.r[i])).toBe(true);
+  });
+
+  it('random_bands shows bands and gaps and scrolls over time', () => {
+    const a = renderLayerPixels(layer('random_bands', ['-600', 'green', 'black', '600']), {}, 64, 1000, sim);
+    const b = renderLayerPixels(layer('random_bands', ['-600', 'green', 'black', '600']), {}, 64, 5000, sim);
+    const hasGreen = a.g.some((g, i) => g > 200 && a.r[i] < 50);
+    const hasGap = a.g.some((g, i) => g < 10 && a.r[i] < 10 && a.b[i] < 10);
+    expect(hasGreen && hasGap).toBe(true);
+    expect(a.g.some((g, i) => g !== b.g[i])).toBe(true);
+  });
+
+  it('new composable multiply masks render variation along blade', () => {
+    const styles: Array<[string, string[]]> = [
+      ['saw_waves', ['2400', '0', '0', '65535', '-2000']],
+      ['smoothstep_bands', ['2400', '-2000', '0', '65535', '400']],
+      ['value_noise', ['2400', '-2000', '0', '65535', '0']],
+      ['fbm_noise', ['2400', '-1500', '0', '65535', '65535']],
+      ['moire_mask', ['2400', '2450', '-2000', '2100', '0', '65535']],
+      ['blade_envelope', ['16384', '6000', '0', '65535', '0']],
+      ['pulse_train', ['800', '-2000', '0', '65535', '16384']],
+      ['chirp', ['1800', '-2000', '0', '65535', '400']],
+    ];
+    for (const [name, args] of styles) {
+      const buf = renderLayerPixels(layer(name, args), {}, 32, 2000, sim);
+      expect(buf.r.length).toBe(32);
+      expect(buf.r.some((v, i) => v !== buf.r[0])).toBe(true);
+    }
+    const passthrough = renderLayerPixels(layer('smoothstep_bands', ['0']), {}, 8, 1000, sim);
+    expect(passthrough.r.every((v) => v === 255)).toBe(true);
+  });
+
   it('smoke_flow opacity and blend change the composite', () => {
     const overlay = renderLayerPixels(layer('smoke_flow', ['black', 'white', '300', '800']), {}, 16, 1500, sim);
     const full = createPixelBuffer(16);

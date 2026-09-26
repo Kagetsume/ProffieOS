@@ -68,7 +68,7 @@ export function defaultArgsForStyle(styleId: string): string[] {
   if (!def) {
     return [];
   }
-  return def.args.map((arg) => arg.default);
+  return (def.args ?? []).map((arg) => arg.default);
 }
 
 /** Human label for a layer row in the recipe stack. */

@@ -5,7 +5,7 @@
  */
 import { getNamedStyle } from '../../model/style-catalog';
 import type { StyleLayer } from '../../model/style-sections';
-import { resolveLayerArgs } from '../../model/style-sections';
+import { resolvedLayerArgs } from '../../model/style-sections';
 import { createPixelBuffer, fillSolid, type PixelBuffer } from '../composite';
 import { lerpRgb, parseColor } from '../colors';
 import {
@@ -382,6 +382,532 @@ function renderPulse(args: string[], count: number, timeMs: number): PixelBuffer
   return buffer;
 }
 
+const RANDOM_BANDS_SEGMENTS = 16;
+
+function hash32(x: number): number {
+  x ^= x >> 16;
+  x = Math.imul(x, 0x45d9f3b);
+  x ^= x >> 16;
+  return x | 0;
+}
+
+function buildRandomBandsPattern(scale: number): { segLen: number[]; bandLen: number[]; cycle: number } {
+  const s = Math.max(200, scale || 2400);
+  const segLen: number[] = [];
+  const bandLen: number[] = [];
+  let cycle = 0;
+  for (let i = 0; i < RANDOM_BANDS_SEGMENTS; i += 1) {
+    const h = hash32(i * 2654435761 + s * 17);
+    let seg = s + (((h & 0xff) * s) >> 9);
+    if (seg < s / 4) seg = s / 4;
+    const duty = 35 + ((h >> 8) & 0x3f);
+    segLen.push(seg);
+    bandLen.push((seg * duty) >> 7);
+    cycle += seg;
+  }
+  return { segLen, bandLen, cycle: cycle || 1 };
+}
+
+function isRandomBandAt(coord: number, pattern: ReturnType<typeof buildRandomBandsPattern>): boolean {
+  let c = coord % pattern.cycle;
+  if (c < 0) c += pattern.cycle;
+  let x = 0;
+  for (let i = 0; i < RANDOM_BANDS_SEGMENTS; i += 1) {
+    if (c < x + pattern.bandLen[i]) return true;
+    if (c < x + pattern.segLen[i]) return false;
+    x += pattern.segLen[i];
+  }
+  return false;
+}
+
+/** Irregular rolling bands — matches firmware 16-segment repeating pattern. */
+function sinAtPhaseInterpolated(phase: number, wavelength: number): number {
+  const wl = Math.max(1, wavelength);
+  let p = phase;
+  while (p < 0) p += wl;
+  while (p >= wl) p -= wl;
+  const fp = (p * (1 << 20)) / wl;
+  const idx = (fp >> 10) & 1023;
+  const frac = fp & 1023;
+  const s0 = Math.sin((idx / 1024) * Math.PI * 2);
+  const s1 = Math.sin(((idx + 1) / 1024) * Math.PI * 2);
+  const sinUnit = s0 + ((s1 - s0) * frac) / 1024;
+  return Math.round(sinUnit * 32768);
+}
+
+type SineWaveParams = {
+  period: number;
+  phase: number;
+  min: number;
+  max: number;
+  speed: number;
+};
+
+/** Integer scroll modulus — matches firmware `MOD()` in common/math.h. */
+function modScroll(x: number, m: number): number {
+  const xi = Math.trunc(x);
+  if (m <= 0) {
+    return 0;
+  }
+  if (xi >= 0) {
+    return xi % m;
+  }
+  return m - 1 - ((-1 - xi) % m);
+}
+
+function intSlotArg(raw: string | undefined, defaultText: string): number {
+  const text = raw == null || String(raw).trim() === '' ? defaultText : String(raw).trim();
+  const n = Number(text);
+  return Number.isFinite(n) ? Math.trunc(n) : Number(defaultText) || 0;
+}
+
+function parseSineWaveSlots(args: string[]): { waves: SineWaveParams[]; strength: number } {
+  const waves: SineWaveParams[] = [];
+  for (let w = 0; w < 4; w += 1) {
+    const o = w * 5;
+    waves.push({
+      period: intSlotArg(args[o], w === 0 ? '2400' : '0'),
+      phase: intSlotArg(args[o + 1], '0'),
+      min: intSlotArg(args[o + 2], '0'),
+      max: intSlotArg(args[o + 3], '65535'),
+      speed: intSlotArg(args[o + 4], w === 0 ? '-2000' : '0'),
+    });
+  }
+  const strength = intSlotArg(args[20], '65535');
+  return { waves, strength };
+}
+
+function sineWaveFactorAt(
+  wave: SineWaveParams,
+  led: number,
+  timeMs: number,
+): number {
+  if (wave.period <= 0) return 65535;
+  const period = wave.period;
+  const mult = (50000 * 1024) / period;
+  const wrap = Math.max(1024, period * 1024);
+  const scrollUs = timeMs * 1000;
+  const m = modScroll((scrollUs * wave.speed) / 333, wrap);
+  const p = (m + wave.phase * 1024 + led * mult) >> 10;
+  const sin = sinAtPhaseInterpolated(p, period);
+  const minB = Math.max(0, Math.min(65535, wave.min));
+  const maxB = Math.max(0, Math.min(65535, wave.max));
+  const t = (sin + 32768) / 65536;
+  return Math.max(0, Math.min(65535, Math.round(minB + t * (maxB - minB))));
+}
+
+/** Up to four sine brightness waves — multiply mask (firmware sin_table). */
+function renderSineWaves(args: string[], count: number, timeMs: number): PixelBuffer {
+  const { waves, strength } = parseSineWaveSlots(args);
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    let f = 65535;
+    for (const wave of waves) {
+      f = (f * sineWaveFactorAt(wave, i, timeMs)) / 65535;
+    }
+    if (strength < 65535) {
+      f = 65535 - ((65535 - f) * Math.max(0, strength)) / 65535;
+    }
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function triAtPhase(phase: number, wavelength: number): number {
+  const wl = Math.max(1, wavelength);
+  let p = phase;
+  while (p < 0) p += wl;
+  while (p >= wl) p -= wl;
+  const half = Math.max(1, wl >> 1);
+  if (p < half) {
+    return Math.round((p * 65536) / half - 32768);
+  }
+  const tail = Math.max(1, wl - half);
+  return Math.round(32768 - ((p - half) * 65536) / tail);
+}
+
+function sawWaveFactorAt(wave: SineWaveParams, led: number, timeMs: number): number {
+  if (wave.period <= 0) return 65535;
+  const period = wave.period;
+  const mult = (50000 * 1024) / period;
+  const wrap = Math.max(1024, period * 1024);
+  const scrollUs = timeMs * 1000;
+  const m = ((scrollUs * wave.speed) / 333) % wrap;
+  const p = (m + wave.phase * 1024 + led * mult) >> 10;
+  const tri = triAtPhase(p, period);
+  const minB = Math.max(0, Math.min(65535, wave.min));
+  const maxB = Math.max(0, Math.min(65535, wave.max));
+  const t = (tri + 32768) / 65536;
+  return Math.max(0, Math.min(65535, Math.round(minB + t * (maxB - minB))));
+}
+
+function renderSawWaves(args: string[], count: number, timeMs: number): PixelBuffer {
+  const { waves, strength } = parseSineWaveSlots(args);
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    let f = 65535;
+    for (const wave of waves) {
+      f = (f * sawWaveFactorAt(wave, i, timeMs)) / 65535;
+    }
+    if (strength < 65535) {
+      f = 65535 - ((65535 - f) * Math.max(0, strength)) / 65535;
+    }
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function smoothstepUnit(x: number): number {
+  if (x <= 0) return 0;
+  if (x >= 32768) return 32768;
+  return (((x * x) >> 14) * ((3 << 14) - x)) >> 15;
+}
+
+function pulseTrainFactorAt(
+  period: number,
+  speed: number,
+  minB: number,
+  maxB: number,
+  duty: number,
+  led: number,
+  timeMs: number,
+): number {
+  if (period <= 0) return 65535;
+  const mult = (50000 * 1024) / period;
+  const wrap = Math.max(1024, period * 1024);
+  const scrollUs = timeMs * 1000;
+  const m = ((scrollUs * speed) / 333) % wrap;
+  let p = ((m + led * mult) >> 10) % period;
+  if (p < 0) p += period;
+  const d = Math.max(0, Math.min(32768, duty));
+  if (d <= 0) return minB;
+  if (d >= 32768) return maxB;
+  const threshold = Math.floor((period * d) / 32768);
+  return p < threshold ? maxB : minB;
+}
+
+function renderPulseTrain(args: string[], count: number, timeMs: number): PixelBuffer {
+  const period = Number(args[0] ?? '2400') || 0;
+  const speed = Number(args[1] ?? '-2000') || -2000;
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const duty = Number(args[4] ?? '16384') || 16384;
+  const buffer = createPixelBuffer(count);
+  if (period <= 0) {
+    fillSolid(buffer, [255, 255, 255]);
+    return buffer;
+  }
+  for (let i = 0; i < count; i += 1) {
+    const f = pulseTrainFactorAt(period, speed, minB, maxB, duty, i, timeMs);
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function localChirpPeriod(periodBase: number, led: number, chirpRate: number): number {
+  const p = periodBase + ((led * chirpRate) >> 8);
+  return Math.max(64, Math.min(65535, p));
+}
+
+function renderChirp(args: string[], count: number, timeMs: number): PixelBuffer {
+  const periodBase = Number(args[0] ?? '2400') || 0;
+  const speed = Number(args[1] ?? '-2000') || -2000;
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const chirpRate = Number(args[4] ?? '64') || 0;
+  const buffer = createPixelBuffer(count);
+  if (periodBase <= 0) {
+    fillSolid(buffer, [255, 255, 255]);
+    return buffer;
+  }
+  const wrap = Math.max(1024, periodBase * 1024);
+  const scrollUs = timeMs * 1000;
+  const m = ((scrollUs * speed) / 333) % wrap;
+  for (let i = 0; i < count; i += 1) {
+    const localPeriod = localChirpPeriod(periodBase, i, chirpRate);
+    const mult = (50000 * 1024) / localPeriod;
+    const p = (m + i * mult) >> 10;
+    const sin = sinAtPhaseInterpolated(p, localPeriod);
+    const t = (sin + 32768) / 65536;
+    const f = Math.max(0, Math.min(65535, Math.round(minB + t * (maxB - minB))));
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderSmoothstepBands(args: string[], count: number, timeMs: number): PixelBuffer {
+  const period = Number(args[0] ?? '2400') || 0;
+  const speed = Number(args[1] ?? '-2000') || -2000;
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const edge = Math.max(1, Number(args[4] ?? '400') || 400);
+  const buffer = createPixelBuffer(count);
+  if (period <= 0) {
+    fillSolid(buffer, [255, 255, 255]);
+    return buffer;
+  }
+  const mult = (50000 * 1024) / period;
+  const scrollUs = timeMs * 1000;
+  const wrap = Math.max(1024, period * 1024);
+  const m = ((scrollUs * speed) / 333) % wrap;
+  const edgeClamp = Math.min(edge, period >> 1 || 1);
+  for (let i = 0; i < count; i += 1) {
+    let q = ((m + i * mult) >> 10) % period;
+    if (q < 0) q += period;
+    const rise = smoothstepUnit((q * 32768) / edgeClamp);
+    const fall = smoothstepUnit(((period - q) * 32768) / edgeClamp);
+    const bump = Math.min(rise, fall);
+    const f = Math.round(minB + (bump * (maxB - minB)) / 32768);
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function noiseAt(coord: number, scale: number, seed: number): number {
+  const s = Math.max(32, scale);
+  const cell = Math.floor(coord / s);
+  const frac = coord - cell * s;
+  const t = smoothstepUnit((frac * 32768) / s);
+  const a = hash32(cell * 7919 + seed) & 0xffff;
+  const b = hash32((cell + 1) * 7919 + seed) & 0xffff;
+  return a + ((b - a) * t) >> 15;
+}
+
+function renderValueNoise(args: string[], count: number, timeMs: number): PixelBuffer {
+  const scale = Number(args[0] ?? '2400') || 0;
+  const speed = Number(args[1] ?? '-2000') || -2000;
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const seed = Number(args[4] ?? '0') || 0;
+  const buffer = createPixelBuffer(count);
+  if (scale <= 0) {
+    fillSolid(buffer, [255, 255, 255]);
+    return buffer;
+  }
+  const mult = (50000 * 1024) / scale;
+  const scrollUs = timeMs * 1000;
+  const wrap = Math.max(1024, scale * 64 * 1024);
+  const m = ((scrollUs * speed) / 333) % wrap;
+  for (let i = 0; i < count; i += 1) {
+    const p = (m + i * mult) >> 10;
+    const n = noiseAt(p, scale, seed);
+    const f = Math.round(minB + (n * (maxB - minB)) / 65535);
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function fbmAt(coord: number, scale: number): number {
+  let v = 0;
+  let den = 0;
+  let s = Math.max(32, scale);
+  for (let o = 0; o < 3; o += 1) {
+    const w = 4 >> o;
+    v += noiseAt(coord, s, o * 101) * w;
+    den += w;
+    s = Math.max(32, s >> 1);
+  }
+  return den > 0 ? Math.round(v / den) : 32768;
+}
+
+function renderFbmNoise(args: string[], count: number, timeMs: number): PixelBuffer {
+  const scale = Number(args[0] ?? '2400') || 0;
+  const speed = Number(args[1] ?? '-2000') || -2000;
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const strength = Number(args[4] ?? '65535') || 65535;
+  const buffer = createPixelBuffer(count);
+  if (scale <= 0) {
+    fillSolid(buffer, [255, 255, 255]);
+    return buffer;
+  }
+  const mult = (50000 * 1024) / scale;
+  const scrollUs = timeMs * 1000;
+  const wrap = Math.max(1024, scale * 64 * 1024);
+  const m = ((scrollUs * speed) / 333) % wrap;
+  for (let i = 0; i < count; i += 1) {
+    const p = (m + i * mult) >> 10;
+    let f = Math.round(minB + (fbmAt(p, scale) * (maxB - minB)) / 65535);
+    if (strength < 65535) {
+      f = strength <= 0 ? 65535 : 65535 - ((65535 - f) * strength) / 65535;
+    }
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderMoireMask(args: string[], count: number, timeMs: number): PixelBuffer {
+  const p1 = Number(args[0] ?? '2400') || 0;
+  const p2 = Number(args[1] ?? '2450') || 0;
+  const s1 = Number(args[2] ?? '-2000') || -2000;
+  const s2 = Number(args[3] ?? '2100') || 2100;
+  const minB = Math.max(0, Math.min(65535, Number(args[4] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[5] ?? '65535') || 65535));
+  const scrollUs = timeMs * 1000;
+  const mult1 = p1 > 0 ? (50000 * 1024) / p1 : 0;
+  const mult2 = p2 > 0 ? (50000 * 1024) / p2 : 0;
+  const m1 = p1 > 0 ? ((scrollUs * s1) / 333) % Math.max(1024, p1 * 1024) : 0;
+  const m2 = p2 > 0 ? ((scrollUs * s2) / 333) % Math.max(1024, p2 * 1024) : 0;
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    const ramp = (coord: number, period: number) => {
+      if (period <= 0) return 65535;
+      let q = coord % period;
+      if (q < 0) q += period;
+      return Math.round((q * 65535) / period);
+    };
+    const r1 = ramp((m1 + i * mult1) >> 10, p1);
+    const r2 = ramp((m2 + i * mult2) >> 10, p2);
+    const beat = Math.round((r1 * r2) / 65535);
+    const f = Math.round(minB + ((maxB - minB) * beat) / 65535);
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderBladeEnvelope(args: string[], count: number, timeMs: number): PixelBuffer {
+  const centerArg = Number(args[0] ?? '16384') || 16384;
+  const width = Math.max(1, Number(args[1] ?? '6000') || 6000);
+  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
+  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const speed = Number(args[4] ?? '0') || 0;
+  const scroll = speed !== 0 ? (((timeMs * 1000 * speed) / 333) % (32768 * 1024)) >> 10 : 0;
+  const center = (centerArg + scroll) % 32768;
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    const pos = count <= 1 ? 0 : Math.round((i * 32768) / (count - 1));
+    let dist = Math.abs(pos - center);
+    if (dist > 16384) dist = 32768 - dist;
+    const t = Math.max(0, 32768 - (dist * 32768) / width);
+    const bump = smoothstepUnit(t);
+    const f = Math.round(minB + (bump * (maxB - minB)) / 32768);
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function motionEffectivePeriod(
+  period: number,
+  swingScale: number,
+  twistScale: number,
+  sim: PreviewSimState,
+  timeMs: number,
+): number {
+  if (period <= 0 || (swingScale === 0 && twistScale === 0)) return period;
+  const swing = Math.round(eventIntensity(sim.swingUntil, timeMs, PREVIEW_DURATIONS.swing) * 32768);
+  const twist = Math.round(Math.abs(sim.bladeAngleNorm * 2 - 1) * 32768);
+  const motion = Math.floor((swingScale * swing) / 32768) + Math.floor((twistScale * twist) / 32768);
+  const eff = Math.round((period * 32768) / (32768 + Math.max(0, motion)));
+  return Math.max(200, eff);
+}
+
+function sineWaveFactorAtMotion(
+  wave: SineWaveParams,
+  led: number,
+  timeMs: number,
+  sim: PreviewSimState,
+  swingScale: number,
+  twistScale: number,
+): number {
+  if (wave.period <= 0) return 65535;
+  const period = motionEffectivePeriod(wave.period, swingScale, twistScale, sim, timeMs);
+  const mult = (50000 * 1024) / period;
+  const wrap = Math.max(1024, period * 1024);
+  const scrollUs = timeMs * 1000;
+  const m = ((scrollUs * wave.speed) / 333) % wrap;
+  const p = (m + wave.phase * 1024 + led * mult) >> 10;
+  const sin = sinAtPhaseInterpolated(p, period);
+  const minB = Math.max(0, Math.min(65535, wave.min));
+  const maxB = Math.max(0, Math.min(65535, wave.max));
+  const t = (sin + 32768) / 65536;
+  return Math.max(0, Math.min(65535, Math.round(minB + t * (maxB - minB))));
+}
+
+function renderSineWavesSwing(
+  args: string[],
+  count: number,
+  timeMs: number,
+  sim: PreviewSimState,
+): PixelBuffer {
+  const { waves, strength } = parseSineWaveSlots(args);
+  const swingScale = Number(args[21] ?? '0') || 0;
+  const twistScale = Number(args[22] ?? '0') || 0;
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    let f = 65535;
+    for (const wave of waves) {
+      f = (f * sineWaveFactorAtMotion(wave, i, timeMs, sim, swingScale, twistScale)) / 65535;
+    }
+    if (strength < 65535) {
+      f = 65535 - ((65535 - f) * Math.max(0, strength)) / 65535;
+    }
+    const grey = Math.round((f / 65535) * 255);
+    buffer.r[i] = grey;
+    buffer.g[i] = grey;
+    buffer.b[i] = grey;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
+function renderRandomBands(args: string[], count: number, timeMs: number): PixelBuffer {
+  const speed = Number(args[0] ?? '-2000') || -2000;
+  const band = parseColor(args[1] ?? 'green');
+  const gap = parseColor(args[2] ?? 'black');
+  const scale = Math.max(200, Number(args[3] ?? '2400') || 2400);
+  const pattern = buildRandomBandsPattern(scale);
+  const mult = (50000 * 1024) / scale;
+  const scrollUs = timeMs * 1000;
+  const wrap = pattern.cycle * 1024;
+  const m = ((scrollUs * speed) / 333) % wrap;
+  const buffer = createPixelBuffer(count);
+  for (let i = 0; i < count; i += 1) {
+    const p = (m + i * mult) >> 10;
+    const [r, g, b] = isRandomBandAt(p, pattern) ? band : gap;
+    buffer.r[i] = r;
+    buffer.g[i] = g;
+    buffer.b[i] = b;
+    buffer.a[i] = 1;
+  }
+  return buffer;
+}
+
 function renderStripes(args: string[], count: number, timeMs: number): PixelBuffer {
   const c1 = parseColor(args[2] ?? 'white');
   const c2 = parseColor(args[3] ?? 'black');
@@ -555,7 +1081,7 @@ export function renderLayerPixels(
   sim: PreviewSimState,
   options: LayerRenderOptions = {},
 ): PixelBuffer {
-  const args = resolveLayerArgs(layer, vars);
+  const args = resolvedLayerArgs(layer, vars);
   const style = layer.styleName;
   const now = timeMs;
   const phase = overlayPhaseForStyle(style);
@@ -656,6 +1182,28 @@ export function renderLayerPixels(
       return renderStrobe(args, count, timeMs);
     case 'pulse':
       return renderPulse(args, count, timeMs);
+    case 'random_bands':
+      return renderRandomBands(args, count, timeMs);
+    case 'sine_waves':
+      return renderSineWaves(args, count, timeMs);
+    case 'saw_waves':
+      return renderSawWaves(args, count, timeMs);
+    case 'pulse_train':
+      return renderPulseTrain(args, count, timeMs);
+    case 'chirp':
+      return renderChirp(args, count, timeMs);
+    case 'smoothstep_bands':
+      return renderSmoothstepBands(args, count, timeMs);
+    case 'value_noise':
+      return renderValueNoise(args, count, timeMs);
+    case 'fbm_noise':
+      return renderFbmNoise(args, count, timeMs);
+    case 'moire_mask':
+      return renderMoireMask(args, count, timeMs);
+    case 'blade_envelope':
+      return renderBladeEnvelope(args, count, timeMs);
+    case 'sine_waves_swing':
+      return renderSineWavesSwing(args, count, timeMs, sim);
     case 'stripes':
     case 'hard_stripes':
       return renderStripes(args, count, timeMs);

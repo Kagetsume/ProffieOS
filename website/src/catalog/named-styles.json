@@ -1638,6 +1638,333 @@
       ]
     },
     {
+      "id": "sine_waves",
+      "label": "Sine waves",
+      "group": "texture",
+      "description": "Up to four sine brightness waves along the blade (multiply mask). Disabled slots use period 0. Waves multiply internally; output grayscale white=max black=min.",
+      "args": [
+        {
+          "slot": "period1",
+          "label": "Period 1",
+          "type": "number",
+          "default": "2400",
+          "hint": "Wavelength like stripe width; 0 disables slot"
+        },
+        {
+          "slot": "phase1",
+          "label": "Phase 1",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min1",
+          "label": "Min 1",
+          "type": "number",
+          "default": "0",
+          "hint": "Mask at trough (0–65535)"
+        },
+        {
+          "slot": "max1",
+          "label": "Max 1",
+          "type": "number",
+          "default": "65535",
+          "hint": "Mask at peak; white = multiply-neutral"
+        },
+        {
+          "slot": "speed1",
+          "label": "Speed 1",
+          "type": "number",
+          "default": "-2000",
+          "hint": "Negative scrolls toward tip (like stripes)"
+        },
+        {
+          "slot": "period2",
+          "label": "Period 2",
+          "type": "number",
+          "default": "0",
+          "hint": "Optional second wave; 0 = off"
+        },
+        {
+          "slot": "phase2",
+          "label": "Phase 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min2",
+          "label": "Min 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "max2",
+          "label": "Max 2",
+          "type": "number",
+          "default": "65535"
+        },
+        {
+          "slot": "speed2",
+          "label": "Speed 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period3",
+          "label": "Period 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase3",
+          "label": "Phase 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min3",
+          "label": "Min 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "max3",
+          "label": "Max 3",
+          "type": "number",
+          "default": "65535"
+        },
+        {
+          "slot": "speed3",
+          "label": "Speed 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period4",
+          "label": "Period 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase4",
+          "label": "Phase 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min4",
+          "label": "Min 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "max4",
+          "label": "Max 4",
+          "type": "number",
+          "default": "65535"
+        },
+        {
+          "slot": "speed4",
+          "label": "Speed 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "strength",
+          "label": "Strength",
+          "type": "number",
+          "default": "65535",
+          "hint": "Optional; 65535 = full effect, lower mixes toward white"
+        }
+      ]
+    },
+    {
+      "id": "random_bands",
+      "label": "Random bands",
+      "group": "texture",
+      "description": "Irregular rolling bands with random gaps. Use multiply with black gaps to preserve the base; add stacks band color only.",
+      "args": [
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000",
+          "hint": "Negative scrolls toward tip (like stripes)"
+        },
+        {
+          "slot": "band",
+          "label": "Band color",
+          "type": "color",
+          "default": "green"
+        },
+        {
+          "slot": "gap",
+          "label": "Gap color",
+          "type": "color",
+          "default": "black",
+          "hint": "Black for multiply-neutral gaps"
+        },
+        {
+          "slot": "scale",
+          "label": "Scale",
+          "type": "number",
+          "default": "2400",
+          "hint": "Average band+gap size (like stripe width)"
+        }
+      ]
+    },
+    {
+      "id": "saw_waves",
+      "label": "Saw waves",
+      "group": "texture",
+      "description": "Triangle linear-ramp waves (same slots as sine_waves). Multiply mask; period 0 disables a slot.",
+      "args": [
+        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
+        { "slot": "phase1", "label": "Phase 1", "type": "number", "default": "0" },
+        { "slot": "min1", "label": "Min 1", "type": "number", "default": "0" },
+        { "slot": "max1", "label": "Max 1", "type": "number", "default": "65535" },
+        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
+        { "slot": "period2", "label": "Period 2", "type": "number", "default": "0" },
+        { "slot": "phase2", "label": "Phase 2", "type": "number", "default": "0" },
+        { "slot": "min2", "label": "Min 2", "type": "number", "default": "0" },
+        { "slot": "max2", "label": "Max 2", "type": "number", "default": "65535" },
+        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "0" },
+        { "slot": "period3", "label": "Period 3", "type": "number", "default": "0" },
+        { "slot": "phase3", "label": "Phase 3", "type": "number", "default": "0" },
+        { "slot": "min3", "label": "Min 3", "type": "number", "default": "0" },
+        { "slot": "max3", "label": "Max 3", "type": "number", "default": "65535" },
+        { "slot": "speed3", "label": "Speed 3", "type": "number", "default": "0" },
+        { "slot": "period4", "label": "Period 4", "type": "number", "default": "0" },
+        { "slot": "phase4", "label": "Phase 4", "type": "number", "default": "0" },
+        { "slot": "min4", "label": "Min 4", "type": "number", "default": "0" },
+        { "slot": "max4", "label": "Max 4", "type": "number", "default": "65535" },
+        { "slot": "speed4", "label": "Speed 4", "type": "number", "default": "0" },
+        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" }
+      ]
+    },
+    {
+      "id": "pulse_train",
+      "label": "Pulse train",
+      "group": "texture",
+      "description": "Rolling hard on/off square bands (multiply mask). period 0 = passthrough; duty 0–32768 is lit fraction.",
+      "args": [
+        { "slot": "period", "label": "Period", "type": "number", "default": "2400" },
+        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "duty", "label": "Duty", "type": "number", "default": "16384", "hint": "Lit fraction 0–32768 (16384 ≈ 50%)" }
+      ]
+    },
+    {
+      "id": "chirp",
+      "label": "Chirp",
+      "group": "texture",
+      "description": "Sine multiply mask with spatial frequency sweep along the blade. period_base 0 = passthrough.",
+      "args": [
+        { "slot": "period_base", "label": "Period base", "type": "number", "default": "2400" },
+        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "chirp_rate", "label": "Chirp rate", "type": "number", "default": "64", "hint": "Period change per LED toward tip" }
+      ]
+    },
+    {
+      "id": "smoothstep_bands",
+      "label": "Smoothstep bands",
+      "group": "texture",
+      "description": "Rolling soft rectangular bands (smoothstep edges). period 0 = multiply-neutral passthrough.",
+      "args": [
+        { "slot": "period", "label": "Period", "type": "number", "default": "2400" },
+        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "edge_width", "label": "Edge width", "type": "number", "default": "400" }
+      ]
+    },
+    {
+      "id": "value_noise",
+      "label": "Value noise",
+      "group": "texture",
+      "description": "1D smooth hash noise along blade + scroll. scale 0 = passthrough.",
+      "args": [
+        { "slot": "scale", "label": "Scale", "type": "number", "default": "2400" },
+        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "seed", "label": "Seed", "type": "number", "default": "0" }
+      ]
+    },
+    {
+      "id": "fbm_noise",
+      "label": "FBM noise",
+      "group": "texture",
+      "description": "Fixed 3-octave 1D noise (cheap FBM). strength mixes toward neutral white.",
+      "args": [
+        { "slot": "scale", "label": "Scale", "type": "number", "default": "2400" },
+        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" }
+      ]
+    },
+    {
+      "id": "moire_mask",
+      "label": "Moire mask",
+      "group": "texture",
+      "description": "Two scrolling linear ramps multiplied (moire beat). period 0 = that ramp neutral.",
+      "args": [
+        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
+        { "slot": "period2", "label": "Period 2", "type": "number", "default": "2450" },
+        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
+        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "2100" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" }
+      ]
+    },
+    {
+      "id": "blade_envelope",
+      "label": "Blade envelope",
+      "group": "texture",
+      "description": "Soft bump along blade (center/width). center 0=hilt, 32768=tip; optional scrolling center speed.",
+      "args": [
+        { "slot": "center", "label": "Center", "type": "number", "default": "16384" },
+        { "slot": "width", "label": "Width", "type": "number", "default": "6000" },
+        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
+        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
+        { "slot": "speed", "label": "Center speed", "type": "number", "default": "0" }
+      ]
+    },
+    {
+      "id": "sine_waves_swing",
+      "label": "Sine waves (swing)",
+      "group": "texture",
+      "description": "sine_waves plus swing_scale and twist_scale (args 22–23). Stronger swing/twist = shorter wavelength.",
+      "args": [
+        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
+        { "slot": "phase1", "label": "Phase 1", "type": "number", "default": "0" },
+        { "slot": "min1", "label": "Min 1", "type": "number", "default": "0" },
+        { "slot": "max1", "label": "Max 1", "type": "number", "default": "65535" },
+        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
+        { "slot": "period2", "label": "Period 2", "type": "number", "default": "0" },
+        { "slot": "phase2", "label": "Phase 2", "type": "number", "default": "0" },
+        { "slot": "min2", "label": "Min 2", "type": "number", "default": "0" },
+        { "slot": "max2", "label": "Max 2", "type": "number", "default": "65535" },
+        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "0" },
+        { "slot": "period3", "label": "Period 3", "type": "number", "default": "0" },
+        { "slot": "phase3", "label": "Phase 3", "type": "number", "default": "0" },
+        { "slot": "min3", "label": "Min 3", "type": "number", "default": "0" },
+        { "slot": "max3", "label": "Max 3", "type": "number", "default": "65535" },
+        { "slot": "speed3", "label": "Speed 3", "type": "number", "default": "0" },
+        { "slot": "period4", "label": "Period 4", "type": "number", "default": "0" },
+        { "slot": "phase4", "label": "Phase 4", "type": "number", "default": "0" },
+        { "slot": "min4", "label": "Min 4", "type": "number", "default": "0" },
+        { "slot": "max4", "label": "Max 4", "type": "number", "default": "65535" },
+        { "slot": "speed4", "label": "Speed 4", "type": "number", "default": "0" },
+        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" },
+        { "slot": "swing_scale", "label": "Swing scale", "type": "number", "default": "0" },
+        { "slot": "twist_scale", "label": "Twist scale", "type": "number", "default": "0" }
+      ]
+    },
+    {
       "id": "per_led_flicker",
       "label": "Per-LED flicker",
       "group": "texture",

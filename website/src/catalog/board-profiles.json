@@ -3,26 +3,18 @@
     {
       "id": "proffie_v3",
       "name": "Proffieboard V3",
-      "description": "Default 5-blade layout matching examples/config (2 NeoPixel + 3 simple accents).",
+      "description": "Default 4-blade layout matching examples/config (1 NeoPixel + 3 simple accents).",
       "defaultBlades": [
         {
           "index": 0,
           "type": "ws2811",
           "dataPin": "bladePin",
           "pixels": 144,
-          "powerPins": ["bladePowerPin1"],
+          "powerPins": ["bladePowerPin1", "bladePowerPin2", "bladePowerPin3"],
           "comment": "Main blade"
         },
         {
           "index": 1,
-          "type": "ws2811",
-          "dataPin": "blade2Pin",
-          "pixels": 60,
-          "powerPins": ["bladePowerPin2", "bladePowerPin3"],
-          "comment": "Second strip"
-        },
-        {
-          "index": 2,
           "type": "simple",
           "dataPin": "blade5Pin",
           "led": "CreeXPE2White",
@@ -30,7 +22,7 @@
           "comment": "Accent — accent_pulse style"
         },
         {
-          "index": 3,
+          "index": 2,
           "type": "simple",
           "dataPin": "blade6Pin",
           "led": "CreeXPE2White",
@@ -38,7 +30,7 @@
           "comment": "Accent — accent_sound_on style"
         },
         {
-          "index": 4,
+          "index": 3,
           "type": "simple",
           "dataPin": "blade7Pin",
           "led": "CreeXPE2White",

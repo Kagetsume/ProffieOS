@@ -4,6 +4,7 @@ import {
   createDefaultLayer,
   createDefaultStyleSections,
   resolveLayerArgs,
+  resolvedLayerArgs,
   resolveVarTemplate,
   sectionHasDedicatedLockupLayer,
   sectionPrimaryBaseLayer,
@@ -18,6 +19,14 @@ describe('style-sections', () => {
     const layer = createDefaultLayer();
     layer.args = ['{{base}}', '300'];
     expect(resolveLayerArgs(layer, { base: 'red' })).toEqual(['red', '300']);
+  });
+
+  it('resolvedLayerArgs fills named-style catalog defaults for preview', () => {
+    const layer = createDefaultLayer();
+    layer.styleName = 'sine_waves';
+    layer.args = ['2400', '0', '8192', '65535'];
+    const filled = resolvedLayerArgs(layer, {});
+    expect(filled[4]).toBe('-2000');
   });
 
   it('finds template variable names', () => {

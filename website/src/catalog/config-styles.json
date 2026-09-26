@@ -58,12 +58,426 @@
         { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
         { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
         { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "stripes",
+          "args": ["3000", "-600", "0,0,24", "black"],
+          "blend": "multiply",
+          "opacity": 26000
+        },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
         { "styleName": "real_clash", "args": ["white", "16000"] },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
         { "styleName": "melt", "args": ["{{melt}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "sine_waves_cyan",
+      "label": "sine_waves_cyan",
+      "description": "Cyan solid base + four sine_waves multiply masks (bidirectional scroll) + real_clash, blast_wave_random, responsive_lockup, lb — first SD preset example.",
+      "vars": {
+        "base": "cyan",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "sine_waves",
+          "args": [
+            "2400",
+            "0",
+            "4096",
+            "65535",
+            "-2000",
+            "1800",
+            "512",
+            "0",
+            "49152",
+            "-2800",
+            "3200",
+            "0",
+            "8192",
+            "65535",
+            "1500",
+            "2200",
+            "256",
+            "12288",
+            "65535",
+            "2200"
+          ],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "smoke_sine_cyan",
+      "label": "smoke_sine_cyan",
+      "description": "Cyan solid_bend base + smoke_flow (multiply + screen; ext/ret match base) + sine_waves multiply masks + real_clash, blast_wave_random, responsive_lockup, lb.",
+      "vars": {
+        "base": "cyan",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
+        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "sine_waves",
+          "args": [
+            "2100",
+            "0",
+            "4096",
+            "65535",
+            "-1700",
+            "1400",
+            "384",
+            "0",
+            "53248",
+            "1300",
+            "2600",
+            "128",
+            "8192",
+            "65535",
+            "-2100",
+            "1750",
+            "512",
+            "12288",
+            "57344",
+            "1700"
+          ],
+          "blend": "multiply",
+          "opacity": 18000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_saw_waves",
+      "label": "demo_saw_waves",
+      "description": "Magenta solid_bend base + saw_waves triangle ramp multiply mask + real_clash, blast_wave_random, responsive_lockup, lb.",
+      "vars": {
+        "base": "magenta",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "saw_waves",
+          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_smoothstep_bands",
+      "label": "demo_smoothstep_bands",
+      "description": "Cyan solid base + smoothstep_bands soft rolling bands + OS7 combat overlays.",
+      "vars": {
+        "base": "cyan",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "smoothstep_bands",
+          "args": ["2400", "-2000", "8192", "65535", "400"],
+          "blend": "multiply",
+          "opacity": 20000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_value_noise",
+      "label": "demo_value_noise",
+      "description": "Deep sky blue solid_bend base + value_noise 1D hash mask + OS7 combat overlays.",
+      "vars": {
+        "base": "deepskyblue",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "value_noise",
+          "args": ["2400", "-2000", "8192", "65535", "0"],
+          "blend": "multiply",
+          "opacity": 18000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_fbm_noise",
+      "label": "demo_fbm_noise",
+      "description": "Orange solid base + fbm_noise 3-octave mask + OS7 combat overlays.",
+      "vars": {
+        "base": "orange",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "fbm_noise",
+          "args": ["2400", "-1500", "8192", "65535", "65535"],
+          "blend": "multiply",
+          "opacity": 16000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_moire_mask",
+      "label": "demo_moire_mask",
+      "description": "Green solid_bend base + moire_mask beating ramps + OS7 combat overlays.",
+      "vars": {
+        "base": "green",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "moire_mask",
+          "args": ["2400", "2450", "-2000", "2100", "8192", "65535"],
+          "blend": "multiply",
+          "opacity": 20000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_blade_envelope",
+      "label": "demo_blade_envelope",
+      "description": "Yellow solid base + blade_envelope center bump + OS7 combat overlays.",
+      "vars": {
+        "base": "yellow",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "blade_envelope",
+          "args": ["16384", "6000", "8192", "65535", "0"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_sine_waves_swing",
+      "label": "demo_sine_waves_swing",
+      "description": "Cyan solid_bend base + sine_waves_swing motion-compressed waves + OS7 combat overlays.",
+      "vars": {
+        "base": "cyan",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "sine_waves_swing",
+          "args": [
+            "2400",
+            "0",
+            "8192",
+            "65535",
+            "-2000",
+            "0",
+            "0",
+            "0",
+            "65535",
+            "0",
+            "0",
+            "0",
+            "65535",
+            "0",
+            "0",
+            "0",
+            "65535",
+            "0",
+            "0",
+            "0",
+            "65535",
+            "0",
+            "65535",
+            "12000",
+            "8000"
+          ],
+          "blend": "multiply",
+          "opacity": 20000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_sine_waves",
+      "label": "demo_sine_waves",
+      "description": "Lime solid base + single sine_waves multiply mask + OS7 combat overlays.",
+      "vars": {
+        "base": "lime",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "sine_waves",
+          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_random_bands",
+      "label": "demo_random_bands",
+      "description": "Green solid_bend base + random_bands irregular scroll + OS7 combat overlays.",
+      "vars": {
+        "base": "green",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "random_bands",
+          "args": ["-600", "green", "black", "3000"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_pulse_train",
+      "label": "demo_pulse_train",
+      "description": "Orange solid_bend base + pulse_train square scroll bands + OS7 combat overlays.",
+      "vars": {
+        "base": "orange",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "pulse_train",
+          "args": ["2400", "-2000", "0", "65535", "16384"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_chirp",
+      "label": "demo_chirp",
+      "description": "Deep sky blue solid_bend base + chirp frequency-sweep sine mask + OS7 combat overlays.",
+      "vars": {
+        "base": "deepskyblue",
+        "ext": "300",
+        "ret": "800",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "chirp",
+          "args": ["2400", "-2000", "8192", "65535", "80"],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
       ]
     },
@@ -84,6 +498,12 @@
         { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
         { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
         { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "random_bands",
+          "args": ["-600", "0,24,0", "black", "3000"],
+          "blend": "multiply",
+          "opacity": 26000
+        },
         { "styleName": "clash", "args": ["white"] },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },

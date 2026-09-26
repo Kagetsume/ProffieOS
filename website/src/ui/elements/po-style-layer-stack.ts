@@ -9,7 +9,12 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
-import { describeLayer, getNamedStyle, type StyleArgDef } from '../../model/style-catalog';
+import {
+  defaultArgsForStyle,
+  describeLayer,
+  getNamedStyle,
+  type StyleArgDef,
+} from '../../model/style-catalog';
 import {
   decodeStylePickerValue,
   layerStylePickerValue,
@@ -472,7 +477,11 @@ export class PoStyleLayerStack extends PoElement {
         return;
       }
       changeLog.debug('branch: updating layer arg');
+      const defaults = defaultArgsForStyle(layer.styleName);
       const args = [...layer.args];
+      while (args.length <= index) {
+        args.push(defaults[args.length] ?? '');
+      }
       args[index] = next;
       this.patchLayer(section.id, layer.id, { args });
       changeLog.exit('layer-arg');

@@ -6,6 +6,7 @@
  * @module model/style-sections
  */
 import { createDefaultConfigStyles } from './config-styles';
+import { defaultArgsForStyle, getNamedStyle } from './style-catalog';
 
 /** Layer compositing mode — matches blade_styles.ini blend keywords. */
 export type LayerBlend = 'normal' | 'multiply' | 'screen' | 'add';
@@ -33,12 +34,35 @@ export type StyleSection = {
 
 /** Resolve `{{name}}` templates using section variables. */
 export function resolveVarTemplate(value: string, vars: Record<string, string>): string {
-  return value.replace(/\{\{(\w+)\}\}/g, (_, name: string) => vars[name] ?? `{{${name}}}`);
+  const text = value == null ? '' : String(value);
+  return text.replace(/\{\{(\w+)\}\}/g, (_, name: string) => vars[name] ?? `{{${name}}}`);
 }
 
 /** Resolve all args on a layer for export or preview. */
 export function resolveLayerArgs(layer: StyleLayer, vars: Record<string, string>): string[] {
-  return layer.args.map((arg) => resolveVarTemplate(arg, vars));
+  const len = layer.args.length;
+  return Array.from({ length: len }, (_, i) => resolveVarTemplate(layer.args[i] ?? '', vars));
+}
+
+/**
+ * Positional args with catalog defaults filled in (matches layer editor display).
+ * Used by preview so unset slots behave like firmware IntArg defaults.
+ */
+export function resolvedLayerArgs(layer: StyleLayer, vars: Record<string, string>): string[] {
+  const resolved = resolveLayerArgs(layer, vars);
+  const def = getNamedStyle(layer.styleName);
+  if (!def) {
+    return resolved;
+  }
+  const defaults = defaultArgsForStyle(layer.styleName);
+  const len = Math.max(resolved.length, defaults.length);
+  return Array.from({ length: len }, (_, i) => {
+    const raw = resolved[i];
+    if (raw == null || raw.trim() === '') {
+      return defaults[i] ?? '';
+    }
+    return raw;
+  });
 }
 
 const DEDICATED_LOCKUP_LAYER_NAMES = new Set(['lockup', 'responsive_lockup']);

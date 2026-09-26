@@ -26,6 +26,9 @@ describe('colors', () => {
   it('parses hex and rgb for preview', () => {
     expect(parseColorRgb('#ff0000')).toEqual([255, 0, 0]);
     expect(parseColorRgb('65535,0,0')).toEqual([255, 0, 0]);
+    expect(parseColorRgb('0,255,0')).toEqual([0, 255, 0]);
+    expect(parseColorRgb('green')).toEqual(parseColorRgb('0,255,0'));
+    expect(parseColorRgb('46,111,64')).toEqual([46, 111, 64]);
   });
 
   it('normalizes custom values for editor storage', () => {

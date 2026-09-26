@@ -21,6 +21,15 @@ describe('presets model', () => {
     expect(presets[0]?.id).toBeTruthy();
   });
 
+  it('matches SD examples: Sine Waves Cyan then Smoke Laser', () => {
+    const presets = createDefaultPresets(4);
+    expect(presets[0]?.name).toBe('Sine Waves Cyan');
+    expect(presets[0]?.styles[0]).toMatchObject({ kind: 'config', ref: 'sine_waves_cyan' });
+    expect(presets[0]?.styles).toHaveLength(4);
+    expect(presets[1]?.name).toBe('Smoke Laser');
+    expect(presets[1]?.styles[0]).toMatchObject({ kind: 'config', ref: 'smoke_laser' });
+  });
+
   it('clones a preset with a new id and copy suffix', () => {
     const [source] = createDefaultPresets(2);
     expect(source).toBeDefined();
