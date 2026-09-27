@@ -1845,13 +1845,13 @@
       "id": "pulse_train",
       "label": "Pulse train",
       "group": "texture",
-      "description": "Rolling hard on/off square bands (multiply mask). period 0 = passthrough; duty 0–32768 is lit fraction.",
+      "description": "Rolling hard on/off square bands (multiply mask). period 0 = passthrough; duty 0–100% is lit fraction.",
       "args": [
         { "slot": "period", "label": "Period", "type": "number", "default": "2400" },
         { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
         { "slot": "min", "label": "Min", "type": "number", "default": "0" },
         { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "duty", "label": "Duty", "type": "number", "default": "16384", "hint": "Lit fraction 0–32768 (16384 ≈ 50%)" }
+        { "slot": "duty", "label": "Duty (%)", "type": "number", "default": "50%", "scale32768": true, "hint": "Lit fraction; 50% ≈ half on (raw >100 still accepted in INI)" }
       ]
     },
     {
@@ -1926,7 +1926,7 @@
       "group": "texture",
       "description": "Soft bump along blade (center/width). center 0=hilt, 32768=tip; optional scrolling center speed.",
       "args": [
-        { "slot": "center", "label": "Center", "type": "number", "default": "16384" },
+        { "slot": "center", "label": "Center (%)", "type": "number", "default": "50%", "scale32768": true },
         { "slot": "width", "label": "Width", "type": "number", "default": "6000" },
         { "slot": "min", "label": "Min", "type": "number", "default": "0" },
         { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
@@ -1980,7 +1980,7 @@
       "id": "gradient_layer",
       "label": "Gradient layer",
       "group": "texture",
-      "description": "Hilt-to-tip gradient over layers below. No ext/ret on layer line (normal blend auto-clips to base in/out). Use normal blend; layer opacity controls mix (32768 = full, ~3277 = 10%).",
+      "description": "Hilt-to-tip gradient over layers below. No ext/ret on layer line (normal blend auto-clips to base in/out). Use normal blend; layer opacity controls mix (100% = full, ~10% = subtle tint).",
       "args": [
         {
           "slot": "hilt",
@@ -2000,7 +2000,7 @@
       "id": "rainbow_layer",
       "label": "Rainbow layer",
       "group": "texture",
-      "description": "Animated RGB rainbow over layers below. No args or ext/ret on layer line. Use normal blend; layer opacity controls mix vs base (32768 = full rainbow, ~3277 = subtle tint)."
+      "description": "Animated RGB rainbow over layers below. No args or ext/ret on layer line. Use normal blend; layer opacity controls mix vs base (100% = full rainbow, ~10% = subtle tint)."
     },
     {
       "id": "noise_flicker",
@@ -2352,9 +2352,10 @@
         },
         {
           "slot": "threshold",
-          "label": "Threshold",
+          "label": "Threshold (%)",
           "type": "number",
-          "default": "4096"
+          "default": "13%",
+          "scale32768": true
         }
       ]
     },

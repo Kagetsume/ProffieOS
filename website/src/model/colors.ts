@@ -1,7 +1,7 @@
 /**
  * ProffieOS color names and parsing.
  *
- * - **firmware** — `ParseColorName` in `styles/rgb_arg.h` (work as INI/preset names)
+ * - **firmware** — `ParseColorName` / `ParseColorArg` in `styles/parse_color_arg.h` (names, `#rrggbb` / `#rgb`, and `r,g,b`)
  * - **extended** — Fett263 saber color-menu palette (`ColorNumber` in `sound_library.h`)
  * - **vivid** — ProffieOS 8.x palette in `styles/colors.h`
  *
@@ -131,16 +131,20 @@ export function canonicalColorName(value: string): string | undefined {
   return allByName.has(key) ? key : undefined;
 }
 
-/** Parse `#rrggbb` or `rrggbb` to 8-bit RGB. */
+/** Parse `#rrggbb`, `#rgb` shorthand, or `rrggbb` to 8-bit RGB. */
 export function parseHexColor(value: string): [number, number, number] | undefined {
   const raw = value.trim().replace(/^#/, '');
-  if (!/^[0-9a-f]{6}$/i.test(raw)) {
-    return undefined;
+  if (/^[0-9a-f]{6}$/i.test(raw)) {
+    const r = Number.parseInt(raw.slice(0, 2), 16);
+    const g = Number.parseInt(raw.slice(2, 4), 16);
+    const b = Number.parseInt(raw.slice(4, 6), 16);
+    return [r, g, b];
   }
-  const r = Number.parseInt(raw.slice(0, 2), 16);
-  const g = Number.parseInt(raw.slice(2, 4), 16);
-  const b = Number.parseInt(raw.slice(4, 6), 16);
-  return [r, g, b];
+  if (/^[0-9a-f]{3}$/i.test(raw)) {
+    const expand = (c: string) => Number.parseInt(c + c, 16);
+    return [expand(raw[0]!), expand(raw[1]!), expand(raw[2]!)];
+  }
+  return undefined;
 }
 
 /** Parse `r,g,b` (8- or 16-bit channels) for firmware-style args. */

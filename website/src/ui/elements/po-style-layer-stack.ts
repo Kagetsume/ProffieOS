@@ -9,12 +9,19 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
+import { exportColorToken } from '../../model/colors';
 import {
   defaultArgsForStyle,
   describeLayer,
   getNamedStyle,
+  isOpacityScaleArg,
   type StyleArgDef,
 } from '../../model/style-catalog';
+import {
+  opacityScaleToPercent,
+  parseOpacityScaleToken,
+  percentToOpacityScale,
+} from '../../model/opacity-scale';
 import {
   decodeStylePickerValue,
   layerStylePickerValue,
@@ -228,11 +235,13 @@ export class PoStyleLayerStack extends PoElement {
             <wa-input
               type="number"
               min="0"
-              max="32768"
-              .value=${String(layer.opacity)}
+              max="100"
+              .value=${String(opacityScaleToPercent(layer.opacity))}
               @wa-input=${(event: Event) =>
                 this.patchLayer(sectionId, layer.id, {
-                  opacity: Number((event.target as HTMLInputElement).value) || 0,
+                  opacity: percentToOpacityScale(
+                    Number((event.target as HTMLInputElement).value) || 0,
+                  ),
                 })}
             ></wa-input>
           </label>
@@ -456,6 +465,7 @@ export class PoStyleLayerStack extends PoElement {
     index: number,
     arg: StyleArgDef,
   ) {
+    const scale32768 = isOpacityScaleArg(layer.styleName, arg.slot);
     const raw = layer.args[index] ?? arg.default;
     const varName = this.templateVarName(raw);
     const usesSectionVar = varName !== undefined && varName in section.vars;
@@ -467,12 +477,12 @@ export class PoStyleLayerStack extends PoElement {
      * @param next New argument value string from the input control.
      * @returns Nothing; dispatches `sectionVarChanged` or `patchLayer`.
      */
-    const onValueChange = (next: string): void => {
+    const persistArg = (stored: string): void => {
       const changeLog = contextLogger('po-style-layer-stack', 'onLayerArgValueChange');
-      changeLog.entry({ layerId: layer.id, index, next });
+      changeLog.entry({ layerId: layer.id, index, stored });
       if (usesSectionVar && varName) {
         changeLog.debug('branch: updating section var', { varName });
-        sectionVarChanged({ sectionId: section.id, key: varName, value: next });
+        sectionVarChanged({ sectionId: section.id, key: varName, value: stored });
         changeLog.exit('section-var');
         return;
       }
@@ -482,10 +492,26 @@ export class PoStyleLayerStack extends PoElement {
       while (args.length <= index) {
         args.push(defaults[args.length] ?? '');
       }
-      args[index] = next;
+      args[index] = stored;
       this.patchLayer(section.id, layer.id, { args });
       changeLog.exit('layer-arg');
     };
+
+    const onValueChange = (next: string): void => {
+      if (scale32768 && arg.type === 'number') {
+        const trimmed = next.trim();
+        if (trimmed.endsWith('%') || /^-?\d+$/.test(trimmed)) {
+          persistArg(String(parseOpacityScaleToken(trimmed)));
+          return;
+        }
+      }
+      persistArg(next);
+    };
+
+    const displayValue =
+      scale32768 && arg.type === 'number' && !usesSectionVar
+        ? String(opacityScaleToPercent(parseOpacityScaleToken(String(value))))
+        : value;
 
     const field =
       arg.type === 'color'
@@ -493,12 +519,15 @@ export class PoStyleLayerStack extends PoElement {
             <po-color-input
               .value=${value}
               @color-change=${(event: CustomEvent<{ value: string }>) =>
-                onValueChange(event.detail.value)}
+                onValueChange(exportColorToken(event.detail.value))}
             ></po-color-input>
           `
         : html`
             <wa-input
-              .value=${value}
+              type=${scale32768 && arg.type === 'number' ? 'number' : 'text'}
+              min=${scale32768 && arg.type === 'number' ? '0' : nothing}
+              max=${scale32768 && arg.type === 'number' ? '100' : nothing}
+              .value=${displayValue}
               @wa-input=${(event: Event) =>
                 onValueChange((event.target as HTMLInputElement).value)}
             ></wa-input>

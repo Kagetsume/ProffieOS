@@ -95,6 +95,8 @@ struct MockDynamicMixer {
 MockDynamicMixer dynamic_mixer;
 
 #include "../common/common.h"
+#include "../common/opacity_scale.h"
+#include "../common/style_config_file.h"
 #include "../common/math.h"
 #include "../common/stdout.h"
 Print default_printer;
@@ -185,6 +187,8 @@ Monitoring monitor;
 #include "random_blink.h"
 #include "../functions/effect_increment.h"
 #include "../transitions/extend.h"
+#include "strip_column.h"
+#include "strip_column_bmp.h"
 
 Color16 TestRgbArgColors[256];
 
@@ -915,10 +919,10 @@ void testMaxUsedArgument(const char* from, int expected) {
 
 void test_argument_parsing() {
   testGetArg("standard", 0, "standard");
-  testGetArg("standard", 1, "0,65535,65535");
-  testGetArg("standard ~", 1, "0,65535,65535");
+  testGetArg("standard", 1, "0,255,255");
+  testGetArg("standard ~", 1, "0,255,255");
   testGetArg("standard ~ 1,0,0", 2, "1,0,0");
-  testGetArg("standard", 2, "65535,65535,65535");
+  testGetArg("standard", 2, "255,255,255");
   testGetArg("standard", 3, "300");
   testGetArg("standard", 4, "800");
   testNoArg("standard", 5);
@@ -1009,7 +1013,61 @@ void test_argument_parsing() {
   CHECK_COLOR(green_name, 0, 65535, 0, 0);
   CHECK_COLOR(green_rgb, 0, 65535, 0, 0);
   CHECK_COLOR(ParseColorArg("46,111,64"), 11822, 28527, 16448, 0);
+  CHECK_COLOR(ParseColorArg("0,24,0"), 0, 6168, 0, 0);
   CHECK_COLOR(ParseColorArg("65535,0,0"), 65535, 0, 0, 0);
+  CHECK_COLOR(ParseColorArg("#002E00"), 0, 11822, 0, 0);
+  CHECK_COLOR(ParseColorArg("#00ff00"), 0, 65535, 0, 0);
+  CHECK_COLOR(ParseColorArg("#0f0"), 0, 65535, 0, 0);
+}
+
+void test_parse_color_arg_malformed() {
+  fprintf(stderr, "test_parse_color_arg_malformed\n");
+#define CHECK_COLOR_ZERO(X) CHECK_COLOR((X), 0, 0, 0, 0)
+  CHECK_COLOR_ZERO(ParseColorArg(""));
+  CHECK_COLOR_ZERO(ParseColorArg("#"));
+  CHECK_COLOR_ZERO(ParseColorArg("#GG"));
+  CHECK_COLOR_ZERO(ParseColorArg("#GGGGGGGG"));
+  CHECK_COLOR_ZERO(ParseColorArg("#ffaaffx"));
+  CHECK_COLOR_ZERO(ParseColorArg("notacolor"));
+  CHECK_COLOR_ZERO(ParseColorArg(",255,0"));
+  CHECK_COLOR_ZERO(ParseColorArg("0,,0"));
+  CHECK_COLOR_ZERO(ParseColorArg("255,255"));
+  CHECK_COLOR_ZERO(ParseColorArg("0,255,0extra"));
+  CHECK_COLOR_ZERO(ParseColorArg("0 255 0"));
+  CHECK_COLOR_ZERO(ParseColorArg(nullptr));
+
+  Color16 hex_out;
+  if (ParseHexColorArg("", &hex_out) ||
+      ParseHexColorArg("#", &hex_out) ||
+      ParseHexColorArg("#abcd", &hex_out) ||
+      ParseHexColorArg("00ff00", &hex_out) ||
+      ParseHexColorArg("#gg0000", &hex_out) ||
+      ParseHexColorArg(nullptr, &hex_out)) {
+    fprintf(stderr, "ParseHexColorArg should reject malformed input\n");
+    exit(1);
+  }
+#undef CHECK_COLOR_ZERO
+}
+
+void test_random_bands_config_rgb() {
+  MockBlade mock_blade;
+  mock_blade.colors.resize(48);
+  BladeStyle* bs = style_parser.Parse("random_bands -600 0,24,0 black 3000");
+  if (!bs) {
+    fprintf(stderr, "random_bands parse failed\n");
+    exit(1);
+  }
+  bs->run(&mock_blade);
+  bool saw_band_green = false;
+  for (int i = 0; i < 48; i++) {
+    Color16 c = mock_blade.colors[i];
+    if (c.g > 5000 && c.g < 7500 && c.r < 500 && c.b < 500) saw_band_green = true;
+  }
+  if (!saw_band_green) {
+    fprintf(stderr, "random_bands 0,24,0 band color not scaled (expected g ~6168)\n");
+    exit(1);
+  }
+  delete bs;
 }
 
 void test_gradient() {
@@ -1048,6 +1106,78 @@ void test_layers() {
   CHECK( (!is_same_type<Layers<AlphaL<Red, Int<1>>, Blue>, Blue>::value) );
 }
 
+void test_opacity_scale_token() {
+  CHECK(ParseOpacityScaleToken("55%") == (int)((55 * 32768LL + 50) / 100));
+  CHECK(ParseOpacityScaleToken("18000") == 18000);
+  CHECK(ParseOpacityScaleToken("32768") == 32768);
+  CHECK(ParseOpacityScaleToken("100") == 32768);
+  CHECK(ParseOpacityScaleToken("100%") == 32768);
+  CHECK(ParseOpacityScaleToken("50") == (int)((50 * 32768LL + 50) / 100));
+  CHECK(ParseOpacityScaleToken("") == 0);
+  CHECK(ParseOpacityScaleToken("   ") == 0);
+  CHECK(ParseOpacityScaleToken("xyzzy") == 0);
+  CHECK(OpacityScaleTokenParses("55%"));
+  CHECK(OpacityScaleTokenParses("0"));
+  CHECK(!OpacityScaleTokenParses(""));
+  CHECK(!OpacityScaleTokenParses("solid"));
+}
+
+void test_config_layer_line_parse() {
+  BladeStyle* s = nullptr;
+  uint16_t alpha = 0;
+  uint8_t blend = CONFIG_LAYER_BLEND_NORMAL;
+  CHECK(TryParseConfigLayerLine("solid red 300 800", &s, &alpha, &blend));
+  CHECK(s != nullptr);
+  delete s;
+  s = nullptr;
+
+  CHECK(!TryParseConfigLayerLine("not_a_real_style_name xyzzy", &s, &alpha, &blend));
+  CHECK(s == nullptr);
+
+  CHECK(!TryParseConfigLayerLine("opacity solid red 300 800", &s, &alpha, &blend));
+  CHECK(!TryParseConfigLayerLine("opacity 55%", &s, &alpha, &blend));
+  CHECK(TryParseConfigLayerLine("opacity 50% solid red 300 800", &s, &alpha, &blend));
+  CHECK(s != nullptr);
+  delete s;
+  s = nullptr;
+
+  blend = CONFIG_LAYER_BLEND_NORMAL;
+  CHECK(TryParseConfigLayerLine("multiply solid red 300 800", &s, &alpha, &blend));
+  CHECK(s != nullptr);
+  CHECK(blend == CONFIG_LAYER_BLEND_MULTIPLY);
+  delete s;
+}
+
+void test_style_config_expand_local_vars() {
+  char keys[2][STYLE_CONFIG_LOCAL_KEY_LEN];
+  char vals[2][STYLE_CONFIG_LOCAL_VAL_LEN];
+  strncpy(keys[0], "base", STYLE_CONFIG_LOCAL_KEY_LEN);
+  strncpy(vals[0], "red", STYLE_CONFIG_LOCAL_VAL_LEN);
+  char out[STYLE_CONFIG_LAYER_STR_LEN];
+  StyleConfigExpandLocalVars(out, sizeof(out), "solid {{base}} 300 800", keys, vals, 1);
+  CHECK(!strcmp(out, "solid red 300 800"));
+  StyleConfigExpandLocalVars(out, sizeof(out), "solid {{missing}} 300", keys, vals, 1);
+  CHECK(!strcmp(out, "solid {{missing}} 300"));
+  StyleConfigExpandLocalVars(out, sizeof(out), "plain", nullptr, nullptr, 2);
+  CHECK(!strcmp(out, "plain"));
+  StyleConfigExpandLocalVars(out, 20, "012345678901234567{{base}}", keys, vals, 1);
+  CHECK(strlen(out) == 19);
+  CHECK(out[19] == '\0');
+}
+
+void test_style_parser_copy_arg_bounded() {
+  char buf[8];
+  StyleParserCopyArgBounded(buf, sizeof(buf), "hello", "hello");
+  CHECK(!strcmp(buf, "hello"));
+  StyleParserCopyArgBounded(buf, sizeof(buf), "hello world", "hello");
+  CHECK(!strcmp(buf, "hello"));
+  StyleParserCopyArgBounded(buf, sizeof(buf), "123456789", "123456789");
+  CHECK(!strcmp(buf, "1234567"));
+  StyleParserCopyArgBounded(buf, sizeof(buf), nullptr, "x");
+  CHECK(buf[0] == '\0');
+  StyleParserCopyArgBounded(nullptr, 8, "a", "b");
+}
+
 void test_smoothstep() {
   SmoothStep<Int<16384>, Int<16384>> ss;
   MockBlade mock_blade;
@@ -1067,6 +1197,86 @@ void test_smoothstep() {
 #include "get_arg_max.h"
 
 float SaberBase::clash_strength_ = 0.0;
+
+// 2×2 24-bit BI_RGB, bottom-up: column 0 = red hilt / blue tip; column 1 = green / white.
+static const uint8_t kStripColumnTestBmp[] = {
+  'B', 'M', 0x46, 0, 0, 0, 0, 0, 0, 0, 0x36, 0, 0, 0,
+  40, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 1, 0, 24, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0xFF, 0, 0, 0xFF, 0xFF, 0xFF, 0, 0,
+  0, 0, 0xFF, 0, 0xFF, 0, 0, 0,
+};
+
+void test_strip_column_bmp() {
+  FileReader f;
+  f.OpenMem(kStripColumnTestBmp, sizeof(kStripColumnTestBmp));
+  StripColumnBmpInfo info;
+  CHECK(StripColumnBmpParseHeader(&f, &info));
+  CHECK_NEAR(info.width, 2, 0);
+  CHECK_NEAR(info.height, 2, 0);
+  CHECK(!info.top_down);
+  CHECK_NEAR(info.row_stride, 8, 0);
+  CHECK_NEAR(info.pixel_offset, 54, 0);
+
+  uint8_t col[512];
+  CHECK(StripColumnBmpLoadColumn(&f, &info, 0, 2, col, sizeof(col)));
+  CHECK_NEAR(col[0], 255, 0);
+  CHECK_NEAR(col[1], 0, 0);
+  CHECK_NEAR(col[2], 0, 0);
+  CHECK_NEAR(col[3], 0, 0);
+  CHECK_NEAR(col[4], 0, 0);
+  CHECK_NEAR(col[5], 255, 0);
+
+  CHECK(StripColumnBmpLoadColumn(&f, &info, 1, 2, col, sizeof(col)));
+  CHECK_NEAR(col[0], 0, 0);
+  CHECK_NEAR(col[1], 255, 0);
+  CHECK_NEAR(col[2], 0, 0);
+  CHECK_NEAR(col[5], 255, 0);
+}
+
+void test_strip_column() {
+  test_strip_column_bmp();
+  int row = 0;
+  int frac = 0;
+  StripColumnMapLed(0, 144, 144, &row, &frac);
+  CHECK_NEAR(row, 0, 0);
+  CHECK_NEAR(frac, 0, 0);
+  StripColumnMapLed(143, 144, 144, &row, &frac);
+  CHECK_NEAR(row, 143, 0);
+  CHECK_NEAR(frac, 0, 0);
+  StripColumnMapLed(72, 144, 144, &row, &frac);
+  CHECK_NEAR(row, 72, 0);
+  StripColumnMapLed(10, 100, 50, &row, &frac);
+  CHECK_NEAR(row, 4, 0);
+  CHECK_NEAR(frac, 31108, 0);
+
+  uint8_t column[] = { 0, 0, 0,  100, 0, 0,  200, 0, 0 };
+  uint8_t r, g, b;
+  StripColumnSampleAtLed(column, 0, 3, 3, &r, &g, &b);
+  CHECK_NEAR(r, 0, 0);
+  StripColumnSampleAtLed(column, 1, 3, 3, &r, &g, &b);
+  CHECK_NEAR(r, 100, 0);
+  StripColumnSampleAtLed(column, 2, 3, 3, &r, &g, &b);
+  CHECK_NEAR(r, 200, 0);
+  StripColumnSampleAtLed(column, 0, 5, 3, &r, &g, &b);
+  CHECK_NEAR(r, 0, 0);
+  StripColumnSampleAtLed(column, 2, 5, 3, &r, &g, &b);
+  CHECK_NEAR(r, 100, 0);
+  StripColumnSampleAtLed(column, 4, 5, 3, &r, &g, &b);
+  CHECK_NEAR(r, 200, 0);
+
+  StripColumnMapLed(0, 1, 50, &row, &frac);
+  CHECK_NEAR(row, 0, 0);
+  StripColumnMapLed(0, 100, 1, &row, &frac);
+  CHECK_NEAR(row, 0, 0);
+
+  ArgParser ap("animations/test.scf 144 30 300 800");
+  CurrentArgParser = &ap;
+  BladeStyle* style = strip_column_factory.make();
+  CHECK(style != nullptr);
+  delete style;
+}
 
 void test_get_max_arg() {
 
@@ -1088,6 +1298,11 @@ void test_get_max_arg() {
 }
 
 int main() {
+  test_opacity_scale_token();
+  test_config_layer_line_parse();
+  test_style_config_expand_local_vars();
+  test_style_parser_copy_arg_bounded();
+  test_strip_column();
   test_get_max_arg();
   test_smoothstep();
   test_layers();
@@ -1105,4 +1320,6 @@ int main() {
   test_style2();
   test_style3();
   test_argument_parsing();
+  test_parse_color_arg_malformed();
+  test_random_bands_config_rgb();
 }

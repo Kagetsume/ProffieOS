@@ -23,9 +23,11 @@ inline void StyleParserCopyArgBounded(char* output, size_t output_max, const cha
 }
 #include "../common/sd_config.h"
 #include "../common/style_config_file.h"
+#include "../common/opacity_scale.h"
 #include "../functions/int_arg.h"
 #include "config_layers_style.h"
 #include "pixel_sequencer.h"
+#include "strip_column.h"
 #include "accent_blink.h"
 #include "texture_layers.h"
 #include "real_clash.h"
@@ -57,6 +59,7 @@ public:
 #else
     // "builtin P B" uses compiled ROM preset P, blade style B (current_config->presets).
     // When SD overrides the preset *list*, GetNumPresets() is the SD count — do not use it here.
+    if (!CurrentArgParser) return nullptr;
     IntArg<1, 0> preset_arg;
     IntArg<2, 1> style_arg;
     int preset = preset_arg.getInteger(0);
@@ -82,6 +85,45 @@ public:
 BuiltinPresetAllocator builtin_preset_allocator;
 
 BladeStyle* ParseStyleStringForConfig(const char* str);
+
+// Parse one expanded layer = string (blend, optional opacity, sub-style). Returns false to skip the layer.
+inline bool TryParseConfigLayerLine(const char* layer_line,
+                                    BladeStyle** out_style,
+                                    uint16_t* out_alpha,
+                                    uint8_t* out_blend) {
+  if (!layer_line || !layer_line[0] || !out_style) return false;
+  uint16_t alpha = CONFIG_LAYER_ALPHA_OPAQUE;
+  uint8_t blend = CONFIG_LAYER_BLEND_NORMAL;
+  const char* p = layer_line;
+  if (FirstWord(p, "multiply")) {
+    blend = CONFIG_LAYER_BLEND_MULTIPLY;
+    p = SkipWord(p);
+  } else if (FirstWord(p, "screen")) {
+    blend = CONFIG_LAYER_BLEND_SCREEN;
+    p = SkipWord(p);
+  } else if (FirstWord(p, "add")) {
+    blend = CONFIG_LAYER_BLEND_ADD;
+    p = SkipWord(p);
+  } else if (FirstWord(p, "normal")) {
+    blend = CONFIG_LAYER_BLEND_NORMAL;
+    p = SkipWord(p);
+  }
+  const char* parse_from = p;
+  if (FirstWord(p, "opacity")) {
+    ArgParser ap(SkipWord(p));
+    const char* av = ap.GetArg(1, "", "");
+    if (!av || !av[0] || !OpacityScaleTokenParses(av)) return false;
+    alpha = (uint16_t)ParseOpacityScaleToken(av);
+    parse_from = ap.GetArg(2, "", "");
+    if (!parse_from || !parse_from[0]) return false;
+  }
+  BladeStyle* s = ParseStyleStringForConfig(parse_from);
+  if (!s) return false;
+  *out_style = s;
+  if (out_alpha) *out_alpha = alpha;
+  if (out_blend) *out_blend = blend;
+  return true;
+}
 
 class ConfigStyleFactory : public StyleFactory {
 public:
@@ -130,36 +172,10 @@ public:
     int count = 0;
     for (int i = 0; i < n && i < STYLE_CONFIG_MAX_LAYERS && count < CONFIG_LAYERS_MAX; i++) {
       if (!layers[i][0]) continue;
+      BladeStyle* s = nullptr;
       uint16_t alpha = CONFIG_LAYER_ALPHA_OPAQUE;
       uint8_t blend = CONFIG_LAYER_BLEND_NORMAL;
-      const char* p = layers[i];
-      if (FirstWord(p, "multiply")) {
-        blend = CONFIG_LAYER_BLEND_MULTIPLY;
-        p = SkipWord(p);
-      } else if (FirstWord(p, "screen")) {
-        blend = CONFIG_LAYER_BLEND_SCREEN;
-        p = SkipWord(p);
-      } else if (FirstWord(p, "add")) {
-        blend = CONFIG_LAYER_BLEND_ADD;
-        p = SkipWord(p);
-      } else if (FirstWord(p, "normal")) {
-        blend = CONFIG_LAYER_BLEND_NORMAL;
-        p = SkipWord(p);
-      }
-      const char* parse_from = p;
-      if (FirstWord(p, "opacity")) {
-        ArgParser ap(SkipWord(p));
-        const char* av = ap.GetArg(1, "", "");
-        if (!av || !av[0]) continue;
-        int ai = strtol(av, nullptr, 10);
-        if (ai < 0) ai = 0;
-        if (ai > 32768) ai = 32768;
-        alpha = (uint16_t)ai;
-        parse_from = ap.GetArg(2, "", "");
-        if (!parse_from || !parse_from[0]) continue;
-      }
-      BladeStyle* s = ParseStyleStringForConfig(parse_from);
-      if (!s) continue;
+      if (!TryParseConfigLayerLine(layers[i], &s, &alpha, &blend)) continue;
       sub[count] = s;
       layer_alpha[count] = alpha;
       layer_blend[count] = blend;
@@ -167,7 +183,16 @@ public:
     }
     if (count == 0) return nullptr;
     CurrentArgParser = outer_ap;
-    CurrentArgParser->Shift(1 + ov_count);
+    if (CurrentArgParser) {
+      // Shift section name plus every trailing preset override token (valid or not).
+      int shift_words = 1;
+      for (int ai = 2; ai < 32; ai++) {
+        const char* kv = CurrentArgParser->GetArg(ai, "", "");
+        if (!kv || !kv[0]) break;
+        shift_words++;
+      }
+      CurrentArgParser->Shift(shift_words);
+    }
     return new ConfigLayersStyle(sub, count, layer_alpha, layer_blend);
   }
 };
@@ -194,6 +219,11 @@ NamedStyle named_styles[] = {
     StyleSolidBendPtrX<RgbArg<1, CYAN>, IntArg<2, 300>, IntArg<3, 800>>(),
     "Solid blade base with OS7 BendTimePow in/out (no built-in clash/lockup/blast): base_color extend_ms retract_ms. "
     "Use -1 for extend_ms or retract_ms to match the ignition/retraction sound length."
+  },
+  { "strip_column", &strip_column_factory,
+    "SD column animation base: file_path source_height fps extend_ms retract_ms. "
+    ".bmp = 24-bit BI_RGB (width=frames, height=column, hilt=top); .scf = optional 512-byte/frame fast path. "
+    "Use -1 for extend/retract to match sound length. Stack overlays via additional layer lines."
   },
   // Combine onspark, inoutsparktip, gradient, customizable blast/clash/lockup colors
   { "advanced",
@@ -622,7 +652,7 @@ NamedStyle named_styles[] = {
   },
   { "pulse_train",
     StylePtr<PulseTrainLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 16384>
+      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, OpacityScaleIntArg<5, 16384>
     > >(),
     "Rolling hard on/off square bands (multiply mask); period speed min max duty (duty 0–32768 lit fraction). "
     "period 0 = passthrough. Example: pulse_train 2400 -2000 0 65535 16384"
@@ -665,7 +695,7 @@ NamedStyle named_styles[] = {
   },
   { "blade_envelope",
     StylePtr<BladeEnvelopeLayer<
-      IntArg<1, 16384>, IntArg<2, 6000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 0>
+      OpacityScaleIntArg<1, 16384>, IntArg<2, 6000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 0>
     > >(),
     "Bump along blade (center width min max [speed]); center 0=hilt 32768=tip. speed 0 = static. "
     "Example: blade_envelope 16384 6000 8192 65535 0"
@@ -809,7 +839,7 @@ NamedStyle named_styles[] = {
     "GPIO accent: solid on when saber is on, off when saber is off (no arguments)"
   },
   { "accent_sound_on",
-    StylePtr<AlphaL<RgbArg<1, White>, IsGreaterThan<SmoothSoundLevel, IntArg<2, 4096>>> >(),
+    StylePtr<AlphaL<RgbArg<1, White>, IsGreaterThan<SmoothSoundLevel, OpacityScaleIntArg<2, 4096>>> >(),
     "GPIO accent: full on while audio above threshold, off when quiet (not blade-state gated); "
     "color threshold_0_to_32768 (default white 4096). Motors: runs through postoff tail; use accent_on if you want blade-on only"
   },
@@ -1005,7 +1035,7 @@ NamedStyle named_styles[] = {
   },
 #endif
   { "config", &config_style_factory,
-    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add), then optional opacity <0-32768>, then sub-style. Example: layer = multiply opacity 16000 strobe black white 15 1 300 800",
+    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add), then optional opacity (55%, 55, or raw >100 up to 32768; 100 = full), then sub-style. Example: layer = multiply opacity 49% strobe black white 15 1 300 800",
   },
   { "builtin", &builtin_preset_allocator,
     // TODO: Support multiple argument templates.

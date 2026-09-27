@@ -14,6 +14,8 @@ A **blade style config file** on the SD card lets you build blade effects from *
 
 Each **`[section_name]`** is one **recipe**. Presets reference it with **`style = config section_name`**. Layers composite **bottom → top** (first `layer =` is the base).
 
+**Author-facing units vs firmware scales** (colors, opacity, speed, period, ext/ret, …): **README_blade_styles_config.md** — section *Author-facing units (INI) vs firmware internals*.
+
 **Editor guide with functional examples:** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md).
 
 ### Named style catalog (firmware)
@@ -39,7 +41,7 @@ When several **`layer =`** lines are stacked, **`ConfigLayersStyle`** reads **la
 | **`smoke_flow`** | `… smoke_flow black white {{ext}} {{ret}}` (both multiply and screen lines) |
 | **`smoke_up`** / **`smoke_down`** | Same pattern if used (legacy; prefer **`smoke_flow`** for smoke blades) |
 
-**Full named styles with InOut** stacked as a layer (not composable **`*_layer`** textures) also need matching timing when their args include extend/retract — e.g. **`audio`** in **`[water_blade]`**: `screen opacity 8000 audio {{base}} {{tip}} {{clash}} {{ext}} {{ret}}`. Composable **`audio_layer`** has no such args.
+**Full named styles with InOut** stacked as a layer (not composable **`*_layer`** textures) also need matching timing when their args include extend/retract — e.g. **`audio`** in **`[water_blade]`**: `screen opacity 24% audio {{base}} {{tip}} {{clash}} {{ext}} {{ret}}`. Composable **`audio_layer`** has no such args.
 
 Use **`smoke_flow`** for smoke blades (not separate up/down layers). If **`ext = -1`** / **`ret = -1`** in the section, expand the same **`{{ext}}`/`{{ret}}`** onto every **`smoke_flow`** line so base and smoke both use **`InOutFuncAuto`** / soundfont length.
 
@@ -51,8 +53,8 @@ Example — composable gradient (base only) + smoke (matched InOut):
 ext = -1
 ret = -1
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = normal opacity 32768 gradient_layer {{hilt}} {{tip}}
-layer = multiply opacity 32768 audio_layer
+layer = normal opacity 100% gradient_layer {{hilt}} {{tip}}
+layer = multiply opacity 100% audio_layer
 ```
 
 Example — smoke blade (base + smoke must share times):
@@ -61,13 +63,13 @@ Example — smoke blade (base + smoke must share times):
 ext = -1
 ret = -1
 layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}
-layer = screen opacity 4000 smoke_flow black {{base}} {{ext}} {{ret}}
+layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}
+layer = screen opacity 12% smoke_flow black {{base}} {{ext}} {{ret}}
 ```
 
 Preset override: `style = config smoke_blade ext=-1 ret=-1` updates section vars so all **`{{ext}}`/`{{ret}}`** lines stay matched.
 
-**Composable SD recipes:** Use **`solid`** or **`solid_bend`** as the bottom layer, then stack texture masks (`fire_mask`, `stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`** textures, …) and **overlay** layers (`clash`, `blast`, **`real_clash`**, **`blast_wave_random`**, or **`responsive_clash`**, **`responsive_blast`**, `responsive_lockup`, `drag`, `melt`, `lb`, **`force_glow`**). Clash/lockup/blast colors live on those overlay lines — not on the base. Pick **one** clash type and **one** blast type per recipe. Most textures need **no** extend/retract on their line (see table above); **`smoke_flow`** and **`sparktip_layer`** are exceptions (**`sparktip_layer`** needs matching **`{{ext}}`/`{{ret}}`**). Shipped examples: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`**, **`[composable_gradient]`**, **`[composable_checklist]`**, **`[composable_checklist_responsive]`**, **`[smoke_blade]`**, **`[greyscale_mercenary]`**, **`[solid_smoke]`** ( **`examples/config/presets.ini`** maps preset indices 0–2 and 12–22 to these).
+**Composable SD recipes:** Use **`solid`**, **`solid_bend`**, or **`strip_column`** (SD **24-bit BMP** column animation — export from GIMP/Photoshop; see **`strip_column_bmp.h`** and **README_blade_styles_config.md**; optional `.scf` for developers in **`strip_column.h`**) as the bottom layer, then stack texture masks (`fire_mask`, `stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`** textures, …) and **overlay** layers (`clash`, `blast`, **`real_clash`**, **`blast_wave_random`**, or **`responsive_clash`**, **`responsive_blast`**, `responsive_lockup`, `drag`, `melt`, `lb`, **`force_glow`**). Clash/lockup/blast colors live on those overlay lines — not on the base. Pick **one** clash type and **one** blast type per recipe. Most textures need **no** extend/retract on their line (see table above); **`smoke_flow`** and **`sparktip_layer`** are exceptions (**`sparktip_layer`** needs matching **`{{ext}}`/`{{ret}}`**). Shipped examples: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`**, **`[composable_gradient]`**, **`[composable_checklist]`**, **`[composable_checklist_responsive]`**, **`[smoke_blade]`**, **`[greyscale_mercenary]`**, **`[solid_smoke]`** ( **`examples/config/presets.ini`** maps preset indices 0–2 and 12–22 to these).
 
 **Layer catalog:** The comment block above **`[composable_checklist]`** in **`examples/config/blade_styles.ini`** lists every composable primitive by category (base, idle textures, transitions, clash/blast paths, lockup suite). Use **`style = config composable_checklist`** as a starting preset or copy individual layers from that section.
 
@@ -199,8 +201,8 @@ Use the same syntax as in a preset: style name followed by arguments (colors, ti
 - `layer = solid cyan 300 800` — composable base + extend/retract (add `layer = clash white` above)
 - `layer = standard cyan white 300 800` — monolithic base, clash, times
 - `layer = solid {{base}} -1 -1` — extend/retract synced to ignition/retraction soundfont length
-- `layer = normal opacity 32768 gradient_layer red blue` — composable texture; no ext/ret (follows base)
-- `layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}` — **smoke_flow requires matching ext/ret on every line**
+- `layer = normal opacity 100% gradient_layer red blue` — composable texture; no ext/ret (follows base)
+- `layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}` — **smoke_flow requires matching ext/ret on every line**
 
 Layers are composited in order (first = bottom, last = top), like the compile-time `Layers<>` template.
 
@@ -214,9 +216,12 @@ The config parser is hardened so invalid or odd input does not crash and is tole
 
 - **Whitespace:** Leading/trailing space and blank lines are ignored. Spaces around `=` and around section names/values are allowed.
 - **Comments:** Lines starting with `#` or `;` are ignored.
-- **Invalid input:** Malformed lines (e.g. missing `=`, unknown variable names) are skipped. Empty `layer =` values are skipped. Invalid style strings in a layer cause that layer to be skipped; the rest of the section is still used.
+- **Invalid input:** Malformed lines (e.g. missing `=`, unknown variable names) are skipped. Empty `layer =` values are skipped. Invalid style strings in a layer cause that layer to be skipped; the rest of the section is still used. If no layer survives INI load or runtime parse, `config <section>` fails and the preset uses the same **`builtin 0 <blade>`** fallback as other bad style strings.
 - **No crash:** The parser does not overwrite buffers or dereference null; bad or missing file/section returns 0 layers.
 - **Line cap:** Parsing stops after **SD_STYLE_CONFIG_MAX_LINES** (4096) lines so a huge or malformed file does not hang.
+- **`{{var}}` expansion:** Single pass only (values are not re-scanned for nested `{{}}`). Unknown keys stay literal `{{name}}`. Output is capped at **STYLE_CONFIG_LAYER_STR_LEN** (384) per layer line with silent truncation.
+- **Preset overrides:** `config section k=v` tokens after the section name are always consumed from the style argument list even if a token is malformed, so later preset args are not mis-aligned.
+- **Numeric args:** Empty or missing style arguments keep compile-time defaults (`IntArg` / `OpacityScaleIntArg`); opacity tokens use **`ParseOpacityScaleToken`** (invalid/empty → 0, not default).
 
 ## Limits
 
@@ -230,11 +235,11 @@ The config parser is hardened so invalid or odd input does not crash and is tole
 
 ### Per-layer opacity (Phase C)
 
-For **`config <section>`** styles, each **`layer =`** line may optionally begin with **`opacity <alpha> `** (lowercase **`opacity`**) before the nested blade style string. **alpha** is an integer **0–32768** (same scale as compile-time **AlphaL**: **32768** = fully opaque contribution when stacked, **0** = invisible). Example:
+For **`config <section>`** styles, each **`layer =`** line may optionally begin with **`opacity <alpha> `** (lowercase **`opacity`**) before the nested blade style string. **alpha** may be **`55%`** or **`55`** (percent **0–100**, **`100`** = full), or a raw integer **>100** on the **0–32768** scale (same as compile-time **AlphaL**). Example:
 
 ```ini
 layer = rainbow 300 800
-layer = opacity 12000 strobe black white 15 1 300 800
+layer = opacity 37% strobe black white 15 1 300 800
 ```
 
 This scales how strongly that layer is painted over the layers below.
@@ -243,8 +248,8 @@ This scales how strongly that layer is painted over the layers below.
 
 ```ini
 layer = rainbow 300 800
-layer = multiply opacity 20000 strobe black white 15 1 300 800
-layer = screen opacity 24000 blast white
+layer = multiply opacity 61% strobe black white 15 1 300 800
+layer = screen opacity 73% blast white
 ```
 
 If the first word of a sub-style could be confused with a blend keyword (rare), put **`normal`** first or reorder so the nested style does not start with **`multiply`**, **`screen`**, **`add`**, or **`normal`**.

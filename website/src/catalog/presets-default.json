@@ -9,7 +9,7 @@
       "styles": [
         { "kind": "config", "ref": "sine_waves_cyan", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -22,7 +22,7 @@
       "styles": [
         { "kind": "config", "ref": "smoke_laser", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -35,7 +35,7 @@
       "styles": [
         { "kind": "config", "ref": "smoke_sine_cyan", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -48,7 +48,7 @@
       "styles": [
         { "kind": "named", "ref": "standard", "args": ["red", "white", "300", "800"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -61,7 +61,7 @@
       "styles": [
         { "kind": "config", "ref": "rainbow_strobe", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -74,7 +74,7 @@
       "styles": [
         { "kind": "config", "ref": "with_vars", "args": [], "overrides": { "base": "magenta" }, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -87,7 +87,7 @@
       "styles": [
         { "kind": "config", "ref": "smoke_blade", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -100,7 +100,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_saw_waves", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -113,7 +113,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_smoothstep_bands", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -126,7 +126,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_value_noise", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -139,7 +139,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_fbm_noise", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -152,7 +152,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_moire_mask", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -165,7 +165,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_blade_envelope", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -178,7 +178,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_sine_waves_swing", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -191,7 +191,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_sine_waves", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -204,7 +204,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_random_bands", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -217,7 +217,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_pulse_train", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -230,7 +230,7 @@
       "styles": [
         { "kind": "config", "ref": "demo_chirp", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     },
@@ -242,7 +242,7 @@
       "styles": [
         { "kind": "config", "ref": "fire_blast", "args": [], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "4096"], "overrides": {}, "customLine": "" },
+        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
         { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
       ]
     }

@@ -8,9 +8,46 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 
 **Local variables:** In a section, lines like **`base = cyan`** define names; use **`{{base}}`** inside **`layer = ...`** lines. **Named palettes:** **`[palette_<id>]`** blocks and **`palette = <id>`** in an effect section merge shared colors. **`include = path`** loads palette sections (top-level) or merges **`layer` / palette / vars** from a fragment file into a section — see **blade_styles_config.md**.
 
-**Structured rows:** **`layer.<style>.<slot> = value`** (e.g. **`layer.standard.base = cyan`**) build one layer from named arguments. **Opacity / blends:** a **`layer =`** line may use **`multiply`**, **`screen`**, **`add`**, optional **`normal`**, optional **`opacity <0-32768>`**, then the nested style string — see **blade_styles_config.md**.
+**Structured rows:** **`layer.<style>.<slot> = value`** (e.g. **`layer.standard.base = cyan`**) build one layer from named arguments. **Opacity / blends:** a **`layer =`** line may use **`multiply`**, **`screen`**, **`add`**, optional **`normal`**, optional **`opacity`** (percent like **`55%`** or **`55`**, or raw **0–32768** when **>100** without **`%`**; plain **`100`** = full), then the nested style string — see **blade_styles_config.md**.
+
+### Author-facing units (layer args)
+
+| Kind | Write in INI | Firmware notes |
+|------|----------------|----------------|
+| **Colors** | Name (`cyan`, `red`) or **`r,g,b`** with **0–255** per channel (e.g. **`0,24,0`**) | Scaled to 16-bit internally (×257). Legacy: any channel **>255** is treated as raw 16-bit. |
+| **Layer opacity** | **`55%`**, **`55`**, or raw **>100** up to **32768** | **`100`** / **`100%`** = full; omitted when **`normal`** blend at full strength. |
+| **extend_ms / retract_ms** | Milliseconds; **`-1`** = match ignition/retraction sound | Same as preset styles. |
+| **Mask min / max** (waves, noise, moire, …) | Still **0–65535** brightness along the blade | **Gap:** percent (**0–100%**) not implemented yet — use raw or editor percent fields where available. |
+| **Mask duty / center** (`pulse_train`, `blade_envelope`) | Prefer **percent** in editor; INI may use **`50%`** or implicit percent **≤100** | Raw **>100** without **`%`** = 0–32768 position/fraction scale. |
+| **Scroll speed** (bands, stripes, waves) | Signed integer (same units as preset styles) | Negative = toward hilt. |
 
 **Worked examples on disk:** **`examples/config/blade_styles.ini`** (one section per feature), **`examples/config/blade_styles/*.ini`** (included fragments), **`examples/config/presets.ini`** (**`config <section>`** and overrides). Implementation checklist: **blade_styles_config_roadmap.md**.
+
+---
+
+## Author-facing units (INI) vs firmware internals
+
+Composable **`blade_styles.ini`** recipes use the **same style argument strings** as preset **`style = …`** lines. Most numbers you type are **author units** (milliseconds, percents, scroll rates). Firmware parses them into **fixed-point scales** used by styles at runtime. This table is for recipe authors and tool writers; you do not need to memorize the internals to build effects.
+
+**Implementation references:** color tokens → **`styles/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and any style arg wired through **`OpacityScaleIntArg`** → **`common/opacity_scale.h`** (`ParseOpacityScaleToken`).
+
+| What you write in INI | Meaning for humans | Internal / notes | Legacy escape |
+|----------------------|--------------------|------------------|---------------|
+| **Named color** (`cyan`, `deepskyblue`, …) | Catalog sRGB swatch | **`Color16`**: 8-bit table entry × **257** per channel (65535-scale RGB) | Preset strings may use **`Rgb(r,g,b)`** wrapper |
+| **`#RRGGBB`**, **`#RGB`** shorthand, or **`rrggbb`** (editor) | 24-bit sRGB hex | **`ParseColorArg`** accepts **`#`** + 6 hex digits (or 3-digit CSS shorthand); same × **257** as **`r,g,b`**. Website / SD Config Editor also accept bare **`rrggbb`**; export often normalizes to **`r,g,b`** | — |
+| **`r,g,b`** with all channels **0–255** | 8-bit sRGB | Treated as 8-bit: each channel × **257** → **`Color16`** (same as named colors) | — |
+| **`r,g,b`** with any channel **> 255** | Direct wide RGB | Stored as **`Color16(r,g,b)`** without ×257 (Proffie 16-bit color args) | Matches old compiled-style numeric colors |
+| **Layer `opacity`** (`multiply opacity 73% …`) | How strongly this layer blends over layers below | Parsed to **0–32768** alpha scale (**32768** = opaque). Trailing **`%`**: percent 0–100. No **`%`**: integer **≤100** = percent (**`100`** = full); **>100** = raw **0–32768** | Compile-time styles use **`AlphaL<…, Int<18000>>`** directly |
+| **`pulse_train` … duty**, other **`OpacityScaleIntArg`** slots | Lit fraction / threshold-style strength | Same rules as **`opacity`** token (**`16384`** ≈ 50% duty default) | Raw integer args in compiled C++ styles |
+| **Multiply-mask `min` / `max`** (`sine_waves`, `random_bands`, noise masks, …) | Darkest vs brightest band of the mask along the blade | **0–65535** brightness (**0** = black / full darken, **65535** = white / no change for multiply). Not the 32768 opacity scale | Percent syntax for min/max is reserved for future UX; use integers today |
+| **`extend_ms` / `retract_ms`** (base, **`smoke_flow`**, **`strip_column`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`) | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
+| **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
+| **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
+| **`smoke_flow` … speed** (5th arg after ext/ret) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** pairs |
+| **`strip_column`** `path`, `source_height`, `fps`, ext, ret | SD column animation base | **`fps`**: frame rate; **`source_height`**: BMP height in pixels (hilt at top); **24-bit uncompressed BMP** on SD (**`strip_column_bmp.h`**). Optional **`.scf`** for developers (**`strip_column.h`**). **`-1`** ext/ret = sound sync | — |
+| **`real_clash`** `color`, **`lockup_position`** (e.g. **`16000`**) | OS7 Real Clash overlay color and blade-angle band center | Second arg is **position on blade 0–32768** (hilt→tip), **not** opacity. Default **16000** ≈ upper blade. Strength path uses **`GetClashStrength`** from the prop | Monolithic OS7 compiled styles |
+
+**Quick examples:** `layer = multiply opacity 73% sine_waves 2400 0 8192 65535 -2000` — opacity is percent; period **2400**; min/max **8192–65535**; scroll **-2000**. `layer = real_clash white 16000` — **16000** is clash position, not **73%**-style alpha.
 
 ---
 
@@ -34,6 +71,16 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 |-------|----------------------|---------|
 | **solid** | base color, extension ms, retraction ms | `solid cyan 300 800` — composable base; stack `clash` / `blast` overlays |
 | **solid_bend** | base color, extension ms, retraction ms | `solid_bend cyan 300 800` — like **solid** with OS7 BendTimePow in/out |
+| **strip_column** | SD path, source height, fps, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**) |
+
+**strip_column — animation file on a PC:** The image is a sideways flipbook: **width = number of frames**, **height = blade length in pixels** (top of the image = hilt, bottom = tip). Each pixel is one color on the blade at that frame.
+
+1. **GIMP:** *File → Export As…* → name your file `.bmp` → in the BMP options, use **24-bit** color and **no compression** (not RLE).
+2. **Photoshop:** *File → Save As* → *BMP* → *24 Bit*, standard Windows format (uncompressed).
+3. Copy the `.bmp` onto the SD card (e.g. `animations/plasma.bmp`) and use that path in your recipe.
+4. Set **source height** in the style line to the BMP height in pixels (must match the file; if you set it higher, firmware clamps and logs a warning). Example: `layer = strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
+
+*Optional for firmware developers: `.scf` binary format — see **strip_column.h**.*
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
 | **fire** | warm color, hot color | `fire red yellow` |
@@ -113,8 +160,8 @@ See **`examples/README.md`** for composable vs monolithic guidance.
 ext = -1
 ret = -1
 layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}
-layer = screen opacity 4000 smoke_flow black {{base}} {{ext}} {{ret}}
+layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}
+layer = screen opacity 12% smoke_flow black {{base}} {{ext}} {{ret}}
 ```
 
 Full details: **blade_styles_config.md** (section *Extend/retract in layered recipes*).
@@ -407,8 +454,9 @@ The parser is tolerant and safe:
 
 - **Whitespace:** Leading/trailing space and blank lines are ignored; spaces around `=` are allowed.
 - **Comments:** Lines starting with `#` or `;` are ignored.
-- **Invalid input:** Malformed lines (e.g. missing `=`, unknown variable names) are skipped. Empty `layer =` values are skipped. Invalid style strings in a layer cause only that layer to be skipped.
+- **Invalid input:** Malformed lines (e.g. missing `=`, unknown variable names) are skipped. Empty `layer =` values are skipped. Invalid style strings in a layer cause only that layer to be skipped. If every layer is skipped (INI or runtime parse), `config <section>` fails like any other unparseable preset style (blade falls back to `builtin 0 <blade>` when allocation runs).
 - **No crash:** Bad or missing file/section returns 0 layers; buffers are not overrun.
+- **Remaining limits:** `{{var}}` is one pass (no nested expansion); long expansions truncate at 384 chars per layer. Malformed preset `k=v` tokens are skipped for overrides but still counted when advancing the preset style parser.
 
 ---
 

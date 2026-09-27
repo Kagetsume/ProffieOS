@@ -13,6 +13,8 @@ export type StyleArgDef = {
   label: string;
   type: 'color' | 'number' | 'text';
   default: string;
+  /** When true, values use 0–32768 scale (UI shows 0–100%). */
+  scale32768?: boolean;
 };
 
 export type NamedStyleDef = {
@@ -60,6 +62,13 @@ export function listStyleGroups(): StyleGroupDef[] {
 /** Styles in a catalog group. */
 export function listStylesInGroup(groupId: string): NamedStyleDef[] {
   return styles.filter((style) => style.group === groupId);
+}
+
+/** True when a style arg slot uses firmware 0–32768 opacity/brightness scale. */
+export function isOpacityScaleArg(styleId: string, slot: string): boolean {
+  const def = getNamedStyle(styleId);
+  const arg = def?.args?.find((entry) => entry.slot === slot);
+  return arg?.scale32768 === true;
 }
 
 /** Default positional args for a style id. */

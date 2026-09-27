@@ -40,7 +40,7 @@ describe('serializeBladeStylesIni', () => {
     expect(ini).toContain('base = cyan');
     expect(ini).toContain('layer = solid cyan 300 800');
     expect(ini).toContain('layer = clash white');
-    expect(ini).toContain('layer = multiply opacity 24000 pulse white 3000');
+    expect(ini).toContain('layer = multiply opacity 73% pulse white 3000');
   });
 
   it('skips reserved version var and serializes config layers', () => {
@@ -64,6 +64,24 @@ describe('serializeBladeStylesIni', () => {
     expect(ini).toContain('layer = config smoke_blade');
   });
 
+  it('exports comma RGB colors as 0-255 triplets', () => {
+    const rgbSection: StyleSection = {
+      id: 'bands',
+      vars: {},
+      layers: [
+        {
+          id: 'rb',
+          styleName: 'random_bands',
+          args: ['-600', '0,24,0', 'black', '3000'],
+          blend: 'multiply',
+          opacity: 32768,
+        },
+      ],
+    };
+    const ini = serializeBladeStylesIni([rgbSection]);
+    expect(ini).toContain('random_bands -600 0,24,0 black 3000');
+  });
+
   it('writes smoke_flow roll speed with the other layer args', () => {
     const section: StyleSection = {
       id: 'smoke',
@@ -79,6 +97,6 @@ describe('serializeBladeStylesIni', () => {
       ],
     };
     const ini = serializeBladeStylesIni([section]);
-    expect(ini).toContain('layer = multiply opacity 24000 smoke_flow black white 300 800 2');
+    expect(ini).toContain('layer = multiply opacity 73% smoke_flow black white 300 800 2');
   });
 });

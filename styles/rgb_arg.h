@@ -26,12 +26,13 @@ public:
 protected:
   void init(int argnum) {
     char default_value[32];
-    itoa(color_.r, default_value, 10);
+    // Author-facing 0–255 defaults (ParseColorArg scales ×257 to Color16).
+    itoa(color_.r >> 8, default_value, 10);
     strcat(default_value, ",");
-    itoa(color_.g, default_value + strlen(default_value), 10);
+    itoa(color_.g >> 8, default_value + strlen(default_value), 10);
     strcat(default_value, ",");
-    itoa(color_.b, default_value + strlen(default_value), 10);
-    
+    itoa(color_.b >> 8, default_value + strlen(default_value), 10);
+
     const char* arg = CurrentArgParser->GetArg(argnum, "COLOR", default_value);
     if (arg) {
       color_ = ParseColorArg(arg);

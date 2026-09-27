@@ -21,7 +21,7 @@ export type StyleLayer = {
   /** Target section when `styleName === 'config'`. */
   configSection?: string;
   blend: LayerBlend;
-  /** 0–32768; 32768 = fully opaque (omit opacity in export when normal). */
+  /** Internal 0–32768; UI/export use percent (32768 = full; omit in export when normal). */
   opacity: number;
 };
 
@@ -71,6 +71,7 @@ const DEDICATED_LOCKUP_LAYER_NAMES = new Set(['lockup', 'responsive_lockup']);
 const PRIMARY_BASE_LAYER_STYLES = new Set([
   'solid',
   'solid_bend',
+  'strip_column',
   'standard',
   'standard_bend',
   'pulse_blade',

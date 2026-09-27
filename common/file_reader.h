@@ -195,6 +195,7 @@ public:
     mem_file_ = MemFile();
   }
   int Read(uint8_t* dest, int bytes) {
+    if (!dest || bytes <= 0) return 0;
     RUN_ALL(read(dest, bytes))
     return 0;
   }

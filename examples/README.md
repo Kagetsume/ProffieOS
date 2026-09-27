@@ -101,9 +101,9 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `unstable_blades` | `unstable_blades silver white 300 800` | Crackling StripesX (Fett263 UnstableBlades — **not** `unstable`) |
 | `fallen_order` | `fallen_order silver white 300 800` | Pulsing stripe mid-band (Fett263 FallenOrder base) |
 | `thunder_loop` | `thunder_loop blue white 300 800` | TransitionLoop thunder bands (Fett263 ThunderStorm idle base) |
-| `thunder_loop_layer` | `multiply opacity 20000 thunder_loop_layer blue` | Loop texture only — stack over another base |
+| `thunder_loop_layer` | `multiply opacity 61% thunder_loop_layer blue` | Loop texture only — stack over another base |
 | `responsive_flame` | `responsive_flame red white 300 800` | Angle-responsive dual StaticFire (Fett263 ResponsiveFlame idle base) |
-| `responsive_flame_layer` | `multiply opacity 22000 responsive_flame_layer orange` | Flame texture only — stack over another base |
+| `responsive_flame_layer` | `multiply opacity 67% responsive_flame_layer orange` | Flame texture only — stack over another base |
 | `shimmer_blade` | `shimmer_blade cyan white 300 800` | Swing-driven stripe shimmer (Fett263 ShimmerBlade) |
 | `rotoscope` | `rotoscope silver white 300 800` | Hyper responsive OT rotoscope (Fett263 Rotoscope; default base silver) |
 | `pulse_stripes` | `pulse_stripes blue white 300 800` | Ignition-surge stripes + pulsing band (Fett263 OS7; default base blue) |
@@ -124,12 +124,12 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `responsive_clash` | `responsive_clash white` | Blade-angle positioned clash bump |
 | `real_clash` | `real_clash white 16000` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
 | `lockup` | `lockup cyan` | Lockup / drag / melt tint |
-| `sparkle` | `add opacity 8000 sparkle white` | Random sparkles |
-| `pulse` | `multiply opacity 24000 pulse white 3000` | Breathing brightness |
-| `swing` | `add opacity 12000 swing white 200` | Brightens when swinging |
+| `sparkle` | `add opacity 24% sparkle white` | Random sparkles |
+| `pulse` | `multiply opacity 73% pulse white 3000` | Breathing brightness |
+| `swing` | `add opacity 37% swing white 200` | Brightens when swinging |
 | `drag` / `melt` / `lb` | `drag orange` | Responsive lockup variants |
 | `preon_*` / `postoff_*` | `preon_glow blue` | Transparent until preon/postoff |
-| `force_glow` | `add opacity 14000 force_glow white` | Glow on Force effect (font + button required) |
+| `force_glow` | `add opacity 43% force_glow white` | Glow on Force effect (font + button required) |
 | `ignition_flash` | `ignition_flash white 300 600` | Full-blade flash during ignition extension |
 | `standard_bend` | `standard_bend cyan white 300 800` | Like `standard` with OS7 BendTimePow in/out |
 
@@ -137,25 +137,25 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 | Style | Example | Notes |
 |-------|---------|-------|
-| `fire_mask` | `multiply opacity 20000 fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
+| `fire_mask` | `multiply opacity 61% fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
 | `smoke_flow` | multiply `black white {{ext}} {{ret}}`; screen `black <base> {{ext}} {{ret}}` | Smoke blade recipe; **ext/ret must match base** (use `{{ext}}`/`{{ret}}`; `-1` = sound length) |
-| `stripes` | `add opacity 10000 stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
-| `hard_stripes` | `multiply opacity 18000 hard_stripes 1200 -4000 black white` | Hard-edged bands |
-| `random_bands` | `multiply opacity 22000 random_bands -600 green black 3000` | Irregular rolling bands — **`[smoke_laser]`** (not **`stripes`** like **`[smoke_blade]`**) |
-| `sine_waves` / `saw_waves` | `multiply opacity 22000 sine_waves 2400 0 8192 65535 -2000` | Up to 4 wave slots; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
-| `pulse_train` / `chirp` | `multiply opacity 22000 pulse_train 2400 -2000 0 65535 16384` | Square bands / frequency-sweep sine — presets 21–22 |
-| `smoothstep_bands` | `multiply opacity 20000 smoothstep_bands 2400 -2000 8192 65535 400` | Soft rolling bands — preset 13 |
-| `value_noise` / `fbm_noise` | `multiply opacity 18000 value_noise 2400 -2000 8192 65535 0` | Hash / FBM noise masks — presets 14–15 |
-| `moire_mask` / `blade_envelope` | `multiply opacity 20000 moire_mask …` | Beating ramps / center bump — presets 16–17 |
+| `stripes` | `add opacity 31% stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
+| `hard_stripes` | `multiply opacity 55% hard_stripes 1200 -4000 black white` | Hard-edged bands |
+| `random_bands` | `multiply opacity 67% random_bands -600 green black 3000` | Irregular rolling bands — **`[smoke_laser]`** (not **`stripes`** like **`[smoke_blade]`**) |
+| `sine_waves` / `saw_waves` | `multiply opacity 67% sine_waves 2400 0 8192 65535 -2000` | Up to 4 wave slots; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
+| `pulse_train` / `chirp` | `multiply opacity 67% pulse_train 2400 -2000 0 65535 50%` | Square bands / frequency-sweep sine — presets 21–22 |
+| `smoothstep_bands` | `multiply opacity 61% smoothstep_bands 2400 -2000 8192 65535 400` | Soft rolling bands — preset 13 |
+| `value_noise` / `fbm_noise` | `multiply opacity 55% value_noise 2400 -2000 8192 65535 0` | Hash / FBM noise masks — presets 14–15 |
+| `moire_mask` / `blade_envelope` | `multiply opacity 61% moire_mask …` | Beating ramps / center bump — presets 16–17 |
 | `sine_waves_swing` | long arg list (see **`[demo_sine_waves_swing]`**) | Swing/twist compresses wavelength — preset 18 |
-| `noise_flicker` | `multiply opacity 8000 noise_flicker black white` | Organic crackle texture |
-| `gradient_layer` | `normal opacity 8000 gradient_layer blue cyan` | Hilt-to-tip gradient wash; opacity = mix vs base |
-| `rainbow_layer` | `normal opacity 12000 rainbow_layer` | Animated rainbow wash over base; opacity = mix vs base |
-| `unstable_stripes` | `normal opacity 32768 unstable_stripes silver` | Full UnstableBlades idle band — use in `[composable_unstable_blades]` |
-| `thunder_loop_layer` / `responsive_flame_layer` | `multiply opacity 20000 thunder_loop_layer blue` | OS7 idle loops as textures |
-| `water_flow_layer`, `darksaber_layer`, … | `normal opacity 32768 water_flow_layer blue` | OS7 idle extractions — see `[composable_water_flow]`, `[composable_darksaber]`, … |
-| `kinetic_charge_layer` | `normal opacity 32768 kinetic_charge_layer blue purple` | Clash/lockup charge stripes (base + kinetic colors) |
-| `cylon_layer` | `add opacity 32768 cylon_layer white 25 200` | Scanner band over `solid_bend` (add blend) |
+| `noise_flicker` | `multiply opacity 24% noise_flicker black white` | Organic crackle texture |
+| `gradient_layer` | `normal opacity 24% gradient_layer blue cyan` | Hilt-to-tip gradient wash; opacity = mix vs base |
+| `rainbow_layer` | `normal opacity 37% rainbow_layer` | Animated rainbow wash over base; opacity = mix vs base |
+| `unstable_stripes` | `normal opacity 100% unstable_stripes silver` | Full UnstableBlades idle band — use in `[composable_unstable_blades]` |
+| `thunder_loop_layer` / `responsive_flame_layer` | `multiply opacity 61% thunder_loop_layer blue` | OS7 idle loops as textures |
+| `water_flow_layer`, `darksaber_layer`, … | `normal opacity 100% water_flow_layer blue` | OS7 idle extractions — see `[composable_water_flow]`, `[composable_darksaber]`, … |
+| `kinetic_charge_layer` | `normal opacity 100% kinetic_charge_layer blue purple` | Clash/lockup charge stripes (base + kinetic colors) |
+| `cylon_layer` | `add opacity 100% cylon_layer white 25 200` | Scanner band over `solid_bend` (add blend) |
 | `pixel_sequence` | `pixel_sequence config 0,255,0,0,80,100\|…` | Timed chase / segment pattern as a layer |
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
@@ -207,7 +207,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | **Ignition flash** | `ignition_flash` -- full-blade color flash during `EFFECT_IGNITION` (SeismicCharge OS7). Args: `color extend_ms fade_ms`. |
 | **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`**, **`solid_bend`** (linear **`standard`** / **`solid`** unchanged). |
 | **Blend modes** | `normal`, `multiply`, `screen`, `add` -- control how layers combine. |
-| **Opacity** | `opacity <0-32768>` -- per-layer transparency control. |
+| **Opacity** | `opacity <0-100%>` -- per-layer transparency control (raw >100 still accepted). |
 | **Variables** | `name = value` + `{{name}}` -- section-local variables with preset overrides (`config section key=value`). |
 | **Palettes** | `[palette_<id>]` sections with `palette = <id>` -- shared variable sets across sections. |
 | **Includes** | `include = path/file.ini` -- merge layers or palettes from external files. |

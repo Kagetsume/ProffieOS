@@ -7,6 +7,12 @@
  */
 import { contextLogger } from '../logger';
 import { exportColorToken } from '../model/colors';
+import {
+  formatOpacityScaleExport,
+  OPACITY_SCALE,
+  parseOpacityScaleToken,
+} from '../model/opacity-scale';
+import { getNamedStyle, isOpacityScaleArg } from '../model/style-catalog';
 import type { StyleLayer, StyleSection } from '../model/style-sections';
 import { resolveLayerArgs, resolveVarTemplate } from '../model/style-sections';
 import { blankLine, iniHeader } from './format';
@@ -15,7 +21,7 @@ function exportToken(value: string): string {
   return exportColorToken(value);
 }
 
-const FULL_OPACITY = 32768;
+const FULL_OPACITY = OPACITY_SCALE;
 
 function serializeLayerLine(layer: StyleLayer, vars: Record<string, string>): string {
   const tokens: string[] = [];
@@ -25,15 +31,25 @@ function serializeLayerLine(layer: StyleLayer, vars: Record<string, string>): st
   }
 
   if (layer.opacity < FULL_OPACITY) {
-    tokens.push('opacity', String(layer.opacity));
+    tokens.push('opacity', formatOpacityScaleExport(layer.opacity));
   }
 
   if (layer.styleName === 'config') {
     tokens.push('config', layer.configSection ?? '');
   } else {
+    const styleDef = getNamedStyle(layer.styleName);
     tokens.push(
       layer.styleName,
-      ...resolveLayerArgs(layer, vars).map((arg) => exportToken(arg)),
+      ...resolveLayerArgs(layer, vars).map((arg, index) => {
+        const slot = styleDef?.args[index]?.slot;
+        if (slot && isOpacityScaleArg(layer.styleName, slot)) {
+          const n = parseOpacityScaleToken(arg);
+          if (n > 0 || arg.trim() === '0' || arg.trim() === '0%') {
+            return formatOpacityScaleExport(n);
+          }
+        }
+        return exportToken(arg);
+      }),
     );
   }
 

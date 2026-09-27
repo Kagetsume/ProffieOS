@@ -8,7 +8,7 @@
   "removeLayer.only.title": "Cannot remove the only layer",
   "label.style": "Style",
   "label.blend": "Blend",
-  "label.opacity": "Opacity (0–32768)",
+  "label.opacity": "Opacity (%)",
   "hint.configExport": "Exports as <code>layer = config ${configSection}</code>.",
   "hint.sectionVar": "Section var <code>${varName}</code>",
   "button.towardBase": "↓ Toward base",
