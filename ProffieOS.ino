@@ -1625,15 +1625,11 @@ StaticWrapper<ACCEL_CLASS> accelerometer;
 #include "sound/amplifier.h"
 #include "common/sd_card.h"
 #include "common/booster.h"
-#include "common/boot_progress.h"
 
 void setup() {
   // USB CDC first — booster/SD can run before the host opens the port.
   Serial.begin(115200);
   delay(300);
-  Serial.println("PO setup");
-  Serial.flush();
-  BootProgressPulse(1);
 
 #if VERSION_MAJOR >= 4
 #define SAVE_RCC(X) startup_##X = RCC->X

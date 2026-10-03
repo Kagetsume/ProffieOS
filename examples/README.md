@@ -84,6 +84,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 |-------|---------|-------|
 | `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / lockup overlays for composable recipes |
 | `solid_bend` | `solid_bend cyan 300 800` | Like `solid` with OS7 BendTimePow in/out |
+| `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column animation base; BMP read **after ignition** only (see **sd_style_boot_order.md**) |
 | `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
 | `fire` | `fire red yellow` | Rolling flame (no extend/retract animation) |
 | `rainbow` | `rainbow 300 800 white white` | Extend, retract, clash, lockup |
@@ -138,6 +139,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | Style | Example | Notes |
 |-------|---------|-------|
 | `fire_mask` | `multiply opacity 61% fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
+| `strip_column_mask` | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` | Same BMP layout as **`strip_column`**; shared loader (**`strip_column_source.h`**) |
 | `smoke_flow` | multiply `black white {{ext}} {{ret}}`; screen `black <base> {{ext}} {{ret}}` | Smoke blade recipe; **ext/ret must match base** (use `{{ext}}`/`{{ret}}`; `-1` = sound length) |
 | `stripes` | `add opacity 31% stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 55% hard_stripes 1200 -4000 black white` | Hard-edged bands |

@@ -15,8 +15,10 @@ Contract for **`ENABLE_SD_CONFIG_FILES`** and **`config/blade_styles.ini`**.
 
 1. `LoadSDConfig()` — `config/presets.ini` (and related SD config).
 2. `LoadBladeConfigFile()` / `InitSDBladeConfig()` — blades when configured.
-3. **`WarmSdBootStyleCache()`** — `StyleConfigBuildSectionIndexFromSd()` only (serial: `Style config: indexed N sections`).
-4. `FindBlade()` → **`SetPreset`** → style allocation.
+3. **`WarmSdBootStyleCache()`** — `StyleConfigBuildSectionIndexFromSd()` only (serial: `Style config: indexed N sections`). No layer strings, no palette scan, no BMP reads.
+4. `FindBlade()` → **`SetPreset(0, …)`** → **`StyleBootOnPresetActivate`** (warm heap layer cache for preset 0) → **`AllocateBladeStyles()`**.
+
+Every later **`SetPreset`** / **`SetPresetFast`** runs **`StyleBootOnPresetActivate`** again before styles are allocated.
 
 ## Preset change (`prop_base.h` → `StyleBootOnPresetActivate`)
 
@@ -39,6 +41,15 @@ Serial (SetPreset), summary line plus one line per unique section:
 
 `LoadStyleConfigLayers` returns immediately on **cache hit** (no overrides). With preset `key=value` overrides, cache is bypassed and the section is parsed again with overrides merged.
 
-## Media layers (e.g. `strip_column`)
+## Media layers (`strip_column` / `strip_column_mask`)
 
-BMP column animation is **not** part of this loader; SD reads for animation files happen when the saber is on and the style runs. Fix loader/cache first, then debug BMP display separately.
+These are **not** loaded by `LoadStyleConfigLayers`. The INI only stores the style argument string (SD path, height, fps, …).
+
+- **Format:** ordinary **24-bit BI_RGB uncompressed BMP** on SD (GIMP/Photoshop export). There is **no** separate saber container format.
+- **Pixels:** BMP stores **BGR**; the loader swaps to **RGB** in RAM (`strip_column_bmp.h`).
+- **Paths:** SD-relative (e.g. `animations/plasma.bmp`). **Quoted paths** are optional when the path contains spaces (`"anim/my file.bmp"`).
+- **When SD is read:** **`strip_column`** / **`strip_column_mask`** **do not open BMP files until the saber is on** (`SaberBase::IsOn()`). While off, the layer is transparent and boot stays responsive (SD I/O would block the Looper).
+- **How frames load:** One vertical **column** per animation frame; rows are filled **incrementally** in small slices (`STRIP_COLUMN_BMP_ROWS_PER_RUN`); render reads **RAM only** between slices.
+- **Mask parity:** **`strip_column_mask`** uses the same BMP layout and the shared **`StripColumnFrameSource`** in **`strip_column_source.h`** (grayscale → multiply luminance).
+
+Open/fail lines on serial (`strip_column: opened …`, missing file, invalid BMP) are intentional; they are separate from **`Style config:`** boot/preset cache logs.

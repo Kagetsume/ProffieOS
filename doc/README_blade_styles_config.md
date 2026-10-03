@@ -81,6 +81,8 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 3. Copy the `.bmp` onto the SD card (e.g. `animations/plasma.bmp`) and use that path in your recipe.
 4. Set **source height** in the style line to the BMP height in pixels (must match the file; if you set it higher, firmware clamps and logs a warning). Example: `layer = strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
 
+**Runtime (firmware):** Layer strings load with the rest of **`blade_styles.ini`** (boot **index**, preset **heap cache** — **sd_style_boot_order.md**). The **`.bmp` file itself** is read only after **ignition** (not at boot). Pixels are **BGR on disk → RGB in RAM**; paths may be **quoted** if they contain spaces. **`strip_column_mask`** shares the same loader and BMP rules via **`strip_column_source.h`**.
+
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
 | **fire** | warm color, hot color | `fire red yellow` |

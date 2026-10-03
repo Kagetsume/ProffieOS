@@ -6,6 +6,10 @@
 // Format: [style_name] then layer=<style string> lines; each layer is composed in order.
 // Easy to read: one section per effect, one line per layer (rainbow, fire, strobe, etc.).
 //
+// SD load policy (ENABLE_SD_CONFIG_FILES): boot builds a section index only; preset activate
+// warms a heap layer-string cache (see common/style_config_cache.h, sd_style_boot_order.md).
+// No Looper::DoLoop during INI parse. strip_column BMP media is separate (strip_column_source.h).
+//
 // Safety (invariants for parser hardening):
 // - SD_STYLE_CONFIG_MAX_LINES caps total lines scanned per pass; layer/value reads cap at buffer size - 1
 //   and always NUL-terminate; variable names from FileReader::readVariable are at most 32 chars + NUL.

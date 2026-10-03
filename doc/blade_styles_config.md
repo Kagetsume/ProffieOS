@@ -103,6 +103,16 @@ Argument order and examples: **`examples/config/blade_styles.ini`** (header comm
 
 Implementation phases (locals, palettes, includes, structured keys, opacity, blend modes, preset overrides) are described in **blade_styles_config_roadmap.md**.
 
+### Loading from SD (RAM and boot order)
+
+With **`ENABLE_SD_CONFIG_FILES`**, **`config/blade_styles.ini`** is never loaded whole into static RAM:
+
+- **Boot:** scan once to record **`[section]`** → file offset only (**`Style config: indexed N sections`**).
+- **Preset change:** keep parsed **`layer =`** lines on the **heap** for that preset’s unique **`config <section>`** names; drop unused sections; seek-load missing sections (**`Style config: preset …`** lines). Details: **sd_style_boot_order.md**.
+- **INI parse** does not call **`Looper::DoLoop()`** (avoids boot/preon audio glitches).
+
+**`strip_column`** / **`strip_column_mask`** only store the path and args in those layer strings. **24-bit BMP** files on SD are opened **after ignition**, loaded **one column at a time** in slices, **BGR→RGB** in the BMP reader; **`strip_column_mask`** uses the same **`strip_column_source.h`** loader as **`strip_column`**. See **README_blade_styles_config.md** (*strip_column* table).
+
 ## Shipped examples (repository)
 
 The **`examples/config/`** tree mirrors SD layout. **`examples/config/blade_styles.ini`** walks through one section per feature (locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add blends, **`layer = config other_section`** nesting). **`examples/config/blade_styles/`** has **`palettes_extra.ini`** and **`strobe_overlay.ini`**. **`examples/config/presets.ini`** shows **`config <section>`**, **`config <section> key=value`**, and **multiple overrides**.

@@ -3,7 +3,8 @@
 
 // Boot (after LoadSDConfig, before FindBlade): index config/blade_styles.ini ([section]→file offset only).
 // SetPreset (before AllocateBladeStyles): prune heap layer cache to this preset's config sections,
-// then seek-load any missing sections into the cache. No full INI in RAM; no palette scan at index time.
+// then seek-load any missing sections into the cache. No full INI in RAM; no palette scan at index time;
+// strip_column / strip_column_mask BMP files are not read here (deferred until saber on).
 // See doc/sd_style_boot_order.md.
 
 #include "style_config_file.h"

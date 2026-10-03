@@ -99,7 +99,7 @@ You can build effects from **layers** in **`config/blade_styles.ini`** and refer
 - Keep **font**, **track**, and **name** short where possible; long **style=** lines are the main cost per blade.
 - The limits **SD_MAX_PRESETS** (64) and **READ_STRING_MAX_LEN** (512 in `file_reader.h`) can be reduced in the source if you need to fit tighter memory.
 
-The other config files use very little RAM: **board.ini** / **features.ini** only a small struct; **blades.ini** a fixed array (~512 B); **blade_styles.ini** is **not** loaded entirely—only the section for the current style is read into a 4 KB buffer when needed, then discarded.
+The other config files use very little RAM: **board.ini** / **features.ini** only a small struct; **blades.ini** a fixed array (~512 B). **`blade_styles.ini`** is **not** kept whole in RAM: at boot the firmware builds a **section header index** only (`[name]` → file offset). On **preset change**, it **prunes** and **warms** a **heap cache** of parsed **`layer =`** strings for that preset’s `config <section>` names (seek + parse; up to **16** sections × **16×384** bytes per cached section). Palettes load on demand when a section references **`palette=`**. See **sd_style_boot_order.md**.
 
 ## Example `config/presets.ini`
 

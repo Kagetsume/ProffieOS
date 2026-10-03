@@ -627,6 +627,14 @@ include **`sine_waves_cyan`**, **`smoke_laser`**, **`smoke_sine_cyan`**, texture
 
 ---
 
+## SD load and `strip_column`
+
+**`blade_styles.ini`** layer strings: boot **section index** only; **preset change** fills a **heap cache** for that preset’s `config <section>` names (**[`doc/sd_style_boot_order.md`](../doc/sd_style_boot_order.md)**). INI parsing does not yield to the Looper.
+
+**`strip_column`** / **`strip_column_mask`** use **24-bit uncompressed BMP** on SD (not a separate container). BMP opens **when the saber is on**; columns load in **slices**; disk **BGR** becomes **RGB** in RAM. Optional **quoted** paths for spaces. **`strip_column_mask`** shares **`strip_column_source.h`** with **`strip_column`**.
+
+---
+
 ## Limits (firmware)
 
 | Limit | Value | Applies to |
