@@ -52,8 +52,8 @@ inline void StyleConfigWarmLayersForPreset(int preset_index) {
   const int pruned = StyleConfigPruneLayersCacheExcept(sections, nsections);
 
   if (nsections <= 0) {
-    PVLOG_STATUS << "Style config: preset " << preset_index
-                 << " no config sections (" << config_blades << " blade style line(s))\n";
+    StyleConfigStatusPrintf("Style config: preset %d no config sections (%d blade style line(s))",
+                            preset_index, config_blades);
     return;
   }
 
@@ -66,31 +66,38 @@ inline void StyleConfigWarmLayersForPreset(int preset_index) {
     int nl = StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
     if (nl > 0) {
       cache_hits++;
-      PVLOG_STATUS << "Style config:   [" << sections[i] << "] " << nl
-                   << " layer(s) cache hit\n";
+      StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) cache hit", sections[i], nl);
       continue;
     }
     nl = LoadStyleConfigLayers(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
     if (nl > 0) {
       sd_loads++;
-      PVLOG_STATUS << "Style config:   [" << sections[i] << "] " << nl
-                   << " layer(s) loaded from SD\n";
+      StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) loaded from SD", sections[i], nl);
     } else {
       load_fail++;
-      PVLOG_STATUS << "Style config:   [" << sections[i] << "] load failed (missing index/section?)\n";
+      StyleConfigStatusPrintf("Style config:   [%s] load failed (missing index/section?)",
+                              sections[i]);
     }
   }
-  PVLOG_STATUS << "Style config: preset " << preset_index << " unique=" << nsections
-               << " config_blades=" << config_blades;
-  if (deduped > 0) PVLOG_STATUS << " deduped=" << deduped;
-  if (pruned > 0) PVLOG_STATUS << " pruned=" << pruned;
-  PVLOG_STATUS << " cache_hit=" << cache_hits << " sd_load=" << sd_loads
-               << " fail=" << load_fail << " heap_cached=" << style_config_layers_cache_count
-               << "\n";
+  if (deduped > 0 || pruned > 0) {
+    StyleConfigStatusPrintf(
+        "Style config: preset %d unique=%d config_blades=%d deduped=%d pruned=%d cache_hit=%d "
+        "sd_load=%d fail=%d heap_cached=%d",
+        preset_index, nsections, config_blades, deduped, pruned, cache_hits, sd_loads, load_fail,
+        StyleConfigLayersCacheCount());
+  } else {
+    StyleConfigStatusPrintf(
+        "Style config: preset %d unique=%d config_blades=%d cache_hit=%d sd_load=%d fail=%d "
+        "heap_cached=%d",
+        preset_index, nsections, config_blades, cache_hits, sd_loads, load_fail,
+        StyleConfigLayersCacheCount());
+  }
 }
 
 inline void StyleBootOnPresetActivate(int preset_index) {
 #if defined(ENABLE_SD) && defined(ENABLE_SD_CONFIG_FILES) && NUM_BLADES > 0
+  StyleConfigStatusPrintf("Style config: warm preset %d (sd_config=%d)", preset_index,
+                          UseSDConfig() ? 1 : 0);
   if (!UseSDConfig()) return;
   StyleConfigWarmLayersForPreset(preset_index);
 #else

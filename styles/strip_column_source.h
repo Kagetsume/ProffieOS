@@ -3,6 +3,7 @@
 
 // Shared SD column loader + double-buffered frame advance for strip_column / strip_column_mask.
 
+#include "strip_column.h"
 #include "strip_column_bmp.h"
 #include "../common/file_reader.h"
 #include "../common/looper.h"
@@ -41,11 +42,10 @@ inline void StripColumnSanitizePath(char* path, size_t path_max) {
 class StripColumnPendingPath {
 public:
   static void Set(const char* path) {
-    if (!path) path = "";
-    while (*path == ' ' || *path == '\t') path++;
-    while (*path == '/') path++;
-    strncpy(path_, path, sizeof(path_) - 1);
-    path_[sizeof(path_) - 1] = 0;
+    StripColumnExtractFirstFileArg(path ? path : "", path_, sizeof(path_));
+    char* p = path_;
+    while (*p == '/') p++;
+    if (p != path_) memmove(path_, p, strlen(p) + 1);
     StripColumnSanitizePath(path_, sizeof(path_));
   }
   static const char* Get() { return path_; }
@@ -89,12 +89,10 @@ inline RGBA_um_nod StripColumnLayerTransparent() {
 
 inline void StripColumnCopySdPath(char* dest, size_t dest_max, const char* src) {
   if (!dest || dest_max == 0) return;
-  if (!src) src = "";
-  while (*src == ' ' || *src == '\t') src++;
-  // SD-relative from card root (same as config/*.ini, tracks/*.wav). EnsureOpen also tries a leading '/'.
-  while (*src == '/') src++;
-  strncpy(dest, src, dest_max - 1);
-  dest[dest_max - 1] = 0;
+  StripColumnExtractFirstFileArg(src ? src : "", dest, dest_max);
+  char* p = dest;
+  while (*p == '/') p++;
+  if (p != dest) memmove(dest, p, strlen(p) + 1);
   StripColumnSanitizePath(dest, dest_max);
 }
 

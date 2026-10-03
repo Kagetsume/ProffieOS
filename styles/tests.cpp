@@ -1305,6 +1305,21 @@ void test_strip_column() {
   CurrentArgParser = &ap;
   BladeStyle* style = strip_column_factory.make();
   CHECK(style != nullptr);
+  CHECK(!strcmp(StripColumnPath::Get(), "animations/test.bmp"));
+  delete style;
+
+  ArgParser ap_quoted("\"animations/my plasma.bmp\" 144 30 300 800");
+  CurrentArgParser = &ap_quoted;
+  style = strip_column_factory.make();
+  CHECK(style != nullptr);
+  CHECK(!strcmp(StripColumnPath::Get(), "animations/my plasma.bmp"));
+  delete style;
+
+  ArgParser ap_squoted("'animations/my plasma.bmp' 144 30 300 800");
+  CurrentArgParser = &ap_squoted;
+  style = strip_column_factory.make();
+  CHECK(style != nullptr);
+  CHECK(!strcmp(StripColumnPath::Get(), "animations/my plasma.bmp"));
   delete style;
 }
 
@@ -1320,6 +1335,14 @@ void test_strip_column_mask() {
   CurrentArgParser = &ap;
   BladeStyle* style = strip_column_mask_factory.make();
   CHECK(style != nullptr);
+  CHECK(!strcmp(StripColumnPendingPath::Get(), "masks/test.bmp"));
+  delete style;
+
+  ArgParser ap_quoted("\"masks/my mask.bmp\" 144 1");
+  CurrentArgParser = &ap_quoted;
+  style = strip_column_mask_factory.make();
+  CHECK(style != nullptr);
+  CHECK(!strcmp(StripColumnPendingPath::Get(), "masks/my mask.bmp"));
   delete style;
 }
 

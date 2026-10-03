@@ -86,6 +86,7 @@ inline bool StripColumnBmpParseHeader(FileReader* f, StripColumnBmpInfo* info) {
 }
 
 // Load rows [row_begin, row_end) of one BMP column into out_buf (RGB8, row 0 = hilt).
+// BMP pixels are BGR; bytes are swapped to RGB in the buffer.
 inline bool StripColumnBmpLoadColumnRows(FileReader* f, const StripColumnBmpInfo* info,
                                            uint32_t column_index, int row_begin, int row_end,
                                            uint8_t* out_buf, size_t out_buf_size) {
@@ -104,9 +105,13 @@ inline bool StripColumnBmpLoadColumnRows(FileReader* f, const StripColumnBmpInfo
     // Short lock per pixel row — holding LOCK_SD across the whole column starves preon/hum SD audio.
     LOCK_SD(true);
     f->Seek(pos);
-    int got = f->Read(out_buf + logical_row * 3, 3);
+    uint8_t* px = out_buf + logical_row * 3;
+    int got = f->Read(px, 3);
     LOCK_SD(false);
     if (got != 3) return false;
+    uint8_t b = px[0];
+    px[0] = px[2];
+    px[2] = b;
     Looper::DoHFLoop();
   }
   return true;

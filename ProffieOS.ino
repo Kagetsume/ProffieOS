@@ -1729,6 +1729,9 @@ void setup() {
 #endif
 #endif
   prop.FindBlade(true);
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
+  StyleConfigBootLogReplay();
+#endif
   SaberBase::DoBoot();
 #if defined(ENABLE_SD)
   if (!sd_card_found) ProffieOSErrors::sd_card_not_found();

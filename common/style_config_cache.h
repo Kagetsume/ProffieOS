@@ -4,6 +4,7 @@
 // Section offset index + heap layer cache for config/blade_styles.ini (low RAM boot).
 // Included from style_config_file.h after parser helpers are defined.
 
+#include "style_config_boot_log.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,6 +32,8 @@ static bool style_config_section_index_ready = false;
 
 static StyleConfigLayersCacheEntry style_config_layers_cache[STYLE_CONFIG_LAYERS_CACHE_MAX];
 static int style_config_layers_cache_count = 0;
+
+inline int StyleConfigLayersCacheCount() { return style_config_layers_cache_count; }
 
 static StylePaletteCacheEntry style_config_global_palette_cache[STYLE_PALETTE_CACHE_MAX];
 static int style_config_global_palette_ncache = 0;
@@ -137,7 +140,8 @@ inline void StyleConfigBuildSectionIndexFromSd() {
   f.Close();
   LOCK_SD(false);
   style_config_section_index_ready = style_config_section_index_count > 0;
-  PVLOG_STATUS << "Style config: indexed " << style_config_section_index_count << " sections\n";
+  StyleConfigStatusPrintf("Style config: indexed %u sections",
+                          (unsigned)style_config_section_index_count);
 #else
   StyleConfigFreeSectionIndex();
 #endif

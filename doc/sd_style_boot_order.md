@@ -28,6 +28,8 @@ Before `AllocateBladeStyles()`:
 
 Serial (boot): `Style config: indexed N sections`.
 
+Loader lines during `setup()` may run before the USB host opens the port. They are **buffered** and **reprinted once** when serial connects (immediately before `Welcome to ProffieOS`).
+
 Serial (SetPreset), summary line plus one line per unique section:
 
 - `Style config: preset K unique=M config_blades=B deduped=D pruned=P cache_hit=… sd_load=… fail=… heap_cached=…`

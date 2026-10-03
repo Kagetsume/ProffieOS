@@ -5,7 +5,7 @@
 //
 // Media is a normal 24-bit uncompressed Windows BMP on SD — the same export you get
 // from GIMP or Photoshop (BI_RGB, no RLE, no palette). No custom container format.
-// SD path relative to card root, e.g. animations/plasma.bmp
+// SD path relative to card root, e.g. animations/plasma.bmp (quote if the path has spaces)
 //   width  = number of animation frames (one vertical column per frame)
 //   height = blade length in pixels (top of image = hilt, bottom = tip)
 //
@@ -45,13 +45,33 @@
 // In-RAM column cache size (not an on-disk format). Max RGB rows = 512 / 3.
 #define STRIP_COLUMN_MAX_SOURCE_HEIGHT 170
 
+// First FILE arg from strip_column / strip_column_mask style args (supports quoted paths).
+inline size_t StripColumnExtractFirstFileArg(const char* args, char* dest, size_t dest_max) {
+  if (!dest || dest_max == 0) return 0;
+  dest[0] = 0;
+  if (!args) return 0;
+  while (*args == ' ' || *args == '\t') args++;
+  size_t i = 0;
+  if (*args == '"' || *args == '\'') {
+    const char quote = *args++;
+    for (; *args && *args != quote && i < dest_max - 1; i++, args++)
+      dest[i] = *args;
+    dest[i] = 0;
+    return i;
+  }
+  for (; *args && *args != ' ' && *args != '\t' && *args != '\r' && *args != '\n'
+         && i < dest_max - 1;
+       i++, args++)
+    dest[i] = *args;
+  dest[i] = 0;
+  return i;
+}
+
 // Set by StripColumnFactory immediately before Style construction (one path per make()).
 class StripColumnPath {
 public:
   static void Set(const char* path) {
-    if (!path) path = "";
-    strncpy(path_, path, sizeof(path_) - 1);
-    path_[sizeof(path_) - 1] = 0;
+    StripColumnExtractFirstFileArg(path ? path : "", path_, sizeof(path_));
   }
   static const char* Get() { return path_; }
 

@@ -1,6 +1,10 @@
 #ifndef COMMON_SERIAL_H
 #define COMMON_SERIAL_H
 
+#if defined(ENABLE_SD_CONFIG_FILES)
+#include "style_config_boot_log.h"
+#endif
+
 class SerialAdapter {
 public:
   static void begin() {
@@ -139,6 +143,9 @@ public:
     STATE_MACHINE_BEGIN();
     while (true) {
       while (!SA::Connected()) YIELD();
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
+      StyleConfigBootLogReplay();
+#endif
       if (!SA::AlwaysConnected()) {
         STDOUT << "Welcome to ProffieOS " << version << "\n";
         STDOUT << "For available serial commands, see:\n";
