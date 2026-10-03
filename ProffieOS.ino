@@ -1650,11 +1650,8 @@ void setup() {
   digitalWrite(boosterPin, HIGH);
 #endif
 #ifdef MOUNT_SD_SETTING
-#if defined(MOUNT_SD_ALWAYS_ON)
-  LSFS::SetAllowMount(true);
-#else
+  // USB MSC must stay "ejected" until LSFS finishes boot mount (see end of setup()).
   LSFS::SetAllowMount(false);
-#endif
 #endif
   STDOUT.println("ProffieOS setup...");
 #if VERSION_MAJOR >= 4
@@ -1736,6 +1733,12 @@ void setup() {
 #if defined(ENABLE_SD)
   if (!sd_card_found) ProffieOSErrors::sd_card_not_found();
 #endif  // ENABLE_SD
+#ifdef MOUNT_SD_SETTING
+#if defined(MOUNT_SD_ALWAYS_ON)
+  // Same as edit-menu "SD Access ON" — PC may export after saber idle-unmounts (see SDCard looper).
+  LSFS::SetAllowMount(true);
+#endif
+#endif
 }
 
 #ifdef MTP_RX_ENDPOINT

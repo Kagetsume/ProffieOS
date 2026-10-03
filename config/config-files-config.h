@@ -41,7 +41,7 @@ const unsigned int maxLedsPerStrip = 144;
 #define ENABLE_WS2811
 #define ENABLE_SD
 #define MOUNT_SD_SETTING
-// USB mass storage on at boot (for now — remove MOUNT_SD_ALWAYS_ON to require edit-menu SD Access).
+// After boot: SD Access ON without edit menu (PC export still needs saber off + firmware unmount).
 #define MOUNT_SD_ALWAYS_ON
 #define ENABLE_SERIAL
 

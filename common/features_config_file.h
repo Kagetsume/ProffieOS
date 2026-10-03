@@ -21,11 +21,12 @@ inline void LoadFeaturesConfigFile() {
 #endif
 #ifdef ENABLE_SD
   LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_FEATURES_CONFIG_PATH)) {
+  ScopedFileReader sf;
+  if (!sf.Open(SD_FEATURES_CONFIG_PATH)) {
     LOCK_SD(false);
     return;
   }
+  FileReader& f = sf.Get();
 
   int line_count = 0;
   while (f.Available() && line_count < SD_FEATURES_CONFIG_MAX_LINES) {
@@ -55,7 +56,6 @@ inline void LoadFeaturesConfigFile() {
     f.skipline();
     line_count++;
   }
-  f.Close();
   LOCK_SD(false);
 #endif
 }

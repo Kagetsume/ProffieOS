@@ -237,10 +237,9 @@ inline void StyleConfigScanPalettesRecursive(FileReader& f, StylePaletteCacheEnt
         if (StyleConfigPathInStack(norm, path_stack, include_depth)) continue;
         strncpy(path_stack[include_depth], norm, STYLE_PATH_MAX - 1);
         path_stack[include_depth][STYLE_PATH_MAX - 1] = '\0';
-        FileReader inc;
+        ScopedFileReader inc;
         if (!inc.Open(norm)) continue;
-        StyleConfigScanPalettesRecursive(inc, cache, nout, include_depth + 1, path_stack);
-        inc.Close();
+        StyleConfigScanPalettesRecursive(inc.Get(), cache, nout, include_depth + 1, path_stack);
         continue;
       }
       f.Seek(pos);
@@ -679,11 +678,10 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
       if (StyleConfigPathInStack(norm, path_stack, include_depth)) continue;
       strncpy(path_stack[include_depth], norm, STYLE_PATH_MAX - 1);
       path_stack[include_depth][STYLE_PATH_MAX - 1] = '\0';
-      FileReader inc;
+      ScopedFileReader inc;
       if (!inc.Open(norm)) continue;
-      StyleConfigProcessStyleFragment(inc, st, layers, count, max_layers, palette_cache, palette_ncache,
-                                        line_count, include_depth + 1, path_stack);
-      inc.Close();
+      StyleConfigProcessStyleFragment(inc.Get(), st, layers, count, max_layers, palette_cache,
+                                      palette_ncache, line_count, include_depth + 1, path_stack);
       continue;
     } else {
       f.skipwhite();
@@ -744,34 +742,31 @@ inline int LoadStyleConfigLayers(const char* section_name,
   memset(include_stack, 0, sizeof(include_stack));
   int count = 0;
 
-  LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_STYLE_CONFIG_PATH)) {
-    LOCK_SD(false);
-    return 0;
-  }
+  // Full-file palette scan once (before opening for this section) — avoids a second
+  // blade_styles.ini handle while the section reader is still open.
+  StyleConfigEnsurePalettesLoaded();
 
-  uint32_t section_off = 0;
-  if (style_config_section_index_ready) {
-    if (StyleConfigFindSectionOffset(section_name, &section_off) < 0) {
-      f.Close();
+  LOCK_SD(true);
+  {
+    ScopedFileReader sf;
+    if (!sf.Open(SD_STYLE_CONFIG_PATH)) {
       LOCK_SD(false);
       return 0;
     }
-    f.Seek(section_off);
-    count = StyleConfigParseSectionAtReader(
-        f, section_name, &st, layers, max_layers, style_config_global_palette_cache,
-        style_config_global_palette_ncache, include_stack);
-    f.Close();
-    LOCK_SD(false);
-    if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);
-    return count;
-  }
+    FileReader& f = sf.Get();
 
-  // Index missing (boot index failed): one slow full-file scan — no Looper::DoLoop during parse.
-  int line_count = 0;
-  bool in_section = false;
-  while (f.Available() && count < max_layers && line_count < SD_STYLE_CONFIG_MAX_LINES) {
+    if (style_config_section_index_ready) {
+      count = StyleConfigLoadLayersFromIndexedOpenFile(f, section_name, layers, max_layers, oc,
+                                                       override_keys, override_vals);
+      LOCK_SD(false);
+      if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);
+      return count;
+    }
+
+    // Index missing (boot index failed): one slow full-file scan — no Looper::DoLoop during parse.
+    int line_count = 0;
+    bool in_section = false;
+    while (f.Available() && count < max_layers && line_count < SD_STYLE_CONFIG_MAX_LINES) {
     f.skipwhite();
     if (!f.Available()) break;
     if (f.Peek() == '#' || f.Peek() == ';') { f.skipline(); line_count++; continue; }
@@ -899,12 +894,12 @@ inline int LoadStyleConfigLayers(const char* section_name,
       if (StyleConfigPathInStack(norm, include_stack, 0)) continue;
       strncpy(include_stack[0], norm, STYLE_PATH_MAX - 1);
       include_stack[0][STYLE_PATH_MAX - 1] = '\0';
-      FileReader inc;
+      ScopedFileReader inc;
       if (!inc.Open(norm)) continue;
-      StyleConfigProcessStyleFragment(inc, &st, layers, &count, max_layers,
+      StyleConfigProcessStyleFragment(inc.Get(), &st, layers, &count, max_layers,
                                       style_config_global_palette_cache,
-                                      style_config_global_palette_ncache, &line_count, 1, include_stack);
-      inc.Close();
+                                      style_config_global_palette_ncache, &line_count, 1,
+                                      include_stack);
       continue;
     } else {
       f.skipwhite();
@@ -925,9 +920,9 @@ inline int LoadStyleConfigLayers(const char* section_name,
     }
     f.skipline();
     line_count++;
+    }
+    if (in_section) StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
   }
-  if (in_section) StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
-  f.Close();
   LOCK_SD(false);
   if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);
   return count;

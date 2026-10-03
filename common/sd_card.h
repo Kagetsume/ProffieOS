@@ -61,6 +61,9 @@ protected:
       if (!Active()) {
 	AudioStreamWork::LockSD_nomount(true);
 	AudioStreamWork::CloseAllOpenFiles();
+#ifdef MOUNT_SD_ALWAYS_ON
+	LSFS::SetAllowMount(true);
+#endif
 	STDOUT.println("Unmounting SD Card.");
 	LSFS::End();
 	AudioStreamWork::LockSD_nomount(false);

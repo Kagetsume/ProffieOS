@@ -10,6 +10,7 @@ Contract for **`ENABLE_SD_CONFIG_FILES`** and **`config/blade_styles.ini`**.
 - **Seek + parse** — after boot, load a section by file offset from the index (not a full-file scan).
 - **Palettes on demand** — global palette blocks load when a section references `palette=` (not during index build).
 - **No audio yield inside INI parse** — do not call `Looper::DoLoop()` while reading style config (causes boot/preon sputter).
+- **INI file handles** — `ScopedFileReader` closes each handle at scope exit (same open count as explicit `Close()`; not per line). Preset warm opens `blade_styles.ini` **once** and seek-loads all cache-miss sections before closing. Palettes load in a separate one-time pass **before** the section file is opened so the same INI is never held open twice.
 
 ## Boot sequence (`ProffieOS.ino`)
 
@@ -26,7 +27,7 @@ Before `AllocateBladeStyles()`:
 
 1. Collect unique `config <section>` names from the preset’s per-blade `style=` lines.
 2. **Prune** heap layer cache — drop sections not used by this preset.
-3. **Warm** — for each section not already cached, `LoadStyleConfigLayers` (seek via index, parse, store on heap).
+3. **Warm** — for each cache-miss section, seek-parse via the section index (single SD open for the whole warm pass when the index is ready), then store on heap.
 
 Serial (boot): `Style config: indexed N sections`.
 

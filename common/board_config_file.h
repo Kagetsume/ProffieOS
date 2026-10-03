@@ -83,11 +83,12 @@ inline void LoadBoardConfigFile() {
   board_config_file.file_found = false;
 
   LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_BOARD_CONFIG_PATH)) {
+  ScopedFileReader sf;
+  if (!sf.Open(SD_BOARD_CONFIG_PATH)) {
     LOCK_SD(false);
     return;
   }
+  FileReader& f = sf.Get();
   board_config_file.file_found = true;
 
   int line_count = 0;
@@ -132,7 +133,6 @@ inline void LoadBoardConfigFile() {
     f.skipline();
     line_count++;
   }
-  f.Close();
   LOCK_SD(false);
 #endif
 }

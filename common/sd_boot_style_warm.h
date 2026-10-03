@@ -62,6 +62,7 @@ inline void StyleConfigWarmLayersForPreset(int preset_index) {
   int cache_hits = 0;
   int sd_loads = 0;
   int load_fail = 0;
+  int need_sd = 0;
   for (int i = 0; i < nsections; i++) {
     if (!sections[i][0]) continue;
     int nl = StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
@@ -70,14 +71,64 @@ inline void StyleConfigWarmLayersForPreset(int preset_index) {
       StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) cache hit", sections[i], nl);
       continue;
     }
-    nl = LoadStyleConfigLayers(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
-    if (nl > 0) {
-      sd_loads++;
-      StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) loaded from SD", sections[i], nl);
-    } else {
-      load_fail++;
-      StyleConfigStatusPrintf("Style config:   [%s] load failed (missing index/section?)",
-                              sections[i]);
+    need_sd++;
+  }
+
+  if (need_sd > 0) {
+    StyleConfigEnsurePalettesLoaded();
+  }
+
+  if (need_sd > 0 && style_config_section_index_ready) {
+    // One open/close of blade_styles.ini for every cache-miss section on this preset.
+    LOCK_SD(true);
+    {
+      ScopedFileReader sf;
+      if (sf.Open(SD_STYLE_CONFIG_PATH)) {
+        FileReader& f = sf.Get();
+        for (int i = 0; i < nsections; i++) {
+          if (!sections[i][0]) continue;
+          if (StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS) > 0)
+            continue;
+          int nl = StyleConfigLoadLayersFromIndexedOpenFile(
+              f, sections[i], layers, STYLE_CONFIG_MAX_LAYERS, 0, nullptr, nullptr);
+          if (nl > 0) {
+            StyleConfigStoreLayersInCache(sections[i], layers, nl);
+            sd_loads++;
+            StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) loaded from SD", sections[i],
+                                    nl);
+          } else {
+            load_fail++;
+            StyleConfigStatusPrintf("Style config:   [%s] load failed (missing index/section?)",
+                                    sections[i]);
+          }
+        }
+      } else {
+        load_fail += need_sd;
+        for (int i = 0; i < nsections; i++) {
+          if (!sections[i][0]) continue;
+          if (StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS) > 0)
+            continue;
+          StyleConfigStatusPrintf("Style config:   [%s] load failed (missing index/section?)",
+                                  sections[i]);
+        }
+      }
+    }
+    LOCK_SD(false);
+  } else if (need_sd > 0) {
+    // Index missing: fall back to one open per section (full-file scan path).
+    for (int i = 0; i < nsections; i++) {
+      if (!sections[i][0]) continue;
+      if (StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS) > 0)
+        continue;
+      int nl = LoadStyleConfigLayers(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
+      if (nl > 0) {
+        sd_loads++;
+        StyleConfigStatusPrintf("Style config:   [%s] %d layer(s) loaded from SD", sections[i], nl);
+      } else {
+        load_fail++;
+        StyleConfigStatusPrintf("Style config:   [%s] load failed (missing index/section?)",
+                                sections[i]);
+      }
     }
   }
   if (deduped > 0 || pruned > 0) {

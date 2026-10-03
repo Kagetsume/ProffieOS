@@ -229,11 +229,12 @@ inline void LoadBladeConfigFile() {
     sd_blade_defs[i].simple_active_high_default_set = false;
   }
   LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_BLADE_CONFIG_PATH)) {
+  ScopedFileReader sf;
+  if (!sf.Open(SD_BLADE_CONFIG_PATH)) {
     LOCK_SD(false);
     return;
   }
+  FileReader& f = sf.Get();
   int current_blade = -1;
   int line_count = 0;
   while (f.Available() && line_count < SD_BLADE_CONFIG_MAX_LINES) {
@@ -393,7 +394,6 @@ inline void LoadBladeConfigFile() {
   }
   for (size_t i = 0; i < sd_blade_def_count; i++)
     FinalizeSDBladeDef(sd_blade_defs[i]);
-  f.Close();
   LOCK_SD(false);
   if (sd_blade_def_count > 0) {
     PVLOG_STATUS << "Blade config: loaded " << sd_blade_def_count << " blade defs from " SD_BLADE_CONFIG_PATH "\n";

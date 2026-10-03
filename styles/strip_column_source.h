@@ -139,21 +139,32 @@ public:
     cache_.ClearAllSlots();
   }
 
+  void CloseSdFileHandleOnly() {
+    if (file_.IsOpen()) file_.Close();
+  }
+
+  void ReleaseMediaForBlade(BladeBase* blade) {
+    if (StripColumnShouldReleaseMedia(blade)) {
+      CloseOpenFile();
+      return;
+    }
+    if (!SaberBase::IsOn()) CloseSdFileHandleOnly();
+  }
+
   void InvalidateIfUnmounted() {
 #ifdef ENABLE_SD
     if (opened_ && !LSFS::IsMounted()) CloseOpenFile();
 #endif
   }
 
-  bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height) {
+  bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
     InvalidateIfUnmounted();
+    ReleaseMediaForBlade(blade);
+    if (!SaberBase::IsOn()) return false;
     if (opened_) {
       if (file_.IsOpen()) return true;
       CloseOpenFile();
     }
-
-    // Do not touch SD for BMP until saber is on — opening/reading blocks the Looper.
-    if (!SaberBase::IsOn()) return false;
 
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
 
@@ -204,8 +215,10 @@ public:
   }
 
   // Updates cached frame when open; no-op when closed or num_leds <= 0.
-  void AdvanceAnimation(int source_height, int fps, int num_leds) {
+  void AdvanceAnimation(int source_height, int fps, int num_leds, BladeBase* blade) {
     InvalidateIfUnmounted();
+    ReleaseMediaForBlade(blade);
+    if (!SaberBase::IsOn()) return;
     if (!opened_ || num_leds <= 0) return;
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
     fps = clampi32(fps, 1, 240);

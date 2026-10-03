@@ -55,11 +55,12 @@ inline uint16_t StripColumnMaskSampleFactorAtLed(const uint8_t* data, int led, i
 template<class SOURCE_HEIGHT, class FPS>
 class StripColumnMaskL {
 public:
-  StripColumnMaskL() : num_leds_(0), source_height_(0) {
+  StripColumnMaskL() : blade_(nullptr), num_leds_(0), source_height_(0) {
     source_.CapturePendingPath();
   }
 
   bool run(BladeBase* blade) {
+    blade_ = blade;
     height_.run(blade);
     fps_.run(blade);
     num_leds_ = blade ? blade->num_leds() : 0;
@@ -67,16 +68,16 @@ public:
     int fps = clampi32(fps_.getInteger(0), 1, 240);
 
     static const StripColumnOpenOptions kOpenOpts = {"strip_column_mask"};
-    source_.EnsureOpen(kOpenOpts, source_height_);
+    source_.EnsureOpen(kOpenOpts, source_height_, blade);
     source_.WarnSourceHeightVsBmp(source_height_, "strip_column_mask");
-    source_.AdvanceAnimation(source_height_, fps, num_leds_);
+    source_.AdvanceAnimation(source_height_, fps, num_leds_, blade);
     return true;
   }
 
   RGBA_um_nod getColor(int led) {
     static const StripColumnOpenOptions kOpenOpts = {"strip_column_mask"};
     int sh = source_height_ > 0 ? source_height_ : 144;
-    source_.EnsureOpen(kOpenOpts, sh);
+    source_.EnsureOpen(kOpenOpts, sh, blade_);
     if (!source_.IsOpen() || num_leds_ <= 0) return StripColumnLayerTransparent();
     uint16_t f = StripColumnMaskSampleFactorAtLed(
         source_.CurrentFrameData(), led, num_leds_, source_height_);
@@ -87,6 +88,7 @@ private:
   SOURCE_HEIGHT height_;
   FPS fps_;
   StripColumnFrameSource source_;
+  BladeBase* blade_;
   int num_leds_;
   int source_height_;
 };

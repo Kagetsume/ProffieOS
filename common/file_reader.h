@@ -746,4 +746,20 @@ public:
   }
 };
 
+// Closes the SD/SF/mem handle when leaving scope (config INI one-shot reads).
+class ScopedFileReader {
+public:
+  ScopedFileReader() = default;
+  ~ScopedFileReader() { reader_.Close(); }
+  ScopedFileReader(const ScopedFileReader&) = delete;
+  ScopedFileReader& operator=(const ScopedFileReader&) = delete;
+
+  bool Open(const char* path) { return reader_.Open(path); }
+  FileReader& Get() { return reader_; }
+  FileReader* operator->() { return &reader_; }
+
+private:
+  FileReader reader_;
+};
+
 #endif

@@ -5,6 +5,7 @@
 // Included from style_config_file.h after parser helpers are defined.
 
 #include "style_config_boot_log.h"
+#include "file_reader.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -48,11 +49,13 @@ inline void StyleConfigEnsurePalettesLoaded() {
   if (style_config_global_palettes_loaded) return;
 #ifdef ENABLE_SD
   LOCK_SD(true);
-  FileReader f;
-  if (f.Open(SD_STYLE_CONFIG_PATH)) {
-    style_config_global_palette_ncache = 0;
-    StyleConfigScanPalettes(f, style_config_global_palette_cache, &style_config_global_palette_ncache);
-    f.Close();
+  {
+    ScopedFileReader sf;
+    if (sf.Open(SD_STYLE_CONFIG_PATH)) {
+      style_config_global_palette_ncache = 0;
+      StyleConfigScanPalettes(sf.Get(), style_config_global_palette_cache,
+                              &style_config_global_palette_ncache);
+    }
   }
   LOCK_SD(false);
 #endif
@@ -91,11 +94,12 @@ inline void StyleConfigBuildSectionIndexFromSd() {
   StyleConfigFreeSectionIndex();
   // Index pass only — no palette scan or layer load at boot (see sd_boot_style_warm.h).
   LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_STYLE_CONFIG_PATH)) {
+  ScopedFileReader sf;
+  if (!sf.Open(SD_STYLE_CONFIG_PATH)) {
     LOCK_SD(false);
     return;
   }
+  FileReader& f = sf.Get();
   int line_count = 0;
   while (f.Available() && line_count < SD_STYLE_CONFIG_MAX_LINES) {
     f.skipwhite();
@@ -137,7 +141,6 @@ inline void StyleConfigBuildSectionIndexFromSd() {
     f.skipline();
     line_count++;
   }
-  f.Close();
   LOCK_SD(false);
   style_config_section_index_ready = style_config_section_index_count > 0;
   StyleConfigStatusPrintf("Style config: indexed %u sections",
@@ -411,11 +414,10 @@ inline int StyleConfigParseSectionAtReader(
           !StyleConfigPathInStack(norm, include_stack, 0)) {
         strncpy(include_stack[0], norm, STYLE_PATH_MAX - 1);
         include_stack[0][STYLE_PATH_MAX - 1] = '\0';
-        FileReader inc;
+        ScopedFileReader inc;
         if (inc.Open(norm)) {
-          StyleConfigProcessStyleFragment(inc, st, layers, &count, max_layers, palette_cache,
+          StyleConfigProcessStyleFragment(inc.Get(), st, layers, &count, max_layers, palette_cache,
                                           palette_ncache, &line_count, 1, include_stack);
-          inc.Close();
         }
       }
       continue;
@@ -446,6 +448,32 @@ inline int StyleConfigParseSectionAtReader(
   }
   StyleConfigFlushPendingStructuredLayer(st, layers, &count, max_layers);
   return count;
+}
+
+// Seek-load one [section] using an already-open blade_styles.ini (index must be ready).
+inline int StyleConfigLoadLayersFromIndexedOpenFile(
+    FileReader& f, const char* section_name, char layers[][STYLE_CONFIG_LAYER_STR_LEN],
+    int max_layers, int override_count,
+    const char (*override_keys)[STYLE_CONFIG_LOCAL_KEY_LEN],
+    const char (*override_vals)[STYLE_CONFIG_LOCAL_VAL_LEN]) {
+  if (!section_name || !section_name[0] || !layers || max_layers <= 0) return 0;
+  if (!style_config_section_index_ready) return 0;
+  uint32_t section_off = 0;
+  if (StyleConfigFindSectionOffset(section_name, &section_off) < 0) return 0;
+  StyleConfigSectionState st;
+  memset(&st, 0, sizeof(st));
+  int oc = override_count;
+  if (oc < 0) oc = 0;
+  else if (oc > STYLE_CONFIG_MAX_LOCAL_VARS) oc = STYLE_CONFIG_MAX_LOCAL_VARS;
+  st.preset_override_count = oc;
+  st.preset_override_keys = override_keys;
+  st.preset_override_vals = override_vals;
+  char include_stack[STYLE_INCLUDE_MAX_DEPTH][STYLE_PATH_MAX];
+  memset(include_stack, 0, sizeof(include_stack));
+  f.Seek(section_off);
+  return StyleConfigParseSectionAtReader(
+      f, section_name, &st, layers, max_layers, style_config_global_palette_cache,
+      style_config_global_palette_ncache, include_stack);
 }
 
 #endif  // COMMON_STYLE_CONFIG_CACHE_H

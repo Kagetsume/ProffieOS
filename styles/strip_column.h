@@ -27,6 +27,7 @@
 #include "strip_column_bmp.h"
 #include "../common/file_reader.h"
 #include "../common/math.h"
+#include "../blades/blade_base.h"
 #include "../common/saber_base.h"
 #include "../common/stdout.h"
 #ifdef ENABLE_AUDIO
@@ -89,6 +90,11 @@ private:
 };
 
 char StripColumnPath::path_[128] = "";
+
+// SD BMP: read while ignited; close file when off (keep RAM during retract); full release when unpowered.
+inline bool StripColumnShouldReleaseMedia(BladeBase* blade) {
+  return !SaberBase::IsOn() && blade && !blade->is_powered();
+}
 
 // Maps LED index to a source row index and 15-bit fraction toward the next row (Gradient-style).
 inline void StripColumnMapLed(int led, int num_leds, int source_height,
@@ -298,10 +304,18 @@ public:
     int fps = clampi32(fps_.getInteger(0), 1, 240);
     frame_ms_ = clampi32(1000 / fps, 1, 60000);
 
+    if (StripColumnShouldReleaseMedia(blade)) {
+      CloseMediaFile();
+      return true;
+    }
+    if (!SaberBase::IsOn()) {
+      CloseSdFileHandleOnly();
+      return true;
+    }
+
     // Do not touch SD for BMP until saber is on — opening/reading here blocks the whole
     // Looper (buttons dead) while accent PWM may already be running.
     if (!opened_) {
-      if (!SaberBase::IsOn()) return true;
       if (!header_ok_) {
         const char* p = StripColumnPath::Get();
         if (p && p[0]) {
@@ -368,6 +382,18 @@ public:
 
 private:
   uint16_t sqr(uint8_t x) { return (uint16_t)x * x; }
+
+  void CloseMediaFile() {
+    if (!opened_ && !header_ok_ && !file_.IsOpen()) return;
+    file_.Close();
+    opened_ = false;
+    header_ok_ = false;
+    cache_.ClearAllSlots();
+  }
+
+  void CloseSdFileHandleOnly() {
+    if (file_.IsOpen()) file_.Close();
+  }
 
   void WarnSourceHeightVsBmp() {
     if (height_warned_) return;

@@ -158,11 +158,12 @@ inline void LoadSDConfig() {
   sd_config_active = false;
   sd_preset_count = 0;
   LOCK_SD(true);
-  FileReader f;
-  if (!f.Open(SD_CONFIG_PRESETS_PATH)) {
+  ScopedFileReader sf;
+  if (!sf.Open(SD_CONFIG_PRESETS_PATH)) {
     LOCK_SD(false);
     return;
   }
+  FileReader& f = sf.Get();
   // UTF-8 BOM (common from Windows editors) breaks readVariable on the first line (e.g. "new_preset").
   if (f.Available() && (unsigned char)f.Peek() == 0xEF) {
     int bom_pos = f.Tell();
@@ -274,7 +275,6 @@ inline void LoadSDConfig() {
   if (!parsed_end_line && preset_count >= 1 && sd_preset_count < SD_MAX_PRESETS) {
     sd_preset_count++;
   }
-  f.Close();
   LOCK_SD(false);
   if (sd_preset_count > 0) {
     sd_config_active = true;
