@@ -5,6 +5,7 @@
 #include "layers.h"
 #include "../functions/ifon.h"
 #include "../transitions/base.h"
+#include "../common/saber_base.h"
   
 
 // Usage: InOutHelperX<BASE, EXTENSION, OFF_COLOR>
@@ -77,6 +78,8 @@ public:
   auto getColor(int led) -> decltype(
     MixColors(out_tr_.getColor(in_tr_.getColor(RGBA_um_nod::Transparent(), off_color_.getColor(led), led), RGBA_um_nod::Transparent(), led),
 	      in_tr_.getColor(out_tr_.getColor(off_color_.getColor(led), RGBA_um_nod::Transparent(), led), off_color_.getColor(led), led), 1, 1)) {
+    // Idle: full base while on, off color while off.
+    // Active: mix the extend or retract transition (wipe up / wipe down).
     if (!out_tr_ && !in_tr_) {
       if (on_) {
 	return RGBA_um_nod::Transparent();

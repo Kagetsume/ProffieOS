@@ -188,7 +188,7 @@ public:
         LOCK_SD(false);
         return false;
       }
-      num_frames_ = bmp_info_.width;
+      num_frames_ = StripColumnBmpNumFrames(&bmp_info_, StripColumnPath::GetFrameAxis());
       if (num_frames_ == 0) num_frames_ = 1;
       header_ok_ = true;
       LogOpenSuccessOnce(opts);
@@ -196,7 +196,8 @@ public:
     }
 
     if (header_ok_ && !opened_) {
-      if (cache_.LoadFrameSlice(&file_, &bmp_info_, source_height_, 0, 0)) {
+      if (cache_.LoadFrameSlice(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(),
+                                source_height_, 0, 0)) {
         opened_ = true;
         cache_.OnFirstFrameReady();
       }
@@ -206,11 +207,13 @@ public:
 
   void WarnSourceHeightVsBmp(int source_height, const char* style_name = "strip_column") {
     if (!header_ok_ || height_warned_) return;
-    if (source_height > (int)bmp_info_.height) {
+    uint32_t blade_px =
+        StripColumnBmpBladePixelsInFile(&bmp_info_, StripColumnPath::GetFrameAxis());
+    if ((uint32_t)source_height > blade_px) {
       height_warned_ = true;
       const char* tag = style_name ? style_name : "strip_column";
-      STDERR << tag << ": source_height " << source_height
-             << " exceeds BMP height " << bmp_info_.height << " (clamping)\n";
+      STDERR << tag << ": source_height " << source_height << " exceeds BMP blade span "
+             << blade_px << " (clamping)\n";
     }
   }
 
@@ -224,7 +227,8 @@ public:
     fps = clampi32(fps, 1, 240);
     int frame_ms = clampi32(1000 / fps, 1, 60000);
 
-    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms, num_frames_);
+    cache_.Tick(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(), source_height_, frame_ms,
+                num_frames_);
   }
 
   const uint8_t* CurrentFrameData() const { return cache_.DisplayData(); }

@@ -1263,6 +1263,14 @@ void test_strip_column_bmp() {
   CHECK_NEAR(col[1], 255, 0);
   CHECK_NEAR(col[2], 0, 0);
   CHECK_NEAR(col[5], 255, 0);
+
+  CHECK_NEAR(StripColumnBmpNumFrames(&info, STRIP_COLUMN_FRAMES_ALONG_X), 2, 0);
+  CHECK_NEAR(StripColumnBmpNumFrames(&info, STRIP_COLUMN_FRAMES_ALONG_Y), 2, 0);
+  f.Seek(0);
+  CHECK(StripColumnBmpLoadFrameSlice(&f, &info, STRIP_COLUMN_FRAMES_ALONG_Y, 0, 0, 2, 2, col,
+                                     sizeof(col)));
+  CHECK(StripColumnBmpLoadFrameSlice(&f, &info, STRIP_COLUMN_FRAMES_ALONG_Y, 0, 1, 2, 2, col,
+                                     sizeof(col)));
 }
 
 void test_strip_column() {
@@ -1303,9 +1311,18 @@ void test_strip_column() {
 
   ArgParser ap("animations/test.bmp 144 30 300 800");
   CurrentArgParser = &ap;
+  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
   BladeStyle* style = strip_column_factory.make();
   CHECK(style != nullptr);
   CHECK(!strcmp(StripColumnPath::Get(), "animations/test.bmp"));
+  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
+  delete style;
+
+  ArgParser ap_y("animations/test.bmp 144 30 frames_y 300 800");
+  CurrentArgParser = &ap_y;
+  style = strip_column_factory.make();
+  CHECK(style != nullptr);
+  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_quoted("\"animations/my plasma.bmp\" 144 30 300 800");

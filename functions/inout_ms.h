@@ -10,8 +10,8 @@
 template<class MILLIS, EffectType EFFECT>
 using InOutMsOrWavLen = Scale<
   IsLessThan<MILLIS, Int<1>>,
-  WavLen<EFFECT>,
-  MILLIS
+  MILLIS,
+  WavLen<EFFECT>
 >;
 
 // InOutFuncX with soundfont-length fallback for extend/retract args.
