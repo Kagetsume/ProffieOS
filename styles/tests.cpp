@@ -1323,6 +1323,9 @@ void test_strip_column() {
   style = strip_column_factory.make();
   CHECK(style != nullptr);
   CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
+  StripColumnL<IntArg<2, 144>, IntArg<3, 30>> frames_y_layer;
+  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
+  CHECK(frames_y_layer.FrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_quoted("\"animations/my plasma.bmp\" 144 30 300 800");
@@ -1348,11 +1351,13 @@ void test_strip_column_mask() {
   CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 1, 3, 3), 32896, 256);
   CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 2, 3, 3), 65535, 0);
 
+  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
   ArgParser ap("masks/test.bmp 144 1");
   CurrentArgParser = &ap;
   BladeStyle* style = strip_column_mask_factory.make();
   CHECK(style != nullptr);
   CHECK(!strcmp(StripColumnPendingPath::Get(), "masks/test.bmp"));
+  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_quoted("\"masks/my mask.bmp\" 144 1");

@@ -63,6 +63,10 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #ifndef STRIP_COLUMN_TICK_MAX_LOAD_SLICES
 #define STRIP_COLUMN_TICK_MAX_LOAD_SLICES 1
 #endif
+// Only if EFFECT_RETRACTION sound_length is 0. Matches this style's default retract_ms.
+#ifndef STRIP_COLUMN_RETRACT_FALLBACK_MS
+#define STRIP_COLUMN_RETRACT_FALLBACK_MS 800
+#endif
 #include "../functions/int_arg.h"
 #include <string.h>
 
@@ -331,15 +335,19 @@ class StripColumnL {
 public:
   StripColumnL() : opened_(false), height_warned_(false), open_fail_logged_(false),
                    open_ok_logged_(false), num_frames_(0), num_leds_(0), source_height_(0),
-                   frame_ms_(33), header_ok_(false) {
+                   frame_ms_(33), header_ok_(false), was_on_(false), retract_armed_(false),
+                   retract_deadline_ms_(0) {
     path_[0] = 0;
     const char* pending = StripColumnPath::Get();
     if (pending && pending[0]) {
       strncpy(path_, pending, sizeof(path_) - 1);
       path_[sizeof(path_) - 1] = 0;
     }
+    frame_axis_ = StripColumnPath::GetFrameAxis();
     memset(&bmp_info_, 0, sizeof(bmp_info_));
   }
+
+  StripColumnBmpFrameAxis FrameAxis() const { return frame_axis_; }
 
   bool run(BladeBase* blade) {
     height_.run(blade);
@@ -349,11 +357,26 @@ public:
     int fps = clampi32(fps_.getInteger(0), 1, 240);
     frame_ms_ = clampi32(1000 / fps, 1, 60000);
 
-    // IsOn() is false for the whole retract. The blade stays powered until
-    // InOutTrL finishes the wipe, so keep ticking an already-open BMP until
-    // power drops. Do not start SD loads merely because the blade is powered
-    // before the first ignite (opened_ is still false).
-    if (!(SaberBase::IsOn() || (opened_ && blade && blade->is_powered()))) {
+    // IsOn() is false for the whole retract, and the driver can leave
+    // is_powered() true after the wipe just to keep the style loop running.
+    // Latch a deadline on the true→false edge (retraction wav length, same
+    // sound_length WavLen reads). Tick only until that deadline, then close
+    // the SD file. Do not open SD before the first ignite.
+    const bool on = SaberBase::IsOn();
+    if (on) {
+      was_on_ = true;
+      retract_armed_ = false;
+    } else if (was_on_) {
+      was_on_ = false;
+      retract_deadline_ms_ = millis() + (uint32_t)RetractionLengthMs(blade);
+      retract_armed_ = opened_;
+    }
+    bool retract_ticking = false;
+    if (retract_armed_) {
+      retract_ticking = (int32_t)(retract_deadline_ms_ - millis()) > 0;
+      if (!retract_ticking) retract_armed_ = false;
+    }
+    if (!(on || retract_ticking)) {
       if (file_.IsOpen()) file_.Close();
       return true;
     }
@@ -391,14 +414,14 @@ public:
           return true;
         }
         num_frames_ =
-            StripColumnBmpNumFrames(&bmp_info_, StripColumnPath::GetFrameAxis());
+            StripColumnBmpNumFrames(&bmp_info_, frame_axis_);
         if (num_frames_ == 0) num_frames_ = 1;
         WarnSourceHeightVsBmp();
         header_ok_ = true;
         if (!open_ok_logged_) {
           open_ok_logged_ = true;
           STDOUT << "strip_column: opened " << path_ << " layout="
-                 << StripColumnFrameAxisName(StripColumnPath::GetFrameAxis())
+                 << StripColumnFrameAxisName(frame_axis_)
                  << " frames=" << num_frames_ << " bmp=" << bmp_info_.width << "x"
                  << bmp_info_.height << "\n";
         }
@@ -408,7 +431,7 @@ public:
       if (header_ok_ && !opened_) {
         cache_.ClearAllSlots();
         if (file_.IsOpen() &&
-            cache_.LoadFrameSlice(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(),
+            cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
                                   source_height_, 0, 0)) {
           opened_ = true;
           cache_.OnFirstFrameReady();
@@ -428,7 +451,7 @@ public:
       LOCK_SD(false);
     }
 
-    cache_.Tick(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(), source_height_, frame_ms_,
+    cache_.Tick(&file_, &bmp_info_, frame_axis_, source_height_, frame_ms_,
                 num_frames_);
     return true;
   }
@@ -446,10 +469,23 @@ public:
 private:
   uint16_t sqr(uint8_t x) { return (uint16_t)x * x; }
 
+  // WavLen<EFFECT_RETRACTION>: OneshotEffectDetector + effect->sound_length * 1000.
+  int RetractionLengthMs(BladeBase* blade) const {
+    int ms = 0;
+    if (blade) {
+      OneshotEffectDetector<EFFECT_RETRACTION> detector;
+      BladeEffect* effect = detector.Find(blade);
+      if (effect && effect->sound_length > 0)
+        ms = (int)(effect->sound_length * 1000);
+    }
+    if (ms <= 0) ms = STRIP_COLUMN_RETRACT_FALLBACK_MS;
+    return ms;
+  }
+
   void WarnSourceHeightVsBmp() {
     if (height_warned_) return;
     uint32_t blade_px =
-        StripColumnBmpBladePixelsInFile(&bmp_info_, StripColumnPath::GetFrameAxis());
+        StripColumnBmpBladePixelsInFile(&bmp_info_, frame_axis_);
     if ((uint32_t)source_height_ > blade_px) {
       height_warned_ = true;
       STDOUT << "strip_column: source_height " << source_height_
@@ -472,6 +508,10 @@ private:
   int source_height_;
   int frame_ms_;
   bool header_ok_;
+  bool was_on_;
+  bool retract_armed_;
+  uint32_t retract_deadline_ms_;
+  StripColumnBmpFrameAxis frame_axis_;
 };
 
 template<class SOURCE_HEIGHT, class FPS, class EXTEND_MS, class RETRACT_MS>

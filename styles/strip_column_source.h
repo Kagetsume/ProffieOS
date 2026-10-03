@@ -91,7 +91,10 @@ inline bool StripColumnTryOpenFile(FileReader* file, const char* path) {
 
 class StripColumnFrameSource {
 public:
-  StripColumnFrameSource() : open_ok_logged_(false) { Reset(); }
+  StripColumnFrameSource() : open_ok_logged_(false) {
+    Reset();
+    frame_axis_ = StripColumnPath::GetFrameAxis();
+  }
   ~StripColumnFrameSource() { CloseOpenFile(); }
 
   void CapturePendingPath() {
@@ -139,16 +142,10 @@ public:
     cache_.ClearAllSlots();
   }
 
-  void CloseSdFileHandleOnly() {
+  // SD handle only. Leaves opened_, header, and the RAM column cache so the
+  // off transition does not blank the mask or rewind to frame 0.
+  void CloseFileKeepCache() {
     if (file_.IsOpen()) file_.Close();
-  }
-
-  void ReleaseMediaForBlade(BladeBase* blade) {
-    if (StripColumnShouldReleaseMedia(blade)) {
-      CloseOpenFile();
-      return;
-    }
-    if (!SaberBase::IsOn()) CloseSdFileHandleOnly();
   }
 
   void InvalidateIfUnmounted() {
@@ -157,13 +154,58 @@ public:
 #endif
   }
 
+  // WavLen<EFFECT_RETRACTION>: OneshotEffectDetector + effect->sound_length * 1000.
+  int RetractionLengthMs(BladeBase* blade) const {
+    int ms = 0;
+    if (blade) {
+      OneshotEffectDetector<EFFECT_RETRACTION> detector;
+      BladeEffect* effect = detector.Find(blade);
+      if (effect && effect->sound_length > 0)
+        ms = (int)(effect->sound_length * 1000);
+    }
+    if (ms <= 0) ms = STRIP_COLUMN_RETRACT_FALLBACK_MS;
+    return ms;
+  }
+
+  // IsOn() is false for the whole retract, and the driver can leave
+  // is_powered() true after the wipe just to keep the style loop running.
+  // Latch a deadline on the true→false edge (retraction wav length). Tick
+  // only until that deadline, then close the SD file. Do not open SD before
+  // the first ignite (opened_ still false, was_on_ still false).
+  // Idempotent within a frame: the edge is consumed once via was_on_.
+  bool MediaPlaybackActive(BladeBase* blade) {
+    const bool on = SaberBase::IsOn();
+    if (on) {
+      was_on_ = true;
+      retract_armed_ = false;
+      return true;
+    }
+    if (was_on_) {
+      was_on_ = false;
+      retract_deadline_ms_ = millis() + (uint32_t)RetractionLengthMs(blade);
+      retract_armed_ = opened_;
+    }
+    bool retract_ticking = false;
+    if (retract_armed_) {
+      retract_ticking = (int32_t)(retract_deadline_ms_ - millis()) > 0;
+      if (!retract_ticking) retract_armed_ = false;
+    }
+    return retract_ticking;
+  }
+
   bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
     InvalidateIfUnmounted();
-    ReleaseMediaForBlade(blade);
-    if (!SaberBase::IsOn()) return false;
+    if (!MediaPlaybackActive(blade)) {
+      CloseFileKeepCache();
+      return false;
+    }
     if (opened_) {
-      if (file_.IsOpen()) return true;
-      CloseOpenFile();
+      if (!file_.IsOpen() && path_[0]) {
+        LOCK_SD(true);
+        file_.Open(path_);
+        LOCK_SD(false);
+      }
+      return true;
     }
 
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
@@ -188,7 +230,7 @@ public:
         LOCK_SD(false);
         return false;
       }
-      num_frames_ = StripColumnBmpNumFrames(&bmp_info_, StripColumnPath::GetFrameAxis());
+      num_frames_ = StripColumnBmpNumFrames(&bmp_info_, frame_axis_);
       if (num_frames_ == 0) num_frames_ = 1;
       header_ok_ = true;
       LogOpenSuccessOnce(opts);
@@ -196,7 +238,13 @@ public:
     }
 
     if (header_ok_ && !opened_) {
-      if (cache_.LoadFrameSlice(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(),
+      if (!file_.IsOpen() && path_[0]) {
+        LOCK_SD(true);
+        file_.Open(path_);
+        LOCK_SD(false);
+      }
+      if (file_.IsOpen() &&
+          cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
                                 source_height_, 0, 0)) {
         opened_ = true;
         cache_.OnFirstFrameReady();
@@ -208,7 +256,7 @@ public:
   void WarnSourceHeightVsBmp(int source_height, const char* style_name = "strip_column") {
     if (!header_ok_ || height_warned_) return;
     uint32_t blade_px =
-        StripColumnBmpBladePixelsInFile(&bmp_info_, StripColumnPath::GetFrameAxis());
+        StripColumnBmpBladePixelsInFile(&bmp_info_, frame_axis_);
     if ((uint32_t)source_height > blade_px) {
       height_warned_ = true;
       const char* tag = style_name ? style_name : "strip_column";
@@ -218,16 +266,27 @@ public:
   }
 
   // Updates cached frame when open; no-op when closed or num_leds <= 0.
+  // Keeps advancing while the saber is on (including the extend wipe) and
+  // through the retract deadline. Stops — and drops the SD handle — once
+  // that deadline passes, even if blade->is_powered() stays true.
   void AdvanceAnimation(int source_height, int fps, int num_leds, BladeBase* blade) {
     InvalidateIfUnmounted();
-    ReleaseMediaForBlade(blade);
-    if (!SaberBase::IsOn()) return;
+    if (!MediaPlaybackActive(blade)) {
+      CloseFileKeepCache();
+      return;
+    }
     if (!opened_ || num_leds <= 0) return;
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
     fps = clampi32(fps, 1, 240);
     int frame_ms = clampi32(1000 / fps, 1, 60000);
 
-    cache_.Tick(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(), source_height_, frame_ms,
+    if (!file_.IsOpen() && path_[0]) {
+      LOCK_SD(true);
+      file_.Open(path_);
+      LOCK_SD(false);
+    }
+
+    cache_.Tick(&file_, &bmp_info_, frame_axis_, source_height_, frame_ms,
                 num_frames_);
   }
 
@@ -242,6 +301,9 @@ private:
     open_ok_logged_ = false;
     num_frames_ = 0;
     source_height_ = 0;
+    was_on_ = false;
+    retract_armed_ = false;
+    retract_deadline_ms_ = 0;
     memset(&bmp_info_, 0, sizeof(bmp_info_));
   }
 
@@ -256,6 +318,10 @@ private:
   StripColumnBmpInfo bmp_info_;
   uint32_t num_frames_;
   int source_height_;
+  bool was_on_;
+  bool retract_armed_;
+  uint32_t retract_deadline_ms_;
+  StripColumnBmpFrameAxis frame_axis_;
 };
 
 #endif  // STYLES_STRIP_COLUMN_SOURCE_H
