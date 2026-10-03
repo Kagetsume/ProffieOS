@@ -349,8 +349,12 @@ public:
     int fps = clampi32(fps_.getInteger(0), 1, 240);
     frame_ms_ = clampi32(1000 / fps, 1, 60000);
 
-    if (StripColumnShouldReleaseMedia(blade)) {
-      CloseMediaFile();
+    // IsOn() is false for the whole retract. The blade stays powered until
+    // InOutTrL finishes the wipe, so keep ticking an already-open BMP until
+    // power drops. Do not start SD loads merely because the blade is powered
+    // before the first ignite (opened_ is still false).
+    if (!(SaberBase::IsOn() || (opened_ && blade && blade->is_powered()))) {
+      if (file_.IsOpen()) file_.Close();
       return true;
     }
 
@@ -418,13 +422,19 @@ public:
 
     if (!opened_ || num_leds_ <= 0) return true;
 
+    if (!file_.IsOpen() && path_[0]) {
+      LOCK_SD(true);
+      StripColumnOpenPath(&file_, path_);
+      LOCK_SD(false);
+    }
+
     cache_.Tick(&file_, &bmp_info_, StripColumnPath::GetFrameAxis(), source_height_, frame_ms_,
                 num_frames_);
     return true;
   }
 
   SimpleColor getColor(int led) {
-    if (opened_ && SaberBase::IsOn() && num_leds_ > 0 && source_height_ > 0) {
+    if (opened_ && num_leds_ > 0 && source_height_ > 0) {
       const uint8_t* data = cache_.DisplayData();
       uint8_t r, g, b;
       StripColumnSampleAtLed(data, led, num_leds_, source_height_, &r, &g, &b);
@@ -435,14 +445,6 @@ public:
 
 private:
   uint16_t sqr(uint8_t x) { return (uint16_t)x * x; }
-
-  void CloseMediaFile() {
-    if (!opened_ && !header_ok_ && !file_.IsOpen()) return;
-    file_.Close();
-    opened_ = false;
-    header_ok_ = false;
-    cache_.ClearAllSlots();
-  }
 
   void WarnSourceHeightVsBmp() {
     if (height_warned_) return;
