@@ -12,7 +12,8 @@
 //   - |biHeight| = source column height in pixels (row 0 = hilt)
 //   - biHeight > 0: classic bottom-up DIB (flip rows so row 0 = top/hilt)
 //   - biHeight < 0: top-down DIB (row 0 in file = hilt)
-// Each frame reads one vertical column via Seek+Read (no full bitmap in RAM).
+// Each animation column is read row-by-row: one Seek + Read(row_stride) per row, then
+// extract 3 bytes at column_index (fewer SD ops than Read(3) per pixel).
 
 #include "../common/file_reader.h"
 #include "../common/looper.h"
@@ -24,6 +25,11 @@
 #endif
 #include <stdint.h>
 #include <string.h>
+
+#ifndef STRIP_COLUMN_BMP_MAX_ROW_READ
+// Padded 24-bit BMP row (supports frame count width up to ~170).
+#define STRIP_COLUMN_BMP_MAX_ROW_READ 512
+#endif
 
 struct StripColumnBmpInfo {
   uint32_t width;
@@ -96,19 +102,35 @@ inline bool StripColumnBmpLoadColumnRows(FileReader* f, const StripColumnBmpInfo
   if (row_end > (int)info->height) row_end = (int)info->height;
   if (row_begin >= row_end) return true;
 
+  const uint32_t col_off = column_index * 3u;
+  const bool row_read_ok = info->row_stride <= STRIP_COLUMN_BMP_MAX_ROW_READ &&
+                           col_off + 3u <= info->row_stride;
+
   for (int logical_row = row_begin; logical_row < row_end; logical_row++) {
     if ((size_t)(logical_row + 1) * 3u > out_buf_size) return false;
     uint32_t file_row = info->top_down
         ? (uint32_t)logical_row
         : (info->height - 1u - (uint32_t)logical_row);
-    uint32_t pos = info->pixel_offset + file_row * info->row_stride + column_index * 3u;
-    // Short lock per pixel row — holding LOCK_SD across the whole column starves preon/hum SD audio.
-    LOCK_SD(true);
-    f->Seek(pos);
     uint8_t* px = out_buf + logical_row * 3;
-    int got = f->Read(px, 3);
-    LOCK_SD(false);
-    if (got != 3) return false;
+
+    LOCK_SD(true);
+    if (row_read_ok) {
+      uint8_t row_buf[STRIP_COLUMN_BMP_MAX_ROW_READ];
+      uint32_t pos = info->pixel_offset + file_row * info->row_stride;
+      f->Seek(pos);
+      int got = f->Read(row_buf, (int)info->row_stride);
+      LOCK_SD(false);
+      if (got != (int)info->row_stride) return false;
+      px[0] = row_buf[col_off];
+      px[1] = row_buf[col_off + 1];
+      px[2] = row_buf[col_off + 2];
+    } else {
+      uint32_t pos = info->pixel_offset + file_row * info->row_stride + col_off;
+      f->Seek(pos);
+      int got = f->Read(px, 3);
+      LOCK_SD(false);
+      if (got != 3) return false;
+    }
     uint8_t b = px[0];
     px[0] = px[2];
     px[2] = b;

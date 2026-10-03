@@ -1650,7 +1650,11 @@ void setup() {
   digitalWrite(boosterPin, HIGH);
 #endif
 #ifdef MOUNT_SD_SETTING
+#if defined(MOUNT_SD_ALWAYS_ON)
+  LSFS::SetAllowMount(true);
+#else
   LSFS::SetAllowMount(false);
+#endif
 #endif
   STDOUT.println("ProffieOS setup...");
 #if VERSION_MAJOR >= 4

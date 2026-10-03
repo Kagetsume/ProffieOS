@@ -40,7 +40,9 @@ const unsigned int maxLedsPerStrip = 144;
 #define ENABLE_MOTION
 #define ENABLE_WS2811
 #define ENABLE_SD
-//#define MOUNT_SD_SETTING
+#define MOUNT_SD_SETTING
+// USB mass storage on at boot (for now — remove MOUNT_SD_ALWAYS_ON to require edit-menu SD Access).
+#define MOUNT_SD_ALWAYS_ON
 #define ENABLE_SERIAL
 
 // SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config_files.h.
