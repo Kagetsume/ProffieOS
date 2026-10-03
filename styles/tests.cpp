@@ -19,6 +19,7 @@ struct CONFIG { struct Preset* presets; size_t num_presets;};
 extern CONFIG* current_config;
 
 #define PROFFIE_TEST
+#define ENABLE_SD_CONFIG_FILES
 
 #define COMMON_FUSE_H
 
@@ -1113,6 +1114,10 @@ void test_opacity_scale_token() {
   CHECK(ParseOpacityScaleToken("100") == 32768);
   CHECK(ParseOpacityScaleToken("100%") == 32768);
   CHECK(ParseOpacityScaleToken("50") == (int)((50 * 32768LL + 50) / 100));
+  CHECK(ParseBladePositionToken("0%") == 0);
+  CHECK(ParseBladePositionToken("100%") == 32768);
+  CHECK(ParseBladePositionToken("49%") == (int)((49 * 32768LL + 50) / 100));
+  CHECK(ParseBladePositionToken("16000") == 16000);
   CHECK(ParseOpacityScaleToken("") == 0);
   CHECK(ParseOpacityScaleToken("   ") == 0);
   CHECK(ParseOpacityScaleToken("xyzzy") == 0);
@@ -1146,6 +1151,21 @@ void test_config_layer_line_parse() {
   CHECK(s != nullptr);
   CHECK(blend == CONFIG_LAYER_BLEND_MULTIPLY);
   delete s;
+
+  CHECK(TryParseConfigLayerLine("strip_column animations/plasma.bmp 144 30 300 800", &s, &alpha, &blend));
+  CHECK(s != nullptr);
+  delete s;
+}
+
+void test_composite_config_layer_multiply() {
+  RGBA base(RGBA_um::Transparent());
+  RGBA_um sine_mask(Color16(50000, 50000, 50000), 32768);
+  RGBA after = CompositeConfigLayer(base, sine_mask, CONFIG_LAYER_BLEND_MULTIPLY);
+  CHECK(!after.alpha);
+  RGBA_um plasma(Color16(30000, 10000, 20000), 32768);
+  base = RGBA(plasma);
+  after = CompositeConfigLayer(base, sine_mask, CONFIG_LAYER_BLEND_MULTIPLY);
+  CHECK(after.alpha > 0);
 }
 
 void test_style_config_expand_local_vars() {
@@ -1271,11 +1291,43 @@ void test_strip_column() {
   StripColumnMapLed(0, 100, 1, &row, &frac);
   CHECK_NEAR(row, 0, 0);
 
-  ArgParser ap("animations/test.scf 144 30 300 800");
+  ArgParser ap("animations/test.bmp 144 30 300 800");
   CurrentArgParser = &ap;
   BladeStyle* style = strip_column_factory.make();
   CHECK(style != nullptr);
   delete style;
+}
+
+#include "strip_column_mask.h"
+
+void test_strip_column_mask() {
+  uint8_t column[] = { 0, 0, 0,  128, 128, 128,  255, 255, 255 };
+  CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 0, 3, 3), 0, 0);
+  CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 1, 3, 3), 32896, 256);
+  CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 2, 3, 3), 65535, 0);
+
+  ArgParser ap("masks/test.bmp 144 1");
+  CurrentArgParser = &ap;
+  BladeStyle* style = strip_column_mask_factory.make();
+  CHECK(style != nullptr);
+  delete style;
+}
+
+#include "real_clash.h"
+
+void test_real_clash_position() {
+  CHECK(RealClashUsesAnglePosition("angle"));
+  CHECK(!RealClashUsesAnglePosition("49%"));
+  ArgParser ap_angle("white angle");
+  CurrentArgParser = &ap_angle;
+  BladeStyle* angle_style = real_clash_factory.make();
+  CHECK(angle_style != nullptr);
+  delete angle_style;
+  ArgParser ap_pct("white 49%");
+  CurrentArgParser = &ap_pct;
+  BladeStyle* pct_style = real_clash_factory.make();
+  CHECK(pct_style != nullptr);
+  delete pct_style;
 }
 
 void test_get_max_arg() {
@@ -1300,9 +1352,12 @@ void test_get_max_arg() {
 int main() {
   test_opacity_scale_token();
   test_config_layer_line_parse();
+  test_composite_config_layer_multiply();
   test_style_config_expand_local_vars();
   test_style_parser_copy_arg_bounded();
   test_strip_column();
+  test_strip_column_mask();
+  test_real_clash_position();
   test_get_max_arg();
   test_smoothstep();
   test_layers();

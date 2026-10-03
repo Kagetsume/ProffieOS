@@ -70,6 +70,9 @@ inline int ParseOnOffValue(FileReader& f) {
 // Format: gesture=on|off, twist_on=on|off, twist_off=on|off, oled=on|off, bluetooth=on|off, buttons=1|2|3.
 // Does not crash on malformed input; invalid lines are skipped.
 inline void LoadBoardConfigFile() {
+#ifndef ENABLE_SD_CONFIG_FILES
+  return;
+#endif
 #ifdef ENABLE_SD
   board_config_file.gesture = -1;
   board_config_file.twist_on = -1;

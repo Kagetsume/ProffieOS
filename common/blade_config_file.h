@@ -60,12 +60,16 @@ struct SDBladeDef {
   bool simple_active_high_default_set;
 };
 
+#ifdef ENABLE_SD_CONFIG_FILES
 extern SDBladeDef sd_blade_defs[SD_MAX_BLADE_DEFS];
 extern size_t sd_blade_def_count;
 
 inline bool UseBladeConfigFile() {
   return sd_blade_def_count > 0;
 }
+#else
+inline bool UseBladeConfigFile() { return false; }
+#endif
 
 // Parse pin value from string: numeric (e.g. "20") or text constant (e.g. "bladePowerPin1").
 // Defined in blade_config_pin_names.h (included after board config).
@@ -203,7 +207,7 @@ static inline bool SDBladeDefIsPopulated(SDBladeDef& def) {
 // active_state= or active_state1=..active_state4= (high|low; default high). active_high= is an alias.
 // Does not crash on malformed input; invalid lines are skipped.
 inline void LoadBladeConfigFile() {
-#ifdef ENABLE_SD
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
   sd_blade_def_count = 0;
   for (size_t i = 0; i < SD_MAX_BLADE_DEFS; i++) {
     sd_blade_defs[i].driver = SD_BLADE_DRIVER_WS2811;

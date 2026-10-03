@@ -65,7 +65,7 @@
           "opacity": 26000
         },
         { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
-        { "styleName": "real_clash", "args": ["white", "16000"] },
+        { "styleName": "real_clash", "args": ["white", "49%"] },
         { "styleName": "blast", "args": ["white"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -114,7 +114,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -163,7 +163,7 @@
           "blend": "multiply",
           "opacity": 18000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -189,7 +189,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -215,7 +215,7 @@
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -241,7 +241,7 @@
           "blend": "multiply",
           "opacity": 18000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -267,7 +267,7 @@
           "blend": "multiply",
           "opacity": 16000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -293,7 +293,7 @@
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -319,7 +319,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -371,7 +371,7 @@
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -397,7 +397,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -423,7 +423,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -449,7 +449,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -475,7 +475,7 @@
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "lb", "args": ["{{lb}}"] }
@@ -543,7 +543,7 @@
           "blend": "add",
           "opacity": 5000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -604,7 +604,7 @@
           "blend": "multiply",
           "opacity": 16000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -640,7 +640,7 @@
           "blend": "screen",
           "opacity": 10000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -708,7 +708,7 @@
       },
       "layers": [
         { "styleName": "shimmer_blade", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -732,7 +732,7 @@
       },
       "layers": [
         { "styleName": "rotoscope", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -798,7 +798,7 @@
       },
       "layers": [
         { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },
@@ -829,7 +829,7 @@
       "description": "PWM accent: audio-gated motor (postoff tail) + clash flash.",
       "vars": {},
       "layers": [
-        { "styleName": "accent_sound_on", "args": ["white", "4096"] },
+        { "styleName": "accent_sound_on", "args": ["white", "13%"] },
         { "styleName": "clash", "args": ["white"] }
       ]
     },
@@ -890,7 +890,7 @@
           "blend": "add",
           "opacity": 32768
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "16000"] },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
         { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
         { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
         { "styleName": "drag", "args": ["{{drag}}"] },

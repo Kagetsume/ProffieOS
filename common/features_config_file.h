@@ -16,6 +16,9 @@
 // Sets gesture, twist_on, twist_off in board_config_file (overwrites if present).
 // Safe when SD disabled (no-op). Does not crash on malformed input.
 inline void LoadFeaturesConfigFile() {
+#ifndef ENABLE_SD_CONFIG_FILES
+  return;
+#endif
 #ifdef ENABLE_SD
   LOCK_SD(true);
   FileReader f;

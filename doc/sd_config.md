@@ -2,10 +2,22 @@
 
 ProffieOS can load the **preset list** from a config file on the SD card instead of using the presets compiled into the firmware. This lets you change fonts, styles, and preset names without recompiling.
 
+## Opt-in firmware support
+
+SD **`config/`** INI loading is **not** always compiled in. Enable it in your **`CONFIG_FILE`** ( **`CONFIG_TOP`** section):
+
+```c
+#define ENABLE_SD_CONFIG_FILES
+```
+
+The profile **`config/config-files-config.h`** defines this for the SD-config examples. Without it, firmware uses only compiled **`CONFIG_PRESETS`** / **`blades[]`**; files on SD under **`config/`** are ignored and the **`config`** named style is unavailable.
+
+See **`common/sd_config_files.h`**.
+
 ## When it applies
 
-- **Hardware config** (board, pins, number of blades, blade drivers) still comes from the compiled `CONFIG_FILE`.
-- **Presets** (font, track, style strings, names) are taken from the SD config file when present.
+- **Hardware config** (board, pins, number of blades, blade drivers) still comes from the compiled `CONFIG_FILE` (unless overridden by SD when **`ENABLE_SD_CONFIG_FILES`** is on).
+- **Presets** (font, track, style strings, names) are taken from the SD config file when present and support is enabled.
 
 ## Config file location and format
 
@@ -29,7 +41,8 @@ end
 ```
 
 - **`new_preset`** – starts a new preset (first line of the file can be `new_preset` for preset 0).
-- **`font=`** – font directory name (e.g. `MyFont` for `Fonts/MyFont/`).
+- **`font=`** – primary font directory (e.g. `LiquidStatic` → `/LiquidStatic` on SD, usually `Fonts/LiquidStatic/`).
+- **`voice=`** – optional **full SD path** to the voice pack search directory (after **`font=`**). **If omitted, `/common` is always used** — install prompts at **`SD:/common/`** (same level as **`Fonts/`** and **`config/`**). Override only for a non-default pack, e.g. **`voice=/common/AltPack`**. Do not use shorthand names; path must be complete. Do not append **`;common`** to **`font=`**.
 - **`track=`** – path to the track WAV (e.g. `tracks/hum.wav`).
 - **`style=`** – one line per blade; use named styles and arguments (e.g. `standard cyan white 300 800`, `fire red yellow`, `rainbow 300 800`). For multiple blades, list one `style=` per blade in order.
 - **`name=`** – display name for the preset.
@@ -96,7 +109,7 @@ font=Kyber
 track=tracks/hum.wav
 style=config sine_waves_cyan
 style=accent_pulse 1500
-style=accent_sound_on white 4096
+style=accent_sound_on white 13%
 style=accent_glow
 name=Sine Waves Cyan
 variation=0
@@ -105,7 +118,7 @@ font=Kyber
 track=tracks/hum.wav
 style=config smoke_laser
 style=accent_pulse 1500
-style=accent_sound_on white 4096
+style=accent_sound_on white 13%
 style=accent_glow
 name=Smoke Laser
 variation=0
@@ -114,7 +127,7 @@ font=Kyber
 track=tracks/hum.wav
 style=standard red white 300 800
 style=accent_pulse 1500
-style=accent_sound_on white 4096
+style=accent_sound_on white 13%
 style=accent_glow
 name=Red
 variation=0

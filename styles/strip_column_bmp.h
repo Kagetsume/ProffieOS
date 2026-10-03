@@ -1,9 +1,9 @@
 #ifndef STYLES_STRIP_COLUMN_BMP_H
 #define STYLES_STRIP_COLUMN_BMP_H
 
-// 24-bit uncompressed BMP loader for strip_column (SD, Proffie 3.9+).
+// Reads ordinary 24-bit uncompressed BMP files from SD (GIMP/Photoshop export).
 //
-// Supported BMP (strict):
+// Accepted BMP (same rules as typical editors):
 //   - 'BM' magic, BITMAPINFOHEADER (biSize >= 40)
 //   - biPlanes == 1, biBitCount == 24, biCompression == 0 (BI_RGB, no RLE)
 //   - No 8-bit palette / indexed color
@@ -15,7 +15,13 @@
 // Each frame reads one vertical column via Seek+Read (no full bitmap in RAM).
 
 #include "../common/file_reader.h"
+#include "../common/looper.h"
 #include "../common/stdout.h"
+#ifdef ENABLE_AUDIO
+#include "../sound/audio_stream_work.h"
+#else
+#define LOCK_SD(X) do { (void)(X); } while(0)
+#endif
 #include <stdint.h>
 #include <string.h>
 
@@ -79,6 +85,33 @@ inline bool StripColumnBmpParseHeader(FileReader* f, StripColumnBmpInfo* info) {
   return true;
 }
 
+// Load rows [row_begin, row_end) of one BMP column into out_buf (RGB8, row 0 = hilt).
+inline bool StripColumnBmpLoadColumnRows(FileReader* f, const StripColumnBmpInfo* info,
+                                           uint32_t column_index, int row_begin, int row_end,
+                                           uint8_t* out_buf, size_t out_buf_size) {
+  if (!f || !info || !out_buf || out_buf_size == 0) return false;
+  if (column_index >= info->width) return false;
+  if (row_begin < 0) row_begin = 0;
+  if (row_end > (int)info->height) row_end = (int)info->height;
+  if (row_begin >= row_end) return true;
+
+  for (int logical_row = row_begin; logical_row < row_end; logical_row++) {
+    if ((size_t)(logical_row + 1) * 3u > out_buf_size) return false;
+    uint32_t file_row = info->top_down
+        ? (uint32_t)logical_row
+        : (info->height - 1u - (uint32_t)logical_row);
+    uint32_t pos = info->pixel_offset + file_row * info->row_stride + column_index * 3u;
+    // Short lock per pixel row — holding LOCK_SD across the whole column starves preon/hum SD audio.
+    LOCK_SD(true);
+    f->Seek(pos);
+    int got = f->Read(out_buf + logical_row * 3, 3);
+    LOCK_SD(false);
+    if (got != 3) return false;
+    Looper::DoHFLoop();
+  }
+  return true;
+}
+
 // Fills out_buf (typically 512 bytes): RGB8 row-major, row 0 = hilt; zero-padded.
 inline bool StripColumnBmpLoadColumn(FileReader* f, const StripColumnBmpInfo* info,
                                      uint32_t column_index, int source_height,
@@ -91,15 +124,7 @@ inline bool StripColumnBmpLoadColumn(FileReader* f, const StripColumnBmpInfo* in
   if (rows > (int)info->height) rows = (int)info->height;
   if (rows < 0) rows = 0;
 
-  for (int logical_row = 0; logical_row < rows; logical_row++) {
-    uint32_t file_row = info->top_down
-        ? (uint32_t)logical_row
-        : (info->height - 1u - (uint32_t)logical_row);
-    uint32_t pos = info->pixel_offset + file_row * info->row_stride + column_index * 3u;
-    f->Seek(pos);
-    if (f->Read(out_buf + logical_row * 3, 3) != 3) return false;
-  }
-  return true;
+  return StripColumnBmpLoadColumnRows(f, info, column_index, 0, rows, out_buf, out_buf_size);
 }
 
 #endif  // STYLES_STRIP_COLUMN_BMP_H

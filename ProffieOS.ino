@@ -447,11 +447,17 @@ const char* previous_current_directory(const char* dir) {
 #include "sound/sound.h"
 
 // After sound stack (LOCK_SD from audio_stream_work.h): SD INI loaders use LOCK_SD.
+#include "common/sd_config_files.h"
+#ifdef ENABLE_SD_CONFIG_FILES
 #include "common/sd_config_defs.h"
 #include "common/blade_config_file_defs.h"
+#endif
 #include "common/board_config_file_defs.h"
 #include "common/features_config_file.h"
 #include "common/blade_config_pin_names.h"
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
+#include "common/sd_boot_style_warm.h"
+#endif
 
 #include "common/battery_monitor.h"
 #include "common/color.h"
@@ -1619,8 +1625,16 @@ StaticWrapper<ACCEL_CLASS> accelerometer;
 #include "sound/amplifier.h"
 #include "common/sd_card.h"
 #include "common/booster.h"
+#include "common/boot_progress.h"
 
 void setup() {
+  // USB CDC first — booster/SD can run before the host opens the port.
+  Serial.begin(115200);
+  delay(300);
+  Serial.println("PO setup");
+  Serial.flush();
+  BootProgressPulse(1);
+
 #if VERSION_MAJOR >= 4
 #define SAVE_RCC(X) startup_##X = RCC->X
   SAVE_RCC(AHB1ENR);
@@ -1642,7 +1656,7 @@ void setup() {
 #ifdef MOUNT_SD_SETTING
   LSFS::SetAllowMount(false);
 #endif
-  Serial.begin(115200);
+  STDOUT.println("ProffieOS setup...");
 #if VERSION_MAJOR >= 4
   // TODO: Figure out if we need this.
   // Serial.blockOnOverrun(false);
@@ -1705,13 +1719,15 @@ void setup() {
   Looper::DoSetup();
   PVLOG_DEBUG << "***************** Booting up! *******************\n";
 #ifdef ENABLE_SD
+#ifdef ENABLE_SD_CONFIG_FILES
   // Must run before FindBlade(): otherwise SetPreset() runs with UseSDConfig()==false and
   // compiled blade config only; SD presets / config/blades.ini never apply to styles or drivers.
   LoadSDConfig();
   LoadBladeConfigFile();
   InitSDBladeConfig();
+  WarmSdBootStyleCache();
 #endif
-  // Time to identify the blade (uses SD presets + SD blade defs when present).
+#endif
   prop.FindBlade(true);
   SaberBase::DoBoot();
 #if defined(ENABLE_SD)

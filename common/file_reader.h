@@ -93,7 +93,7 @@ private:
 // TODO: Make proper assignment or use std::variant instead.
 class FileReader {
 public:
-  FileReader() : type_(TYPE_MEM) {
+  FileReader() : type_(TYPE_MEM), sd_size_cache_(0) {
     mem_file_ = MemFile();
   }
   ~FileReader() { Close(); }
@@ -114,6 +114,7 @@ public:
     type_ = TYPE_SD;
     sd_file_ = LSFS::Open(filename);
     if (sd_file_) {
+      sd_size_cache_ = sd_file_.size();
       return true;
     } else {
       Close();
@@ -139,6 +140,7 @@ public:
     type_ = TYPE_SD;
     sd_file_ = LSFS::OpenFast(filename);
     if (sd_file_) {
+      sd_size_cache_ = sd_file_.size();
       return true;
     } else {
       Close();
@@ -192,6 +194,7 @@ public:
       IF_MEM(case TYPE_MEM: mem_file_.close(); mem_file_.~MemFile(); break;)
     }
     type_ = TYPE_MEM;
+    sd_size_cache_ = 0;
     mem_file_ = MemFile();
   }
   int Read(uint8_t* dest, int bytes) {
@@ -230,6 +233,12 @@ public:
     RUN_ALL_VOID(seek(n))
   }
   uint32_t Available() {
+#ifdef ENABLE_SD
+    if (type_ == TYPE_SD && sd_file_ && sd_size_cache_ > 0) {
+      uint32_t pos = sd_file_.position();
+      return pos < sd_size_cache_ ? sd_size_cache_ - pos : 0;
+    }
+#endif
     RUN_ALL(available());
     return 0;
   }
@@ -238,6 +247,9 @@ public:
     return 0;
   }
   uint32_t FileSize() {
+#ifdef ENABLE_SD
+    if (type_ == TYPE_SD && sd_file_ && sd_size_cache_ > 0) return sd_size_cache_;
+#endif
     RUN_ALL(size());
     return 0;
   }
@@ -494,6 +506,8 @@ private:
 #endif
     TYPE_MEM
   } type_;
+  // Cached SD file size (one seek at Open); avoids seek-to-EOF on every Available() (huge INI parse).
+  uint32_t sd_size_cache_;
   union {
     IF_SD(LSFS::LSFILE sd_file_;)
     IF_SF(SerialFlashFile sf_file_;)

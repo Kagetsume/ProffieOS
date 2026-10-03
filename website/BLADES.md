@@ -122,7 +122,7 @@ active_state = high
 
 ```ini
 style = accent_pulse 1500
-style = accent_sound_on white 4096
+style = accent_sound_on white 13%
 style = accent_glow white
 ```
 
@@ -361,7 +361,7 @@ style = accent_on
 Or sound-reactive (runs while speaker output is above threshold):
 
 ```ini
-style = accent_sound_on white 4096
+style = accent_sound_on white 13%
 ```
 
 See [`examples/README.md`](../examples/README.md) for the full `accent_*` list.

@@ -12,7 +12,7 @@
  *   config/blade_styles.ini
  *   (and config/blade_styles/*.ini if you use include = there)
  *
- * Behavior:
+ * Behavior (requires ENABLE_SD_CONFIG_FILES in CONFIG_TOP — see common/sd_config_files.h):
  * - If config/presets.ini is present and parses, it replaces the compiled preset list below.
  * - config/blades.ini, board.ini, features.ini, blade_styles.ini are read when present (see doc/).
  * - Hardware/pin map still comes from proffieboard_v3_config.h + this file's CONFIG_TOP.
@@ -43,6 +43,35 @@ const unsigned int maxLedsPerStrip = 144;
 //#define MOUNT_SD_SETTING
 #define ENABLE_SERIAL
 
+// SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config_files.h.
+#define ENABLE_SD_CONFIG_FILES
+// Bisect boot without editing SD: set to 1 and reflash — ignores config/presets.ini only (compiled presets).
+#ifndef SD_CONFIG_USE_COMPILED_PRESETS
+#define SD_CONFIG_USE_COMPILED_PRESETS 0
+#endif
+
+#define COLOR_CHANGE_DIRECT
+#define DISABLE_DIAGNOSTIC_COMMANDS
+#define MOTION_TIMEOUT 60 * 15 * 1000
+#define IDLE_OFF_TIME 5 * 60 * 1000
+#define FETT263_THRUST_ON
+#define FETT263_SWING_ON
+#define FETT263_SWING_ON_SPEED 300
+#define FETT263_TWIST_OFF
+#define FETT263_TWIST_ON
+#define FETT263_STAB_ON
+#define FETT263_FORCE_PUSH
+#define FETT263_FORCE_PUSH_LENGTH 4
+#define FETT263_CLASH_STRENGTH_SOUND
+#define FETT263_BM_CLASH_DETECT 7
+#define FETT263_MULTI_PHASE
+#define FETT263_SAY_BATTERY
+#define FETT263_SAY_COLOR_LIST
+#define FETT263_SAVE_CHOREOGRAPHY
+#define FETT263_EDIT_MODE_MENU
+#define ENABLE_ALL_EDIT_OPTIONS
+#define KEEP_SAVEFILES_WHEN_PROGRAMMING
+
 // Compiled blade wiring (blades[] below; WS2811 blades overridden by config/blades.ini on SD):
 //   Blade 1 — 144 px NeoPixel on bladePin, FET bladePowerPin1 + bladePowerPin2 + bladePowerPin3
 //   Blade 2 —  accent on blade5Pin (Free1 / PB3), SimpleBladePtr, accent_pulse 1500
@@ -50,11 +79,15 @@ const unsigned int maxLedsPerStrip = 144;
 //   Blade 4 —  accent on blade7Pin (Free3 / PB11), SimpleBladePtr, accent_glow
 #endif
 
+#ifdef CONFIG_PROP
+#include "../props/saber_fett263_buttons.h"
+#endif
+
 #ifdef CONFIG_PRESETS
 // Same named style as SD presets.ini: accent_pulse [pulse_ms] (default 3000).
 #define ACCENT_PULSE(MS) StylePtr<InOutHelper<PulsingX<BLACK, WHITE, IntArg<1, 3000>>, 0, 0>>(#MS)
 StyleAllocator accent_pulse_fast_style = ACCENT_PULSE(1500);
-StyleAllocator accent_sound_on_style = StylePtr<AlphaL<WHITE, IsGreaterThan<SmoothSoundLevel, Int<4096>>> >();
+StyleAllocator accent_sound_on_style = StylePtr<AlphaL<WHITE, IsGreaterThan<SmoothSoundLevel, OpacityScaleIntArg<2, 4096>>> >();
 StyleAllocator accent_glow_style = StylePtr<InOutHelper<AlphaL<WHITE, SmoothSoundLevel>, 0, 0> >();
 
 Preset presets[] = {

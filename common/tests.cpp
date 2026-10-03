@@ -791,6 +791,27 @@ void test_effect_location() {
   free((void *)ret);				\
 }while (0)
 
+void test_compose_preset_font_with_voice() {
+  char* r = ComposePresetFontWithVoice("/LiquidStatic", nullptr);
+  CHECK_STREQ(r, "/LiquidStatic;/common");
+  free(r);
+  r = ComposePresetFontWithVoice("/LiquidStatic", "");
+  CHECK_STREQ(r, "/LiquidStatic;/common");
+  free(r);
+  r = ComposePresetFontWithVoice("/LiquidStatic", "/common/AltPack");
+  CHECK_STREQ(r, "/LiquidStatic;/common/AltPack");
+  free(r);
+  r = ComposePresetFontWithVoice("", nullptr);
+  CHECK_STREQ(r, "/common");
+  free(r);
+  r = ComposePresetFontWithVoice("/LiquidStatic;/common", nullptr);
+  CHECK_STREQ(r, "/LiquidStatic;/common");
+  free(r);
+  r = ComposePresetFontWithVoice("LiquidStatic;common", nullptr);
+  CHECK_STREQ(r, "/LiquidStatic;/common");
+  free(r);
+}
+
 void test_patterns() {
   TEST_FORMAT_PATTERN("*;common", "font", "font;common");
   TEST_FORMAT_PATTERN("*", "font", "font");
@@ -889,6 +910,7 @@ void test_range_stripe_intersect() {
 int main() {
   test_range_stripe_intersect();
   test_command_line_capture();
+  test_compose_preset_font_with_voice();
   test_patterns();
   test_effect_location();
   test_cyclint();

@@ -14,6 +14,8 @@ export type PresetDefinition = {
   /** Stable id for editor state (not exported). */
   id: string;
   font: string;
+  /** Full SD voice pack path; omit in INI to use default /common. Exported as voice= when set. */
+  voice?: string;
   track: string;
   name: string;
   variation: number;

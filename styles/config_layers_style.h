@@ -31,7 +31,14 @@ enum ConfigLayerBlend : uint8_t {
 inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend_mode) {
   if (!over.alpha) return base;
   if (blend_mode == CONFIG_LAYER_BLEND_NORMAL) return base << over;
-  if (!base.alpha) return base << over;
+  // Multiply/screen need a visible base; alpha-over on transparent stack paints masks as
+  // solid texture (e.g. sine_waves grayscale) when strip_column BMP failed to open.
+  if (!base.alpha) {
+    if (blend_mode == CONFIG_LAYER_BLEND_MULTIPLY ||
+        blend_mode == CONFIG_LAYER_BLEND_SCREEN)
+      return base;
+    return base << over;
+  }
   uint32_t ba = base.alpha;
   uint64_t br = ((uint64_t)base.c.r << 15) / ba;
   uint64_t bg = ((uint64_t)base.c.g << 15) / ba;

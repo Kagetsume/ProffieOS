@@ -5,12 +5,41 @@
       "track": "tracks/hum.wav",
       "name": "Sine Waves Cyan",
       "variation": 0,
-      "comment": "style = config sine_waves_cyan — applies [sine_waves_cyan] from blade_styles.ini (first SD example)",
+      "comment": "style = config sine_waves_cyan \u2014 applies [sine_waves_cyan] from blade_styles.ini (first SD example)",
       "styles": [
-        { "kind": "config", "ref": "sine_waves_cyan", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "sine_waves_cyan",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -18,12 +47,41 @@
       "track": "tracks/hum.wav",
       "name": "Smoke Laser",
       "variation": 0,
-      "comment": "style = config smoke_laser — applies [smoke_laser] from blade_styles.ini",
+      "comment": "style = config smoke_laser \u2014 applies [smoke_laser] from blade_styles.ini",
       "styles": [
-        { "kind": "config", "ref": "smoke_laser", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "smoke_laser",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -31,12 +89,41 @@
       "track": "tracks/hum.wav",
       "name": "Smoke Sine Cyan",
       "variation": 0,
-      "comment": "style = config smoke_sine_cyan — cyan smoke_flow + sine_waves from blade_styles.ini",
+      "comment": "style = config smoke_sine_cyan \u2014 cyan smoke_flow + sine_waves from blade_styles.ini",
       "styles": [
-        { "kind": "config", "ref": "smoke_sine_cyan", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "smoke_sine_cyan",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -46,10 +133,44 @@
       "variation": 0,
       "comment": "Red standard blade",
       "styles": [
-        { "kind": "named", "ref": "standard", "args": ["red", "white", "300", "800"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "named",
+          "ref": "standard",
+          "args": [
+            "red",
+            "white",
+            "300",
+            "800"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -59,10 +180,39 @@
       "variation": 0,
       "comment": "config rainbow_strobe from blade_styles.ini",
       "styles": [
-        { "kind": "config", "ref": "rainbow_strobe", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "rainbow_strobe",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -72,10 +222,41 @@
       "variation": 0,
       "comment": "Override base color via preset key=value",
       "styles": [
-        { "kind": "config", "ref": "with_vars", "args": [], "overrides": { "base": "magenta" }, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "with_vars",
+          "args": [],
+          "overrides": {
+            "base": "magenta"
+          },
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -85,10 +266,39 @@
       "variation": 0,
       "comment": "Fett263-style SD smoke recipe",
       "styles": [
-        { "kind": "config", "ref": "smoke_blade", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "smoke_blade",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -96,12 +306,41 @@
       "track": "tracks/hum.wav",
       "name": "Saw Waves Demo",
       "variation": 0,
-      "comment": "style = config demo_saw_waves — saw_waves texture demo from blade_styles.ini",
+      "comment": "style = config demo_saw_waves \u2014 saw_waves texture demo from blade_styles.ini",
       "styles": [
-        { "kind": "config", "ref": "demo_saw_waves", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_saw_waves",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -111,10 +350,39 @@
       "variation": 0,
       "comment": "style = config demo_smoothstep_bands",
       "styles": [
-        { "kind": "config", "ref": "demo_smoothstep_bands", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_smoothstep_bands",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -124,10 +392,39 @@
       "variation": 0,
       "comment": "style = config demo_value_noise",
       "styles": [
-        { "kind": "config", "ref": "demo_value_noise", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_value_noise",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -137,10 +434,39 @@
       "variation": 0,
       "comment": "style = config demo_fbm_noise",
       "styles": [
-        { "kind": "config", "ref": "demo_fbm_noise", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_fbm_noise",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -150,10 +476,39 @@
       "variation": 0,
       "comment": "style = config demo_moire_mask",
       "styles": [
-        { "kind": "config", "ref": "demo_moire_mask", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_moire_mask",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -163,10 +518,39 @@
       "variation": 0,
       "comment": "style = config demo_blade_envelope",
       "styles": [
-        { "kind": "config", "ref": "demo_blade_envelope", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_blade_envelope",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -176,10 +560,39 @@
       "variation": 0,
       "comment": "style = config demo_sine_waves_swing",
       "styles": [
-        { "kind": "config", "ref": "demo_sine_waves_swing", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_sine_waves_swing",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -187,12 +600,41 @@
       "track": "tracks/hum.wav",
       "name": "Sine Waves Demo",
       "variation": 0,
-      "comment": "style = config demo_sine_waves — single-wave standalone (vs sine_waves_cyan)",
+      "comment": "style = config demo_sine_waves \u2014 single-wave standalone (vs sine_waves_cyan)",
       "styles": [
-        { "kind": "config", "ref": "demo_sine_waves", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_sine_waves",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -202,10 +644,39 @@
       "variation": 0,
       "comment": "style = config demo_random_bands",
       "styles": [
-        { "kind": "config", "ref": "demo_random_bands", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_random_bands",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -215,10 +686,39 @@
       "variation": 0,
       "comment": "style = config demo_pulse_train",
       "styles": [
-        { "kind": "config", "ref": "demo_pulse_train", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_pulse_train",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -228,10 +728,39 @@
       "variation": 0,
       "comment": "style = config demo_chirp",
       "styles": [
-        { "kind": "config", "ref": "demo_chirp", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "demo_chirp",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     },
     {
@@ -240,10 +769,39 @@
       "name": "Fire blast",
       "variation": 0,
       "styles": [
-        { "kind": "config", "ref": "fire_blast", "args": [], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_pulse", "args": ["1500"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_sound_on", "args": ["white", "13%"], "overrides": {}, "customLine": "" },
-        { "kind": "named", "ref": "accent_glow", "args": [], "overrides": {}, "customLine": "" }
+        {
+          "kind": "config",
+          "ref": "fire_blast",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_pulse",
+          "args": [
+            "1500"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ],
+          "overrides": {},
+          "customLine": ""
+        },
+        {
+          "kind": "named",
+          "ref": "accent_glow",
+          "args": [],
+          "overrides": {},
+          "customLine": ""
+        }
       ]
     }
   ]

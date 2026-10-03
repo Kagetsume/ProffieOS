@@ -67,4 +67,13 @@ inline int ParseOpacityScaleToken(const char* token) {
   return (int)((n * 32768LL + 50) / 100);
 }
 
+// Blade position along strip: 0% = hilt, 100% = tip (same token rules as opacity scale).
+inline bool BladePositionTokenParses(const char* token) {
+  return OpacityScaleTokenParses(token);
+}
+
+inline int ParseBladePositionToken(const char* token) {
+  return ParseOpacityScaleToken(token);
+}
+
 #endif

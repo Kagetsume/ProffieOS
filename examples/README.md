@@ -7,7 +7,7 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 4096`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
+The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
 | File | Purpose |
 |------|---------|
@@ -26,7 +26,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 **SD config checklist (accents dark but main blades work):**
 
 1. **`config/blades.ini`** — define **every** accent blade index (`blade = 1` … `blade = 3` for Free1–Free3). Wiring alone is not enough; missing indices are not activated at boot.
-2. **`config/presets.ini`** — **four** `style =` lines per preset when `NUM_BLADES` is 4 (lines 2–4: `accent_pulse 1500`, `accent_sound_on white 4096`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
+2. **`config/presets.ini`** — **four** `style =` lines per preset when `NUM_BLADES` is 4 (lines 2–4: `accent_pulse 1500`, `accent_sound_on white 13%`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
 3. **Firmware** — `accent_*` styles must exist in `named_styles[]` (reflash after adding them). Over serial, `list_named_styles` should list `accent_pulse`, `accent_sound_on`, etc. A failed parse logs `Blade N: failed to parse style "…"`.
 4. **Compiled fallback** — without `presets.ini`, accents use `builtin <preset> <blade>` from compiled `config-files-config.h` (always works after flash). With `presets.ini`, styles come from the SD strings above.
 
@@ -35,7 +35,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 | Style | Example | Notes |
 |-------|---------|-------|
 | `accent_on` | `style = accent_on` | Solid on while blade is out (motor / indicators) |
-| `accent_sound_on` | `style = accent_sound_on white 4096` | Full on while audio above threshold; off when quiet (motors through postoff tail) |
+| `accent_sound_on` | `style = accent_sound_on white 13%` | Full on while audio above threshold; off when quiet (motors through postoff tail) |
 | `accent_pulse` | `style = accent_pulse 1500` | Smooth pulse; optional `pulse_ms` (default 3000) |
 | `accent_color` | `style = accent_color amber` | Solid color |
 | `accent_pulse_color` | `style = accent_pulse_color red 2000` | Pulse black → color |
@@ -122,7 +122,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `clash` | `clash white` | Transparent until clash |
 | `localized_clash` | `localized_clash white` | Positioned clash band (random position) |
 | `responsive_clash` | `responsive_clash white` | Blade-angle positioned clash bump |
-| `real_clash` | `real_clash white 16000` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
+| `real_clash` | `real_clash white 49%` or `real_clash white angle` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
 | `lockup` | `lockup cyan` | Lockup / drag / melt tint |
 | `sparkle` | `add opacity 24% sparkle white` | Random sparkles |
 | `pulse` | `multiply opacity 73% pulse white 3000` | Breathing brightness |

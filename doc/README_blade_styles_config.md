@@ -15,7 +15,7 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 | Kind | Write in INI | Firmware notes |
 |------|----------------|----------------|
 | **Colors** | Name (`cyan`, `red`) or **`r,g,b`** with **0–255** per channel (e.g. **`0,24,0`**) | Scaled to 16-bit internally (×257). Legacy: any channel **>255** is treated as raw 16-bit. |
-| **Layer opacity** | **`55%`**, **`55`**, or raw **>100** up to **32768** | **`100`** / **`100%`** = full; omitted when **`normal`** blend at full strength. |
+| **Layer opacity** | **`55%`** or **`55`** ( **`100%`** = full ) | Raw **>100** without **`%`** still accepted (legacy **0–32768** scale). |
 | **extend_ms / retract_ms** | Milliseconds; **`-1`** = match ignition/retraction sound | Same as preset styles. |
 | **Mask min / max** (waves, noise, moire, …) | Still **0–65535** brightness along the blade | **Gap:** percent (**0–100%**) not implemented yet — use raw or editor percent fields where available. |
 | **Mask duty / center** (`pulse_train`, `blade_envelope`) | Prefer **percent** in editor; INI may use **`50%`** or implicit percent **≤100** | Raw **>100** without **`%`** = 0–32768 position/fraction scale. |
@@ -38,16 +38,16 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | **`r,g,b`** with all channels **0–255** | 8-bit sRGB | Treated as 8-bit: each channel × **257** → **`Color16`** (same as named colors) | — |
 | **`r,g,b`** with any channel **> 255** | Direct wide RGB | Stored as **`Color16(r,g,b)`** without ×257 (Proffie 16-bit color args) | Matches old compiled-style numeric colors |
 | **Layer `opacity`** (`multiply opacity 73% …`) | How strongly this layer blends over layers below | Parsed to **0–32768** alpha scale (**32768** = opaque). Trailing **`%`**: percent 0–100. No **`%`**: integer **≤100** = percent (**`100`** = full); **>100** = raw **0–32768** | Compile-time styles use **`AlphaL<…, Int<18000>>`** directly |
-| **`pulse_train` … duty**, other **`OpacityScaleIntArg`** slots | Lit fraction / threshold-style strength | Same rules as **`opacity`** token (**`16384`** ≈ 50% duty default) | Raw integer args in compiled C++ styles |
+| **`pulse_train` … duty**, **`blade_envelope` center**, **`real_clash` position**, **`accent_sound_on` threshold** | Percent along blade or strength | Same rules as **`opacity`** (**`50%`**, **`49%`**, …) | Raw **>100** without **`%`** = legacy **0–32768** |
 | **Multiply-mask `min` / `max`** (`sine_waves`, `random_bands`, noise masks, …) | Darkest vs brightest band of the mask along the blade | **0–65535** brightness (**0** = black / full darken, **65535** = white / no change for multiply). Not the 32768 opacity scale | Percent syntax for min/max is reserved for future UX; use integers today |
 | **`extend_ms` / `retract_ms`** (base, **`smoke_flow`**, **`strip_column`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`) | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
 | **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
 | **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
 | **`smoke_flow` … speed** (5th arg after ext/ret) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** pairs |
-| **`strip_column`** `path`, `source_height`, `fps`, ext, ret | SD column animation base | **`fps`**: frame rate; **`source_height`**: BMP height in pixels (hilt at top); **24-bit uncompressed BMP** on SD (**`strip_column_bmp.h`**). Optional **`.scf`** for developers (**`strip_column.h`**). **`-1`** ext/ret = sound sync | — |
-| **`real_clash`** `color`, **`lockup_position`** (e.g. **`16000`**) | OS7 Real Clash overlay color and blade-angle band center | Second arg is **position on blade 0–32768** (hilt→tip), **not** opacity. Default **16000** ≈ upper blade. Strength path uses **`GetClashStrength`** from the prop | Monolithic OS7 compiled styles |
+| **`strip_column`** `path`, `source_height`, `fps`, ext, ret | SD column animation base | **`fps`**: frame rate; **`source_height`**: BMP height in pixels (hilt at top); **24-bit uncompressed BMP** on SD (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | — |
+| **`real_clash`** `color`, **`blade_position`** (e.g. **`49%`** or **`angle`**) | OS7 Real Clash overlay color and band placement | **0%**–**100%** = fixed center on blade (OS7 tilt-modulated band); **`angle`** = center tracks blade tilt (**ResponsiveClash**-style). Default **49%**. Strength path uses **`GetClashStrength`** | Monolithic OS7 compiled styles |
 
-**Quick examples:** `layer = multiply opacity 73% sine_waves 2400 0 8192 65535 -2000` — opacity is percent; period **2400**; min/max **8192–65535**; scroll **-2000**. `layer = real_clash white 16000` — **16000** is clash position, not **73%**-style alpha.
+**Quick examples:** `layer = multiply opacity 73% sine_waves 2400 0 8192 65535 -2000` — opacity is percent; period **2400**; min/max **8192–65535** (mask scale, not percent yet); scroll **-2000**. `layer = real_clash white 49%` — fixed band center ~upper blade; `layer = real_clash white angle` — band follows tilt.
 
 ---
 
@@ -71,16 +71,16 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 |-------|----------------------|---------|
 | **solid** | base color, extension ms, retraction ms | `solid cyan 300 800` — composable base; stack `clash` / `blast` overlays |
 | **solid_bend** | base color, extension ms, retraction ms | `solid_bend cyan 300 800` — like **solid** with OS7 BendTimePow in/out |
-| **strip_column** | SD path, source height, fps, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**) |
+| **strip_column** | SD path, source height, fps, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
+| **strip_column_mask** | SD path, source height, fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column**; grayscale column = multiply brightness mask (width = frames, height = blade; static mask: width **1**, fps **1**). Missing/invalid file: transparent (no effect) |
 
-**strip_column — animation file on a PC:** The image is a sideways flipbook: **width = number of frames**, **height = blade length in pixels** (top of the image = hilt, bottom = tip). Each pixel is one color on the blade at that frame.
+**strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (raw RGB pixels — not a special saber file type). The image is a sideways flipbook: **width = number of frames**, **height = blade length in pixels** (top of the image = hilt, bottom = tip). Each pixel is one color on the blade at that frame.
 
 1. **GIMP:** *File → Export As…* → name your file `.bmp` → in the BMP options, use **24-bit** color and **no compression** (not RLE).
 2. **Photoshop:** *File → Save As* → *BMP* → *24 Bit*, standard Windows format (uncompressed).
 3. Copy the `.bmp` onto the SD card (e.g. `animations/plasma.bmp`) and use that path in your recipe.
 4. Set **source height** in the style line to the BMP height in pixels (must match the file; if you set it higher, firmware clamps and logs a warning). Example: `layer = strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
 
-*Optional for firmware developers: `.scf` binary format — see **strip_column.h**.*
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
 | **fire** | warm color, hot color | `fire red yellow` |
@@ -110,7 +110,7 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **smoothstep_bands** | period, speed, min, max, edge_width | Soft rolling bands |
 | **value_noise** / **fbm_noise** | scale, speed, min, max, … | 1D hash noise / cheap FBM multiply masks |
 | **moire_mask** | period1, period2, speed1, speed2, min, max | Beating linear ramps |
-| **blade_envelope** | center, width, min, max, speed | Bump along blade (center 0=hilt, 32768=tip) |
+| **blade_envelope** | center, width, min, max, speed | Bump along blade (**center**: **0%** hilt, **100%** tip, e.g. **`50%`**) |
 | **sine_waves_swing** | sine_waves args + swing/twist scale | Motion shortens wavelength |
 | **pixel_sequence** | step config string | `pixel_sequence 0,255,0,0,100,200\|1,0,255,0,100,200` — see **pixel_sequencer.md** |
 | **sparktip_layer** | spark color, ext ms, ret ms | `sparktip_layer white {{ext}} {{ret}}` — spark band during extend only; stack with **`add`** |
@@ -120,7 +120,7 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **responsive_blast** | blast color (optional) | Blade-angle wave on blast |
 | **clash** / **localized_clash** | clash color | Standard clash overlays |
 | **responsive_clash** | clash color (optional) | Blade-angle bump on clash |
-| **real_clash** | clash color, duration (optional) | OS7 Real Clash V1 |
+| **real_clash** | clash color, blade position (optional) | OS7 Real Clash V1 — **`49%`** or **`angle`** |
 | **lockup** / **responsive_lockup** | lockup colors… | Held lockup overlays |
 | **drag** / **melt** / **lb** | colors… | Lockup suite overlays |
 | **swing** | swing color | Swing brightening overlay |

@@ -87,7 +87,7 @@ layer = screen opacity 22000 blast white
 | `screen` | Soft brightening without harsh clip |
 | `add` | Flashes, strobe pulses, sparkles on a base |
 
-**Opacity:** `0` = transparent, `32768` = fully opaque. Opaque full blades without blend +
+**Opacity:** `0%` = transparent, `100%` = fully opaque. Opaque full blades without blend +
 opacity will **hide** layers below — use overlays, textures with blend, or lower opacity.
 
 ### Section variables
@@ -139,8 +139,8 @@ Composable example (gradient follows base; no extra timing on textures):
 ext = -1
 ret = -1
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = normal opacity 32768 gradient_layer {{hilt}} {{tip}}
-layer = multiply opacity 32768 audio_layer
+layer = normal opacity 100% gradient_layer {{hilt}} {{tip}}
+layer = multiply opacity 100% audio_layer
 ```
 
 See also [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
@@ -231,7 +231,7 @@ so black standby adds nothing and white flash brightens the base.
 ```ini
 [rainbow_strobe]
 layer = rainbow 300 800
-layer = add opacity 16000 strobe black white 15 1 300 800
+layer = add opacity 49% strobe black white 15 1 300 800
 ```
 
 ---
@@ -244,7 +244,7 @@ layer = add opacity 16000 strobe black white 15 1 300 800
 [complex]
 layer = rainbow 300 800
 layer = blast white
-layer = add opacity 16000 strobe black cyan 20 1 300 800
+layer = add opacity 49% strobe black cyan 20 1 300 800
 ```
 
 ---
@@ -277,7 +277,7 @@ layer = blast white
 
 [nested_config_demo]
 layer = config base_rainbow_blast
-layer = add opacity 16000 strobe black white 15 1 300 800
+layer = add opacity 49% strobe black white 15 1 300 800
 ```
 
 ---
@@ -299,7 +299,7 @@ layer = solid {{base}} {{ext}} {{ret}}
 layer = multiply opacity 24000 smoke_flow black white {{ext}} {{ret}}
 layer = screen opacity 4000 smoke_flow black {{base}} {{ext}} {{ret}}
 layer = add opacity 6000 swing white 200
-layer = real_clash white 16000
+layer = real_clash white 49%
 layer = blast white
 layer = responsive_lockup white
 layer = drag white
@@ -382,8 +382,8 @@ base = blue
 ext = 300
 ret = 800
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = multiply opacity 16000 stripes 6000 -3000 {{base}} black
-layer = real_clash white 16000
+layer = multiply opacity 49% stripes 6000 -3000 {{base}} black
+layer = real_clash white 49%
 layer = blast_wave_random white
 layer = responsive_lockup white
 ```
@@ -394,9 +394,9 @@ base = blue
 ext = 300
 ret = 800
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = multiply opacity 16000 stripes 22000 -1400 {{base}} black
+layer = multiply opacity 49% stripes 22000 -1400 {{base}} black
 layer = screen opacity 10000 audio {{base}} {{base}} white {{ext}} {{ret}}
-layer = real_clash white 16000
+layer = real_clash white 49%
 ```
 
 ---
@@ -419,8 +419,8 @@ tip = orange
 ext = 300
 ret = 800
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = normal opacity 32768 gradient_layer {{hilt}} {{tip}}
-layer = real_clash white 16000
+layer = normal opacity 100% gradient_layer {{hilt}} {{tip}}
+layer = real_clash white 49%
 layer = blast white
 
 [composable_audio]
@@ -428,8 +428,8 @@ base = blue
 ext = 300
 ret = 800
 layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = multiply opacity 32768 audio_layer
-layer = real_clash white 16000
+layer = multiply opacity 100% audio_layer
+layer = real_clash white 49%
 layer = blast white
 ```
 
@@ -444,10 +444,10 @@ Shipped sections: **`[composable_gradient]`**, **`[composable_gradient_tint]`**,
 
 | Monolithic | Composable replacement |
 |------------|------------------------|
-| `rainbow` | `solid_bend black …` + `normal opacity 32768 rainbow_layer` |
-| `gradient` | `solid_bend` + `normal opacity 32768 gradient_layer hilt tip` |
-| `audio` | `solid_bend` + `multiply opacity 32768 audio_layer` |
-| `pulse_blade` | `solid_bend` + `multiply opacity 32768 pulse_layer 3000` |
+| `rainbow` | `solid_bend black …` + `normal opacity 100% rainbow_layer` |
+| `gradient` | `solid_bend` + `normal opacity 100% gradient_layer hilt tip` |
+| `audio` | `solid_bend` + `multiply opacity 100% audio_layer` |
+| `pulse_blade` | `solid_bend` + `multiply opacity 100% pulse_layer 3000` |
 | `sparktip` (full InOut) | `solid_bend` + `add sparktip_layer white {{ext}} {{ret}}` during extend |
 
 **Clash / blast paths:** OS7 stack uses **`real_clash`** + **`blast_wave_random`**;
@@ -524,7 +524,7 @@ file for basic accents. Set styles **directly in presets**:
 
 ```ini
 style = accent_pulse 1500
-style = accent_sound_on white 4096
+style = accent_sound_on white 13%
 style = accent_glow white
 ```
 
@@ -581,7 +581,7 @@ font = MyFont
 track = tracks/hum.wav
 style = config smoke_blade base=purple
 style = accent_pulse 1500
-style = accent_sound_on white 4096
+style = accent_sound_on white 13%
 style = accent_glow
 name = Smoke + accents
 variation = 0

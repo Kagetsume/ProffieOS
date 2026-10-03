@@ -23,6 +23,7 @@
 
 #include "file_reader.h"
 #include "lsfs.h"
+#include "stdout.h"
 #include "strfun.h"
 #include <stdio.h>
 #include <string.h>
@@ -711,6 +712,8 @@ inline void StyleConfigProcessStyleFragment(FileReader& f,
 // treats # and ; as comment, skips unknown variables, skips empty layer values; does not crash.
 // Phase A/B: locals + {{}}; palettes; includes; structured layer.<style>.<slot> keys.
 // Phase D: optional preset overrides (key=value) merged after INI locals for the section.
+#include "style_config_cache.h"
+
 inline int LoadStyleConfigLayers(const char* section_name,
                                   char layers[][STYLE_CONFIG_LAYER_STR_LEN],
                                   int max_layers,
@@ -722,19 +725,41 @@ inline int LoadStyleConfigLayers(const char* section_name,
   int oc = override_count;
   if (oc < 0) oc = 0;
   else if (oc > STYLE_CONFIG_MAX_LOCAL_VARS) oc = STYLE_CONFIG_MAX_LOCAL_VARS;
+
+  if (oc == 0) {
+    int cached = StyleConfigCopyLayersFromCache(section_name, layers, max_layers);
+    if (cached > 0) return cached;
+  }
+
   StyleConfigSectionState st;
   memset(&st, 0, sizeof(st));
+  st.preset_override_count = oc;
+  st.preset_override_keys = override_keys;
+  st.preset_override_vals = override_vals;
+  char include_stack[STYLE_INCLUDE_MAX_DEPTH][STYLE_PATH_MAX];
+  memset(include_stack, 0, sizeof(include_stack));
+  int count = 0;
+
   LOCK_SD(true);
   FileReader f;
   if (!f.Open(SD_STYLE_CONFIG_PATH)) {
     LOCK_SD(false);
     return 0;
   }
-  static StylePaletteCacheEntry palette_cache[STYLE_PALETTE_CACHE_MAX];
-  int palette_ncache = 0;
-  StyleConfigScanPalettes(f, palette_cache, &palette_ncache);
-  char include_stack[STYLE_INCLUDE_MAX_DEPTH][STYLE_PATH_MAX];
-  int count = 0;
+
+  uint32_t section_off = 0;
+  if (style_config_section_index_ready &&
+      StyleConfigFindSectionOffset(section_name, &section_off) >= 0) {
+    f.Seek(section_off);
+    count = StyleConfigParseSectionAtReader(
+        f, section_name, &st, layers, max_layers, style_config_global_palette_cache,
+        style_config_global_palette_ncache, include_stack);
+    f.Close();
+    LOCK_SD(false);
+    if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);
+    return count;
+  }
+
   int line_count = 0;
   bool in_section = false;
   while (f.Available() && count < max_layers && line_count < SD_STYLE_CONFIG_MAX_LINES) {
@@ -838,8 +863,9 @@ inline int LoadStyleConfigLayers(const char* section_name,
       palname[vi] = 0;
       while (vi > 0 && (palname[vi - 1] == ' ' || palname[vi - 1] == '\t' || palname[vi - 1] == '\r')) palname[--vi] = 0;
       StripIniTrailingLineEndings(palname);
-      const StylePaletteCacheEntry* pal =
-          StyleConfigFindPalette(palette_cache, palette_ncache, palname);
+      StyleConfigEnsurePalettesLoaded();
+      const StylePaletteCacheEntry* pal = StyleConfigFindPalette(
+          style_config_global_palette_cache, style_config_global_palette_ncache, palname);
       StyleConfigMergePaletteMissing(st.keys, st.vals, &st.var_count, pal);
     } else if (!strcmp(variable, "include")) {
       StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
@@ -866,8 +892,9 @@ inline int LoadStyleConfigLayers(const char* section_name,
       include_stack[0][STYLE_PATH_MAX - 1] = '\0';
       FileReader inc;
       if (!inc.Open(norm)) continue;
-      StyleConfigProcessStyleFragment(inc, &st, layers, &count, max_layers, palette_cache, palette_ncache,
-                                      &line_count, 1, include_stack);
+      StyleConfigProcessStyleFragment(inc, &st, layers, &count, max_layers,
+                                      style_config_global_palette_cache,
+                                      style_config_global_palette_ncache, &line_count, 1, include_stack);
       inc.Close();
       continue;
     } else {
@@ -893,6 +920,7 @@ inline int LoadStyleConfigLayers(const char* section_name,
   if (in_section) StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
   f.Close();
   LOCK_SD(false);
+  if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);
   return count;
 #else
   (void)section_name;

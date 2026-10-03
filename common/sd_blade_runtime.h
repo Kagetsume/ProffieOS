@@ -7,7 +7,7 @@
 
 #ifdef ENABLE_SD
 
-#if defined(ARDUINO_ARCH_STM32L4)
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ARDUINO_ARCH_STM32L4)
 
 #include "blade_config_file.h"
 #include "../blades/runtime_simple_blade.h"
@@ -96,20 +96,25 @@ void InitSDBladeConfig() {
       sd_blade_config_has_blades = true;
     }
   }
-#ifdef ENABLE_WS2811
-  // If blade 0 failed (bad pin / pixel count) but a later [blade = N] succeeded, the old
-  // dense loop left sd_blade_ptrs[0] null while sd_blade_ptrs[1] was valid — Prop blade1 got
-  // nullptr (dark main strip). Use the first created driver for slot 0 when slot 0 is empty.
-  if (sd_blade_config_has_blades && !sd_blade_ptrs[0]) {
-    for (int j = 1; j < (int)NUM_BLADES && j < (int)SD_MAX_BLADE_DEFS; j++) {
-      if (sd_blade_ptrs[j]) {
-        sd_blade_ptrs[0] = sd_blade_ptrs[j];
-        sd_blade_ptrs[j] = nullptr;
-        break;
+  // blades.ini must use blade=0 for the main strip. If index 0 is empty but index 1 is a
+  // NeoPixel strip (common 1-based copy mistake), shift drivers down so blade1 is not null
+  // and we do not also map compiled NeoPixel onto blade1 (same pins, dark/garbled strip).
+  if (!sd_blade_ptrs[0] && sd_blade_def_count > 1 &&
+      SDBladeDefIsPopulated(sd_blade_defs[1]) &&
+      sd_blade_defs[1].driver != SD_BLADE_DRIVER_SIMPLE) {
+    int dst = 0;
+    for (int src = 1; src < (int)SD_MAX_BLADE_DEFS && dst < (int)NUM_BLADES; src++) {
+      if (!sd_blade_ptrs[src]) continue;
+      if (dst != src) {
+        sd_blade_ptrs[dst] = sd_blade_ptrs[src];
+        sd_blade_ptrs[src] = nullptr;
       }
+      dst++;
     }
+    for (int clear = dst; clear < (int)SD_MAX_BLADE_DEFS; clear++)
+      sd_blade_ptrs[clear] = nullptr;
+    PVLOG_STATUS << "SD blade config: shifted 1-based blade indices to start at blade 0\n";
   }
-#endif
   sd_blade_config.ohm = (NELEM(blades) > 0) ? blades[0].ohm : 0;
   sd_blade_config.presets = (NELEM(blades) > 0) ? blades[0].presets : nullptr;
   sd_blade_config.num_presets = (NELEM(blades) > 0) ? blades[0].num_presets : 0;
@@ -131,13 +136,16 @@ void InitSDBladeConfig() {
 }
 
 BladeConfig* GetSDBladeConfig() {
-  return (UseBladeConfigFile() && sd_blade_config_has_blades) ? &sd_blade_config : nullptr;
+  if (!UseBladeConfigFile() || !sd_blade_config_has_blades) return nullptr;
+  // Main strip must be blade slot 1; otherwise use compiled blades[] (avoid null strip + mixed drivers).
+  if (!sd_blade_config.blade1) return nullptr;
+  return &sd_blade_config;
 }
 
-#else  // ENABLE_SD but not STM32: stubs
+#else  // no SD config files and/or not STM32
 void InitSDBladeConfig() {}
 BladeConfig* GetSDBladeConfig() { return nullptr; }
-#endif  // ARDUINO_ARCH_STM32L4
+#endif
 
 #endif  // ENABLE_SD
 

@@ -1279,9 +1279,10 @@
         },
         {
           "slot": "lockup_pos",
-          "label": "Lockup pos",
+          "label": "Blade position",
           "type": "number",
-          "default": "16000"
+          "default": "49%",
+          "hint": "0% hilt, 100% tip; or angle for tilt-tracked band (like responsive_clash)"
         }
       ]
     },

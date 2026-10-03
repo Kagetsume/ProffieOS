@@ -84,7 +84,7 @@ ext = 300
 ret = 800
 layer = solid_bend {{base}} {{ext}} {{ret}}
 layer = add opacity 100% pixel_sequence 0,0,255,0,60,150|0,255,0,0,60,150|255,255,255,255,40,80
-layer = real_clash white 16000
+layer = real_clash white 49%
 layer = blast white
 ```
 

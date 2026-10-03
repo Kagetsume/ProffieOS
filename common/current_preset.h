@@ -5,6 +5,7 @@
 #include "file_reader.h"
 #include "blade_config.h"
 #include "sd_config.h"
+#include "arg_parser.h"
 
 class CurrentPreset {
 public:
@@ -14,6 +15,8 @@ public:
   const char* read_from_save_dir_ = "";
   uint32_t iteration_ = 0;
   LSPtr<char> font;
+  LSPtr<char> font_primary;
+  LSPtr<char> voice;
   LSPtr<char> track;
 #if NUM_BLADES > 0
   LSPtr<char> current_style_[NUM_BLADES];
@@ -62,11 +65,11 @@ public:
   static const char* DefaultAccentStyleForBladeIndex(size_t blade_index) {
 #if NUM_BLADES >= 5
     if (blade_index == 2) return "accent_pulse 1500";
-    if (blade_index == 3) return "accent_sound_on white 4096";
+    if (blade_index == 3) return "accent_sound_on white 13%";
     if (blade_index == 4) return "accent_glow";
 #elif NUM_BLADES >= 4
     if (blade_index == 1) return "accent_pulse 1500";
-    if (blade_index == 2) return "accent_sound_on white 4096";
+    if (blade_index == 2) return "accent_sound_on white 13%";
     if (blade_index == 3) return "accent_glow";
 #endif
     return nullptr;
@@ -102,8 +105,56 @@ public:
 #define DOVALIDATE(X) do {  } while(0)
 #endif
 
+  void FinalizeFontSearchPath() {
+#ifdef ENABLE_SD
+    font = ComposePresetFontWithVoice(font_primary.get() ? font_primary.get() : font.get(), voice.get());
+#else
+    if (font_primary.get() && font_primary.get()[0]) {
+      font = font_primary;
+      font_primary = "";
+    }
+#endif
+  }
+
+  // True when a PWM accent slot should be replaced with DefaultAccentStyleForBladeIndex.
+  // Catches strip presets (standard, config demo_*, …) copied onto Free1/2/3 by mistake.
+  static bool AccentSlotShouldUseDefault(const char* s) {
+    if (!s || !s[0]) return true;
+    if (FirstWord(s, "config")) {
+      const char* section = SkipWord(s);
+      while (*section == ' ' || *section == '\t') section++;
+      if (!*section) return true;
+      return !FirstWord(section, "accent_");
+    }
+    return !FirstWord(s, "accent_");
+  }
+
+  // Fill empty accent style slots (indices 1..NUM_BLADES-1). Never copies the NeoPixel
+  // style onto PWM accents when NUM_BLADES >= 4 (see DefaultAccentStyleForBladeIndex).
+  void FillMissingAccentPresetStyles() {
+#if NUM_BLADES > 0
+    for (size_t N = 1; N < NUM_BLADES; N++) {
+      const char* existing = current_style_[N].get();
+      const bool empty = !existing || !existing[0];
+      const char* accent_default = DefaultAccentStyleForBladeIndex(N);
+      if (!empty) {
+        if (!accent_default || !AccentSlotShouldUseDefault(existing))
+          continue;
+      }
+      const char* fill = accent_default;
+      // NUM_BLADES 2: duplicate strip 0 onto index 1. Never copy NeoPixel config onto PWM accents.
+      if (!fill && N == 1 && NUM_BLADES < 4 && current_style_[0].get() && current_style_[0].get()[0])
+        fill = current_style_[0].get();
+      if (fill)
+        current_style_[N] = ValidateStyleString(mkstr(StringPiece(fill)));
+    }
+#endif
+  }
+
   void Clear() {
     font = "";
+    font_primary = "";
+    voice = "";
     track = "";
 #if NUM_BLADES > 0
     for (size_t N = 0; N < NUM_BLADES; N++) current_style_[N] = "";
@@ -113,6 +164,7 @@ public:
   }
 
   void SetFromSD(int num) {
+#ifdef ENABLE_SD_CONFIG_FILES
     size_t n = GetNumPresets();
     if (n == 0) return;
     num = (int)((n + num) % n);
@@ -120,25 +172,21 @@ public:
     const SDPresetDef* p = &sd_presets_storage[num];
     preset_type = PRESET_DISK;
     preset_num = num;
-    font = p->font.get() ? mkstr(StringPiece(p->font.get())) : "";
+    font_primary = p->font.get() ? mkstr(StringPiece(p->font.get())) : "";
+    voice = p->voice.get() ? mkstr(StringPiece(p->voice.get())) : "";
+    font = "";
+    FinalizeFontSearchPath();
     track = p->track.get() ? mkstr(StringPiece(p->track.get())) : "";
     name = (p->name.get() && strlen(p->name.get())) ? mkstr(StringPiece(p->name.get())) : mk_preset_name(num);
     variation = p->variation;
 #if NUM_BLADES > 0
     for (size_t N = 0; N < NUM_BLADES; N++)
       current_style_[N] = (p->style[N].get() && p->style[N].get()[0]) ? ValidateStyleString(mkstr(StringPiece(p->style[N].get()))) : "";
-    // If presets.ini has fewer style= lines than NUM_BLADES, fill gaps:
-    // - blade index 1: duplicate strip 0 (common 2-strip oversight)
-    // - accent indices (1+ on NUM_BLADES 4, 2+ on NUM_BLADES 5): accent_* defaults, not the NeoPixel style
-    for (size_t N = 1; N < NUM_BLADES; N++) {
-      if (current_style_[N].get() && current_style_[N].get()[0]) continue;
-      const char* fill = DefaultAccentStyleForBladeIndex(N);
-      if (!fill && N == 1 && current_style_[0].get() && current_style_[0].get()[0])
-        fill = current_style_[0].get();
-      if (fill)
-        current_style_[N] = ValidateStyleString(mkstr(StringPiece(fill)));
-    }
+    FillMissingAccentPresetStyles();
 #endif
+#else
+    (void)num;
+#endif  // ENABLE_SD_CONFIG_FILES
   }
 
   void Set(int num) {
@@ -148,7 +196,12 @@ public:
     Preset* preset = current_config->presets + num;
     preset_type = PRESET_ROM;
     preset_num = num;
+    font_primary = "";
+    voice = "";
     font = preset->font;
+#ifdef ENABLE_SD
+    FinalizeFontSearchPath();
+#endif
     track = preset->track;
 #define MAKE_STYLE_STRING(N) current_style_[N-1] = ValidateStyleString(mk_builtin_str(num, N));
     ONCEPERBLADE(MAKE_STYLE_STRING);
@@ -185,6 +238,8 @@ public:
       if (!strcmp(variable, "new_preset")) {
 	preset_count++;
 	if (preset_count == 2) {
+	  FinalizeFontSearchPath();
+	  FillMissingAccentPresetStyles();
 	  preset_num++;
 	  f->Seek(line_begin);
 	  return true;
@@ -196,6 +251,8 @@ public:
 	f->Seek(line_begin);
 	if (preset_count == 0) break;
 	if (preset_count == 1) {
+	  FinalizeFontSearchPath();
+	  FillMissingAccentPresetStyles();
 	  preset_num++;
 	  return true;
 	}
@@ -215,8 +272,13 @@ public:
       }
       if (!strcmp(variable, "font")) {
 	char* tmp = f->readString();
-	font = tmp ? tmp : "";
+	font_primary = tmp ? tmp : "";
 	/* LSPtr owns tmp when assigned; do not free */
+	continue;
+      }
+      if (!strcmp(variable, "voice")) {
+	char* tmp = f->readString();
+	voice = tmp ? tmp : "";
 	continue;
       }
       if (!strcmp(variable, "track")) {
@@ -251,6 +313,8 @@ public:
       }
     }
     if (preset_count == 1) {
+      FinalizeFontSearchPath();
+      FillMissingAccentPresetStyles();
       preset_num++;
       return true;
     }
@@ -261,7 +325,12 @@ public:
     DOVALIDATE(*this);
     f->Write("new_preset\n");
     DOVALIDATE(*this);
-    f->write_key_value("font", font.get());
+    const char* font_out = font.get();
+    if (voice.get() && voice.get()[0] && font_primary.get() && font_primary.get()[0])
+      font_out = font_primary.get();
+    f->write_key_value("font", font_out);
+    if (voice.get() && voice.get()[0])
+      f->write_key_value("voice", voice.get());
     DOVALIDATE(*this);
     f->write_key_value("track", track.get());
     DOVALIDATE(*this);

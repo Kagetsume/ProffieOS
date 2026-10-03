@@ -162,7 +162,8 @@ public:
       }
     }
     ArgParserInterface* outer_ap = CurrentArgParser;
-    char layers[STYLE_CONFIG_MAX_LAYERS][STYLE_CONFIG_LAYER_STR_LEN];
+    // Static: ~6 KiB layer buffer must not live on stack (SetPreset call depth on L452).
+    static char layers[STYLE_CONFIG_MAX_LAYERS][STYLE_CONFIG_LAYER_STR_LEN];
     int n = LoadStyleConfigLayers(name, layers, STYLE_CONFIG_MAX_LAYERS, ov_count, ov_keys, ov_vals);
     if (n <= 0) return nullptr;
     if (n > STYLE_CONFIG_MAX_LAYERS) n = STYLE_CONFIG_MAX_LAYERS;
@@ -222,7 +223,7 @@ NamedStyle named_styles[] = {
   },
   { "strip_column", &strip_column_factory,
     "SD column animation base: file_path source_height fps extend_ms retract_ms. "
-    ".bmp = 24-bit BI_RGB (width=frames, height=column, hilt=top); .scf = optional 512-byte/frame fast path. "
+    "Normal 24-bit uncompressed .bmp on SD (GIMP/Photoshop export; width=frames, height=blade). "
     "Use -1 for extend/retract to match sound length. Stack overlays via additional layer lines."
   },
   // Combine onspark, inoutsparktip, gradient, customizable blast/clash/lockup colors

@@ -5,6 +5,9 @@
 #include "../sound/sound_library.h"
 #ifdef ENABLE_SD
 #include "../common/blade_config_file.h"
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
+#include "../common/sd_boot_style_warm.h"
+#endif
 #endif
 #include "../common/debug_preset_cycle_flash.h"
 
@@ -432,6 +435,9 @@ public:
     // First free all styles, then allocate new ones to avoid memory
     // fragmentation.
     FreeBladeStyles();
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
+    StyleBootOnPresetActivate(preset_num);
+#endif
     current_preset_.SetPreset(preset_num);
     AllocateBladeStyles();
     chdir(current_preset_.font.get());
@@ -683,8 +689,12 @@ public:
 #ifdef ENABLE_SD
     if (UseBladeConfigFile() && GetSDBladeConfig()) {
       current_config = GetSDBladeConfig();
+#ifdef ENABLE_SD_CONFIG_FILES
       PVLOG_STATUS << "blade = SD config (" << sd_blade_def_count << " blade defs, "
                    << NUM_BLADES << " slots)\n";
+#else
+      PVLOG_STATUS << "blade = SD config (" << NUM_BLADES << " slots)\n";
+#endif
       // Activate every blade slot (compiled fallback may fill indices omitted from blades.ini).
       for (int i = 1; i <= (int)NUM_BLADES; i++) {
         BladeBase* b = GetBladeByNumber(i);

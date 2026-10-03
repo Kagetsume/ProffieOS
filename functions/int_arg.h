@@ -66,7 +66,7 @@ protected:
     itoa(value_, default_value, 10);
     if (!CurrentArgParser) return;
     const char* arg = CurrentArgParser->GetArg(argnum, "INT", default_value);
-    if (arg && arg[0]) {
+    if (arg && arg[0] && OpacityScaleTokenParses(arg)) {
       value_ = ParseOpacityScaleToken(arg);
     }
   }
@@ -92,5 +92,9 @@ class SVFWrapper<OpacityScaleIntArgSVF<ARG, DEFAULT_VALUE>>
 
 template<int ARG, int DEFAULT_VALUE>
 using OpacityScaleIntArg = SingleValueAdapter<OpacityScaleIntArgSVF<ARG, DEFAULT_VALUE>>;
+
+// 0–32768 blade position (hilt→tip): 0%, 49%, 100%, or legacy raw >100 (e.g. 16000).
+template<int ARG, int DEFAULT_VALUE>
+using BladePositionIntArg = OpacityScaleIntArg<ARG, DEFAULT_VALUE>;
 
 #endif

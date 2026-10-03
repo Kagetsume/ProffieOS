@@ -20,6 +20,9 @@ function serializePreset(preset: PresetDefinition): string[] {
     ...commentBlock(preset.comment),
     'new_preset',
     'font = ' + preset.font.trim(),
+    ...(preset.voice?.trim()
+      ? (['voice = ' + preset.voice.trim()] as const)
+      : []),
     'track = ' + preset.track.trim(),
     ...preset.styles.map((style) => 'style = ' + formatPresetStyleLine(style)),
     'name = ' + preset.name.trim(),

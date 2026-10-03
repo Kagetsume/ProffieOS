@@ -52,6 +52,7 @@
 #include "../functions/random.h"
 #include "../functions/sound_level.h"
 #include "../functions/uniform_brightness_overlay.h"
+#include "strip_column_mask.h"
 // Rolling heat texture (StaticFire — no clash/lockup/off fire configs). Same color args as fire.
 template<class WARM, class HOT>
 using FireMaskLayer = StaticFire<WARM, HOT>;
@@ -247,5 +248,9 @@ using TrickleBladeLayer = TrickleBladeBase<BASE_COLOR>;
 // Cylon scanner band — stack with add over solid_bend (black sections add nothing).
 template<class SCAN_COLOR, class ON_PERCENT, class ON_RPM>
 using CylonLayer = CylonConfigL<SCAN_COLOR, ON_PERCENT, ON_RPM>;
+
+// SD column BMP grayscale mask (same file layout as strip_column; stack with multiply).
+template<class SOURCE_HEIGHT, class FPS>
+using StripColumnMaskLayer = StripColumnMaskL<SOURCE_HEIGHT, FPS>;
 
 #endif  // STYLES_TEXTURE_LAYERS_H
