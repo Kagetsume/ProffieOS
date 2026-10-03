@@ -222,7 +222,7 @@ public:
     InvalidateIfUnmounted();
     if (opened_) {
       if (file_.IsOpen()) return true;
-      // StyleBootOnPresetActivate preloaded frame 0; avoid SD open during boot.wav.
+      // Boot frame cache optional; style loader warm does not preload BMP columns.
       if (StripColumnBootFrameCacheMatches(path_, source_height > 0 ? source_height : source_height_))
         return true;
       CloseOpenFile();

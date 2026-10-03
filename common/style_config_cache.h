@@ -217,10 +217,11 @@ inline void StyleConfigStoreLayersInCache(const char* section_name,
   memcpy(e->layers, layers, (size_t)count * STYLE_CONFIG_LAYER_STR_LEN);
 }
 
-inline void StyleConfigPruneLayersCacheExcept(const char sections[][64], int nsections) {
+inline int StyleConfigPruneLayersCacheExcept(const char sections[][64], int nsections) {
+  const int before = style_config_layers_cache_count;
   if (nsections <= 0) {
     StyleConfigClearLayersCache();
-    return;
+    return before;
   }
   int w = 0;
   for (int i = 0; i < style_config_layers_cache_count; i++) {
@@ -239,6 +240,7 @@ inline void StyleConfigPruneLayersCacheExcept(const char sections[][64], int nse
     }
   }
   style_config_layers_cache_count = w;
+  return before - w;
 }
 
 // Parse section body until next [section] or EOF. Caller positions f at '[' of target section.

@@ -1,10 +1,10 @@
 #ifndef COMMON_SD_BOOT_STYLE_WARM_H
 #define COMMON_SD_BOOT_STYLE_WARM_H
 
-// Early boot (after LoadSDConfig, before FindBlade / wav playback): build a [section]→offset
-// index on first SD open of config/blade_styles.ini only. No layer parse or INI malloc at boot.
-// FindBlade → SetPreset loads each blade's config <section> on demand (index + seek); strip_column
-// frame 0 is preloaded for the active preset at SetPreset (before styles allocate), not at boot.
+// Boot (after LoadSDConfig, before FindBlade): index config/blade_styles.ini ([section]→file offset only).
+// SetPreset (before AllocateBladeStyles): prune heap layer cache to this preset's config sections,
+// then seek-load any missing sections into the cache. No full INI in RAM; no palette scan at index time.
+// See doc/sd_style_boot_order.md.
 
 #include "style_config_file.h"
 #include "sd_config.h"
@@ -36,16 +36,63 @@ inline int StyleBootCollectPresetConfigSections(int preset_index, char sections[
   return n;
 }
 
-inline void StyleConfigEvictLayersCacheExceptPreset(int preset_index) {
+// Seek-load preset config sections into the heap layer cache (index + parse; palettes on demand).
+inline void StyleConfigWarmLayersForPreset(int preset_index) {
   char sections[NUM_BLADES][64];
+  int config_blades = 0;
+  if (preset_index >= 0 && (size_t)preset_index < sd_preset_count) {
+    for (size_t b = 0; b < NUM_BLADES; b++) {
+      char tmp[64];
+      const char* style = sd_presets_storage[preset_index].style[b].get();
+      if (StyleConfigParsePresetConfigSection(style, tmp, sizeof(tmp))) config_blades++;
+    }
+  }
   const int nsections = StyleBootCollectPresetConfigSections(preset_index, sections, NUM_BLADES);
-  StyleConfigPruneLayersCacheExcept(sections, nsections);
+  const int deduped = config_blades - nsections;
+  const int pruned = StyleConfigPruneLayersCacheExcept(sections, nsections);
+
+  if (nsections <= 0) {
+    PVLOG_STATUS << "Style config: preset " << preset_index
+                 << " no config sections (" << config_blades << " blade style line(s))\n";
+    return;
+  }
+
+  static char layers[STYLE_CONFIG_MAX_LAYERS][STYLE_CONFIG_LAYER_STR_LEN];
+  int cache_hits = 0;
+  int sd_loads = 0;
+  int load_fail = 0;
+  for (int i = 0; i < nsections; i++) {
+    if (!sections[i][0]) continue;
+    int nl = StyleConfigCopyLayersFromCache(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
+    if (nl > 0) {
+      cache_hits++;
+      PVLOG_STATUS << "Style config:   [" << sections[i] << "] " << nl
+                   << " layer(s) cache hit\n";
+      continue;
+    }
+    nl = LoadStyleConfigLayers(sections[i], layers, STYLE_CONFIG_MAX_LAYERS);
+    if (nl > 0) {
+      sd_loads++;
+      PVLOG_STATUS << "Style config:   [" << sections[i] << "] " << nl
+                   << " layer(s) loaded from SD\n";
+    } else {
+      load_fail++;
+      PVLOG_STATUS << "Style config:   [" << sections[i] << "] load failed (missing index/section?)\n";
+    }
+  }
+  PVLOG_STATUS << "Style config: preset " << preset_index << " unique=" << nsections
+               << " config_blades=" << config_blades;
+  if (deduped > 0) PVLOG_STATUS << " deduped=" << deduped;
+  if (pruned > 0) PVLOG_STATUS << " pruned=" << pruned;
+  PVLOG_STATUS << " cache_hit=" << cache_hits << " sd_load=" << sd_loads
+               << " fail=" << load_fail << " heap_cached=" << style_config_layers_cache_count
+               << "\n";
 }
 
 inline void StyleBootOnPresetActivate(int preset_index) {
 #if defined(ENABLE_SD) && defined(ENABLE_SD_CONFIG_FILES) && NUM_BLADES > 0
   if (!UseSDConfig()) return;
-  StyleConfigEvictLayersCacheExceptPreset(preset_index);
+  StyleConfigWarmLayersForPreset(preset_index);
 #else
   (void)preset_index;
 #endif

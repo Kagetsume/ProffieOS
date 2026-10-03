@@ -748,8 +748,12 @@ inline int LoadStyleConfigLayers(const char* section_name,
   }
 
   uint32_t section_off = 0;
-  if (style_config_section_index_ready &&
-      StyleConfigFindSectionOffset(section_name, &section_off) >= 0) {
+  if (style_config_section_index_ready) {
+    if (StyleConfigFindSectionOffset(section_name, &section_off) < 0) {
+      f.Close();
+      LOCK_SD(false);
+      return 0;
+    }
     f.Seek(section_off);
     count = StyleConfigParseSectionAtReader(
         f, section_name, &st, layers, max_layers, style_config_global_palette_cache,
@@ -760,6 +764,7 @@ inline int LoadStyleConfigLayers(const char* section_name,
     return count;
   }
 
+  // Index missing (boot index failed): one slow full-file scan — no Looper::DoLoop during parse.
   int line_count = 0;
   bool in_section = false;
   while (f.Available() && count < max_layers && line_count < SD_STYLE_CONFIG_MAX_LINES) {

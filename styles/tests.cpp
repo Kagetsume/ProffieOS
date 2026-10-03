@@ -1168,6 +1168,16 @@ void test_composite_config_layer_multiply() {
   CHECK(after.alpha > 0);
 }
 
+void test_style_config_parse_preset_config_section() {
+  char section[64];
+  CHECK(StyleConfigParsePresetConfigSection("config demo_strip_column", section, sizeof(section)));
+  CHECK(!strcmp(section, "demo_strip_column"));
+  CHECK(StyleConfigParsePresetConfigSection("  config   foo_bar  ", section, sizeof(section)));
+  CHECK(!strcmp(section, "foo_bar"));
+  CHECK(!StyleConfigParsePresetConfigSection("standard cyan 300 800", section, sizeof(section)));
+  CHECK(!StyleConfigParsePresetConfigSection("config", section, sizeof(section)));
+}
+
 void test_style_config_expand_local_vars() {
   char keys[2][STYLE_CONFIG_LOCAL_KEY_LEN];
   char vals[2][STYLE_CONFIG_LOCAL_VAL_LEN];
@@ -1353,6 +1363,7 @@ int main() {
   test_opacity_scale_token();
   test_config_layer_line_parse();
   test_composite_config_layer_multiply();
+  test_style_config_parse_preset_config_section();
   test_style_config_expand_local_vars();
   test_style_parser_copy_arg_bounded();
   test_strip_column();
