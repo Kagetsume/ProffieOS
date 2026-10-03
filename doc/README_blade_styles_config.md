@@ -83,6 +83,8 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 **Runtime (firmware):** Layer strings load with the rest of **`blade_styles.ini`** (boot **index**, preset **heap cache** — **sd_style_boot_order.md**). The **`.bmp` file itself** is read only after **ignition** (not at boot). Pixels are **BGR on disk → RGB in RAM**; paths may be **quoted** if they contain spaces. **`strip_column_mask`** shares the same loader and BMP rules via **`strip_column_source.h`**.
 
+**strip_column — `fps` vs what you see:** The **`fps`** argument is the target BMP frame-advance rate (frames per second). Firmware advances **one frame at a time** (no skipping when SD is slow) and keeps a small **ring of column buffers** ahead on SD (default **6** slots × **512 B**; override with **`STRIP_COLUMN_FRAME_RING_SIZE`** at compile time). Each column is read in small row slices, so under load playback may run **slower** than **`fps`** but should not **jump** between distant frames. Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine speed to **`0`**, or try a very low **`fps`** (e.g. **`2`**) before tuning texture speeds.
+
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
 | **fire** | warm color, hot color | `fire red yellow` |

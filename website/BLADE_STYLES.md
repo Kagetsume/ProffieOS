@@ -633,6 +633,8 @@ include **`sine_waves_cyan`**, **`smoke_laser`**, **`smoke_sine_cyan`**, texture
 
 **`strip_column`** / **`strip_column_mask`** use **24-bit uncompressed BMP** on SD (not a separate container). BMP opens **when the saber is on**; columns load in **slices**; disk **BGR** becomes **RGB** in RAM. Optional **quoted** paths for spaces. **`strip_column_mask`** shares **`strip_column_source.h`** with **`strip_column`**.
 
+The third numeric arg after source height is **`fps`** (target BMP frame advances per second). Firmware advances **one frame at a time** (no skipping when SD is slow) with a small column **ring buffer** (default **6** × 512 B; **`STRIP_COLUMN_FRAME_RING_SIZE`**). Slice reads from SD can make the flipbook **slower or uneven** than **`fps`** suggests; multiply layers (**`sine_waves`**, etc.) add **separate** scroll motion. Debug by commenting multiply lines, setting sine speed **`0`**, or using a low **`fps`** (e.g. **`2`**) to see pure column stepping — see **`doc/README_blade_styles_config.md`** (*strip_column*).
+
 ---
 
 ## Limits (firmware)

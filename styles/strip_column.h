@@ -36,7 +36,16 @@
 #endif
 
 #ifndef STRIP_COLUMN_BMP_ROWS_PER_RUN
-#define STRIP_COLUMN_BMP_ROWS_PER_RUN 12
+#define STRIP_COLUMN_BMP_ROWS_PER_RUN 24
+#endif
+#ifndef STRIP_COLUMN_FRAME_RING_SIZE
+#define STRIP_COLUMN_FRAME_RING_SIZE 6
+#endif
+#if STRIP_COLUMN_FRAME_RING_SIZE < 2
+#error STRIP_COLUMN_FRAME_RING_SIZE must be at least 2
+#endif
+#ifndef STRIP_COLUMN_TICK_MAX_LOAD_SLICES
+#define STRIP_COLUMN_TICK_MAX_LOAD_SLICES 2
 #endif
 #include "../functions/int_arg.h"
 #include <string.h>
@@ -127,16 +136,157 @@ inline void StripColumnSampleAtLed(const uint8_t* data, int led, int num_leds, i
   *b = StripColumnLerpChannel(data[idx0 + 2], data[idx1 + 2], frac15);
 }
 
+// Multi-slot column cache: display one frame, prefetch up to RING_SIZE-1 ahead (512 B/slot).
+struct StripColumnFrameSlot {
+  uint32_t frame;
+  uint8_t data[STRIP_COLUMN_RECORD_SIZE];
+};
+
+class StripColumnColumnCache {
+public:
+  StripColumnColumnCache()
+      : current_(0), loading_buf_(-1), rows_loaded_(0), loading_frame_(0), last_swap_ms_(0) {
+    ClearAllSlots();
+  }
+
+  void ClearAllSlots() {
+    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++)
+      frames_[i].frame = ~0u;
+  }
+
+  void OnFirstFrameReady() {
+    current_ = 0;
+    last_swap_ms_ = millis();
+    for (int i = 1; i < STRIP_COLUMN_FRAME_RING_SIZE; i++)
+      frames_[i].frame = ~0u;
+  }
+
+  const uint8_t* DisplayData() const { return frames_[current_].data; }
+
+  bool LoadFrameSlice(FileReader* file, StripColumnBmpInfo* bmp, int source_height,
+                      int buf, uint32_t frame_index) {
+    return AdvanceBmpColumnLoad(file, bmp, source_height, buf, frame_index);
+  }
+
+  // One animation tick: swap when ready + up to two SD slices (finish column → prefetch sooner).
+  void Tick(FileReader* file, StripColumnBmpInfo* bmp, int source_height, int frame_ms,
+            uint32_t num_frames) {
+    if (!file || !bmp || num_frames == 0) return;
+    if (frames_[current_].frame == ~0u) return;
+
+    for (int pass = 0; pass < STRIP_COLUMN_TICK_MAX_LOAD_SLICES; pass++) {
+      uint32_t display_frame = frames_[current_].frame;
+      uint32_t now = millis();
+      uint32_t next_display = (display_frame + 1) % num_frames;
+      for (int s = 0; s < STRIP_COLUMN_FRAME_RING_SIZE; s++) {
+        if (frames_[s].frame == next_display &&
+            (int32_t)(now - last_swap_ms_) >= (uint32_t)frame_ms) {
+          current_ = s;
+          last_swap_ms_ = now;
+          break;
+        }
+      }
+
+      if (loading_buf_ >= 0) {
+        AdvanceBmpColumnLoad(file, bmp, source_height, loading_buf_, loading_frame_);
+        if (loading_buf_ >= 0) return;
+        continue;
+      }
+
+      display_frame = frames_[current_].frame;
+      for (int offset = 1; offset < STRIP_COLUMN_FRAME_RING_SIZE; offset++) {
+        uint32_t want = (display_frame + (uint32_t)offset) % num_frames;
+        if (SlotHasCompleteFrame(want)) continue;
+        int slot = PickSlotForLoad(display_frame, num_frames);
+        if (slot < 0) continue;
+        AdvanceBmpColumnLoad(file, bmp, source_height, slot, want);
+        return;
+      }
+      return;
+    }
+  }
+
+private:
+  bool SlotHasCompleteFrame(uint32_t frame_index) const {
+    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
+      if (frames_[i].frame == frame_index) return true;
+    }
+    return false;
+  }
+
+  bool FrameInPrefetchWindow(uint32_t display_frame, uint32_t num_frames,
+                             uint32_t candidate) const {
+    for (int offset = 1; offset < STRIP_COLUMN_FRAME_RING_SIZE; offset++) {
+      if (((display_frame + (uint32_t)offset) % num_frames) == candidate) return true;
+    }
+    return false;
+  }
+
+  int PickSlotForLoad(uint32_t display_frame, uint32_t num_frames) const {
+    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
+      if (i == current_ || i == loading_buf_) continue;
+      if (frames_[i].frame == ~0u) return i;
+    }
+    // Prefer evicting the oldest frame behind the playhead (not in prefetch window).
+    int best = -1;
+    uint32_t best_dist = 0;
+    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
+      if (i == current_ || i == loading_buf_) continue;
+      uint32_t f = frames_[i].frame;
+      if (f == ~0u) return i;
+      if (FrameInPrefetchWindow(display_frame, num_frames, f)) continue;
+      uint32_t dist = (display_frame + num_frames - f) % num_frames;
+      if (best < 0 || dist > best_dist) {
+        best = i;
+        best_dist = dist;
+      }
+    }
+    return best;
+  }
+
+  bool AdvanceBmpColumnLoad(FileReader* file, StripColumnBmpInfo* bmp, int source_height,
+                            int buf, uint32_t frame_index) {
+    if (!file->IsOpen()) return false;
+    if (loading_buf_ != buf || loading_frame_ != frame_index) {
+      loading_buf_ = buf;
+      loading_frame_ = frame_index;
+      rows_loaded_ = 0;
+      memset(frames_[buf].data, 0, sizeof(frames_[buf].data));
+      frames_[buf].frame = ~0u;
+    }
+    int row_end = rows_loaded_ + STRIP_COLUMN_BMP_ROWS_PER_RUN;
+    if (row_end > source_height) row_end = source_height;
+    if (!StripColumnBmpLoadColumnRows(file, bmp, frame_index, rows_loaded_, row_end,
+                                      frames_[buf].data, STRIP_COLUMN_RECORD_SIZE)) {
+      loading_buf_ = -1;
+      rows_loaded_ = 0;
+      return false;
+    }
+    rows_loaded_ = row_end;
+    if (rows_loaded_ >= source_height) {
+      frames_[buf].frame = frame_index;
+      loading_buf_ = -1;
+      rows_loaded_ = 0;
+      return true;
+    }
+    return false;
+  }
+
+  StripColumnFrameSlot frames_[STRIP_COLUMN_FRAME_RING_SIZE];
+  int current_;
+  int loading_buf_;
+  int rows_loaded_;
+  uint32_t loading_frame_;
+  uint32_t last_swap_ms_;
+};
+
 template<class SOURCE_HEIGHT, class FPS>
 class StripColumnL {
 public:
-  StripColumnL() : current_(0), back_ready_(false), opened_(false),
-                   height_warned_(false), open_fail_logged_(false), open_ok_logged_(false),
-                   num_frames_(0), num_leds_(0), source_height_(0),
-                   frame_ms_(33), header_ok_(false), rows_loaded_(0), loading_frame_(0),
-                   loading_buf_(-1) {
+  StripColumnL() : opened_(false), height_warned_(false), open_fail_logged_(false),
+                   open_ok_logged_(false), num_frames_(0), num_leds_(0), source_height_(0),
+                   frame_ms_(33), header_ok_(false) {
     path_[0] = 0;
-    frames_[0].frame = frames_[1].frame = ~0u;
     memset(&bmp_info_, 0, sizeof(bmp_info_));
   }
 
@@ -183,8 +333,6 @@ public:
           if (num_frames_ == 0) num_frames_ = 1;
           WarnSourceHeightVsBmp();
           header_ok_ = true;
-          loading_buf_ = -1;
-          rows_loaded_ = 0;
           if (!open_ok_logged_) {
             open_ok_logged_ = true;
             STDERR << "strip_column: opened " << path_ << " frames=" << num_frames_
@@ -194,11 +342,9 @@ public:
         LOCK_SD(false);
       }
       if (header_ok_ && !opened_) {
-        if (AdvanceBmpColumnLoad(0, 0)) {
+        if (cache_.LoadFrameSlice(&file_, &bmp_info_, source_height_, 0, 0)) {
           opened_ = true;
-          current_ = 0;
-          back_ready_ = false;
-          frames_[1].frame = ~0u;
+          cache_.OnFirstFrameReady();
         }
         return true;
       }
@@ -208,42 +354,19 @@ public:
 
     if (!opened_ || num_leds_ <= 0) return true;
 
-    uint32_t want = (millis() / frame_ms_) % num_frames_;
-    int back = 1 - current_;
-    Frame& cur = frames_[current_];
-
-    if (cur.frame != want) {
-      if (frames_[back].frame != want)
-        AdvanceBmpColumnLoad(back, want);
-      if (frames_[back].frame == want) {
-        current_ = back;
-        back_ready_ = false;
-      }
-    } else {
-      back = 1 - current_;
-      uint32_t next = (want + 1) % num_frames_;
-      if (!back_ready_ && frames_[back].frame != next) {
-        if (AdvanceBmpColumnLoad(back, next))
-          back_ready_ = true;
-      }
-    }
+    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms_, num_frames_);
     return true;
   }
 
   SimpleColor getColor(int led) {
     if (!opened_ || num_leds_ <= 0) return Black().getColor(led);
-    const uint8_t* data = frames_[current_].data;
+    const uint8_t* data = cache_.DisplayData();
     uint8_t r, g, b;
     StripColumnSampleAtLed(data, led, num_leds_, source_height_, &r, &g, &b);
     return SimpleColor(Color16(sqr(r), sqr(g), sqr(b)));
   }
 
 private:
-  struct Frame {
-    uint32_t frame;
-    uint8_t data[STRIP_COLUMN_RECORD_SIZE];
-  };
-
   uint16_t sqr(uint8_t x) { return (uint16_t)x * x; }
 
   void WarnSourceHeightVsBmp() {
@@ -255,41 +378,11 @@ private:
     }
   }
 
-  // Fill one 512-byte column buffer in slices; render always reads RAM only.
-  bool AdvanceBmpColumnLoad(int buf, uint32_t frame_index) {
-    if (!file_.IsOpen()) return false;
-    if (loading_buf_ != buf || loading_frame_ != frame_index) {
-      loading_buf_ = buf;
-      loading_frame_ = frame_index;
-      rows_loaded_ = 0;
-      memset(frames_[buf].data, 0, sizeof(frames_[buf].data));
-      frames_[buf].frame = ~0u;
-    }
-    int row_end = rows_loaded_ + STRIP_COLUMN_BMP_ROWS_PER_RUN;
-    if (row_end > source_height_) row_end = source_height_;
-    if (!StripColumnBmpLoadColumnRows(&file_, &bmp_info_, frame_index, rows_loaded_, row_end,
-                                      frames_[buf].data, STRIP_COLUMN_RECORD_SIZE)) {
-      loading_buf_ = -1;
-      rows_loaded_ = 0;
-      return false;
-    }
-    rows_loaded_ = row_end;
-    if (rows_loaded_ >= source_height_) {
-      frames_[buf].frame = frame_index;
-      loading_buf_ = -1;
-      rows_loaded_ = 0;
-      return true;
-    }
-    return false;
-  }
-
   SOURCE_HEIGHT height_;
   FPS fps_;
   char path_[128];
   FileReader file_;
-  Frame frames_[2];
-  int current_;
-  bool back_ready_;
+  StripColumnColumnCache cache_;
   bool opened_;
   bool height_warned_;
   bool open_fail_logged_;
@@ -300,9 +393,6 @@ private:
   int source_height_;
   int frame_ms_;
   bool header_ok_;
-  int rows_loaded_;
-  uint32_t loading_frame_;
-  int loading_buf_;
 };
 
 template<class SOURCE_HEIGHT, class FPS, class EXTEND_MS, class RETRACT_MS>

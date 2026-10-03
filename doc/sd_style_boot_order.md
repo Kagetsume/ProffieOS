@@ -49,7 +49,7 @@ These are **not** loaded by `LoadStyleConfigLayers`. The INI only stores the sty
 - **Pixels:** BMP stores **BGR**; the loader swaps to **RGB** in RAM (`strip_column_bmp.h`).
 - **Paths:** SD-relative (e.g. `animations/plasma.bmp`). **Quoted paths** are optional when the path contains spaces (`"anim/my file.bmp"`).
 - **When SD is read:** **`strip_column`** / **`strip_column_mask`** **do not open BMP files until the saber is on** (`SaberBase::IsOn()`). While off, the layer is transparent and boot stays responsive (SD I/O would block the Looper).
-- **How frames load:** One vertical **column** per animation frame; rows are filled **incrementally** in small slices (`STRIP_COLUMN_BMP_ROWS_PER_RUN`); render reads **RAM only** between slices.
+- **How frames load:** One vertical **column** per animation frame; rows are filled **incrementally** in small slices (`STRIP_COLUMN_BMP_ROWS_PER_RUN`); render reads **RAM only** between slices. Firmware advances **one frame at a time** (no skipping when SD is slow) and prefetches up to **`STRIP_COLUMN_FRAME_RING_SIZE − 1`** columns ahead (default ring **6**). The style **`fps`** arg sets the target advance rate, but SD slice I/O can cap the **effective** flipbook speed — tune **`fps`** down (demo presets often use **`8`**–**`10`**, not **`30`**) and A/B without multiply layers if motion feels too fast or uneven.
 - **Mask parity:** **`strip_column_mask`** uses the same BMP layout and the shared **`StripColumnFrameSource`** in **`strip_column_source.h`** (grayscale → multiply luminance).
 
 Open/fail lines on serial (`strip_column: opened …`, missing file, invalid BMP) are intentional; they are separate from **`Style config:`** boot/preset cache logs.
