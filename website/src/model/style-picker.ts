@@ -214,8 +214,11 @@ export function resolveRecipePickerSelection(
   }
 
   const decoded = decodeStylePickerValue(trimmed);
-  if (decoded?.kind === 'file' || decoded?.kind === 'library') {
-    return decoded;
+  if (decoded?.kind === 'file') {
+    return { kind: 'file', id: decoded.id };
+  }
+  if (decoded?.kind === 'library') {
+    return { kind: 'library', id: decoded.id };
   }
 
   // Display text when `wa-select` reports the option label instead of `.value`.

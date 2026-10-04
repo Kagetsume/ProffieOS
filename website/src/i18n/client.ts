@@ -15,7 +15,6 @@ import type {
   FormatNumberOptions,
   I18nClientOptions,
   I18nLocaleBundles,
-  I18nMessages,
   LocaleId,
   SubstitutionMap,
 } from './types.js';

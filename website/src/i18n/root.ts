@@ -7,7 +7,7 @@ import { registerRootClient } from './client-registry.js';
 import { createRootI18nClient } from './create-client.js';
 import { applyDocumentLocale, resolveInitialAppLocale } from './locale-preference.js';
 import { buildRootLocaleBundles } from './root-bundles.js';
-import { DEFAULT_LOCALE, setAppLocale } from './resolve-locale.js';
+import { setAppLocale } from './resolve-locale.js';
 
 export { DEFAULT_LOCALE } from './resolve-locale.js';
 

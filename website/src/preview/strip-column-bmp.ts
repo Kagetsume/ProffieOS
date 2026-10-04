@@ -25,10 +25,6 @@ export type ParsedStripColumnArgs = {
 const FRAME_AXIS_TOKENS_Y = new Set(['frames_y', 'row', 'rows']);
 const FRAME_AXIS_TOKENS_X = new Set(['frames_x', 'column', 'columns']);
 
-function tokenEquals(a: string, b: string): boolean {
-  return a.toLowerCase() === b.toLowerCase();
-}
-
 function isFrameAxisToken(tok: string): boolean {
   const lower = tok.toLowerCase();
   return FRAME_AXIS_TOKENS_Y.has(lower) || FRAME_AXIS_TOKENS_X.has(lower);

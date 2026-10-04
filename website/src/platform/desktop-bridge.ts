@@ -5,8 +5,12 @@
  */
 
 import { invoke } from '@tauri-apps/api/core';
-import { normalizeSaberRelativePath } from './saber-paths.js';
 import type { SaberStorage } from './storage.js';
+
+/** Keep path normalization local so the dynamic-import chunk does not pull in the main bundle (avoids a Rollup circular deadlock before `export`). */
+function normalizeSaberRelativePath(relative: string): string {
+  return relative.replace(/\\/g, '/').replace(/^\/+/, '');
+}
 
 /** Desktop implementation backed by `desktop/src-tauri` commands. */
 export class TauriSaberStorage implements SaberStorage {

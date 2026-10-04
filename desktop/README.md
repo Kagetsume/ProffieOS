@@ -91,3 +91,5 @@ npm run tauri icon ../website/public/favicon.svg
 ## Frontend build note
 
 `website` `npm run build` currently runs `tsc && vite build`. If `tsc` fails on unrelated errors, use `npx vite build` to produce `dist/` for Tauri until those issues are fixed.
+
+The site uses `base: './'` in `website/vite.config.ts` so asset and dynamic-import URLs resolve under Tauri’s bundled `frontendDist`. The Tauri storage bridge is loaded via dynamic `import()`; its chunk must not import the main entry bundle (Rollup places exports after top-level `await`, which would deadlock startup and leave `#page-root` empty while the shell still renders).

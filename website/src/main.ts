@@ -45,8 +45,7 @@ for (const meta of ROUTE_CATALOG) {
 
 initTheme();
 
-await initPlatformStorage();
-
 const pageRoot = document.querySelector<HTMLElement>('#page-root')!;
-
 startRouter(pageRoot);
+
+await initPlatformStorage();

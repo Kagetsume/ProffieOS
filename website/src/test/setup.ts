@@ -94,12 +94,14 @@ function createCanvas2DStub(): CanvasRenderingContext2D {
 }
 
 if (typeof HTMLCanvasElement !== 'undefined') {
-  HTMLCanvasElement.prototype.getContext = function getContext(type: string) {
+  HTMLCanvasElement.prototype.getContext = function getContext(
+    type: string,
+  ): RenderingContext | null {
     if (type !== '2d') {
       return null;
     }
     return createCanvas2DStub();
-  };
+  } as typeof HTMLCanvasElement.prototype.getContext;
 }
 
 /** jsdom may lack ResizeObserver — required by `<po-blade-preview>`. */
