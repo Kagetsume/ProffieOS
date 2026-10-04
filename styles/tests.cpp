@@ -1019,6 +1019,11 @@ void test_argument_parsing() {
   CHECK_COLOR(ParseColorArg("#002E00"), 0, 11822, 0, 0);
   CHECK_COLOR(ParseColorArg("#00ff00"), 0, 65535, 0, 0);
   CHECK_COLOR(ParseColorArg("#0f0"), 0, 65535, 0, 0);
+
+  CHECK_COLOR(ParseColorArg("purple"), 23901, 0, 50629, 0);
+  CHECK_COLOR(ParseColorArg("masterswordblue"), 0, 65535, 56283, 0);
+  Color16 msb_upper = ParseColorArg("MasterSwordBlue");
+  CHECK_COLOR(msb_upper, 0, 65535, 56283, 0);
 }
 
 void test_parse_color_arg_malformed() {

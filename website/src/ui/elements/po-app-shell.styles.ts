@@ -20,12 +20,28 @@ export const poAppShellStyles = css`
     min-height: 2.75rem;
   }
 
+  .app-brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
   .app-title {
     margin: 0;
     font-size: 1.05rem;
     font-weight: 650;
     letter-spacing: -0.01em;
     line-height: 1.2;
+  }
+
+  .app-tagline {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1.2;
+    opacity: 0.72;
+    letter-spacing: 0.01em;
   }
 
   .app-bar-actions {

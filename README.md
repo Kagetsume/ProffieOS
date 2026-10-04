@@ -19,7 +19,7 @@ Proffie OS supports:
 * TeensySaber: http://fredrik.hubbe.net/lightsaber/v3/
 * Support forum: http://crucible.hubbe.net
 
-### SD card config (this repo)
+### LayerBlade — SD card config
 
 Edit blade effects on the SD card without recompiling:
 
@@ -28,4 +28,5 @@ Edit blade effects on the SD card without recompiling:
 * **Presets:** [`doc/sd_config.md`](doc/sd_config.md) — `config/presets.ini`
 * **Blade wiring:** [`doc/blade_config.md`](doc/blade_config.md) — `config/blades.ini`
 * **Examples:** [`examples/config/`](examples/config/) — copy-ready SD layout; capstone demo **`composable_checklist`**
-* **Web editor:** [`website/README.md`](website/README.md) — browser SD Config Editor with approximate blade preview
+* **LayerBlade web editor:** [`website/README.md`](website/README.md) — browser editor for SD config (`blade_styles.ini`, presets, wiring) with approximate blade preview and BMP upload for `strip_column`
+* **Builder guide:** [`examples/config-layers-user-guide.md`](examples/config-layers-user-guide.md) — layer recipes, strip column BMPs, named colors (76 SD tokens)

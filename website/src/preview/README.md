@@ -15,10 +15,14 @@ Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>`
 | `renderers/basic.ts` | Base styles, generic textures, composable `*_layer` routing |
 | `renderers/os7-layers.ts` | OS7 `*_layer` texture renderers (`water_flow_layer`, `cylon_layer`, …) |
 | `renderers/overlays.ts` | Overlay effects (clash, blast, lockup, preon/postoff, force_glow, …) |
+| `renderers/strip-column.ts` | **`strip_column`** / **`strip_column_mask`** flipbook sampling |
+| `strip-column-bmp.ts` | Browser 24-bit BMP decode (`frames_y` / `frames_x`, same tokens as firmware) |
 | `preview-capabilities.ts` | Which preview combat controls apply to the active section |
+| `vertical-layout.ts` | Upward saber geometry: hilt + blade canvas placement |
 
 Renderer details: [renderers/README.md](./renderers/README.md).
-| `vertical-layout.ts` | Upward saber geometry: hilt + blade canvas placement |
+
+Uploaded BMPs for preview are registered in **`stores/bmpAssets.ts`** (path string must match the layer’s SD path arg). The Styles page **`po-bmp-input`** element handles upload + path edits.
 | `layout.ts` | Horizontal saber mock geometry (legacy) |
 | `hilt-asset.ts` | Public URL for hilt SVG |
 | `responsive-lockup.ts` | Lockup overlay positioning helpers |

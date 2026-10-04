@@ -31,6 +31,8 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 
 **Implementation references:** color tokens → **`styles/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and any style arg wired through **`OpacityScaleIntArg`** → **`common/opacity_scale.h`** (`ParseOpacityScaleToken`).
 
+**Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/parse_color_arg_table.generated.h`** (from **`website/src/catalog/colors.json`** plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
+
 | What you write in INI | Meaning for humans | Internal / notes | Legacy escape |
 |----------------------|--------------------|------------------|---------------|
 | **Named color** (`cyan`, `deepskyblue`, …) | Catalog sRGB swatch | **`Color16`**: 8-bit table entry × **257** per channel (65535-scale RGB) | Preset strings may use **`Rgb(r,g,b)`** wrapper |
@@ -45,7 +47,7 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `hue_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
 | **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
 | **`smoke_flow` … speed** (5th arg after ext/ret) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** pairs |
-| **`strip_column`** `path`, `source_height`, `fps`, ext, ret | SD column animation base | **`fps`**: frame rate; **`source_height`**: BMP height in pixels (hilt at top); **24-bit uncompressed BMP** on SD (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | — |
+| **`strip_column`** `path`, `source_height`, `fps`, optional axis, ext, ret | SD column animation base | **`source_height`**: blade pixels along the file’s blade axis (**width** for **`frames_y`**, **height** for **`frames_x`**); **`fps`**: target frame rate; **24-bit BMP** (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | Optional **`frames_y`** / **`frames_x`** (default **`frames_y`**) |
 | **`real_clash`** `color`, **`blade_position`** (e.g. **`49%`** or **`angle`**) | OS7 Real Clash overlay color and band placement | **0%**–**100%** = fixed center on blade (OS7 tilt-modulated band); **`angle`** = center tracks blade tilt (**ResponsiveClash**-style). Default **49%**. Strength path uses **`GetClashStrength`** | Monolithic OS7 compiled styles |
 
 **Quick examples:** `layer = multiply opacity 73% sine_waves 2400 0 8192 65535 -2000` — opacity is percent; period **2400**; min/max **8192–65535** (mask scale, not percent yet); scroll **-2000**. `layer = real_clash white 49%` — fixed band center ~upper blade; `layer = real_clash white angle` — band follows tilt.
@@ -72,19 +74,35 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 |-------|----------------------|---------|
 | **solid** | base color, extension ms, retraction ms | `solid cyan 300 800` — composable base; stack `clash` / `blast` overlays |
 | **solid_bend** | base color, extension ms, retraction ms | `solid_bend cyan 300 800` — like **solid** with OS7 BendTimePow in/out |
-| **strip_column** | SD path, source height, fps, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
-| **strip_column_mask** | SD path, source height, fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column**; grayscale column = multiply brightness mask (width = frames, height = blade; static mask: width **1**, fps **1**). Missing/invalid file: transparent (no effect) |
+| **strip_column** | SD path, source height, fps, optional `frames_y`/`frames_x`, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
+| **strip_column_mask** | SD path, source height, fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column** (always **`frames_y`**); grayscale column = multiply brightness mask. Still mask: **height 1**, **`fps` 1**. Missing/invalid file: transparent (no effect) |
 
-**strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (raw RGB pixels — not a special saber file type). The image is a sideways flipbook: **width = number of frames**, **height = blade length in pixels** (top of the image = hilt, bottom = tip). Each pixel is one color on the blade at that frame.
+**strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (24-bit BI_RGB — not RLE, not palette). Layout is chosen by **`frames_y`** (default) or **`frames_x`** in the style line (see **`strip_column_bmp.h`**); firmware does **not** guess from width/height alone.
 
-1. **GIMP:** *File → Export As…* → name your file `.bmp` → in the BMP options, use **24-bit** color and **no compression** (not RLE).
-2. **Photoshop:** *File → Save As* → *BMP* → *24 Bit*, standard Windows format (uncompressed).
-3. Copy the `.bmp` onto the SD card (e.g. `animations/plasma.bmp`) and use that path in your recipe.
-4. Set **source height** in the style line to the BMP height in pixels (must match the file; if you set it higher, firmware clamps and logs a warning). Example: `layer = strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
+| Axis | Blade pixels | Frame count | One frame in the file |
+|------|--------------|-------------|-------------------------|
+| **`frames_y`** (default). Aliases: `row`, `rows` | BMP **width** | BMP **height** | One horizontal **row** (hilt = top of image) |
+| **`frames_x`**. Aliases: `column`, `columns` | BMP **height** | BMP **width** | One vertical **column** (hilt = top) |
 
-**Runtime (firmware):** Layer strings load with the rest of **`blade_styles.ini`** (boot **index**, preset **heap cache** — **sd_style_boot_order.md**). The **`.bmp` file itself** is read only after **ignition** (not at boot). Pixels are **BGR on disk → RGB in RAM**; paths may be **quoted** if they contain spaces. **`strip_column_mask`** shares the same loader and BMP rules via **`strip_column_source.h`**.
+**`source_height`** is the blade span in pixels (the blade axis above), not the frame count. Example (default layout): `144×120` → `144` blade pixels, **120** frames → `strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
 
-**strip_column — `fps` vs what you see:** The **`fps`** argument is the target BMP frame-advance rate (frames per second). Firmware advances **one frame at a time** (no skipping when SD is slow) and keeps a small **ring of column buffers** ahead on SD (default **6** slots × **512 B**; override with **`STRIP_COLUMN_FRAME_RING_SIZE`** at compile time). Each column is read in small row slices, so under load playback may run **slower** than **`fps`** but should not **jump** between distant frames. Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine speed to **`0`**, or try a very low **`fps`** (e.g. **`2`**) before tuning texture speeds.
+1. **GIMP:** *File → Export As…* → `.bmp` → **24-bit**, **no** run-length compression.
+2. **Photoshop:** *Save As* → BMP → **24 Bit**, uncompressed Windows BMP.
+3. Copy onto SD (e.g. `animations/plasma.bmp`) and reference that path in the recipe.
+4. If **`source_height`** exceeds the file’s blade span, firmware **clamps** and logs a warning (max **170** pixels in RAM per column).
+
+**Runtime (firmware):** Layer strings load with the rest of **`blade_styles.ini`** (boot **index**, preset **heap cache** — **sd_style_boot_order.md**). The **`.bmp` file itself** is opened only while the saber is **on** (not at boot). Pixels are **BGR on disk → RGB in RAM**; paths may be **quoted** if they contain spaces. **`strip_column_mask`** shares open/parse/prefetch via **`strip_column_source.h`** and **`StripColumnColumnCache`** in **`strip_column.h`**.
+
+**Why a ring buffer:** SD reads run under **`LOCK_SD`** while styles tick. Blocking the card on every frame would hitch audio and the main loop. Firmware keeps a small **ring of decoded columns** (default **`STRIP_COLUMN_FRAME_RING_SIZE` 6**, **512 B** per slot ≈ **170** RGB pixels) so the playhead can advance while earlier ticks prefetch upcoming frames.
+
+**Optimized SD reads:** Playback still advances **one BMP frame at a time** (no skipping when SD is slow — motion may lag **`fps`** but should not **jump** frames).
+
+- **`frames_y`:** When buffered-ahead count drops to **`STRIP_COLUMN_Y_AHEAD_WATERMARK`** (default **1**), one seek can load up to **`STRIP_COLUMN_BMP_Y_BULK_ROWS`** (default **4**) upcoming rows via **`StripColumnBmpLoadFramesAlongYBulk`**; non-contiguous rows (loop wrap) fall back to single-frame loads.
+- **`frames_x`:** Each tick loads the next vertical column in slices (**`STRIP_COLUMN_BMP_ROWS_PER_RUN`**, default **24** in **`strip_column.h`**).
+
+Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine **`speed`** to **`0`**, or try a low **`fps`** (e.g. **`2`**) before tuning texture speeds.
+
+**LayerBlade preview:** The browser editor decodes the same 24-bit rules in **`website/src/preview/strip-column-bmp.ts`**; upload a local BMP on **`#/styles`** for **`strip_column`** / **`strip_column_mask`** path fields (approximate timing vs hardware).
 
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |

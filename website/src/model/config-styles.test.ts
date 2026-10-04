@@ -11,6 +11,13 @@ import {
 import { baseSectionVarEntries, resolveLayerArgs, type StyleSection } from './style-sections';
 
 describe('config-styles', () => {
+  it('includes strip_column BMP recipes', () => {
+    const column = getConfigStyle('demo_strip_column');
+    expect(column?.layers[0]?.styleName).toBe('strip_column');
+    const mask = getConfigStyle('demo_strip_column_mask');
+    expect(mask?.layers.some((layer) => layer.styleName === 'strip_column_mask')).toBe(true);
+  });
+
   it('includes smoke_blade config style', () => {
     const style = getConfigStyle('smoke_blade');
     expect(style).toBeDefined();
@@ -57,6 +64,10 @@ describe('config-styles', () => {
       'demo_random_bands',
       'demo_pulse_train',
       'demo_chirp',
+      'demo_strip_column',
+      'tiger_stripes',
+      'demo_strip_column_mask',
+      'demo_strip_column_with_mask',
       'smoke_laser',
       'rainbow_strobe',
       'smoke_blade',

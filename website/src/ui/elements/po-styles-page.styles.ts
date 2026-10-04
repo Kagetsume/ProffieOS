@@ -14,7 +14,7 @@ export const poStylesPageStyles = css`
 
   .styles-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(480px, 480px);
     gap: 1.5rem;
     align-items: start;
     width: 100%;
@@ -24,11 +24,19 @@ export const poStylesPageStyles = css`
     .styles-layout {
       grid-template-columns: 1fr;
     }
+
+    .preview-pane {
+      justify-self: stretch;
+      width: 100%;
+      min-width: 0;
+      max-width: min(480px, 100%);
+      margin-inline: auto;
+    }
   }
 
-  .editor-pane,
-  .preview-pane {
+  .editor-pane {
     min-width: 0;
+    width: 100%;
   }
 
   .editor-pane wa-card {
@@ -39,7 +47,11 @@ export const poStylesPageStyles = css`
     position: sticky;
     top: 4.5rem;
     align-self: start;
+    justify-self: stretch;
     box-sizing: border-box;
+    width: 100%;
+    min-width: min(480px, 100%);
+    max-width: 480px;
     /* App-bar sticky offset used by the sidebar in app.css and this pane. */
     max-height: calc(100vh - 4.5rem);
     max-height: calc(100dvh - 4.5rem);
@@ -49,20 +61,24 @@ export const poStylesPageStyles = css`
   .preview-well {
     display: block;
     box-sizing: border-box;
-    padding: 1rem;
+    width: 100%;
+    padding: 0.5rem 0.65rem;
     border-radius: var(--wa-border-radius-medium, 6px);
     background: var(--wa-color-neutral-20, #27272a);
   }
 
   .preview-pane wa-card {
     display: block;
+    width: 100%;
+    max-width: 100%;
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
     background: var(--wa-color-neutral-25, #3f3f46);
     border-color: var(--wa-color-neutral-30, #52525b);
   }
 
-  wa-card {
+  .editor-pane wa-card,
+  .preview-pane wa-card {
     display: block;
     width: 100%;
   }

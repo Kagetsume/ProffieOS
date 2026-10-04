@@ -32,6 +32,7 @@ ProffieOS config editor UI. Registered via `index.ts` (imported from `main.ts`).
 | Tag | Role |
 |-----|------|
 | `<po-color-input>` | Grouped color select with per-option swatches |
+| `<po-bmp-input>` | SD path + **Upload BMP** for **`strip_column`** / mask layers (registers flipbook in **`bmpAssets`**) |
 
 ## Component file layout
 

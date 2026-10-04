@@ -1,6 +1,6 @@
 {
   "title": "Welcome",
-  "lead": "<strong>ProffieOS SD Config Editor</strong> helps you build and edit the INI files that live on a Proffie saber's SD card — without recompiling firmware or connecting over serial for everyday wiring, feature, and style changes.",
+  "lead": "<strong>LayerBlade</strong> helps you build and edit the INI files that live on a Proffie saber's SD card — SD config layers, blade style recipes, and presets — without recompiling firmware or connecting over serial for everyday wiring and look changes.",
   "requirement": "<strong>Requires SD config file support in your firmware build.</strong> Your saber must be compiled with a profile such as <code>config/config-files-config.h</code> (<code>CONFIG_FILE</code> in <code>ProffieOS.ino</code>). Without that, INI files under <code>config/</code> on the SD card are ignored.",
   "card.whatItDoes.title": "What it does",
   "card.whatItDoes.body": "Use the sections in the sidebar to configure board hardware, features, blade wiring, styles, and presets. The app keeps your work in the browser, validates common mistakes, and generates formatted INI text you can copy or download to <code>config/</code> on the SD card.",

@@ -53,9 +53,10 @@ export class PoAppShell extends PoElement {
     const dark = this.theme === 'dark';
     return html`
       <div class="app-bar-inner" data-testid="app-shell">
-        <h1 class="app-title" data-testid="app-shell-title">
-          ${appShellI18n.translate(appShellKeys.title)}
-        </h1>
+        <div class="app-brand" data-testid="app-shell-title">
+          <h1 class="app-title">${appShellI18n.translate(appShellKeys.title)}</h1>
+          <p class="app-tagline">${appShellI18n.translate(appShellKeys.tagline)}</p>
+        </div>
         <div class="app-bar-actions">
           <wa-button
             data-testid="app-shell-export-link"

@@ -1,0 +1,162 @@
+/* Standalone named-color reference card (md-to-pdf / Chromium). */
+
+@page {
+  size: Letter;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.35;
+  color: #1c2330;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.title-page {
+  min-height: 9.25in;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  page-break-after: always;
+  break-after: page;
+}
+
+.title-page h1 {
+  font-size: 28pt;
+  font-weight: 700;
+  color: #0d3b66;
+  margin: 0 0 0.35em;
+  border: none;
+}
+
+.title-page .subtitle {
+  font-size: 13pt;
+  color: #1c4f7a;
+  margin: 0.1em 0;
+}
+
+.title-page .rule {
+  width: 2.5in;
+  border: none;
+  border-top: 2.5px solid #2f6fad;
+  margin: 1em auto;
+}
+
+.title-page .purpose {
+  font-size: 11pt;
+  max-width: 5.2in;
+  color: #243044;
+  margin: 0;
+}
+
+.title-page .meta {
+  margin-top: 2em;
+  font-size: 10pt;
+  color: #5c6570;
+}
+
+.color-swatch {
+  display: block;
+  width: 100%;
+  height: 0.72in;
+  min-height: 0.72in;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  margin-bottom: 0.22em;
+}
+
+.color-card-section {
+  padding: 0.05in 0.05in 0.2in;
+}
+
+.color-card-section-title {
+  font-size: 14pt;
+  font-weight: 700;
+  color: #0d3b66;
+  margin: 0.15in 0 0.12em;
+  padding-bottom: 0.12em;
+  border-bottom: 2px solid #2f6fad;
+}
+
+.color-card-section-lead {
+  font-size: 8.5pt;
+  color: #5c6570;
+  margin: 0 0 0.35em;
+  max-width: 6.5in;
+}
+
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+
+.color-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.38em 0.42em;
+  padding: 0.15in 0.05in 0.35in;
+}
+
+.color-card-grid-sm {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.28em 0.32em;
+  padding-top: 0.08in;
+}
+
+.color-card-grid-sm .color-swatch {
+  height: 0.52in;
+  min-height: 0.52in;
+}
+
+.color-card-grid-sm .color-card-label code {
+  font-size: 7.2pt;
+}
+
+.color-card-grid-sm .color-card-meta {
+  font-size: 6.6pt;
+}
+
+.color-card-cell {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  padding: 0.2em 0.15em 0.35em;
+  border: 1px solid #d8dee8;
+  border-radius: 4px;
+  background: #fafbfc;
+  text-align: center;
+}
+
+.color-card-label code {
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+  font-size: 8.2pt;
+  background: #eef2f7;
+  padding: 0.05em 0.2em;
+  border-radius: 2px;
+  color: #16324f;
+}
+
+.color-card-label-dark code {
+  color: #16324f;
+}
+
+.color-card-meta {
+  font-size: 7.4pt;
+  color: #5c6570;
+  margin-top: 0.12em;
+}
+
+code {
+  font-family: Consolas, "Cascadia Mono", "Courier New", monospace;
+}

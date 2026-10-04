@@ -152,6 +152,22 @@ export const poStyleLayerStackStyles = css`
     align-self: start;
   }
 
+  .bmp-input-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .bmp-input-row wa-input {
+    flex: 1 1 12rem;
+    min-width: 10rem;
+  }
+
+  .bmp-error {
+    color: var(--wa-color-danger-50, #b91c1c);
+  }
+
   /* Style/Blend/Opacity only. The next grid is Color; keep one 0.75rem margin between them. */
   .layer-form > .layer-form-grid:first-child {
     max-height: 5.5rem;

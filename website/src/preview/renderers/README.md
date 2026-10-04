@@ -11,6 +11,7 @@ Parent overview: [../README.md](../README.md).
 | `basic.ts` | Base blades (`solid`, `standard`, `fire`, …), generic textures, routes OS7 layers |
 | `os7-layers.ts` | Fett263 OS7 `*_layer` textures and monolithic OS7 bases |
 | `overlays.ts` | Event overlays (clash, blast, lockup, preon/postoff, `force_glow`, …) |
+| `strip-column.ts` | BMP column base and grayscale mask (uses **`bmpAssets`** + **`strip-column-bmp`**) |
 
 ## Routing
 

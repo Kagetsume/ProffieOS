@@ -1,4 +1,6 @@
-# ProffieOS config file examples
+# LayerBlade — SD config examples
+
+**Proffie – LayerBlade** · SD blade styles for ProffieOS
 
 These are **example config files** for the SD card. Copy the entire **`config`** folder (or individual files) to the **root of your SD card** so the paths match what the firmware expects:
 
@@ -6,6 +8,17 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 - Config files: `config/board.ini`, `config/features.ini`, `config/blades.ini`, `config/blade_styles.ini`, `config/presets.ini`
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
+
+Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes).
+
+Regenerate markdown and PDFs from the repo root:
+
+```bash
+node tools/generate-parse-color-names.js
+node examples/generate-named-colors-appendix.js
+npx md-to-pdf examples/config-layers-user-guide.md --config-file examples/config-layers-user-guide.config.js
+npx md-to-pdf examples/config-layers-color-card.md --config-file examples/config-layers-color-card.config.js
+```
 
 The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
@@ -84,7 +97,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 |-------|---------|-------|
 | `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / lockup overlays for composable recipes |
 | `solid_bend` | `solid_bend cyan 300 800` | Like `solid` with OS7 BendTimePow in/out |
-| `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column animation base; BMP read **after ignition** only (see **sd_style_boot_order.md**) |
+| `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column base (default **`frames_y`**: width = blade, height = frames). BMP opens **when saber is on** only (**sd_style_boot_order.md**). Ring-buffer prefetch + bulk row reads on SD — see **doc/README_blade_styles_config.md** and **config-layers-user-guide.md** (*Strip column*) |
 | `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
 | `fire` | `fire red yellow` | Rolling flame (no extend/retract animation) |
 | `rainbow` | `rainbow 300 800 white white` | Extend, retract, clash, lockup |
@@ -139,7 +152,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | Style | Example | Notes |
 |-------|---------|-------|
 | `fire_mask` | `multiply opacity 61% fire_mask white white` | Rolling heat mask (smoke, lava); same color args as `fire` |
-| `strip_column_mask` | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` | Same BMP layout as **`strip_column`**; shared loader (**`strip_column_source.h`**) |
+| `strip_column_mask` | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` | Same BMP rules as **`strip_column`** (**`frames_y`** only); grayscale multiply mask; shared **`strip_column_source.h`** loader + ring buffer |
 | `smoke_flow` | multiply `black white {{ext}} {{ret}}`; screen `black <base> {{ext}} {{ret}}` | Smoke blade recipe; **ext/ret must match base** (use `{{ext}}`/`{{ret}}`; `-1` = sound length) |
 | `stripes` | `add opacity 31% stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 55% hard_stripes 1200 -4000 black white` | Hard-edged bands |

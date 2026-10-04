@@ -11,7 +11,7 @@ import catalog from '../catalog/named-styles.json';
 export type StyleArgDef = {
   slot: string;
   label: string;
-  type: 'color' | 'number' | 'text';
+  type: 'color' | 'number' | 'text' | 'bmp';
   default: string;
   /** When true, values use 0–32768 scale (UI shows 0–100%). */
   scale32768?: boolean;

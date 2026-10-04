@@ -1,22 +1,67 @@
----
-title: "Config Layers User Guide"
-subtitle: "SD card blade styles for this ProffieOS fork"
-lang: en
-geometry: margin=0.7in
-toc: true
-toc-depth: 2
-colorlinks: true
-header-includes:
-  - \usepackage{etoolbox}
-  - \usepackage{longtable}
-  - \usepackage{booktabs}
-  - \pretocmd{\section}{\clearpage}{}{}
----
+<div class="title-page">
+  <h1>LayerBlade</h1>
+  <p class="subtitle">Proffie – LayerBlade · SD blade styles for ProffieOS</p>
+  <hr class="rule" />
+  <p class="purpose">Written for saber builders who change looks in text files instead of recompiling firmware for every color or effect.</p>
+  <p class="meta">October 2026</p>
+</div>
 
-<p class="doc-title">Config Layers User Guide</p>
-<p class="doc-sub">SD card blade styles for this ProffieOS fork. Written for saber builders who change looks in text files instead of recompiling firmware for every color or effect.</p>
+<h2 id="contents">Contents</h2>
 
-# What this guide is for
+<p class="toc-note">Each entry links to that section in this PDF.</p>
+
+- [Getting started](#getting-started)
+  - [What this guide is for](#what-this-guide-is-for)
+  - [When you reflash, and when the INI is enough](#when-you-reflash-and-when-the-ini-is-enough)
+    - [INI only (no new firmware)](#ini-only-no-new-firmware)
+    - [Firmware upload](#firmware-upload)
+  - [Files to copy](#files-to-copy)
+  - [How a preset picks a look](#how-a-preset-picks-a-look)
+- [Building a look](#building-a-look)
+  - [How layers stack](#how-layers-stack)
+    - [Placeholders](#placeholders)
+  - [Ignition, retraction, and sound length](#ignition-retraction-and-sound-length)
+    - [What the firmware does with that number](#what-the-firmware-does-with-that-number)
+    - [Two wipe shapes](#two-wipe-shapes)
+    - [Which lines need extend and retract](#which-lines-need-extend-and-retract)
+  - [How pixels combine](#how-pixels-combine)
+    - [Opacity](#opacity)
+    - [What each blend looks like](#what-each-blend-looks-like)
+  - [Colors and a few numbers](#colors-and-a-few-numbers)
+- [Style catalog](#style-catalog)
+  - [Base layer styles](#base-layer-styles)
+    - [Config bases](#config-bases)
+    - [Full named blades](#full-named-blades)
+    - [Classic blades](#classic-blades)
+    - [Fett263-style full blades](#fett263-style-full-blades)
+  - [Texture and effect layers](#texture-and-effect-layers)
+    - [Scrolling masks](#scrolling-masks)
+    - [Hue waves](#hue-waves)
+    - [Brightness and color sheets](#brightness-and-color-sheets)
+    - [Fett263 idle textures](#fett263-idle-textures)
+  - [Events and overlays](#events-and-overlays)
+    - [Preon and postoff](#preon-and-postoff)
+  - [Strip column animations](#strip-column-animations)
+    - [The picture file](#the-picture-file)
+    - [Arguments](#arguments)
+- [Examples and reference](#examples-and-reference)
+  - [Worked example: preset 0, Strip Column Demo](#worked-example-preset-0-strip-column-demo)
+  - [A smaller recipe you can edit by hand](#a-smaller-recipe-you-can-edit-by-hand)
+  - [Other named styles in the example presets](#other-named-styles-in-the-example-presets)
+  - [Limits worth knowing](#limits-worth-knowing)
+  - [Where the examples live](#where-the-examples-live)
+- [Appendix: Named colors](#appendix-named-colors)
+  - [Section A — SD and layer tokens](#section-a--sd-and-layer-tokens)
+  - [Section B — Fett263 Edit Mode color list](#section-b--fett263-edit-mode-color-list)
+  - [Section C — Editor catalog extras](#section-c--editor-catalog-extras)
+
+<div class="page-break"></div>
+
+## Getting started
+
+How to turn the add-on on, which files to copy, and how a preset points at a recipe.
+
+### What this guide is for
 
 This guide is for saber builders who change blade looks from files on the SD card. You define the blade, pick a recipe, and stack effects in plain text. You upload new firmware only when the board, the blade count, or the style *names* in the firmware change.
 
@@ -39,9 +84,9 @@ style = config demo_strip_column
 
 After you edit either file, put the card back and restart the saber. Color, speed, opacity, and layer changes in these files do not need a new `.bin` upload.
 
-# When you reflash, and when the INI is enough
+### When you reflash, and when the INI is enough
 
-**INI only (no new firmware)**
+#### INI only (no new firmware)
 
 - Recolor a recipe, change scroll speed, opacity, or blend mode.
 - Add or remove `layer =` lines inside an existing style name the firmware already knows.
@@ -49,7 +94,7 @@ After you edit either file, put the card back and restart the saber. Color, spee
 - Swap font, track, or preset name.
 - Replace a `.bmp` at the same SD path the recipe already names (same layout and `source_height`).
 
-**Firmware upload**
+#### Firmware upload
 
 - The image you are running was built without `ENABLE_SD_CONFIG_FILES`. Until you flash a build that includes it, the `config/` folder is ignored and `style = config …` cannot load.
 - You change `NUM_BLADES`, pins, LED count, or power wiring. That still lives in the compiled config (and, when you use it, `config/blades.ini` for wiring the example SD blade file already supports).
@@ -60,7 +105,7 @@ Check what the running image actually accepts: open the serial monitor and run `
 
 The add-on keeps the rest of Proffie small on purpose. Hardware and the style engine stay in the firmware. The SD files only supply preset strings and layer recipes. Fett263 Edit Mode and the on-saber menus rewrite the preset `style =` line in `presets.ini`. They do not rewrite individual `layer =` rows. For on-saber recolors, put the color in a `{{name}}` placeholder and override it on the style line (`style = config with_vars base=magenta`).
 
-# Files to copy
+### Files to copy
 
 On the card, next to `Fonts/` and `tracks/`:
 
@@ -86,7 +131,7 @@ One `style =` line per blade, in index order. A single-strip saber should be fla
 
 If `config/presets.ini` is missing or invalid, the saber uses the presets compiled into the firmware. If a `config` section name is missing from `blade_styles.ini`, that blade style fails to load.
 
-# How a preset picks a look
+### How a preset picks a look
 
 Each preset is a block:
 
@@ -118,7 +163,13 @@ The first form is a **named style** baked into the firmware, with its arguments 
 
 You can mix forms in one preset: blade 0 uses a `config` recipe, and the accent blades use `accent_*` names directly. Those accent names do not read `blade_styles.ini`.
 
-# How layers stack
+<div class="page-break"></div>
+
+## Building a look
+
+How layers stack, how ignition timing works, and how blend modes mix pixels.
+
+### How layers stack
 
 Open a section in `blade_styles.ini`. Every `layer =` line is one sheet. **The first line is the bottom. Each following line is stacked on top.** The firmware paints one LED at a time, from the bottom sheet upward, and the last sheet is what you see if it is opaque.
 
@@ -135,7 +186,7 @@ Up to **16** `layer =` lines are loaded per section. A single line can be about 
 
 There is a second way to write one layer, `layer.standard.base = cyan` and similar slot lines. The firmware supports that form for `standard`, `fire`, `rainbow`, `strobe`, `cycle`, `unstable`, and `advanced`. The examples in this guide use the single `layer =` line, which works for every style.
 
-## Placeholders
+#### Placeholders
 
 Inside a section you can name values, then drop them into layer lines with double curly braces:
 
@@ -159,7 +210,7 @@ That preset gets a magenta blade. Other presets that say `style = config with_va
 
 Shared color sets can live in a `[palette_something]` section and be pulled in with `palette = something`. A section can also pull layers from another file with `include =`, or nest a whole other recipe with `layer = config other_section`. Nesting is how `[nested_config_demo]` adds a strobe on top of `[base_rainbow_blast]`.
 
-# Ignition, retraction, and sound length
+### Ignition, retraction, and sound length
 
 Many bases take two times, in milliseconds:
 
@@ -182,10 +233,14 @@ layer = solid_bend {{base}} {{ext}} {{ret}}
 
 You can also type the `-1` straight on the layer line: `layer = solid cyan -1 -1`.
 
-What the firmware does with that number, in plain terms:
+#### What the firmware does with that number
+
+In plain terms:
 
 - A value of **1 or more** is a fixed time in milliseconds.
 - A value **below 1** (the value you type is `-1`) means "use the WAV length" for that event. The fork calls this choice `InOutMsOrWavLen`. You do not write that name in the INI.
+
+#### Two wipe shapes
 
 Two wipe shapes exist:
 
@@ -196,7 +251,9 @@ Two wipe shapes exist:
 
 If a `strip_column` blade retracts and the retraction sound length is missing, the fallback time is 800 ms.
 
-**Which lines need `{{ext}}` and `{{ret}}`**
+#### Which lines need extend and retract
+
+Which lines need `{{ext}}` and `{{ret}}`:
 
 | Kind of layer | Put ext/ret on that line? |
 | --- | --- |
@@ -222,7 +279,7 @@ style = config smoke_blade ext=-1 ret=-1
 
 Preon and postoff are separate from this wipe. They play before ignition and after retraction, and their duration follows the preon or postoff sound on their own. See the events section.
 
-# How pixels combine
+### How pixels combine
 
 Each layer line may start with a blend name and an opacity. If you leave them off, the blend is **normal** and the opacity is **full**.
 
@@ -236,7 +293,9 @@ layer = blast white
 
 The tokens are `normal`, `multiply`, `screen`, `add`, and `hue`. Then the word `opacity`, then the amount, then the style name and its arguments.
 
-**Opacity** is how strongly that sheet is applied.
+#### Opacity
+
+Opacity is how strongly that sheet is applied.
 
 | You write | Strength |
 | --- | --- |
@@ -245,7 +304,7 @@ The tokens are `normal`, `multiply`, `screen`, `add`, and `hue`. Then the word `
 | `0%` | The layer does nothing. |
 | A whole number **above 100** with no percent sign, up to `32768` | The raw internal scale. `32768` is full. `16384` is about half. Prefer percents unless you are copying an older line. |
 
-**What each blend looks like**
+#### What each blend looks like
 
 | Token | What you see | Typical use |
 | --- | --- | --- |
@@ -259,9 +318,9 @@ The tokens are `normal`, `multiply`, `screen`, `add`, and `hue`. Then the word `
 
 A worked contrast from the shipped file: `[rainbow_strobe]` puts an opaque strobe over a rainbow with `add` and about half opacity, so the rainbow stays visible between flashes. `[fire_blast]` needs no blend on `blast white`, because blast is clear until you fire a blaster bolt.
 
-# Colors and a few numbers
+### Colors and a few numbers
 
-Colors can be a name (`cyan`, `deepskyblue`, `orange_red`), `Rgb(0,255,255)`, or three channels `0,255,255` in the range 0–255. Names you will see often: red, green, blue, cyan, yellow, magenta, white, black, orange, deepskyblue, dodgerblue, silver, pink.
+Colors can be a **named string** (`cyan`, `masterswordblue`, `purple`), three channels `0,255,255` in the range 0–255, or `#RRGGBB` / `#RGB` hex. Names are case-insensitive. The **SD and layer token** names in [Section A of the appendix](#section-a--sd-and-layer-tokens) (76 catalog swatches from `parse_color_arg_table.generated.h`) are parsed from INI by firmware. [Section B](#section-b--fett263-edit-mode-color-list) is the on-saber Fett263 picker (saved as `r,g,b`); hex and `r,g,b` always work.
 
 Mask **min** and **max** (on waves, noise, and similar) are brightness from **0** (black) to **65535** (full white). They are not percents. A multiply wave with min `8192` and max `65535` dims the blade in the trough and leaves it alone at the crest.
 
@@ -269,11 +328,17 @@ Mask **min** and **max** (on waves, noise, and similar) are brightness from **0*
 
 **Scroll speed** is not milliseconds. Larger magnitude moves faster. In the shipped sine-wave recipe, a **negative** speed runs toward the tip and a **positive** speed runs toward the emitter. Width, period, and scale are "how wide is one band" in the same family of units: values around 2000–3000 read as distinct bands; very large values (8000 and up) are wide, slow stripes.
 
-# Base layer styles
+<div class="page-break"></div>
+
+## Style catalog
+
+Base styles, textures, combat overlays, and BMP strip animations.
+
+### Base layer styles
 
 Use one of these as the **first** `layer =` line, or as the whole `style =` line in `presets.ini` when you do not need a stack.
 
-## Config bases
+#### Config bases
 
 These draw the blade and the in/out wipe, and they leave clash, lockup, and blast to layers you add above them. This is the usual bottom of a `blade_styles.ini` recipe.
 
@@ -283,11 +348,11 @@ These draw the blade and the in/out wipe, and they leave clash, lockup, and blas
 | `solid_bend` | base color, extend ms, retract ms | Same flat color with the curved OS7-style wipe. Example: `solid_bend cyan {{ext}} {{ret}}`. |
 | `strip_column` | SD path, source height, fps, optional `frames_y` or `frames_x`, extend ms, retract ms | A 24-bit BMP played along the blade. Curved wipe. Full write-up in the strip-column section. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30 {{ext}} {{ret}}`. |
 
-## Full named blades
+#### Full named blades
 
 These are complete looks. Each one already includes its own clash behavior (and usually lockup and blast). You can use them alone in `presets.ini`, or as the bottom of a stack. If you also add a `clash` or `blast` layer on top, you will get a second hit on top of the one built into the style. For a stack you plan to decorate yourself, prefer `solid` or `solid_bend`.
 
-Classic blades:
+#### Classic blades
 
 | Style | Arguments in order | What you see |
 | --- | --- | --- |
@@ -306,6 +371,8 @@ Classic blades:
 | `sparkle_blade` | base, sparkle, blast, lockup, clash, extend ms, retract ms | Solid color plus random sparkles, with blast, lockup, and clash built in. |
 | `cylon` | scan color, clash, extend ms, retract ms | A scanning band (about a quarter of the blade lit). |
 | `pulse_blade` | off color, on color, pulse ms, extend ms, retract ms | The whole blade breathes between two colors. |
+
+#### Fett263-style full blades
 
 Fett263-style full blades in this fork. Each takes a curved wipe. Argument order is **base, clash, extend ms, retract ms** unless the row says otherwise. Defaults in parentheses are what you get if you omit the color.
 
@@ -330,13 +397,13 @@ Fett263-style full blades in this fork. Each takes a curved wipe. Argument order
 
 Texture-only twins of the Fett263 blades (`water_flow_layer`, `darksaber_layer`, and the other `*_layer` names) are in the next section. They do not include clash or the wipe. Stack them on `solid_bend`.
 
-# Texture and effect layers
+### Texture and effect layers
 
 These are the sheets you stack **above** a base. Most of them are masks: use `multiply` so white means "leave my color" and black means "dim it." A few are color you paint on with `normal`, `add`, or `screen`. `hue_waves` is different: the `hue` blend rotates the color already on the blade.
 
 Shipped demos that are "one base plus one mask" live in `blade_styles.ini` as `[demo_saw_waves]`, `[demo_smoothstep_bands]`, `[demo_value_noise]`, `[demo_fbm_noise]`, `[demo_moire_mask]`, `[demo_blade_envelope]`, `[demo_sine_waves_swing]`, `[demo_sine_waves]`, `[demo_hue_waves]`, `[demo_random_bands]`, `[demo_pulse_train]`, `[demo_chirp]`, and `[demo_strip_column]`. Presets of the same names are in `presets.ini`, except `[demo_hue_waves]`, which is a recipe you can point a preset at with `style = config demo_hue_waves`.
 
-## Scrolling masks
+#### Scrolling masks
 
 | Style | Arguments | What you see and how to stack it |
 | --- | --- | --- |
@@ -361,7 +428,7 @@ Shipped demos that are "one base plus one mask" live in `blade_styles.ini` as `[
 | `unstable_stripes` | base color | The crackling stripe band from `unstable_blades`, without the rest of that blade. |
 | `strip_column_mask` | SD path, source height, fps | A BMP used as a brightness mask. Always the `frames_y` layout. See the strip-column section. |
 
-## Hue waves
+#### Hue waves
 
 `hue_waves` scrolls up to four sine-shaped **hue** offsets along the blade. It does not dim the blade. The pixels under the layer stay the same brightness and move around the color wheel.
 
@@ -413,7 +480,7 @@ That last `32768` is half strength.
 
 Shipped recipe: `[demo_hue_waves]` in `blade_styles.ini` (cyan `solid` plus the one-wave line above, then the usual clash, blast, and lockup). It is not a numbered preset. Point a preset at it with `style = config demo_hue_waves`.
 
-## Brightness and color sheets
+#### Brightness and color sheets
 
 These have no extend/retract arguments of their own (except `sparktip_layer`).
 
@@ -430,7 +497,7 @@ These have no extend/retract arguments of their own (except `sparktip_layer`).
 | `cylon_layer` | scan color, on percent, RPM | Scanner band. Stack with `add` so the black part of the scan adds nothing. |
 | `pixel_sequence` | a step string | A timed chase. Step format is in `doc/pixel_sequencer.md`. |
 
-## Fett263 idle textures
+#### Fett263 idle textures
 
 Stack with `normal` or `multiply` over `solid_bend`. They are the moving part of the full blade of the same name, without clash, lockup, blast, or the wipe.
 
@@ -452,7 +519,7 @@ Stack with `normal` or `multiply` over `solid_bend`. They are the moving part of
 
 The SD recipes `[water_blade]`, `[darksaber_blade]`, `[static_electricity_blade]`, `[power_wave_blade]`, `[unstable_blades]`, `[fallen_order_blade]`, `[shimmer_blade_sd]`, `[rotoscope_sd]`, `[pulse_stripes_sd]`, `[kinetic_charge_sd]`, `[rotating_pulse_sd]`, `[trickle_blade_sd]`, `[thunder_storm_sd]`, and `[responsive_flame_sd]` show these textures with combat layers already attached. Several of those looks also exist as the single full-blade names in the previous section (`style = water_flow blue white 300 800`), which need the matching firmware but no layer file.
 
-# Events and overlays
+### Events and overlays
 
 Add these above the base. Most stay invisible until the saber actually does that thing, so they usually need no blend and no opacity. Where a recipe uses `add`, it is because the effect should brighten the blade instead of painting a flat color.
 
@@ -474,6 +541,8 @@ Add these above the base. Most stay invisible until the saber actually does that
 | Idle pulse | `pulse white 3000` | A breathing color. Use `add` or `multiply`. |
 | Ignition flash | `ignition_flash white 300 600` | A full-blade flash during the extension itself (after preon). Held for the extend time, then fades over the third number. |
 | Force | `add opacity 37% force_glow white` | While a Force effect plays and the blade is on. Brightness follows that sound. The font needs force sounds, and a button must be mapped to Force. |
+
+#### Preon and postoff
 
 **Preon** plays after the button press and before the main blade ignites. **Postoff** plays after the blade has retracted, before the LEDs power down. Duration matches the sound file in the font (`preon/` and `pstoff/`). You only pass a color. Glow and sputter also follow how loud that sound is, so they fade as the file fades. They are transparent the rest of the time.
 
@@ -499,11 +568,11 @@ layer = lb {{lb}}
 
 `[smoke_laser]` uses the simpler `clash` and `blast` pair, plus drag, melt, and lightning block. `[composable_checklist]` is the long example: gradient tint, hum, sparkle, preon, postoff, spark tip, real clash, random blast, lockup, drag, melt, lightning block, and swing.
 
-# Strip column animations
+### Strip column animations
 
 `strip_column` is a **base**. It plays a normal Windows BMP from the SD card along the blade, with the curved ignition and retraction wipe. `strip_column_mask` is a **texture**: the same kind of file, turned into a gray mask you multiply over some other base.
 
-## The picture file
+#### The picture file
 
 Export a **24-bit uncompressed BMP** (no RLE, no palette). GIMP: Export As `.bmp`, 24-bit, do not run-length encode. Photoshop: Save As BMP, 24-bit, Windows, uncompressed.
 
@@ -520,7 +589,7 @@ Color on disk is stored BGR; the loader turns it into RGB. The blade resamples t
 
 The picture is opened **when the saber is on**, not during boot. A missing file or a BMP that is not 24-bit uncompressed logs a line on serial and that layer stays clear (the log text says the layer is transparent). Quote a path that contains spaces: `"animations/my file.bmp"`.
 
-## Arguments
+#### Arguments
 
 ```text
 strip_column <path> <source_height> <fps> [frames_y|frames_x] <extend_ms> <retract_ms>
@@ -529,7 +598,18 @@ strip_column_mask <path> <source_height> <fps>
 
 `fps` is how fast you *want* the frames to advance. The firmware steps one frame at a time. If the card is slow it will lag rather than skip ahead, so the motion can run slower than the number you wrote. Masks such as `sine_waves` scroll on their own clock and can look faster than the flipbook. To see the BMP alone, comment the multiply line out, or try a low `fps` such as `2`.
 
-`strip_column_mask` does not take an extend time or a frame-axis word. It always uses `frames_y`. A file that is one pixel tall is a still mask. Paint gray: under `multiply`, white leaves the blade alone and black darkens it. Colored pixels are averaged to gray. The factory for this name lives in this fork; after you flash, confirm `strip_column_mask` shows up in `list_named_styles` before you depend on it. In the shipped `[demo_strip_column]` the mask line is left commented.
+#### Ring buffer and SD reads (firmware)
+
+SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded columns** in RAM (default **6** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). While one frame displays, earlier ticks **prefetch** the next frames into free slots.
+
+- **`frames_y` (default):** When only one frame is buffered ahead, the loader may read up to **four** upcoming BMP **rows** in one seek (bulk path in `strip_column_bmp.h`). If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
+- **`frames_x`:** Each animation tick loads the next vertical column in **slices** (several pixel rows of the column per tick).
+
+Playback still never **skips** frames to catch up — under load you get slower motion, not jumps. Compile-time knobs include `STRIP_COLUMN_FRAME_RING_SIZE`, `STRIP_COLUMN_BMP_Y_BULK_ROWS`, and `STRIP_COLUMN_Y_AHEAD_WATERMARK` (see `strip_column.h` / `strip_column_bmp.h`).
+
+**LayerBlade:** On `#/styles`, upload a matching 24-bit BMP on a `strip_column` layer to preview the flipbook in the browser (path string must match what you export). This does not replace on-saber SD timing tests.
+
+`strip_column_mask` does not take an extend time or a frame-axis word. It always uses `frames_y`. A file that is one pixel tall is a still mask. Paint gray: under `multiply`, white leaves the blade alone and black darkens it. Colored pixels are averaged to gray. Requires firmware with the `strip_column_mask` named style (see `list_named_styles` over serial). In the shipped `[demo_strip_column]` the mask line is left commented.
 
 ```ini
 layer = multiply opacity 80% strip_column_mask masks/plasma_mask.bmp 144 30
@@ -541,7 +621,13 @@ A still crackle mask is the same with a short file and `fps` of `1`:
 layer = multiply opacity 80% strip_column_mask masks/crackle.bmp 144 1
 ```
 
-# Worked example: preset 0, Strip Column Demo
+<div class="page-break"></div>
+
+## Examples and reference
+
+A full preset to copy, a smaller recipe, the accent styles used in the examples, and the hard limits.
+
+### Worked example: preset 0, Strip Column Demo
 
 Preset 0 in `examples/config/presets.ini` is the pattern to copy.
 
@@ -611,7 +697,7 @@ style = config demo_strip_column ext=300 ret=800
 
 Restart after you save the card.
 
-# A smaller recipe you can edit by hand
+### A smaller recipe you can edit by hand
 
 Flat cyan, curved wipe, sound-synced, with the same combat layers as the demo:
 
@@ -648,7 +734,7 @@ variation = 0
 
 Both presets share the recipe. The second one replaces `{{base}}` with orange. If this saber has accent blades, add the extra `style =` lines after the main blade, the same way preset 0 does.
 
-# Other named styles in the example presets
+### Other named styles in the example presets
 
 The example `presets.ini` puts these on blades 1–3. They are for simple PWM or GPIO accents. They turn off when the saber is retracted (except `accent_sound_on`, which follows audio level and can stay active through the postoff tail).
 
@@ -661,7 +747,7 @@ The example `presets.ini` puts these on blades 1–3. They are for simple PWM or
 
 Further accent names (`accent_clash`, `accent_lockup`, `accent_strobe`, `accent_battery`, and others) are listed in the header of `examples/config/presets.ini` and in `examples/README.md`.
 
-# Limits worth knowing
+### Limits worth knowing
 
 | Limit | Value |
 | --- | --- |
@@ -677,7 +763,7 @@ Section names are case-sensitive. A broken line is skipped; it does not crash th
 
 Very long preset lists with very long `style =` lines use RAM. If a board with a small memory budget misbehaves, shorten the preset list before you shorten the recipes.
 
-# Where the examples live
+### Where the examples live
 
 | Path | What it is |
 | --- | --- |
@@ -687,3 +773,137 @@ Very long preset lists with very long `style =` lines use RAM. If a board with a
 | `doc/README_blade_styles_config.md` | Same system, written for people editing recipes all day, including the number scales. |
 | `doc/sd_config.md` | How `presets.ini` replaces the compiled preset list. |
 | `examples/README.md` | What each file in `examples/config/` is for, and the accent styles. |
+
+<div class="page-break"></div>
+
+<!-- NAMED_COLORS_APPENDIX -->
+## Appendix: Named colors
+
+ProffieOS color names fall into **three scopes**, matching the LayerBlade editor catalog:
+
+- **SD and layer tokens** (`styles/parse_color_arg_table.generated.h`, merged catalog + Fett263) — names you can type in `blade_styles.ini`, `layer =` lines, and `{{placeholder}}` overrides. Firmware resolves them with `ParseColorName` in `styles/parse_color_arg.h`. Regenerate the table with `node tools/generate-parse-color-names.js`.
+- **Fett263 Edit Mode list** (`props/saber_fett263_buttons.h` `color_list_`) — the on-saber color picker when Fett263 props are enabled. Voice labels come from `ColorNumber` in `sound/sound_library.h`. Choosing a color **rewrites the preset as `r,g,b`**; many of the same colors also work as text names in Section A after you flash a build with the generated table.
+- **Editor catalog extras** (Section C, if any) — names in `colors.json` extended + vivid that are **not** in the firmware table. Use `r,g,b` or `#hex` in INI for those; when Section C is empty, every catalog name is already in Section A.
+
+You can always use `r,g,b` (channels **0–255**) or `#RRGGBB` / `#RGB` hex anywhere a color argument is accepted. Matching for SD names is **case-insensitive**.
+
+Generated **2026-10-04** · Section A: 76 · Section B: 27 · Section C: 0. Re-run `node examples/generate-named-colors-appendix.js` and rebuild the PDFs after firmware or catalog changes.
+
+### Section A — SD and layer tokens
+
+Source: `styles/parse_color_arg_table.generated.h` (`ParseColorName`).
+
+| Swatch | Name | Rgb (0–255) | Hex | Scope |
+| --- | --- | --- | --- | --- |
+| <span class="color-swatch" style="background-color:#ff0000;" title="#ff0000"></span> | `red` | 255, 0, 0 | #ff0000 | SD name |
+| <span class="color-swatch" style="background-color:#00ff00;" title="#00ff00"></span> | `green` | 0, 255, 0 | #00ff00 | SD name |
+| <span class="color-swatch" style="background-color:#0000ff;" title="#0000ff"></span> | `blue` | 0, 0, 255 | #0000ff | SD name |
+| <span class="color-swatch" style="background-color:#00ffff;" title="#00ffff"></span> | `cyan` | 0, 255, 255 | #00ffff | SD name |
+| <span class="color-swatch" style="background-color:#ffff00;" title="#ffff00"></span> | `yellow` | 255, 255, 0 | #ffff00 | SD name |
+| <span class="color-swatch" style="background-color:#ff00ff;" title="#ff00ff"></span> | `magenta` | 255, 0, 255 | #ff00ff | SD name |
+| <span class="color-swatch" style="background-color:#ffffff;" title="#ffffff"></span> | `white` | 255, 255, 255 | #ffffff | SD name |
+| <span class="color-swatch" style="background-color:#000000;" title="#000000"></span> | `black` | 0, 0, 0 | #000000 | SD name |
+| <span class="color-swatch" style="background-color:#ff8000;" title="#ff8000"></span> | `orange` | 255, 128, 0 | #ff8000 | SD name |
+| <span class="color-swatch" style="background-color:#ff4400;" title="#ff4400"></span> | `darkorange` | 255, 68, 0 | #ff4400 | SD name |
+| <span class="color-swatch" style="background-color:#ff004b;" title="#ff004b"></span> | `deeppink` | 255, 0, 75 | #ff004b | SD name |
+| <span class="color-swatch" style="background-color:#0087ff;" title="#0087ff"></span> | `deepskyblue` | 0, 135, 255 | #0087ff | SD name |
+| <span class="color-swatch" style="background-color:#0248ff;" title="#0248ff"></span> | `dodgerblue` | 2, 72, 255 | #0248ff | SD name |
+| <span class="color-swatch" style="background-color:#ff2476;" title="#ff2476"></span> | `hotpink` | 255, 36, 118 | #ff2476 | SD name |
+| <span class="color-swatch" style="background-color:#ff889a;" title="#ff889a"></span> | `pink` | 255, 136, 154 | #ff889a | SD name |
+| <span class="color-swatch" style="background-color:#ff1f0f;" title="#ff1f0f"></span> | `tomato` | 255, 31, 15 | #ff1f0f | SD name |
+| <span class="color-swatch" style="background-color:#ff3713;" title="#ff3713"></span> | `coral` | 255, 55, 19 | #ff3713 | SD name |
+| <span class="color-swatch" style="background-color:#00ffff;" title="#00ffff"></span> | `aqua` | 0, 255, 255 | #00ffff | SD name |
+| <span class="color-swatch" style="background-color:#00ff00;" title="#00ff00"></span> | `lime` | 0, 255, 0 | #00ff00 | SD name |
+| <span class="color-swatch" style="background-color:#ff00ff;" title="#ff00ff"></span> | `fuchsia` | 255, 0, 255 | #ff00ff | SD name |
+| <span class="color-swatch" style="background-color:#00ff37;" title="#00ff37"></span> | `springgreen` | 0, 255, 55 | #00ff37 | SD name |
+| <span class="color-swatch" style="background-color:#0e3976;" title="#0e3976"></span> | `steelblue` | 14, 57, 118 | #0e3976 | SD name |
+| <span class="color-swatch" style="background-color:#646496;" title="#646496"></span> | `silver` | 100, 100, 150 | #646496 | SD name |
+| <span class="color-swatch" style="background-color:#6cff06;" title="#6cff06"></span> | `greenyellow` | 108, 255, 6 | #6cff06 | SD name |
+| <span class="color-swatch" style="background-color:#37ff00;" title="#37ff00"></span> | `chartreuse` | 55, 255, 0 | #37ff00 | SD name |
+| <span class="color-swatch" style="background-color:#ff0e00;" title="#ff0e00"></span> | `orangered` | 255, 14, 0 | #ff0e00 | SD name |
+| <span class="color-swatch" style="background-color:#b48200;" title="#b48200"></span> | `gold` | 180, 130, 0 | #b48200 | SD name |
+| <span class="color-swatch" style="background-color:#37ffa9;" title="#37ffa9"></span> | `aquamarine` | 55, 255, 169 | #37ffa9 | SD name |
+| <span class="color-swatch" style="background-color:#1e3cc8;" title="#1e3cc8"></span> | `iceblue` | 30, 60, 200 | #1e3cc8 | SD name |
+| <span class="color-swatch" style="background-color:#2b00d2;" title="#2b00d2"></span> | `indigo` | 43, 0, 210 | #2b00d2 | SD name |
+| <span class="color-swatch" style="background-color:#5d00c5;" title="#5d00c5"></span> | `purple` | 93, 0, 197 | #5d00c5 | SD name |
+| <span class="color-swatch" style="background-color:#7600c2;" title="#7600c2"></span> | `deeppurple` | 118, 0, 194 | #7600c2 | SD name |
+| <span class="color-swatch" style="background-color:#5555c8;" title="#5555c8"></span> | `glacier` | 85, 85, 200 | #5555c8 | SD name |
+| <span class="color-swatch" style="background-color:#b4b4ff;" title="#b4b4ff"></span> | `icewhite` | 180, 180, 255 | #b4b4ff | SD name |
+| <span class="color-swatch" style="background-color:#bfffff;" title="#bfffff"></span> | `lightcyan` | 191, 255, 255 | #bfffff | SD name |
+| <span class="color-swatch" style="background-color:#ffc777;" title="#ffc777"></span> | `moccasin` | 255, 199, 119 | #ffc777 | SD name |
+| <span class="color-swatch" style="background-color:#fff49d;" title="#fff49d"></span> | `lemonchiffon` | 255, 244, 157 | #fff49d | SD name |
+| <span class="color-swatch" style="background-color:#ffbb6c;" title="#ffbb6c"></span> | `navajowhite` | 255, 187, 108 | #ffbb6c | SD name |
+| <span class="color-swatch" style="background-color:#7f00ff;" title="#7f00ff"></span> | `electricpurple` | 127, 0, 255 | #7f00ff | SD name |
+| <span class="color-swatch" style="background-color:#4700ff;" title="#4700ff"></span> | `electricviolet` | 71, 0, 255 | #4700ff | SD name |
+| <span class="color-swatch" style="background-color:#9cff00;" title="#9cff00"></span> | `electriclime` | 156, 255, 0 | #9cff00 | SD name |
+| <span class="color-swatch" style="background-color:#ff8700;" title="#ff8700"></span> | `amber` | 255, 135, 0 | #ff8700 | SD name |
+| <span class="color-swatch" style="background-color:#ffa800;" title="#ffa800"></span> | `cyberyellow` | 255, 168, 0 | #ffa800 | SD name |
+| <span class="color-swatch" style="background-color:#ffdd00;" title="#ffdd00"></span> | `canaryyellow` | 255, 221, 0 | #ffdd00 | SD name |
+| <span class="color-swatch" style="background-color:#1cff1c;" title="#1cff1c"></span> | `palegreen` | 28, 255, 28 | #1cff1c | SD name |
+| <span class="color-swatch" style="background-color:#ff509a;" title="#ff509a"></span> | `flamingo` | 255, 80, 154 | #ff509a | SD name |
+| <span class="color-swatch" style="background-color:#5a00ff;" title="#5a00ff"></span> | `vividviolet` | 90, 0, 255 | #5a00ff | SD name |
+| <span class="color-swatch" style="background-color:#ba00ff;" title="#ba00ff"></span> | `psychedelicpurple` | 186, 0, 255 | #ba00ff | SD name |
+| <span class="color-swatch" style="background-color:#ff009c;" title="#ff009c"></span> | `hotmagenta` | 255, 0, 156 | #ff009c | SD name |
+| <span class="color-swatch" style="background-color:#ff0080;" title="#ff0080"></span> | `brutalpink` | 255, 0, 128 | #ff0080 | SD name |
+| <span class="color-swatch" style="background-color:#ff0037;" title="#ff0037"></span> | `neonrose` | 255, 0, 55 | #ff0037 | SD name |
+| <span class="color-swatch" style="background-color:#ff0026;" title="#ff0026"></span> | `vividraspberry` | 255, 0, 38 | #ff0026 | SD name |
+| <span class="color-swatch" style="background-color:#ff0013;" title="#ff0013"></span> | `haltred` | 255, 0, 19 | #ff0013 | SD name |
+| <span class="color-swatch" style="background-color:#ff1800;" title="#ff1800"></span> | `moltencore` | 255, 24, 0 | #ff1800 | SD name |
+| <span class="color-swatch" style="background-color:#ff2100;" title="#ff2100"></span> | `safetyorange` | 255, 33, 0 | #ff2100 | SD name |
+| <span class="color-swatch" style="background-color:#ff3700;" title="#ff3700"></span> | `orangejuice` | 255, 55, 0 | #ff3700 | SD name |
+| <span class="color-swatch" style="background-color:#ff7300;" title="#ff7300"></span> | `imperialyellow` | 255, 115, 0 | #ff7300 | SD name |
+| <span class="color-swatch" style="background-color:#ffb000;" title="#ffb000"></span> | `schoolbus` | 255, 176, 0 | #ffb000 | SD name |
+| <span class="color-swatch" style="background-color:#ffba00;" title="#ffba00"></span> | `supersaiyan` | 255, 186, 0 | #ffba00 | SD name |
+| <span class="color-swatch" style="background-color:#ffc900;" title="#ffc900"></span> | `star` | 255, 201, 0 | #ffc900 | SD name |
+| <span class="color-swatch" style="background-color:#ffed00;" title="#ffed00"></span> | `lemon` | 255, 237, 0 | #ffed00 | SD name |
+| <span class="color-swatch" style="background-color:#f6ff00;" title="#f6ff00"></span> | `electricbanana` | 246, 255, 0 | #f6ff00 | SD name |
+| <span class="color-swatch" style="background-color:#e7ff00;" title="#e7ff00"></span> | `busybee` | 231, 255, 0 | #e7ff00 | SD name |
+| <span class="color-swatch" style="background-color:#dbff00;" title="#dbff00"></span> | `zeusbolt` | 219, 255, 0 | #dbff00 | SD name |
+| <span class="color-swatch" style="background-color:#baff00;" title="#baff00"></span> | `limezest` | 186, 255, 0 | #baff00 | SD name |
+| <span class="color-swatch" style="background-color:#87ff00;" title="#87ff00"></span> | `limoncello` | 135, 255, 0 | #87ff00 | SD name |
+| <span class="color-swatch" style="background-color:#00ff16;" title="#00ff16"></span> | `cathodegreen` | 0, 255, 22 | #00ff16 | SD name |
+| <span class="color-swatch" style="background-color:#00ff80;" title="#00ff80"></span> | `mintyparadise` | 0, 255, 128 | #00ff80 | SD name |
+| <span class="color-swatch" style="background-color:#00ff9c;" title="#00ff9c"></span> | `plungepool` | 0, 255, 156 | #00ff9c | SD name |
+| <span class="color-swatch" style="background-color:#00ffc9;" title="#00ffc9"></span> | `vibrantmint` | 0, 255, 201 | #00ffc9 | SD name |
+| <span class="color-swatch" style="background-color:#00ffdb;" title="#00ffdb"></span> | `masterswordblue` | 0, 255, 219 | #00ffdb | SD name |
+| <span class="color-swatch" style="background-color:#00dbff;" title="#00dbff"></span> | `brainfreeze` | 0, 219, 255 | #00dbff | SD name |
+| <span class="color-swatch" style="background-color:#0021ff;" title="#0021ff"></span> | `blueribbon` | 0, 33, 255 | #0021ff | SD name |
+| <span class="color-swatch" style="background-color:#000dff;" title="#000dff"></span> | `rareblue` | 0, 13, 255 | #000dff | SD name |
+| <span class="color-swatch" style="background-color:#0d00ff;" title="#0d00ff"></span> | `overdueblue` | 13, 0, 255 | #0d00ff | SD name |
+| <span class="color-swatch" style="background-color:#3700ff;" title="#3700ff"></span> | `violentviolet` | 55, 0, 255 | #3700ff | SD name |
+
+### Section B — Fett263 Edit Mode color list
+
+Source: `props/saber_fett263_buttons.h` `color_list_` · voice: `sound_library.h` `ColorNumber` (`SayColor`).
+
+| Swatch | # | Voice label | Rgb (0–255) | Hex | Scope |
+| --- | --- | --- | --- | --- | --- |
+| <span class="color-swatch" style="background-color:#ff0000;" title="#ff0000"></span> | 1 | Red | 255, 0, 0 | #ff0000 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ff0e00;" title="#ff0e00"></span> | 2 | OrangeRed | 255, 14, 0 | #ff0e00 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ff4400;" title="#ff4400"></span> | 3 | DarkOrange | 255, 68, 0 | #ff4400 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ff6100;" title="#ff6100"></span> | 4 | Orange | 255, 97, 0 | #ff6100 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#b48200;" title="#b48200"></span> | 5 | Gold | 180, 130, 0 | #b48200 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ffff00;" title="#ffff00"></span> | 6 | Yellow | 255, 255, 0 | #ffff00 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#6cff06;" title="#6cff06"></span> | 7 | GreenYellow | 108, 255, 6 | #6cff06 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#00ff00;" title="#00ff00"></span> | 8 | Green | 0, 255, 0 | #00ff00 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#37ffa9;" title="#37ffa9"></span> | 9 | AquaMarine | 55, 255, 169 | #37ffa9 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#00ffff;" title="#00ffff"></span> | 10 | Cyan | 0, 255, 255 | #00ffff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#0087ff;" title="#0087ff"></span> | 11 | DeepSkyBlue | 0, 135, 255 | #0087ff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#0248ff;" title="#0248ff"></span> | 12 | DodgerBlue | 2, 72, 255 | #0248ff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#0000ff;" title="#0000ff"></span> | 13 | Blue | 0, 0, 255 | #0000ff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#1e3cc8;" title="#1e3cc8"></span> | 14 | IceBlue | 30, 60, 200 | #1e3cc8 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#2b5cd2;" title="#2b5cd2"></span> | 15 | Indigo | 43, 92, 210 | #2b5cd2 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#5d00c5;" title="#5d00c5"></span> | 16 | Purple | 93, 0, 197 | #5d00c5 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#7600c2;" title="#7600c2"></span> | 17 | DeepPurple | 118, 0, 194 | #7600c2 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ff00ff;" title="#ff00ff"></span> | 18 | Magenta | 255, 0, 255 | #ff00ff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ff004b;" title="#ff004b"></span> | 19 | DeepPink | 255, 0, 75 | #ff004b | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#646496;" title="#646496"></span> | 20 | Silver | 100, 100, 150 | #646496 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#5555c8;" title="#5555c8"></span> | 21 | Glacier | 85, 85, 200 | #5555c8 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#b4b4ff;" title="#b4b4ff"></span> | 22 | IceWhite | 180, 180, 255 | #b4b4ff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#bfffff;" title="#bfffff"></span> | 23 | LightCyan | 191, 255, 255 | #bfffff | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ffc777;" title="#ffc777"></span> | 24 | Moccasin | 255, 199, 119 | #ffc777 | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#fff49d;" title="#fff49d"></span> | 25 | LemonChiffon | 255, 244, 157 | #fff49d | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ffbb6c;" title="#ffbb6c"></span> | 26 | NavajoWhite | 255, 187, 108 | #ffbb6c | Edit menu only; save as r,g,b on SD |
+| <span class="color-swatch" style="background-color:#ffffff;" title="#ffffff"></span> | 27 | White | 255, 255, 255 | #ffffff | Edit menu only; save as r,g,b on SD |
+
+<!-- /NAMED_COLORS_APPENDIX -->

@@ -3,42 +3,15 @@
 
 #include "../common/common.h"
 #include "../common/color.h"
+#include "parse_color_arg_table.generated.h"
 #include <string.h>
 
 // Resolve a color name (e.g. "cyan") to a 16-bit Color16.
 // Returns true on match. Case-insensitive so presets.ini can use any casing.
 inline bool ParseColorName(const char* name, Color16* out) {
-  struct NamedColor { const char* n; uint8_t r, g, b; };
-  static const NamedColor table[] = {
-    {"red",       255,   0,   0},
-    {"green",       0, 255,   0},
-    {"blue",        0,   0, 255},
-    {"cyan",        0, 255, 255},
-    {"yellow",    255, 255,   0},
-    {"magenta",   255,   0, 255},
-    {"white",     255, 255, 255},
-    {"black",       0,   0,   0},
-    {"orange",    255, 128,   0},
-    {"darkorange",255,  68,   0},
-    {"deeppink",  255,   0,  75},
-    {"deepskyblue", 0, 135, 255},
-    {"dodgerblue",  2,  72, 255},
-    {"hotpink",   255,  36, 118},
-    {"pink",      255, 136, 154},
-    {"tomato",    255,  31,  15},
-    {"coral",     255,  55,  19},
-    {"aqua",        0, 255, 255},
-    {"lime",        0, 255,   0},
-    {"fuchsia",   255,   0, 255},
-    {"springgreen", 0, 255,  55},
-    {"steelblue",  14,  57, 118},
-    {"silver",    100, 100, 150},
-    {"greenyellow",108, 255,   6},
-    {"chartreuse", 55, 255,   0},
-  };
-  for (size_t i = 0; i < NELEM(table); i++) {
+  for (size_t i = 0; i < NELEM(parse_color_name_table); i++) {
     const char* a = name;
-    const char* b = table[i].n;
+    const char* b = parse_color_name_table[i].n;
     while (*a && *a != ' ' && *a != '\t' && *b) {
       char ca = (*a >= 'A' && *a <= 'Z') ? (*a + 32) : *a;
       char cb = (*b >= 'A' && *b <= 'Z') ? (*b + 32) : *b;
@@ -46,7 +19,8 @@ inline bool ParseColorName(const char* name, Color16* out) {
       a++; b++;
     }
     if (*b == 0 && (*a == 0 || *a == ' ' || *a == '\t')) {
-      *out = Color16(table[i].r * 257, table[i].g * 257, table[i].b * 257);
+      const ParseColorNameEntry& e = parse_color_name_table[i];
+      *out = Color16(e.r * 257, e.g * 257, e.b * 257);
       return true;
     }
   }

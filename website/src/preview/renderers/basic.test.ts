@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { StyleLayer } from '../../model/style-sections';
 import { createInitialPreviewSim, previewSetLockup } from '../simulation';
 import { brightnessOverlayScale } from '../uniform-brightness-overlay';
+import { registerBmpAsset } from '../../stores/bmpAssets';
+import { decodeStripColumnBmp } from '../strip-column-bmp';
 import { renderLayerPixels } from './basic';
 import { compositeLayer, createPixelBuffer, fillSolid } from '../composite';
 
@@ -272,6 +274,44 @@ describe('renderLayerPixels', () => {
     }
     const passthrough = renderLayerPixels(layer('smoothstep_bands', ['0']), {}, 8, 1000, sim);
     expect(passthrough.r.every((v) => v === 255)).toBe(true);
+  });
+
+  it('strip_column animates when BMP asset is registered', () => {
+    const width = 2;
+    const height = 2;
+    const rowStride = 8;
+    const pixelOffset = 54;
+    const size = pixelOffset + rowStride * height;
+    const buf = new ArrayBuffer(size);
+    const view = new DataView(buf);
+    const bytes = new Uint8Array(buf);
+    view.setUint8(0, 0x42);
+    view.setUint8(1, 0x4d);
+    view.setUint32(10, pixelOffset, true);
+    view.setUint32(14, 40, true);
+    view.setInt32(18, width, true);
+    view.setInt32(22, height, true);
+    view.setUint16(26, 1, true);
+    view.setUint16(28, 24, true);
+    bytes[pixelOffset + 2] = 255;
+    bytes[pixelOffset + rowStride + 2] = 0;
+    const asset = decodeStripColumnBmp(buf, 'frames_y');
+    registerBmpAsset('animations/test.bmp', asset);
+    const early = renderLayerPixels(
+      layer('strip_column', ['animations/test.bmp', '2', '1']),
+      {},
+      4,
+      0,
+      sim,
+    );
+    const later = renderLayerPixels(
+      layer('strip_column', ['animations/test.bmp', '2', '1']),
+      {},
+      4,
+      1500,
+      sim,
+    );
+    expect(early.r[0]).not.toBe(later.r[0]);
   });
 
   it('smoke_flow opacity and blend change the composite', () => {

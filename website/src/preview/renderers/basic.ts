@@ -19,6 +19,7 @@ import {
 } from '../simulation';
 import { responsiveLockupStrength } from '../responsive-lockup';
 import { renderEventOverlay } from './overlays';
+import { renderStripColumnLayer } from './strip-column';
 import {
   brightnessOverlayFromFlickerArgs,
   brightnessOverlayFromPulseArgs,
@@ -1237,6 +1238,10 @@ export function renderLayerPixels(
       return renderRainbow(args, count, timeMs);
     case 'pixel_sequence':
       return renderPixelSequence(args, count, timeMs);
+    case 'strip_column':
+      return renderStripColumnLayer(args, count, timeMs, false);
+    case 'strip_column_mask':
+      return renderStripColumnLayer(args, count, timeMs, true);
     case 'noise_flicker': {
       const base = parseColor(args[0] ?? 'black');
       const flicker = parseColor(args[1] ?? 'white');

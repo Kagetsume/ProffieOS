@@ -1,5 +1,5 @@
 /**
- * Register ProffieOS config editor Lit custom elements (`po-*`).
+ * Register LayerBlade Lit custom elements (`po-*`).
  *
  * Side-effect imports — load once from `main.ts`.
  *

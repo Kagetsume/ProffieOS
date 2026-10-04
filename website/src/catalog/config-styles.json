@@ -482,6 +482,116 @@
       ]
     },
     {
+      "id": "demo_strip_column",
+      "label": "demo_strip_column",
+      "description": "SD 24-bit BMP column animation base (strip_column) + sine_waves multiply + OS7 combat overlays. Upload the BMP in the layer editor for preview; copy the same path to SD (e.g. examples/sd/animations/cyan-gold-plasma.bmp).",
+      "vars": {
+        "ext": "-1",
+        "ret": "-1",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        {
+          "styleName": "strip_column",
+          "args": ["animations/cyan-gold-plasma.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+        },
+        {
+          "styleName": "sine_waves",
+          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "blend": "multiply",
+          "opacity": 18022
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "tiger_stripes",
+      "label": "tiger_stripes",
+      "description": "strip_column flipbook using tiger-swirl-darkorange.bmp (144×30 frames_y) + OS7 combat overlays — A/B swap with demo_strip_column on SD.",
+      "vars": {
+        "ext": "-1",
+        "ret": "-1",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        {
+          "styleName": "strip_column",
+          "args": ["animations/tiger-swirl-darkorange.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_strip_column_mask",
+      "label": "demo_strip_column_mask",
+      "description": "Cyan solid_bend base + animated strip_column_mask (BMP grayscale multiply) + OS7 combat overlays. Use a short grayscale BMP on SD at the path; upload in the mask layer for preview.",
+      "vars": {
+        "base": "cyan",
+        "ext": "-1",
+        "ret": "-1",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "strip_column_mask",
+          "args": ["masks/plasma_mask.bmp", "144", "30"],
+          "blend": "multiply",
+          "opacity": 26214
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
+      "id": "demo_strip_column_with_mask",
+      "label": "demo_strip_column_with_mask",
+      "description": "strip_column BMP base + strip_column_mask multiply overlay (both BMPs) + sine_waves + combat — matches commented mask line in examples/config/blade_styles.ini [demo_strip_column].",
+      "vars": {
+        "ext": "-1",
+        "ret": "-1",
+        "clash": "white",
+        "lockup": "white",
+        "lb": "white"
+      },
+      "layers": [
+        {
+          "styleName": "strip_column",
+          "args": ["animations/cyan-gold-plasma.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+        },
+        {
+          "styleName": "strip_column_mask",
+          "args": ["masks/plasma_mask.bmp", "144", "30"],
+          "blend": "multiply",
+          "opacity": 26214
+        },
+        {
+          "styleName": "sine_waves",
+          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "blend": "multiply",
+          "opacity": 18022
+        },
+        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
+        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
+        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
+        { "styleName": "lb", "args": ["{{lb}}"] }
+      ]
+    },
+    {
       "id": "smoke_laser",
       "label": "smoke_laser",
       "description": "Solid base + smoke_flow (multiply + screen; ext/ret match base) + composable clash/blast/lockup overlays (variant of smoke_blade; default base green).",

@@ -7,6 +7,7 @@ import { commonKeys } from '../../i18n/common-keys.js';
 
 export const appShellKeys = {
   title: 'title',
+  tagline: 'tagline',
   exportLink: 'exportLink',
   darkMode: 'darkMode',
   lightMode: 'lightMode',

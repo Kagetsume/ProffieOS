@@ -19,6 +19,9 @@ export const BLADE_HILT_OVERLAP_PX = 6;
 /** Horizontal nudge for blade vs hilt emitter (negative = left). */
 export const BLADE_HORIZONTAL_OFFSET_PX = -1;
 
+/** Host width at which side columns stack under the saber. */
+export const PREVIEW_STACK_CONTAINER_REM = 22;
+
 /** Saber stack, hilt stage, preview controls, and blade angle slider layout. */
 export const poBladePreviewStyles = css`
   :host {
@@ -26,6 +29,82 @@ export const poBladePreviewStyles = css`
     width: 100%;
     box-sizing: border-box;
     color: #f4f6f8;
+    container-type: inline-size;
+    container-name: blade-preview;
+  }
+
+  .preview-main {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 0.45rem 0.5rem;
+    width: 100%;
+    max-width: min(480px, 100%);
+    margin-inline: auto;
+    box-sizing: border-box;
+  }
+
+  .preview-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .preview-col--left,
+  .preview-col--right {
+    flex: 0 0 auto;
+    width: fit-content;
+    min-width: 0;
+    position: relative;
+    z-index: 2;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .preview-col--left {
+    max-width: 7.5rem;
+    min-width: 7rem;
+  }
+
+  .preview-col--left .control-group {
+    overflow: visible;
+    width: 100%;
+    min-width: 7rem;
+    max-width: 7.5rem;
+    box-sizing: border-box;
+  }
+
+  .preview-col--left .control-group-body--stack {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .preview-col--right {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    align-items: stretch;
+  }
+
+  .preview-col--right .control-group {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview-col--right .blade-angle-control {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .preview-col--center {
+    flex: 0 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
+    z-index: 1;
   }
 
   .saber-stack {
@@ -34,8 +113,9 @@ export const poBladePreviewStyles = css`
     align-items: center;
     justify-content: flex-end;
     width: fit-content;
-    max-width: 100%;
-    margin: 0 auto;
+    max-width: min(100%, 8rem);
+    flex: 0 1 auto;
+    min-width: 0;
   }
 
   .blade-slot {
@@ -78,7 +158,7 @@ export const poBladePreviewStyles = css`
     flex-shrink: 0;
     width: calc(${HILT_ROTATOR_WIDTH_REM}rem * ${HILT_ASPECT});
     height: ${HILT_ROTATOR_WIDTH_REM}rem;
-    max-width: 85%;
+    overflow: visible;
   }
 
   .hilt-rotator {
@@ -98,16 +178,59 @@ export const poBladePreviewStyles = css`
     user-select: none;
   }
 
-  .preview-controls {
-    display: flex;
+  .control-group-body--stack {
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .control-group-body--stack wa-button {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .control-group-body--stack .combat-toggle {
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    width: fit-content;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .control-group-body--stack .combat-toggle > span:first-child {
+    white-space: nowrap;
+    overflow: visible;
+    line-height: 1.25;
+  }
+
+  .control-group-body--stack .combat-toggle wa-switch {
+    flex-shrink: 0;
+  }
+
+  .preview-col--right .control-group-body--stack {
+    width: 100%;
     align-items: stretch;
-    gap: 0.65rem;
-    margin: 0.75rem 0 0;
+  }
+
+  .preview-col--right .control-group-body--stack .combat-toggle,
+  .preview-col--right .control-group-body--stack .combat-toggle--disabled {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: 0.5rem;
+    align-items: center;
+    justify-items: start;
     width: 100%;
     max-width: 100%;
-    margin-inline: auto;
-    color: #f4f6f8;
+    box-sizing: border-box;
+  }
+
+  .preview-col--right .control-group-body--stack .combat-toggle wa-switch,
+  .preview-col--right .control-group-body--stack .combat-toggle--disabled wa-switch {
+    justify-self: end;
   }
 
   .control-group {
@@ -118,6 +241,21 @@ export const poBladePreviewStyles = css`
     border: 1px solid var(--wa-color-neutral-35, #52525b);
     border-radius: var(--wa-border-radius-medium, 6px);
     background: rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .preview-col--left .control-group-body--stack wa-button {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .preview-col--left .control-group-body--stack wa-button::part(button) {
+    box-sizing: border-box;
+    max-width: 100%;
   }
 
   .control-group-label {
@@ -137,7 +275,7 @@ export const poBladePreviewStyles = css`
   }
 
   .control-group-body wa-button {
-    min-width: 4.5rem;
+    min-width: 0;
     color: #f4f6f8;
     --wa-color-on-loud: #f4f6f8;
     --wa-color-neutral-on-loud: #f4f6f8;
@@ -157,7 +295,7 @@ export const poBladePreviewStyles = css`
   }
 
   .combat-toggle {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8125rem;
@@ -177,10 +315,17 @@ export const poBladePreviewStyles = css`
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    width: min(100%, 16rem);
-    margin-top: 0.15rem;
+    width: fit-content;
+    max-width: 100%;
+    flex-shrink: 0;
+    margin-top: 0;
     font-size: 0.8125rem;
     font-weight: 600;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--wa-color-neutral-35, #52525b);
+    border-radius: var(--wa-border-radius-medium, 6px);
+    background: rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
   }
 
   .blade-angle-label {
@@ -211,10 +356,51 @@ export const poBladePreviewStyles = css`
   }
 
   .preview-caption {
-    margin: 0.5rem 0 0;
+    margin: 0.5rem auto 0;
+    max-width: min(480px, 100%);
     font-size: 0.7rem;
     color: #f4f6f8;
     opacity: 1;
     text-align: center;
+  }
+
+  @container blade-preview (max-width: ${PREVIEW_STACK_CONTAINER_REM}rem) {
+    .preview-main {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .preview-col--left,
+    .preview-col--right {
+      flex: 1 1 auto;
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .preview-col--left {
+      order: 2;
+    }
+
+    .preview-col--center {
+      order: 1;
+      align-self: center;
+    }
+
+    .preview-col--right {
+      order: 3;
+    }
+
+    .preview-col .control-group {
+      flex: 1 1 8rem;
+    }
+
+    .saber-stack {
+      max-width: 100%;
+    }
   }
 `;

@@ -1,6 +1,6 @@
-# ProffieOS SD Config Editor
+# LayerBlade
 
-Browser-based editor for ProffieOS SD card config files. Generates formatted INI text you can copy or download — no firmware flashing, no serial connection.
+Browser editor for **Proffie – LayerBlade** SD config: `blade_styles.ini` layer recipes, presets, wiring, and related INI files. Generates formatted text you can copy or download — no firmware flashing, no serial connection.
 
 | SD file | Status in editor |
 |---------|------------------|
@@ -104,6 +104,7 @@ Firmware and example configs this editor targets:
 - **[BLADE_STYLES.md](./BLADE_STYLES.md)** — layer recipes: base/overlay, blends, build-from examples
 - [`examples/config/`](../examples/config/) — example INI files
 - [`examples/README.md`](../examples/README.md) — accent styles and NUM_BLADES 4 layout
+- [`examples/config-layers-user-guide.md`](../examples/config-layers-user-guide.md) — builder walkthrough (strip column BMP, config layers, named colors)
 - [`doc/blade_config.md`](../doc/blade_config.md) — firmware parser grammar
 - [`config/proffieboard_v3_config.h`](../config/proffieboard_v3_config.h) — pin name source
 
@@ -125,6 +126,8 @@ Firmware and example configs this editor targets:
 - Recipe library starters (`smoke_blade`, `water_blade`, …) from bundled catalog
 - Section variables (`{{base}}`, …) and preset override hints
 - Approximate live preview on `<po-blade-preview>` (not firmware-accurate)
+- **`strip_column` / `strip_column_mask`:** SD path field plus **local BMP upload** (`<po-bmp-input>`) so flipbook previews work without copying files to a card; decode follows firmware **`frames_y`** / **`frames_x`** rules (`website/src/preview/strip-column-bmp.ts`)
+- Recipe library includes **`demo_strip_column`**, mask demos, and OS7 stacks from `catalog/config-styles.json`
 - Collapsible help on the Styles page → [BLADE_STYLES.md](./BLADE_STYLES.md)
 
 ### Presets (`config/presets.ini`)

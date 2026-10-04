@@ -46,6 +46,7 @@ import { styleLayerStackI18n } from './po-style-layer-stack.i18n.js';
 import { styleLayerStackKeys } from './po-style-layer-stack.keys.js';
 import { poStyleLayerStackStyles } from './po-style-layer-stack.styles.js';
 import './po-color-input.js';
+import './po-bmp-input.js';
 
 export class PoStyleLayerStack extends PoElement {
   static styles = poStyleLayerStackStyles;
@@ -513,6 +514,10 @@ export class PoStyleLayerStack extends PoElement {
         ? String(opacityScaleToPercent(parseOpacityScaleToken(String(value))))
         : value;
 
+    const frameAxisArg = layer.args[3] ?? '';
+    const frameAxis =
+      frameAxisArg && !/^-?\d+$/.test(frameAxisArg.trim()) ? frameAxisArg : 'frames_y';
+
     const field =
       arg.type === 'color'
         ? html`
@@ -522,7 +527,16 @@ export class PoStyleLayerStack extends PoElement {
                 onValueChange(exportColorToken(event.detail.value))}
             ></po-color-input>
           `
-        : html`
+        : arg.type === 'bmp'
+          ? html`
+              <po-bmp-input
+                .value=${value}
+                .frameAxis=${frameAxis}
+                @bmp-path-change=${(event: CustomEvent<{ value: string }>) =>
+                  onValueChange(event.detail.value)}
+              ></po-bmp-input>
+            `
+          : html`
             <wa-input
               type=${scale32768 && arg.type === 'number' ? 'number' : 'text'}
               min=${scale32768 && arg.type === 'number' ? '0' : nothing}

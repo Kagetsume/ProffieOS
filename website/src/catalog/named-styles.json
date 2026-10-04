@@ -167,6 +167,53 @@
       ]
     },
     {
+      "id": "strip_column",
+      "label": "Strip column (BMP base)",
+      "group": "base",
+      "description": "24-bit BMP flipbook on SD; upload a BMP here for preview. Default layout frames_y (width = blade, height = frames).",
+      "args": [
+        {
+          "slot": "sd_path",
+          "label": "BMP path on SD",
+          "type": "bmp",
+          "default": "animations/plasma.bmp"
+        },
+        {
+          "slot": "source_height",
+          "label": "Source height (blade px)",
+          "type": "number",
+          "default": "144"
+        },
+        {
+          "slot": "fps",
+          "label": "FPS",
+          "type": "number",
+          "default": "30"
+        },
+        {
+          "slot": "frame_axis",
+          "label": "Frame axis (optional)",
+          "type": "text",
+          "default": "",
+          "hint": "frames_y (default), frames_x, or leave empty"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "-1",
+          "hint": "-1 uses ignition sound length"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "-1",
+          "hint": "-1 uses retraction sound length"
+        }
+      ]
+    },
+    {
       "id": "advanced",
       "label": "Advanced",
       "group": "base",
@@ -1635,6 +1682,32 @@
           "label": "Color 2",
           "type": "color",
           "default": "white"
+        }
+      ]
+    },
+    {
+      "id": "strip_column_mask",
+      "label": "Strip column mask (BMP)",
+      "group": "texture",
+      "description": "BMP brightness mask (frames_y). Upload for preview; multiply over base.",
+      "args": [
+        {
+          "slot": "sd_path",
+          "label": "BMP path on SD",
+          "type": "bmp",
+          "default": "masks/plasma_mask.bmp"
+        },
+        {
+          "slot": "source_height",
+          "label": "Source height (blade px)",
+          "type": "number",
+          "default": "144"
+        },
+        {
+          "slot": "fps",
+          "label": "FPS",
+          "type": "number",
+          "default": "30"
         }
       ]
     },

@@ -1,5 +1,5 @@
 /**
- * Intro / overview — what the SD Config Editor is for.
+ * Intro / overview — LayerBlade home.
  *
  * @module ui/elements/po-home-page
  */

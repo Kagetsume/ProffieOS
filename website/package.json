@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Frontend-only SD config editor for ProffieOS (no React)",
+  "description": "LayerBlade — frontend SD config editor for ProffieOS blade layers (no React)",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
