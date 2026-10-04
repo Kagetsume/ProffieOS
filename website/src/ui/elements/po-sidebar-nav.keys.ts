@@ -11,6 +11,8 @@ export const sidebarNavKeys = {
   navConfigFiles: commonKeys.nav.configFiles,
   navOutput: commonKeys.nav.output,
   navStubSoon: commonKeys.nav.stubSoon,
+  toggleCollapseAriaLabel: 'toggleCollapseAriaLabel',
+  toggleExpandAriaLabel: 'toggleExpandAriaLabel',
 } as const;
 
 export const sidebarNavRouteKeys: Record<RouteId, (typeof commonKeys.nav.route)[keyof typeof commonKeys.nav.route]> =

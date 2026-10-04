@@ -202,7 +202,10 @@ export default {
     'hint.footer':
       '${presetCount} préréglage${presetSuffix} · ${slotCount} ligne${styleSuffix} style chacun · Export sur la page Export.',
   },
-  'po-sidebar-nav': {},
+  'po-sidebar-nav': {
+    toggleCollapseAriaLabel: 'Réduire la barre latérale',
+    toggleExpandAriaLabel: 'Développer la barre latérale',
+  },
   'po-style-layer-stack': {
     'layerToggle.aria': 'Couche ${stackIndex} : ${layerSummary}',
     'moveTowardTop.aria': 'Monter la couche ${stackIndex}',

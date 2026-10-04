@@ -202,7 +202,10 @@ export default {
     'hint.footer':
       '${presetCount} Preset${presetSuffix} · ${slotCount} Style-Zeile${styleSuffix} je · Export auf der Export-Seite.',
   },
-  'po-sidebar-nav': {},
+  'po-sidebar-nav': {
+    toggleCollapseAriaLabel: 'Seitenleiste einklappen',
+    toggleExpandAriaLabel: 'Seitenleiste ausklappen',
+  },
   'po-style-layer-stack': {
     'layerToggle.aria': 'Layer ${stackIndex}: ${layerSummary}',
     'moveTowardTop.aria': 'Layer ${stackIndex} nach oben',

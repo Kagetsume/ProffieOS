@@ -16,6 +16,9 @@
         if (dark) {
           document.documentElement.classList.add('wa-dark');
         }
+        if (localStorage.getItem('layerblade.sidebarCollapsed') === 'true') {
+          document.documentElement.classList.add('sidebar-collapsed');
+        }
       })();
     </script>
   </head>

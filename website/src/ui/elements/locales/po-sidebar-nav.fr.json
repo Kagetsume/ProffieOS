@@ -1,1 +1,4 @@
-{}
+{
+  "toggleCollapseAriaLabel": "Réduire la barre latérale",
+  "toggleExpandAriaLabel": "Développer la barre latérale"
+}

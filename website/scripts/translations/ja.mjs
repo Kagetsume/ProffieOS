@@ -201,7 +201,10 @@ export default {
     'hint.footer':
       'プリセット ${presetCount} 件${presetSuffix} · 各 ${slotCount} スタイル行${styleSuffix} · エクスポートページで出力。',
   },
-  'po-sidebar-nav': {},
+  'po-sidebar-nav': {
+    toggleCollapseAriaLabel: 'サイドバーを折りたたむ',
+    toggleExpandAriaLabel: 'サイドバーを展開する',
+  },
   'po-style-layer-stack': {
     'layerToggle.aria': 'レイヤー ${stackIndex}：${layerSummary}',
     'moveTowardTop.aria': 'レイヤー ${stackIndex} を上へ',

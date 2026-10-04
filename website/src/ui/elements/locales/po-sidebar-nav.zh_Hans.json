@@ -1,1 +1,4 @@
-{}
+{
+  "toggleCollapseAriaLabel": "折叠侧边栏",
+  "toggleExpandAriaLabel": "展开侧边栏"
+}

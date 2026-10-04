@@ -213,7 +213,10 @@ export default {
     'hint.footer':
       '${presetCount} preajuste${presetSuffix} · ${slotCount} línea${styleSuffix} style cada uno · Exportar en la página Exportar.',
   },
-  'po-sidebar-nav': {},
+  'po-sidebar-nav': {
+    toggleCollapseAriaLabel: 'Contraer la barra lateral',
+    toggleExpandAriaLabel: 'Expandir la barra lateral',
+  },
   'po-style-layer-stack': {
     'layerToggle.aria': 'Capa ${stackIndex}: ${layerSummary}',
     'moveTowardTop.aria': 'Subir capa ${stackIndex}',

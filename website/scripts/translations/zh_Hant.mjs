@@ -200,7 +200,10 @@ export default {
     'hint.footer':
       '${presetCount} 個預設${presetSuffix} · 各 ${slotCount} 條樣式行${styleSuffix} · 於匯出頁匯出。',
   },
-  'po-sidebar-nav': {},
+  'po-sidebar-nav': {
+    toggleCollapseAriaLabel: '摺疊側邊欄',
+    toggleExpandAriaLabel: '展開側邊欄',
+  },
   'po-style-layer-stack': {
     'layerToggle.aria': '圖層 ${stackIndex}：${layerSummary}',
     'moveTowardTop.aria': '將圖層 ${stackIndex} 上移',
