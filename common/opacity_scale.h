@@ -76,4 +76,48 @@ inline int ParseBladePositionToken(const char* token) {
   return ParseOpacityScaleToken(token);
 }
 
+// Parse a token as multiply-mask brightness (0–65535).
+// - Trailing '%' → percent 0–100 (decimals OK, e.g. 12.5%), mapped with round(n * 65535 / 100).
+// - Else integer n: n > 100 → raw 65535 scale (clamp 0–65535); n <= 100 → percent (100 = full).
+inline int ParseBrightness65535Token(const char* token) {
+  if (!OpacityScaleTokenParses(token)) return 0;
+
+  while (*token == ' ' || *token == '\t') token++;
+
+  bool has_percent = false;
+  const char* end = token;
+  while (*end && *end != ' ' && *end != '\t') end++;
+  size_t len = (size_t)(end - token);
+  if (len > 0 && token[len - 1] == '%') {
+    has_percent = true;
+    len--;
+  }
+  while (len > 0 && (token[len - 1] == ' ' || token[len - 1] == '\t')) len--;
+
+  char buf[32];
+  if (len >= sizeof(buf)) len = sizeof(buf) - 1;
+  memcpy(buf, token, len);
+  buf[len] = '\0';
+
+  char* parse_end = nullptr;
+  if (has_percent) {
+    double n = strtod(buf, &parse_end);
+    if (parse_end == buf) return 0;
+    if (n < 0.0) n = 0.0;
+    if (n > 100.0) n = 100.0;
+    return (int)(n * 65535.0 / 100.0 + 0.5);
+  }
+
+  long n = strtol(buf, &parse_end, 10);
+  if (parse_end == buf) return 0;
+
+  if (n > 100) {
+    if (n < 0) n = 0;
+    if (n > 65535) n = 65535;
+    return (int)n;
+  }
+  if (n < 0) n = 0;
+  return (int)((n * 65535LL + 50) / 100);
+}
+
 #endif

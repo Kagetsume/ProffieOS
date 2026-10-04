@@ -97,4 +97,49 @@ using OpacityScaleIntArg = SingleValueAdapter<OpacityScaleIntArgSVF<ARG, DEFAULT
 template<int ARG, int DEFAULT_VALUE>
 using BladePositionIntArg = OpacityScaleIntArg<ARG, DEFAULT_VALUE>;
 
+// 0–65535 multiply-mask brightness (percent, raw, or implicit percent when n <= 100).
+class Brightness65535ScaleIntArgBase {
+public:
+  FunctionRunResult run(BladeBase* base) {
+    switch (value_) {
+      case 0: return FunctionRunResult::ZERO_UNTIL_IGNITION;
+      case 65535: return FunctionRunResult::ONE_UNTIL_IGNITION;
+      default: return FunctionRunResult::UNKNOWN;
+    }
+  }
+  int getInteger(int led) { return value_; }
+  int calculate(BladeBase* blade) { return value_; }
+protected:
+  void init(int argnum) {
+    char default_value[16];
+    itoa(value_, default_value, 10);
+    if (!CurrentArgParser) return;
+    const char* arg = CurrentArgParser->GetArg(argnum, "INT", default_value);
+    if (arg && arg[0] && OpacityScaleTokenParses(arg)) {
+      value_ = ParseBrightness65535Token(arg);
+    }
+  }
+
+  int value_;
+};
+
+template<int ARG, int DEFAULT_VALUE>
+class Brightness65535ScaleIntArgSVF : public Brightness65535ScaleIntArgBase {
+public:
+  Brightness65535ScaleIntArgSVF() {
+    value_ = DEFAULT_VALUE;
+    init(ARG);
+  }
+};
+
+template<int ARG, int DEFAULT_VALUE>
+class SingleValueAdapter<Brightness65535ScaleIntArgSVF<ARG, DEFAULT_VALUE>>
+    : public Brightness65535ScaleIntArgSVF<ARG, DEFAULT_VALUE> {};
+template<int ARG, int DEFAULT_VALUE>
+class SVFWrapper<Brightness65535ScaleIntArgSVF<ARG, DEFAULT_VALUE>>
+    : public Brightness65535ScaleIntArgSVF<ARG, DEFAULT_VALUE> {};
+
+template<int ARG, int DEFAULT_VALUE>
+using Brightness65535ScaleIntArg = SingleValueAdapter<Brightness65535ScaleIntArgSVF<ARG, DEFAULT_VALUE>>;
+
 #endif

@@ -37,8 +37,29 @@ export const poStyleLayerStackStyles = css`
     gap: 0.5rem;
     padding: 0.55rem 0.65rem;
     font-size: 0.875rem;
-    cursor: pointer;
     min-width: 0;
+  }
+
+  .layer-row-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .layer-row-toggle:focus-visible {
+    outline: 2px solid var(--wa-color-brand-60, #0ea5e9);
+    outline-offset: 2px;
+    border-radius: var(--wa-border-radius-small, 4px);
   }
 
   .layer-item--expanded .layer-row {
@@ -109,6 +130,12 @@ export const poStyleLayerStackStyles = css`
   .layer-remove:disabled {
     opacity: 0.35;
     cursor: not-allowed;
+  }
+
+  .layer-reorder:focus-visible,
+  .layer-remove:focus-visible {
+    outline: 2px solid var(--wa-color-brand-60, #0ea5e9);
+    outline-offset: 2px;
   }
 
   .layer-form-footer {

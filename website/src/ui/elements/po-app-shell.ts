@@ -64,11 +64,11 @@ export class PoAppShell extends PoElement {
             size="small"
             href="#/export"
           >
-            <wa-icon name="file-export" label=""></wa-icon>
+            <wa-icon name="file-export" aria-hidden="true"></wa-icon>
             ${appShellI18n.translate(appShellKeys.exportLink)}
           </wa-button>
           <label class="theme-toggle">
-            <wa-icon name=${dark ? 'moon' : 'sun'} label=""></wa-icon>
+            <wa-icon name=${dark ? 'moon' : 'sun'} aria-hidden="true"></wa-icon>
             <wa-switch
               data-testid="app-shell-theme-toggle"
               size="small"

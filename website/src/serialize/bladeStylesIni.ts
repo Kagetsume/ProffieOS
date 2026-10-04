@@ -9,11 +9,19 @@ import { INI_GENERATED_BY } from '../brand';
 import { contextLogger } from '../logger';
 import { exportColorToken } from '../model/colors';
 import {
+  formatBrightness65535Export,
+  parseBrightness65535Token,
+} from '../model/brightness-scale';
+import {
   formatOpacityScaleExport,
   OPACITY_SCALE,
   parseOpacityScaleToken,
 } from '../model/opacity-scale';
-import { getNamedStyle, isOpacityScaleArg } from '../model/style-catalog';
+import {
+  getNamedStyle,
+  isBrightness65535ScaleArg,
+  isOpacityScaleArg,
+} from '../model/style-catalog';
 import type { StyleLayer, StyleSection } from '../model/style-sections';
 import { resolveLayerArgs, resolveVarTemplate } from '../model/style-sections';
 import { blankLine, iniHeader } from './format';
@@ -47,6 +55,12 @@ function serializeLayerLine(layer: StyleLayer, vars: Record<string, string>): st
           const n = parseOpacityScaleToken(arg);
           if (n > 0 || arg.trim() === '0' || arg.trim() === '0%') {
             return formatOpacityScaleExport(n);
+          }
+        }
+        if (slot && isBrightness65535ScaleArg(layer.styleName, slot)) {
+          const n = parseBrightness65535Token(arg);
+          if (n > 0 || arg.trim() === '0' || arg.trim() === '0%') {
+            return formatBrightness65535Export(n);
           }
         }
         return exportToken(arg);

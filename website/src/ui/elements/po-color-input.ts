@@ -5,7 +5,7 @@
  *
  * @module ui/elements/po-color-input
  */
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -28,10 +28,13 @@ import { colorInputKeys } from './po-color-input.keys.js';
 export class PoColorInput extends LitElement {
   static properties = {
     value: { type: String },
+    /** Accessible name when the control is not wrapped in a visible `<label>`. */
+    accessibilityLabel: { type: String, attribute: 'accessibility-label' },
     customMode: { type: Boolean, state: true },
   };
 
   value = '';
+  accessibilityLabel = '';
   private customMode = false;
 
   /**
@@ -123,6 +126,7 @@ export class PoColorInput extends LitElement {
       ? CUSTOM_COLOR_VALUE
       : selectValueForColor(committed);
     const customVisible = selectValue === CUSTOM_COLOR_VALUE;
+    const fieldLabel = this.accessibilityLabel.trim() || nothing;
 
     return html`
       <style>
@@ -195,6 +199,7 @@ export class PoColorInput extends LitElement {
           class="color-select"
           data-testid="color-input-select"
           placeholder=${colorInputI18n.translate(colorInputKeys.placeholderColor)}
+          aria-label=${fieldLabel}
           .value=${selectValue}
           @wa-change=${this.onSelectChange}
           @change=${this.onSelectChange}
@@ -227,6 +232,7 @@ export class PoColorInput extends LitElement {
           data-testid="color-input-custom"
           class="color-custom ${customVisible ? '' : 'color-custom--hidden'}"
           placeholder=${colorInputI18n.translate(colorInputKeys.placeholderCustom)}
+          aria-label=${fieldLabel}
           .value=${customVisible ? committed : ''}
           @wa-change=${this.onCustomChange}
         ></wa-input>

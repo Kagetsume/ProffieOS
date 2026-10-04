@@ -157,11 +157,11 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `stripes` | `add opacity 31% stripes 800 -1500 white cyan` | Soft moving stripes; `width speed color1 color2` |
 | `hard_stripes` | `multiply opacity 55% hard_stripes 1200 -4000 black white` | Hard-edged bands |
 | `random_bands` | `multiply opacity 67% random_bands -600 green black 3000` | Irregular rolling bands — **`[smoke_laser]`** (not **`stripes`** like **`[smoke_blade]`**) |
-| `sine_waves` / `saw_waves` | `multiply opacity 67% sine_waves 2400 0 8192 65535 -2000` | Up to 4 wave slots; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
-| `hue_waves` | `hue opacity 100% hue_waves 2400 0 0 8192 -2000` | Up to 4 sine **hue** offsets (RotateColorsX units). **`hue`** blend, not multiply. Recipe **`[demo_hue_waves]`** |
-| `pulse_train` / `chirp` | `multiply opacity 67% pulse_train 2400 -2000 0 65535 50%` | Square bands / frequency-sweep sine — presets 21–22 |
-| `smoothstep_bands` | `multiply opacity 61% smoothstep_bands 2400 -2000 8192 65535 400` | Soft rolling bands — preset 13 |
-| `value_noise` / `fbm_noise` | `multiply opacity 55% value_noise 2400 -2000 8192 65535 0` | Hash / FBM noise masks — presets 14–15 |
+| `sine_waves` / `saw_waves` | `multiply opacity 67% sine_waves 2400 0 12.5% 100% -2000` | Up to 4 wave slots; mask min/max as **%** or raw **>100**; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
+| `hue_waves` | `hue opacity 100% hue_waves 2400 0 0 8192 -2000` | Up to 4 sine **hue** offsets (RotateColorsX units, not **%**). **`hue`** blend, not multiply. Recipe **`[demo_hue_waves]`** |
+| `pulse_train` / `chirp` | `multiply opacity 67% pulse_train 2400 -2000 0 100% 50%` / `… chirp … 12.5% 100% 80` | Square bands / frequency-sweep sine — presets 21–22 |
+| `smoothstep_bands` | `multiply opacity 61% smoothstep_bands 2400 -2000 12.5% 100% 400` | Soft rolling bands — preset 13 |
+| `value_noise` / `fbm_noise` | `multiply opacity 55% value_noise 2400 -2000 12.5% 100% 0` | Hash / FBM noise masks — presets 14–15 |
 | `moire_mask` / `blade_envelope` | `multiply opacity 61% moire_mask …` | Beating ramps / center bump — presets 16–17 |
 | `sine_waves_swing` | long arg list (see **`[demo_sine_waves_swing]`**) | Swing/twist compresses wavelength — preset 18 |
 | `noise_flicker` | `multiply opacity 24% noise_flicker black white` | Organic crackle texture |

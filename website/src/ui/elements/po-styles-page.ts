@@ -269,6 +269,7 @@ export class PoStylesPage extends PoElement {
     if (this.isColorVarKey(key)) {
       return html`
         <po-color-input
+          accessibility-label=${key}
           .value=${value}
           @color-change=${(event: CustomEvent<{ value: string }>) =>
             this.onVarChange(sectionId, key, event.detail.value)}
@@ -277,6 +278,7 @@ export class PoStylesPage extends PoElement {
     }
     return html`
       <wa-input
+        aria-label=${key}
         .value=${value}
         @wa-input=${(event: Event) =>
           this.onVarChange(sectionId, key, (event.target as HTMLInputElement).value)}

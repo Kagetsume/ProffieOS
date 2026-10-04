@@ -12,6 +12,8 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 import { decodeStripColumnBmp, parseStripColumnLayerArgs } from '../../preview/strip-column-bmp';
 import { registerBmpAsset } from '../../stores/bmpAssets';
 import { contextLogger } from '../../logger/index.js';
+import { bmpInputI18n } from './po-bmp-input.i18n.js';
+import { bmpInputKeys } from './po-bmp-input.keys.js';
 
 export class PoBmpInput extends LitElement {
   static properties = {
@@ -82,7 +84,8 @@ export class PoBmpInput extends LitElement {
         <wa-input
           data-testid="bmp-path-input"
           .value=${this.value}
-          placeholder="animations/plasma.bmp"
+          placeholder=${bmpInputI18n.translate(bmpInputKeys.placeholderPath)}
+          aria-label=${bmpInputI18n.translate(bmpInputKeys.labelPath)}
           @wa-input=${(event: Event) =>
             this.commitPath((event.target as HTMLInputElement).value)}
         ></wa-input>
@@ -91,6 +94,7 @@ export class PoBmpInput extends LitElement {
           accept=".bmp,image/bmp"
           hidden
           data-testid="bmp-file-input"
+          aria-label=${bmpInputI18n.translate(bmpInputKeys.ariaFileInput)}
           @change=${this.onFileChange}
         />
         <wa-button
@@ -100,11 +104,13 @@ export class PoBmpInput extends LitElement {
           @click=${() =>
             this.renderRoot.querySelector<HTMLInputElement>('[data-testid="bmp-file-input"]')?.click()}
         >
-          Upload BMP
+          ${bmpInputI18n.translate(bmpInputKeys.buttonUpload)}
         </wa-button>
       </div>
-      ${this.error ? html`<p class="hint bmp-error">${this.error}</p>` : null}
-      <p class="hint">24-bit uncompressed BMP · preview only (copy file to SD at this path)</p>
+      ${this.error
+        ? html`<p class="hint bmp-error" role="alert">${this.error}</p>`
+        : null}
+      <p class="hint">${bmpInputI18n.translate(bmpInputKeys.hintFormat)}</p>
     `;
   }
 }

@@ -1112,6 +1112,24 @@ void test_layers() {
   CHECK( (!is_same_type<Layers<AlphaL<Red, Int<1>>, Blue>, Blue>::value) );
 }
 
+void test_brightness65535_scale_token() {
+  CHECK(ParseBrightness65535Token("100%") == 65535);
+  CHECK(ParseBrightness65535Token("12.5%") == 8192);
+  CHECK(ParseBrightness65535Token("8192") == 8192);
+  CHECK(ParseBrightness65535Token("100") == 65535);
+  CHECK(ParseBrightness65535Token("0") == 0);
+  CHECK(ParseBrightness65535Token("0%") == 0);
+  ArgParser ap("2400 -2000 12.5% 100% 80");
+  CurrentArgParser = &ap;
+  Brightness65535ScaleIntArg<3, 0> min_arg;
+  Brightness65535ScaleIntArg<4, 65535> max_arg;
+  CHECK(min_arg.getInteger(0) == 8192);
+  CHECK(max_arg.getInteger(0) == 65535);
+  BladeStyle* chirp = ParseStyleStringForConfig("chirp 2400 -2000 12.5% 100% 80");
+  CHECK(chirp != nullptr);
+  delete chirp;
+}
+
 void test_opacity_scale_token() {
   CHECK(ParseOpacityScaleToken("55%") == (int)((55 * 32768LL + 50) / 100));
   CHECK(ParseOpacityScaleToken("18000") == 18000);
@@ -1410,6 +1428,7 @@ void test_get_max_arg() {
 }
 
 int main() {
+  test_brightness65535_scale_token();
   test_opacity_scale_token();
   test_config_layer_line_parse();
   test_composite_config_layer_multiply();

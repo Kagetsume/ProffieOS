@@ -3,6 +3,7 @@
  *
  * @module preview/renderers/basic
  */
+import { parseBrightness65535Token } from '../../model/brightness-scale';
 import { getNamedStyle } from '../../model/style-catalog';
 import type { StyleLayer } from '../../model/style-sections';
 import { resolvedLayerArgs } from '../../model/style-sections';
@@ -462,6 +463,11 @@ function intSlotArg(raw: string | undefined, defaultText: string): number {
   return Number.isFinite(n) ? Math.trunc(n) : Number(defaultText) || 0;
 }
 
+function maskBrightnessSlotArg(raw: string | undefined, defaultText: string): number {
+  const text = raw == null || String(raw).trim() === '' ? defaultText : String(raw).trim();
+  return parseBrightness65535Token(text);
+}
+
 function parseSineWaveSlots(args: string[]): { waves: SineWaveParams[]; strength: number } {
   const waves: SineWaveParams[] = [];
   for (let w = 0; w < 4; w += 1) {
@@ -469,12 +475,12 @@ function parseSineWaveSlots(args: string[]): { waves: SineWaveParams[]; strength
     waves.push({
       period: intSlotArg(args[o], w === 0 ? '2400' : '0'),
       phase: intSlotArg(args[o + 1], '0'),
-      min: intSlotArg(args[o + 2], '0'),
-      max: intSlotArg(args[o + 3], '65535'),
+      min: maskBrightnessSlotArg(args[o + 2], '0'),
+      max: maskBrightnessSlotArg(args[o + 3], '65535'),
       speed: intSlotArg(args[o + 4], w === 0 ? '-2000' : '0'),
     });
   }
-  const strength = intSlotArg(args[20], '65535');
+  const strength = maskBrightnessSlotArg(args[20], '65535');
   return { waves, strength };
 }
 
@@ -598,8 +604,8 @@ function pulseTrainFactorAt(
 function renderPulseTrain(args: string[], count: number, timeMs: number): PixelBuffer {
   const period = Number(args[0] ?? '2400') || 0;
   const speed = Number(args[1] ?? '-2000') || -2000;
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
   const duty = Number(args[4] ?? '16384') || 16384;
   const buffer = createPixelBuffer(count);
   if (period <= 0) {
@@ -625,8 +631,8 @@ function localChirpPeriod(periodBase: number, led: number, chirpRate: number): n
 function renderChirp(args: string[], count: number, timeMs: number): PixelBuffer {
   const periodBase = Number(args[0] ?? '2400') || 0;
   const speed = Number(args[1] ?? '-2000') || -2000;
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
   const chirpRate = Number(args[4] ?? '64') || 0;
   const buffer = createPixelBuffer(count);
   if (periodBase <= 0) {
@@ -655,8 +661,8 @@ function renderChirp(args: string[], count: number, timeMs: number): PixelBuffer
 function renderSmoothstepBands(args: string[], count: number, timeMs: number): PixelBuffer {
   const period = Number(args[0] ?? '2400') || 0;
   const speed = Number(args[1] ?? '-2000') || -2000;
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
   const edge = Math.max(1, Number(args[4] ?? '400') || 400);
   const buffer = createPixelBuffer(count);
   if (period <= 0) {
@@ -697,8 +703,8 @@ function noiseAt(coord: number, scale: number, seed: number): number {
 function renderValueNoise(args: string[], count: number, timeMs: number): PixelBuffer {
   const scale = Number(args[0] ?? '2400') || 0;
   const speed = Number(args[1] ?? '-2000') || -2000;
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
   const seed = Number(args[4] ?? '0') || 0;
   const buffer = createPixelBuffer(count);
   if (scale <= 0) {
@@ -738,9 +744,9 @@ function fbmAt(coord: number, scale: number): number {
 function renderFbmNoise(args: string[], count: number, timeMs: number): PixelBuffer {
   const scale = Number(args[0] ?? '2400') || 0;
   const speed = Number(args[1] ?? '-2000') || -2000;
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
-  const strength = Number(args[4] ?? '65535') || 65535;
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
+  const strength = maskBrightnessSlotArg(args[4], '65535');
   const buffer = createPixelBuffer(count);
   if (scale <= 0) {
     fillSolid(buffer, [255, 255, 255]);
@@ -770,8 +776,8 @@ function renderMoireMask(args: string[], count: number, timeMs: number): PixelBu
   const p2 = Number(args[1] ?? '2450') || 0;
   const s1 = Number(args[2] ?? '-2000') || -2000;
   const s2 = Number(args[3] ?? '2100') || 2100;
-  const minB = Math.max(0, Math.min(65535, Number(args[4] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[5] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[4], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[5], '65535')));
   const scrollUs = timeMs * 1000;
   const mult1 = p1 > 0 ? (50000 * 1024) / p1 : 0;
   const mult2 = p2 > 0 ? (50000 * 1024) / p2 : 0;
@@ -801,8 +807,8 @@ function renderMoireMask(args: string[], count: number, timeMs: number): PixelBu
 function renderBladeEnvelope(args: string[], count: number, timeMs: number): PixelBuffer {
   const centerArg = Number(args[0] ?? '16384') || 16384;
   const width = Math.max(1, Number(args[1] ?? '6000') || 6000);
-  const minB = Math.max(0, Math.min(65535, Number(args[2] ?? '0') || 0));
-  const maxB = Math.max(0, Math.min(65535, Number(args[3] ?? '65535') || 65535));
+  const minB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[2], '0')));
+  const maxB = Math.max(0, Math.min(65535, maskBrightnessSlotArg(args[3], '65535')));
   const speed = Number(args[4] ?? '0') || 0;
   const scroll = speed !== 0 ? (((timeMs * 1000 * speed) / 333) % (32768 * 1024)) >> 10 : 0;
   const center = (centerArg + scroll) % 32768;

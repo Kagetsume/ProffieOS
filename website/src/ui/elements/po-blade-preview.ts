@@ -805,6 +805,7 @@ export class PoBladePreview extends PoElement {
                   data-testid="blade-preview-hilt"
                   src=${HILT_SVG_URL}
                   alt=""
+                  aria-hidden="true"
                   width="${HILT_SVG_NATURAL_WIDTH}"
                   height="${HILT_SVG_NATURAL_HEIGHT}"
                   decoding="async"
@@ -823,7 +824,7 @@ export class PoBladePreview extends PoElement {
               >${bladePreviewI18n.translate(bladePreviewKeys.sectionLockup)}</span
             >
             <div class="control-group-body control-group-body--stack">
-              <div class="combat-toggle ${canLockup ? '' : 'combat-toggle--disabled'}">
+              <label class="combat-toggle ${canLockup ? '' : 'combat-toggle--disabled'}">
                 <span>${bladePreviewI18n.translate(bladePreviewKeys.lockup)}</span>
                 <wa-switch
                   data-testid="blade-preview-lockup"
@@ -832,8 +833,8 @@ export class PoBladePreview extends PoElement {
                   ?disabled=${!canLockup}
                   @change=${this.onLockupChange}
                 ></wa-switch>
-              </div>
-              <div class="combat-toggle ${canLb ? '' : 'combat-toggle--disabled'}">
+              </label>
+              <label class="combat-toggle ${canLb ? '' : 'combat-toggle--disabled'}">
                 <span>${bladePreviewI18n.translate(bladePreviewKeys.lightningBlock)}</span>
                 <wa-switch
                   data-testid="blade-preview-lb"
@@ -842,8 +843,8 @@ export class PoBladePreview extends PoElement {
                   ?disabled=${!canLb}
                   @change=${this.onLbChange}
                 ></wa-switch>
-              </div>
-              <div class="combat-toggle ${canDrag ? '' : 'combat-toggle--disabled'}">
+              </label>
+              <label class="combat-toggle ${canDrag ? '' : 'combat-toggle--disabled'}">
                 <span>${bladePreviewI18n.translate(bladePreviewKeys.drag)}</span>
                 <wa-switch
                   data-testid="blade-preview-drag"
@@ -852,8 +853,8 @@ export class PoBladePreview extends PoElement {
                   ?disabled=${!canDrag}
                   @change=${this.onDragChange}
                 ></wa-switch>
-              </div>
-              <div class="combat-toggle ${canMelt ? '' : 'combat-toggle--disabled'}">
+              </label>
+              <label class="combat-toggle ${canMelt ? '' : 'combat-toggle--disabled'}">
                 <span>${bladePreviewI18n.translate(bladePreviewKeys.melt)}</span>
                 <wa-switch
                   data-testid="blade-preview-melt"
@@ -862,7 +863,7 @@ export class PoBladePreview extends PoElement {
                   ?disabled=${!canMelt}
                   @change=${this.onMeltChange}
                 ></wa-switch>
-              </div>
+              </label>
             </div>
           </div>
           ${showBladeAngle
@@ -891,7 +892,7 @@ export class PoBladePreview extends PoElement {
         </div>
       </div>
 
-      <p class="preview-caption">
+      <p class="preview-caption" role="status" aria-live="polite">
         ${bladePreviewI18n.translate(bladePreviewKeys.caption, {
           sectionId: activeSectionId || '—',
           transitionSuffix:

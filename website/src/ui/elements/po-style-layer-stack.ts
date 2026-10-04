@@ -11,9 +11,14 @@ import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
 import { exportColorToken } from '../../model/colors';
 import {
+  brightness65535ToPercent,
+  parseBrightness65535Token,
+} from '../../model/brightness-scale';
+import {
   defaultArgsForStyle,
   describeLayer,
   getNamedStyle,
+  isBrightness65535ScaleArg,
   isOpacityScaleArg,
   type StyleArgDef,
 } from '../../model/style-catalog';
@@ -104,23 +109,33 @@ export class PoStyleLayerStack extends PoElement {
           const expanded = layer.id === activeLayerId;
           const badge =
             layer.blend !== 'normal' || layer.opacity < 32768 ? layer.blend : nothing;
+          const layerSummary = describeLayer(
+            layer.styleName,
+            resolveLayerArgs(layer, section.vars),
+            layer.blend,
+            layer.configSection,
+          );
           return html`
             <div
               class="layer-item ${expanded ? 'layer-item--expanded' : ''}"
               role="listitem"
               id=${expanded ? 'selected-layer-item' : nothing}
             >
-              <div class="layer-row" @click=${() => this.toggleLayer(layer.id, activeLayerId)}>
-                <span class="layer-order">${stackIndex}</span>
-                <span class="layer-label"
-                  >${describeLayer(
-                    layer.styleName,
-                    resolveLayerArgs(layer, section.vars),
-                    layer.blend,
-                    layer.configSection,
-                  )}</span
+              <div class="layer-row">
+                <button
+                  type="button"
+                  class="layer-row-toggle"
+                  aria-expanded=${expanded}
+                  aria-label=${styleLayerStackI18n.translate(styleLayerStackKeys.layerToggleAria, {
+                    stackIndex,
+                    layerSummary,
+                  })}
+                  @click=${() => this.toggleLayer(layer.id, activeLayerId)}
                 >
-                ${badge ? html`<span class="layer-badge">${badge}</span>` : nothing}
+                  <span class="layer-order">${stackIndex}</span>
+                  <span class="layer-label">${layerSummary}</span>
+                  ${badge ? html`<span class="layer-badge">${badge}</span>` : nothing}
+                </button>
                 <div class="layer-row-actions">
                   <button
                     type="button"
@@ -467,6 +482,7 @@ export class PoStyleLayerStack extends PoElement {
     arg: StyleArgDef,
   ) {
     const scale32768 = isOpacityScaleArg(layer.styleName, arg.slot);
+    const scale65535 = isBrightness65535ScaleArg(layer.styleName, arg.slot);
     const raw = layer.args[index] ?? arg.default;
     const varName = this.templateVarName(raw);
     const usesSectionVar = varName !== undefined && varName in section.vars;
@@ -506,13 +522,22 @@ export class PoStyleLayerStack extends PoElement {
           return;
         }
       }
+      if (scale65535 && arg.type === 'number') {
+        const trimmed = next.trim();
+        if (trimmed.endsWith('%') || /^-?\d+(\.\d+)?$/.test(trimmed)) {
+          persistArg(String(parseBrightness65535Token(trimmed)));
+          return;
+        }
+      }
       persistArg(next);
     };
 
     const displayValue =
       scale32768 && arg.type === 'number' && !usesSectionVar
         ? String(opacityScaleToPercent(parseOpacityScaleToken(String(value))))
-        : value;
+        : scale65535 && arg.type === 'number' && !usesSectionVar
+          ? String(brightness65535ToPercent(parseBrightness65535Token(String(value))))
+          : value;
 
     const frameAxisArg = layer.args[3] ?? '';
     const frameAxis =
@@ -538,9 +563,9 @@ export class PoStyleLayerStack extends PoElement {
             `
           : html`
             <wa-input
-              type=${scale32768 && arg.type === 'number' ? 'number' : 'text'}
-              min=${scale32768 && arg.type === 'number' ? '0' : nothing}
-              max=${scale32768 && arg.type === 'number' ? '100' : nothing}
+              type=${(scale32768 || scale65535) && arg.type === 'number' ? 'number' : 'text'}
+              min=${(scale32768 || scale65535) && arg.type === 'number' ? '0' : nothing}
+              max=${(scale32768 || scale65535) && arg.type === 'number' ? '100' : nothing}
               .value=${displayValue}
               @wa-input=${(event: Event) =>
                 onValueChange((event.target as HTMLInputElement).value)}

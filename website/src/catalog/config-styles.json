@@ -6,10 +6,23 @@
       "description": "Rainbow base with add-blended strobe overlay — common preset example.",
       "vars": {},
       "layers": [
-        { "styleName": "rainbow", "args": ["300", "800"] },
+        {
+          "styleName": "rainbow",
+          "args": [
+            "300",
+            "800"
+          ]
+        },
         {
           "styleName": "strobe",
-          "args": ["black", "white", "15", "1", "300", "800"],
+          "args": [
+            "black",
+            "white",
+            "15",
+            "1",
+            "300",
+            "800"
+          ],
           "blend": "add",
           "opacity": 16000
         }
@@ -21,8 +34,19 @@
       "description": "Simple fire base with blast overlay — minimal blade_styles.ini example.",
       "vars": {},
       "layers": [
-        { "styleName": "fire", "args": ["red", "yellow"] },
-        { "styleName": "blast", "args": ["white"] }
+        {
+          "styleName": "fire",
+          "args": [
+            "red",
+            "yellow"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        }
       ]
     },
     {
@@ -35,10 +59,32 @@
         "ret": "800"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "clash", "args": ["white"] },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "responsive_lockup", "args": ["white"] }
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "white"
+          ]
+        }
       ]
     },
     {
@@ -55,22 +101,93 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "white",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "multiply",
+          "opacity": 24000
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "screen",
+          "opacity": 4000
+        },
         {
           "styleName": "stripes",
-          "args": ["3000", "-600", "0,0,24", "black"],
+          "args": [
+            "3000",
+            "-600",
+            "0,0,24",
+            "black"
+          ],
           "blend": "multiply",
           "opacity": 26000
         },
-        { "styleName": "swing", "args": ["white", "200"], "blend": "add", "opacity": 6000 },
-        { "styleName": "real_clash", "args": ["white", "49%"] },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "swing",
+          "args": [
+            "white",
+            "200"
+          ],
+          "blend": "add",
+          "opacity": 6000
+        },
+        {
+          "styleName": "real_clash",
+          "args": [
+            "white",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -86,38 +203,66 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "sine_waves",
           "args": [
             "2400",
             "0",
-            "4096",
-            "65535",
+            "6.2%",
+            "100%",
             "-2000",
             "1800",
             "512",
-            "0",
-            "49152",
+            "0%",
+            "75%",
             "-2800",
             "3200",
             "0",
-            "8192",
-            "65535",
+            "12.5%",
+            "100%",
             "1500",
             "2200",
             "256",
-            "12288",
-            "65535",
+            "18.7%",
+            "100%",
             "2200"
           ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -133,40 +278,88 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "white",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "multiply",
+          "opacity": 24000
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "screen",
+          "opacity": 4000
+        },
         {
           "styleName": "sine_waves",
           "args": [
             "2100",
             "0",
-            "4096",
-            "65535",
+            "6.2%",
+            "100%",
             "-1700",
             "1400",
             "384",
-            "0",
-            "53248",
+            "0%",
+            "81.2%",
             "1300",
             "2600",
             "128",
-            "8192",
-            "65535",
+            "12.5%",
+            "100%",
             "-2100",
             "1750",
             "512",
-            "12288",
-            "57344",
+            "18.7%",
+            "87.5%",
             "1700"
           ],
           "blend": "multiply",
           "opacity": 18000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -182,17 +375,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "saw_waves",
-          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "args": [
+            "2400",
+            "0",
+            "12.5%",
+            "100%",
+            "-2000"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -208,17 +435,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "smoothstep_bands",
-          "args": ["2400", "-2000", "8192", "65535", "400"],
+          "args": [
+            "2400",
+            "-2000",
+            "12.5%",
+            "100%",
+            "400"
+          ],
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -234,17 +495,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "value_noise",
-          "args": ["2400", "-2000", "8192", "65535", "0"],
+          "args": [
+            "2400",
+            "-2000",
+            "12.5%",
+            "100%",
+            "0"
+          ],
           "blend": "multiply",
           "opacity": 18000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -260,17 +555,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "fbm_noise",
-          "args": ["2400", "-1500", "8192", "65535", "65535"],
+          "args": [
+            "2400",
+            "-1500",
+            "12.5%",
+            "100%",
+            "100%"
+          ],
           "blend": "multiply",
           "opacity": 16000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -286,17 +615,52 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "moire_mask",
-          "args": ["2400", "2450", "-2000", "2100", "8192", "65535"],
+          "args": [
+            "2400",
+            "2450",
+            "-2000",
+            "2100",
+            "12.5%",
+            "100%"
+          ],
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -312,17 +676,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "blade_envelope",
-          "args": ["16384", "6000", "8192", "65535", "0"],
+          "args": [
+            "16384",
+            "6000",
+            "12.5%",
+            "100%",
+            "0"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -338,43 +736,71 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "sine_waves_swing",
           "args": [
             "2400",
             "0",
-            "8192",
-            "65535",
+            "12.5%",
+            "100%",
             "-2000",
             "0",
             "0",
-            "0",
-            "65535",
-            "0",
-            "0",
-            "0",
-            "65535",
+            "0%",
+            "100%",
             "0",
             "0",
             "0",
-            "65535",
+            "100%",
+            "0%",
             "0",
             "0",
+            "100%",
+            "0%",
+            "0%",
             "0",
-            "65535",
+            "100%",
             "0",
-            "65535",
+            "100%",
             "12000",
             "8000"
           ],
           "blend": "multiply",
           "opacity": 20000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -390,17 +816,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "sine_waves",
-          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "args": [
+            "2400",
+            "0",
+            "12.5%",
+            "100%",
+            "-2000"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -416,17 +876,50 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "random_bands",
-          "args": ["-600", "green", "black", "3000"],
+          "args": [
+            "-600",
+            "green",
+            "black",
+            "3000"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -442,17 +935,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "pulse_train",
-          "args": ["2400", "-2000", "0", "65535", "16384"],
+          "args": [
+            "2400",
+            "-2000",
+            "0%",
+            "100%",
+            "50%"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -468,17 +995,51 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "chirp",
-          "args": ["2400", "-2000", "8192", "65535", "80"],
+          "args": [
+            "2400",
+            "-2000",
+            "12.5%",
+            "100%",
+            "80"
+          ],
           "blend": "multiply",
           "opacity": 22000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -495,18 +1056,51 @@
       "layers": [
         {
           "styleName": "strip_column",
-          "args": ["animations/cyan-gold-plasma.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+          "args": [
+            "animations/cyan-gold-plasma.bmp",
+            "144",
+            "30",
+            "{{ext}}",
+            "{{ret}}"
+          ]
         },
         {
           "styleName": "sine_waves",
-          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "args": [
+            "2400",
+            "0",
+            "12.5%",
+            "100%",
+            "-2000"
+          ],
           "blend": "multiply",
           "opacity": 18022
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -523,12 +1117,39 @@
       "layers": [
         {
           "styleName": "strip_column",
-          "args": ["animations/tiger-swirl-darkorange.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+          "args": [
+            "animations/tiger-swirl-darkorange.bmp",
+            "144",
+            "30",
+            "{{ext}}",
+            "{{ret}}"
+          ]
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -544,17 +1165,49 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "strip_column_mask",
-          "args": ["masks/plasma_mask.bmp", "144", "30"],
+          "args": [
+            "masks/plasma_mask.bmp",
+            "144",
+            "30"
+          ],
           "blend": "multiply",
           "opacity": 26214
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -571,24 +1224,61 @@
       "layers": [
         {
           "styleName": "strip_column",
-          "args": ["animations/cyan-gold-plasma.bmp", "144", "30", "{{ext}}", "{{ret}}"]
+          "args": [
+            "animations/cyan-gold-plasma.bmp",
+            "144",
+            "30",
+            "{{ext}}",
+            "{{ret}}"
+          ]
         },
         {
           "styleName": "strip_column_mask",
-          "args": ["masks/plasma_mask.bmp", "144", "30"],
+          "args": [
+            "masks/plasma_mask.bmp",
+            "144",
+            "30"
+          ],
           "blend": "multiply",
           "opacity": 26214
         },
         {
           "styleName": "sine_waves",
-          "args": ["2400", "0", "8192", "65535", "-2000"],
+          "args": [
+            "2400",
+            "0",
+            "12.5%",
+            "100%",
+            "-2000"
+          ],
           "blend": "multiply",
           "opacity": 18022
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -605,21 +1295,83 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "smoke_flow", "args": ["black", "white", "{{ext}}", "{{ret}}"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "smoke_flow", "args": ["black", "{{base}}", "{{ext}}", "{{ret}}"], "blend": "screen", "opacity": 4000 },
+        {
+          "styleName": "solid",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "white",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "multiply",
+          "opacity": 24000
+        },
+        {
+          "styleName": "smoke_flow",
+          "args": [
+            "black",
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
+          "blend": "screen",
+          "opacity": 4000
+        },
         {
           "styleName": "random_bands",
-          "args": ["-600", "0,24,0", "black", "3000"],
+          "args": [
+            "-600",
+            "0,24,0",
+            "black",
+            "3000"
+          ],
           "blend": "multiply",
           "opacity": 26000
         },
-        { "styleName": "clash", "args": ["white"] },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "clash",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -637,28 +1389,100 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "fire_mask", "args": ["{{base}}", "{{base}}"], "blend": "multiply", "opacity": 10000 },
-        { "styleName": "fire_mask", "args": ["white", "white"], "blend": "multiply", "opacity": 12000 },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "fire_mask",
+          "args": [
+            "{{base}}",
+            "{{base}}"
+          ],
+          "blend": "multiply",
+          "opacity": 10000
+        },
+        {
+          "styleName": "fire_mask",
+          "args": [
+            "white",
+            "white"
+          ],
+          "blend": "multiply",
+          "opacity": 12000
+        },
         {
           "styleName": "stripes",
-          "args": ["2500", "-3000", "{{base}}", "black"],
+          "args": [
+            "2500",
+            "-3000",
+            "{{base}}",
+            "black"
+          ],
           "blend": "multiply",
           "opacity": 14000
         },
-        { "styleName": "swing", "args": ["white", "375"], "blend": "add", "opacity": 7000 },
+        {
+          "styleName": "swing",
+          "args": [
+            "white",
+            "375"
+          ],
+          "blend": "add",
+          "opacity": 7000
+        },
         {
           "styleName": "audio",
-          "args": ["{{base}}", "white", "{{ext}}", "{{ret}}"],
+          "args": [
+            "{{base}}",
+            "white",
+            "{{ext}}",
+            "{{ret}}"
+          ],
           "blend": "add",
           "opacity": 5000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -678,18 +1502,62 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "water_flow", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "water_flow",
+          "args": [
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "audio",
-          "args": ["{{base}}", "{{tip}}", "{{clash}}", "{{ext}}", "{{ret}}"],
+          "args": [
+            "{{base}}",
+            "{{tip}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
           "blend": "screen",
           "opacity": 8000
         },
-        { "styleName": "pulse", "args": ["{{tip}}", "{{pulse_ms}}"], "blend": "multiply", "opacity": 12000 },
-        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 3000 },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "pulse",
+          "args": [
+            "{{tip}}",
+            "{{pulse_ms}}"
+          ],
+          "blend": "multiply",
+          "opacity": 12000
+        },
+        {
+          "styleName": "sparkle",
+          "args": [
+            "white"
+          ],
+          "blend": "add",
+          "opacity": 3000
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -707,19 +1575,62 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "stripes",
-          "args": ["6000", "-3000", "{{base}}", "black"],
+          "args": [
+            "6000",
+            "-3000",
+            "{{base}}",
+            "black"
+          ],
           "blend": "multiply",
           "opacity": 16000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -737,25 +1648,74 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "stripes",
-          "args": ["22000", "-1400", "{{base}}", "black"],
+          "args": [
+            "22000",
+            "-1400",
+            "{{base}}",
+            "black"
+          ],
           "blend": "multiply",
           "opacity": 16000
         },
         {
           "styleName": "audio",
-          "args": ["{{base}}", "{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"],
+          "args": [
+            "{{base}}",
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
           "blend": "screen",
           "opacity": 10000
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -773,11 +1733,39 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "darksaber", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "darksaber",
+          "args": [
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -795,11 +1783,39 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "static_electricity", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "static_electricity",
+          "args": [
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -817,13 +1833,52 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "shimmer_blade", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "shimmer_blade",
+          "args": [
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -841,13 +1896,52 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "rotoscope", "args": ["{{base}}", "{{clash}}", "{{ext}}", "{{ret}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] }
+        {
+          "styleName": "rotoscope",
+          "args": [
+            "{{base}}",
+            "{{clash}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        }
       ]
     },
     {
@@ -856,14 +1950,61 @@
       "description": "Unstable crackling base with fire, rainbow tint, strobe pulses, and audio shimmer.",
       "vars": {},
       "layers": [
-        { "styleName": "unstable", "args": ["red", "red", "orange", "yellow", "300", "800"] },
-        { "styleName": "fire", "args": ["red", "yellow"], "blend": "screen", "opacity": 10000 },
-        { "styleName": "rainbow", "args": ["300", "800"], "blend": "screen", "opacity": 6000 },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "strobe", "args": ["black", "cyan", "18", "1", "300", "800"], "blend": "add", "opacity": 5000 },
+        {
+          "styleName": "unstable",
+          "args": [
+            "red",
+            "red",
+            "orange",
+            "yellow",
+            "300",
+            "800"
+          ]
+        },
+        {
+          "styleName": "fire",
+          "args": [
+            "red",
+            "yellow"
+          ],
+          "blend": "screen",
+          "opacity": 10000
+        },
+        {
+          "styleName": "rainbow",
+          "args": [
+            "300",
+            "800"
+          ],
+          "blend": "screen",
+          "opacity": 6000
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "strobe",
+          "args": [
+            "black",
+            "cyan",
+            "18",
+            "1",
+            "300",
+            "800"
+          ],
+          "blend": "add",
+          "opacity": 5000
+        },
         {
           "styleName": "solid",
-          "args": ["blue", "300", "800"],
+          "args": [
+            "blue",
+            "300",
+            "800"
+          ],
           "blend": "add",
           "opacity": 4000
         }
@@ -875,11 +2016,38 @@
       "description": "Standard blade with preon glow and postoff wipe demo.",
       "vars": {},
       "layers": [
-        { "styleName": "solid", "args": ["cyan", "300", "800"] },
-        { "styleName": "clash", "args": ["white"] },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "preon_glow", "args": ["blue"] },
-        { "styleName": "postoff_wipe", "args": ["red"] }
+        {
+          "styleName": "solid",
+          "args": [
+            "cyan",
+            "300",
+            "800"
+          ]
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "preon_glow",
+          "args": [
+            "blue"
+          ]
+        },
+        {
+          "styleName": "postoff_wipe",
+          "args": [
+            "red"
+          ]
+        }
       ]
     },
     {
@@ -888,10 +2056,31 @@
       "description": "Fire blade with preon pilot-light glow and postoff ember wipe.",
       "vars": {},
       "layers": [
-        { "styleName": "fire", "args": ["red", "yellow"] },
-        { "styleName": "blast", "args": ["white"] },
-        { "styleName": "preon_glow", "args": ["orange"] },
-        { "styleName": "postoff_wipe", "args": ["red"] }
+        {
+          "styleName": "fire",
+          "args": [
+            "red",
+            "yellow"
+          ]
+        },
+        {
+          "styleName": "blast",
+          "args": [
+            "white"
+          ]
+        },
+        {
+          "styleName": "preon_glow",
+          "args": [
+            "orange"
+          ]
+        },
+        {
+          "styleName": "postoff_wipe",
+          "args": [
+            "red"
+          ]
+        }
       ]
     },
     {
@@ -907,14 +2096,58 @@
         "lb": "white"
       },
       "layers": [
-        { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] },
-        { "styleName": "swing", "args": ["{{color}}", "300"], "blend": "add", "opacity": 8000 }
+        {
+          "styleName": "accent_glow",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        },
+        {
+          "styleName": "swing",
+          "args": [
+            "{{color}}",
+            "300"
+          ],
+          "blend": "add",
+          "opacity": 8000
+        }
       ]
     },
     {
@@ -927,10 +2160,33 @@
         "lockup": "yellow"
       },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "clash", "args": ["{{clash}}"] },
-        { "styleName": "lockup", "args": ["{{lockup}}"] },
-        { "styleName": "swing", "args": ["{{color}}", "300"], "blend": "add", "opacity": 8000 }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "swing",
+          "args": [
+            "{{color}}",
+            "300"
+          ],
+          "blend": "add",
+          "opacity": 8000
+        }
       ]
     },
     {
@@ -939,28 +2195,69 @@
       "description": "PWM accent: audio-gated motor (postoff tail) + clash flash.",
       "vars": {},
       "layers": [
-        { "styleName": "accent_sound_on", "args": ["white", "13%"] },
-        { "styleName": "clash", "args": ["white"] }
+        {
+          "styleName": "accent_sound_on",
+          "args": [
+            "white",
+            "13%"
+          ]
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "white"
+          ]
+        }
       ]
     },
     {
       "id": "accent_glow_sparkle",
       "label": "accent_glow_sparkle",
       "description": "PWM accent: hum-reactive glow + add-blended sparkle twinkle.",
-      "vars": { "color": "white" },
+      "vars": {
+        "color": "white"
+      },
       "layers": [
-        { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "sparkle", "args": ["{{color}}"], "blend": "add", "opacity": 12000 }
+        {
+          "styleName": "accent_glow",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "sparkle",
+          "args": [
+            "{{color}}"
+          ],
+          "blend": "add",
+          "opacity": 12000
+        }
       ]
     },
     {
       "id": "accent_ignite_flash",
       "label": "accent_ignite_flash",
       "description": "PWM accent: hum-reactive idle + ignition flash overlay during extension.",
-      "vars": { "color": "white", "ext": "300", "fade": "600" },
+      "vars": {
+        "color": "white",
+        "ext": "300",
+        "fade": "600"
+      },
       "layers": [
-        { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "ignition_flash", "args": ["{{color}}", "{{ext}}", "{{fade}}"] }
+        {
+          "styleName": "accent_glow",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "ignition_flash",
+          "args": [
+            "{{color}}",
+            "{{ext}}",
+            "{{fade}}"
+          ]
+        }
       ]
     },
     {
@@ -983,30 +2280,105 @@
         "postoff": "red"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "gradient_layer",
-          "args": ["{{hilt}}", "{{tip}}"],
+          "args": [
+            "{{hilt}}",
+            "{{tip}}"
+          ],
           "blend": "normal",
           "opacity": 12000
         },
-        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
-        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 5000 },
-        { "styleName": "preon_glow", "args": ["{{preon}}"] },
-        { "styleName": "postoff_glow", "args": ["{{postoff}}"] },
+        {
+          "styleName": "audio_layer",
+          "args": [],
+          "blend": "multiply",
+          "opacity": 32768
+        },
+        {
+          "styleName": "sparkle",
+          "args": [
+            "white"
+          ],
+          "blend": "add",
+          "opacity": 5000
+        },
+        {
+          "styleName": "preon_glow",
+          "args": [
+            "{{preon}}"
+          ]
+        },
+        {
+          "styleName": "postoff_glow",
+          "args": [
+            "{{postoff}}"
+          ]
+        },
         {
           "styleName": "sparktip_layer",
-          "args": ["{{spark}}", "{{ext}}", "{{ret}}"],
+          "args": [
+            "{{spark}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
           "blend": "add",
           "opacity": 32768
         },
-        { "styleName": "real_clash", "args": ["{{clash}}", "49%"] },
-        { "styleName": "blast_wave_random", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] },
-        { "styleName": "swing", "args": ["white", "250"], "blend": "add", "opacity": 7000 }
+        {
+          "styleName": "real_clash",
+          "args": [
+            "{{clash}}",
+            "49%"
+          ]
+        },
+        {
+          "styleName": "blast_wave_random",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        },
+        {
+          "styleName": "swing",
+          "args": [
+            "white",
+            "250"
+          ],
+          "blend": "add",
+          "opacity": 7000
+        }
       ]
     },
     {
@@ -1029,164 +2401,498 @@
         "postoff": "red"
       },
       "layers": [
-        { "styleName": "solid_bend", "args": ["{{base}}", "{{ext}}", "{{ret}}"] },
+        {
+          "styleName": "solid_bend",
+          "args": [
+            "{{base}}",
+            "{{ext}}",
+            "{{ret}}"
+          ]
+        },
         {
           "styleName": "gradient_layer",
-          "args": ["{{hilt}}", "{{tip}}"],
+          "args": [
+            "{{hilt}}",
+            "{{tip}}"
+          ],
           "blend": "normal",
           "opacity": 12000
         },
-        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
-        { "styleName": "sparkle", "args": ["white"], "blend": "add", "opacity": 5000 },
-        { "styleName": "preon_glow", "args": ["{{preon}}"] },
-        { "styleName": "postoff_glow", "args": ["{{postoff}}"] },
+        {
+          "styleName": "audio_layer",
+          "args": [],
+          "blend": "multiply",
+          "opacity": 32768
+        },
+        {
+          "styleName": "sparkle",
+          "args": [
+            "white"
+          ],
+          "blend": "add",
+          "opacity": 5000
+        },
+        {
+          "styleName": "preon_glow",
+          "args": [
+            "{{preon}}"
+          ]
+        },
+        {
+          "styleName": "postoff_glow",
+          "args": [
+            "{{postoff}}"
+          ]
+        },
         {
           "styleName": "sparktip_layer",
-          "args": ["{{spark}}", "{{ext}}", "{{ret}}"],
+          "args": [
+            "{{spark}}",
+            "{{ext}}",
+            "{{ret}}"
+          ],
           "blend": "add",
           "opacity": 32768
         },
-        { "styleName": "responsive_clash", "args": ["{{clash}}"] },
-        { "styleName": "responsive_blast", "args": ["{{clash}}"] },
-        { "styleName": "responsive_lockup", "args": ["{{lockup}}"] },
-        { "styleName": "drag", "args": ["{{drag}}"] },
-        { "styleName": "melt", "args": ["{{melt}}"] },
-        { "styleName": "lb", "args": ["{{lb}}"] },
-        { "styleName": "swing", "args": ["white", "250"], "blend": "add", "opacity": 7000 }
+        {
+          "styleName": "responsive_clash",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_blast",
+          "args": [
+            "{{clash}}"
+          ]
+        },
+        {
+          "styleName": "responsive_lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        },
+        {
+          "styleName": "drag",
+          "args": [
+            "{{drag}}"
+          ]
+        },
+        {
+          "styleName": "melt",
+          "args": [
+            "{{melt}}"
+          ]
+        },
+        {
+          "styleName": "lb",
+          "args": [
+            "{{lb}}"
+          ]
+        },
+        {
+          "styleName": "swing",
+          "args": [
+            "white",
+            "250"
+          ],
+          "blend": "add",
+          "opacity": 7000
+        }
       ]
     },
     {
       "id": "accent_composable_audio",
       "label": "accent_composable_audio",
       "description": "PWM accent: fixed color + multiply audio_layer hum (composable alternative to accent_glow).",
-      "vars": { "color": "blue", "clash": "white" },
+      "vars": {
+        "color": "blue",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "audio_layer", "args": [], "blend": "multiply", "opacity": 32768 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "audio_layer",
+          "args": [],
+          "blend": "multiply",
+          "opacity": 32768
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_breathe",
       "label": "accent_composable_breathe",
       "description": "PWM accent: solid color + pulse_layer breathing (mirrors composable_breathe on one LED).",
-      "vars": { "color": "cyan", "clash": "white", "pulse_ms": "4000" },
+      "vars": {
+        "color": "cyan",
+        "clash": "white",
+        "pulse_ms": "4000"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "pulse_layer", "args": ["{{pulse_ms}}"], "blend": "multiply", "opacity": 32768 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "pulse_layer",
+          "args": [
+            "{{pulse_ms}}"
+          ],
+          "blend": "multiply",
+          "opacity": 32768
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_crackle",
       "label": "accent_composable_crackle",
       "description": "PWM accent: per_led + noise + base_flicker crackle stack (mirrors composable_crackle).",
-      "vars": { "color": "silver", "clash": "white" },
+      "vars": {
+        "color": "silver",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "per_led_flicker", "args": [], "blend": "multiply", "opacity": 14000 },
-        { "styleName": "noise_flicker", "args": ["black", "white"], "blend": "multiply", "opacity": 9000 },
-        { "styleName": "base_flicker", "args": ["8", "400", "600"], "blend": "multiply", "opacity": 6000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "per_led_flicker",
+          "args": [],
+          "blend": "multiply",
+          "opacity": 14000
+        },
+        {
+          "styleName": "noise_flicker",
+          "args": [
+            "black",
+            "white"
+          ],
+          "blend": "multiply",
+          "opacity": 9000
+        },
+        {
+          "styleName": "base_flicker",
+          "args": [
+            "8",
+            "400",
+            "600"
+          ],
+          "blend": "multiply",
+          "opacity": 6000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_swing",
       "label": "accent_composable_swing",
       "description": "PWM accent: solid color + swing_layer uniform brighten (hue-preserving multiply).",
-      "vars": { "color": "white", "clash": "white" },
+      "vars": {
+        "color": "white",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "swing_layer", "args": ["10", "200"], "blend": "multiply", "opacity": 32768 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "swing_layer",
+          "args": [
+            "10",
+            "200"
+          ],
+          "blend": "multiply",
+          "opacity": 32768
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_heat",
       "label": "accent_composable_heat",
       "description": "PWM accent: fire_mask rolling heat on one LED (solid_lava pattern for PWM).",
-      "vars": { "color": "orange", "clash": "white" },
+      "vars": {
+        "color": "orange",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "fire_mask", "args": ["red", "yellow"], "blend": "multiply", "opacity": 22000 },
-        { "styleName": "fire_mask", "args": ["orange", "yellow"], "blend": "screen", "opacity": 8000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "fire_mask",
+          "args": [
+            "red",
+            "yellow"
+          ],
+          "blend": "multiply",
+          "opacity": 22000
+        },
+        {
+          "styleName": "fire_mask",
+          "args": [
+            "orange",
+            "yellow"
+          ],
+          "blend": "screen",
+          "opacity": 8000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_stripes",
       "label": "accent_composable_stripes",
       "description": "PWM accent: hard_stripes brightness oscillation on single LED.",
-      "vars": { "color": "blue", "clash": "white" },
+      "vars": {
+        "color": "blue",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "hard_stripes", "args": ["1000", "-3000", "black", "white"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "hard_stripes",
+          "args": [
+            "1000",
+            "-3000",
+            "black",
+            "white"
+          ],
+          "blend": "multiply",
+          "opacity": 24000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_unstable",
       "label": "accent_composable_unstable",
       "description": "PWM accent: unstable_stripes + base_flicker unstable idle.",
-      "vars": { "color": "silver", "clash": "white" },
+      "vars": {
+        "color": "silver",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "unstable_stripes", "args": ["{{color}}"], "blend": "multiply", "opacity": 16000 },
-        { "styleName": "base_flicker", "args": ["10", "300", "500"], "blend": "multiply", "opacity": 8000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "unstable_stripes",
+          "args": [
+            "{{color}}"
+          ],
+          "blend": "multiply",
+          "opacity": 16000
+        },
+        {
+          "styleName": "base_flicker",
+          "args": [
+            "10",
+            "300",
+            "500"
+          ],
+          "blend": "multiply",
+          "opacity": 8000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_flame",
       "label": "accent_composable_flame",
       "description": "PWM accent: responsive_flame_layer angle-reactive heat on solid accent.",
-      "vars": { "color": "red", "clash": "white" },
+      "vars": {
+        "color": "red",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "responsive_flame_layer", "args": ["{{color}}"], "blend": "multiply", "opacity": 20000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "responsive_flame_layer",
+          "args": [
+            "{{color}}"
+          ],
+          "blend": "multiply",
+          "opacity": 20000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_composable_thunder",
       "label": "accent_composable_thunder",
       "description": "PWM accent: thunder_loop_layer storm flicker on solid accent.",
-      "vars": { "color": "blue", "clash": "white" },
+      "vars": {
+        "color": "blue",
+        "clash": "white"
+      },
       "layers": [
-        { "styleName": "accent_color", "args": ["{{color}}"] },
-        { "styleName": "thunder_loop_layer", "args": ["{{color}}"], "blend": "multiply", "opacity": 24000 },
-        { "styleName": "clash", "args": ["{{clash}}"] }
+        {
+          "styleName": "accent_color",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "thunder_loop_layer",
+          "args": [
+            "{{color}}"
+          ],
+          "blend": "multiply",
+          "opacity": 24000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "{{clash}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_glow_crackle",
       "label": "accent_glow_crackle",
       "description": "PWM accent: hum-reactive glow + noise_flicker organic texture.",
-      "vars": { "color": "white" },
+      "vars": {
+        "color": "white"
+      },
       "layers": [
-        { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "noise_flicker", "args": ["black", "white"], "blend": "multiply", "opacity": 10000 },
-        { "styleName": "clash", "args": ["white"] }
+        {
+          "styleName": "accent_glow",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "noise_flicker",
+          "args": [
+            "black",
+            "white"
+          ],
+          "blend": "multiply",
+          "opacity": 10000
+        },
+        {
+          "styleName": "clash",
+          "args": [
+            "white"
+          ]
+        }
       ]
     },
     {
       "id": "accent_solid_on_lockup",
       "label": "accent_solid_on_lockup",
       "description": "PWM accent: always on while blade is out + lockup brighten.",
-      "vars": { "lockup": "yellow" },
+      "vars": {
+        "lockup": "yellow"
+      },
       "layers": [
-        { "styleName": "accent_on", "args": [] },
-        { "styleName": "lockup", "args": ["{{lockup}}"] }
+        {
+          "styleName": "accent_on",
+          "args": []
+        },
+        {
+          "styleName": "lockup",
+          "args": [
+            "{{lockup}}"
+          ]
+        }
       ]
     },
     {
       "id": "accent_force_glow",
       "label": "accent_force_glow",
       "description": "PWM accent: hum-reactive glow + Force-push brighten overlay.",
-      "vars": { "color": "white" },
+      "vars": {
+        "color": "white"
+      },
       "layers": [
-        { "styleName": "accent_glow", "args": ["{{color}}"] },
-        { "styleName": "force_glow", "args": ["{{color}}"], "blend": "add", "opacity": 14000 }
+        {
+          "styleName": "accent_glow",
+          "args": [
+            "{{color}}"
+          ]
+        },
+        {
+          "styleName": "force_glow",
+          "args": [
+            "{{color}}"
+          ],
+          "blend": "add",
+          "opacity": 14000
+        }
       ]
     }
   ]

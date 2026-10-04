@@ -633,26 +633,26 @@ NamedStyle named_styles[] = {
   },
   { "sine_waves",
     StylePtr<SineWavesLayer<
-      IntArg<1, 2400>, IntArg<2, 0>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, -2000>,
-      IntArg<6, 0>, IntArg<7, 0>, IntArg<8, 0>, IntArg<9, 65535>, IntArg<10, 0>,
-      IntArg<11, 0>, IntArg<12, 0>, IntArg<13, 0>, IntArg<14, 65535>, IntArg<15, 0>,
-      IntArg<16, 0>, IntArg<17, 0>, IntArg<18, 0>, IntArg<19, 65535>, IntArg<20, 0>,
-      IntArg<21, 65535>
+      IntArg<1, 2400>, IntArg<2, 0>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, -2000>,
+      IntArg<6, 0>, IntArg<7, 0>, Brightness65535ScaleIntArg<8, 0>, Brightness65535ScaleIntArg<9, 65535>, IntArg<10, 0>,
+      IntArg<11, 0>, IntArg<12, 0>, Brightness65535ScaleIntArg<13, 0>, Brightness65535ScaleIntArg<14, 65535>, IntArg<15, 0>,
+      IntArg<16, 0>, IntArg<17, 0>, Brightness65535ScaleIntArg<18, 0>, Brightness65535ScaleIntArg<19, 65535>, IntArg<20, 0>,
+      Brightness65535ScaleIntArg<21, 65535>
     > >(),
     "Sine brightness waves along blade (multiply mask). Five ints per wave: period phase min max speed; "
-    "period 0 disables a slot (default waves 2–4 off). Optional strength (default 65535). "
-    "Example: sine_waves 2400 0 8192 65535 -2000 1800 512 0 65535 2000"
+    "period 0 disables a slot (default waves 2–4 off). min/max/strength accept 0–100% or raw 0–65535 (>100). "
+    "Example: sine_waves 2400 0 12.5% 100% -2000 1800 512 0 100% 2000"
   },
   { "saw_waves",
     StylePtr<SawWavesLayer<
-      IntArg<1, 2400>, IntArg<2, 0>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, -2000>,
-      IntArg<6, 0>, IntArg<7, 0>, IntArg<8, 0>, IntArg<9, 65535>, IntArg<10, 0>,
-      IntArg<11, 0>, IntArg<12, 0>, IntArg<13, 0>, IntArg<14, 65535>, IntArg<15, 0>,
-      IntArg<16, 0>, IntArg<17, 0>, IntArg<18, 0>, IntArg<19, 65535>, IntArg<20, 0>,
-      IntArg<21, 65535>
+      IntArg<1, 2400>, IntArg<2, 0>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, -2000>,
+      IntArg<6, 0>, IntArg<7, 0>, Brightness65535ScaleIntArg<8, 0>, Brightness65535ScaleIntArg<9, 65535>, IntArg<10, 0>,
+      IntArg<11, 0>, IntArg<12, 0>, Brightness65535ScaleIntArg<13, 0>, Brightness65535ScaleIntArg<14, 65535>, IntArg<15, 0>,
+      IntArg<16, 0>, IntArg<17, 0>, Brightness65535ScaleIntArg<18, 0>, Brightness65535ScaleIntArg<19, 65535>, IntArg<20, 0>,
+      Brightness65535ScaleIntArg<21, 65535>
     > >(),
     "Triangle brightness waves along blade (multiply mask). Same args as sine_waves (period 0 = slot off). "
-    "Example: saw_waves 2400 0 8192 65535 -2000"
+    "Example: saw_waves 2400 0 12.5% 100% -2000"
   },
   { "hue_waves",
     StylePtr<HueWavesLayer<
@@ -660,7 +660,7 @@ NamedStyle named_styles[] = {
       IntArg<6, 0>, IntArg<7, 0>, IntArg<8, 0>, IntArg<9, 8192>, IntArg<10, 0>,
       IntArg<11, 0>, IntArg<12, 0>, IntArg<13, 0>, IntArg<14, 8192>, IntArg<15, 0>,
       IntArg<16, 0>, IntArg<17, 0>, IntArg<18, 0>, IntArg<19, 8192>, IntArg<20, 0>,
-      IntArg<21, 65535>
+      Brightness65535ScaleIntArg<21, 65535>
     > >(),
     "Sine hue-offset waves along blade. Five ints per wave: period phase min_hue max_hue speed; "
     "period 0 disables a slot (default waves 2–4 off). min/max are RotateColorsX units "
@@ -669,64 +669,64 @@ NamedStyle named_styles[] = {
   },
   { "pulse_train",
     StylePtr<PulseTrainLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, OpacityScaleIntArg<5, 16384>
+      IntArg<1, 2400>, IntArg<2, -2000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, OpacityScaleIntArg<5, 16384>
     > >(),
     "Rolling hard on/off square bands (multiply mask); period speed min max duty (duty 0–32768 lit fraction). "
-    "period 0 = passthrough. Example: pulse_train 2400 -2000 0 65535 16384"
+    "min/max accept 0–100% or raw 0–65535. period 0 = passthrough. Example: pulse_train 2400 -2000 0 100% 50%"
   },
   { "chirp",
     StylePtr<ChirpLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 64>
+      IntArg<1, 2400>, IntArg<2, -2000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, 64>
     > >(),
     "Sine wave with spatial frequency sweep along blade (multiply mask). period_base speed min max chirp_rate; "
-    "period 0 = passthrough. Example: chirp 2400 -2000 8192 65535 80"
+    "min/max accept 0–100% or raw 0–65535. period 0 = passthrough. Example: chirp 2400 -2000 12.5% 100% 80"
   },
   { "smoothstep_bands",
     StylePtr<SmoothstepBandsLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 400>
+      IntArg<1, 2400>, IntArg<2, -2000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, 400>
     > >(),
     "Rolling soft rectangular bands; period speed min max edge_width (period 0 = passthrough). "
-    "Example: smoothstep_bands 2400 -2000 8192 65535 400"
+    "Example: smoothstep_bands 2400 -2000 12.5% 100% 400"
   },
   { "value_noise",
     StylePtr<ValueNoiseLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 0>
+      IntArg<1, 2400>, IntArg<2, -2000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, 0>
     > >(),
     "1D smooth hash noise along blade; scale speed min max [seed]. scale 0 = passthrough. "
-    "Example: value_noise 2400 -2000 8192 65535 0"
+    "Example: value_noise 2400 -2000 12.5% 100% 0"
   },
   { "fbm_noise",
     StylePtr<FbmNoiseLayer<
-      IntArg<1, 2400>, IntArg<2, -2000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 65535>
+      IntArg<1, 2400>, IntArg<2, -2000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, Brightness65535ScaleIntArg<5, 65535>
     > >(),
     "Cheap 3-octave 1D noise (multiply mask); scale speed min max strength. scale 0 = passthrough. "
-    "Example: fbm_noise 2400 -2000 8192 65535 65535"
+    "Example: fbm_noise 2400 -2000 12.5% 100% 100%"
   },
   { "moire_mask",
     StylePtr<MoireMaskLayer<
       IntArg<1, 2400>, IntArg<2, 2450>, IntArg<3, -2000>, IntArg<4, 2100>,
-      IntArg<5, 0>, IntArg<6, 65535>
+      Brightness65535ScaleIntArg<5, 0>, Brightness65535ScaleIntArg<6, 65535>
     > >(),
     "Two beating linear ramps; period1 period2 speed1 speed2 min max. period 0 = that ramp neutral. "
-    "Example: moire_mask 2400 2450 -2000 2100 8192 65535"
+    "Example: moire_mask 2400 2450 -2000 2100 12.5% 100%"
   },
   { "blade_envelope",
     StylePtr<BladeEnvelopeLayer<
-      OpacityScaleIntArg<1, 16384>, IntArg<2, 6000>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, 0>
+      OpacityScaleIntArg<1, 16384>, IntArg<2, 6000>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, 0>
     > >(),
     "Bump along blade (center width min max [speed]); center 0=hilt 32768=tip. speed 0 = static. "
-    "Example: blade_envelope 16384 6000 8192 65535 0"
+    "Example: blade_envelope 50% 6000 12.5% 100% 0"
   },
   { "sine_waves_swing",
     StylePtr<SineWavesSwingLayer<
-      IntArg<1, 2400>, IntArg<2, 0>, IntArg<3, 0>, IntArg<4, 65535>, IntArg<5, -2000>,
-      IntArg<6, 0>, IntArg<7, 0>, IntArg<8, 0>, IntArg<9, 65535>, IntArg<10, 0>,
-      IntArg<11, 0>, IntArg<12, 0>, IntArg<13, 0>, IntArg<14, 65535>, IntArg<15, 0>,
-      IntArg<16, 0>, IntArg<17, 0>, IntArg<18, 0>, IntArg<19, 65535>, IntArg<20, 0>,
-      IntArg<21, 65535>, IntArg<22, 0>, IntArg<23, 0>
+      IntArg<1, 2400>, IntArg<2, 0>, Brightness65535ScaleIntArg<3, 0>, Brightness65535ScaleIntArg<4, 65535>, IntArg<5, -2000>,
+      IntArg<6, 0>, IntArg<7, 0>, Brightness65535ScaleIntArg<8, 0>, Brightness65535ScaleIntArg<9, 65535>, IntArg<10, 0>,
+      IntArg<11, 0>, IntArg<12, 0>, Brightness65535ScaleIntArg<13, 0>, Brightness65535ScaleIntArg<14, 65535>, IntArg<15, 0>,
+      IntArg<16, 0>, IntArg<17, 0>, Brightness65535ScaleIntArg<18, 0>, Brightness65535ScaleIntArg<19, 65535>, IntArg<20, 0>,
+      Brightness65535ScaleIntArg<21, 65535>, IntArg<22, 0>, IntArg<23, 0>
     > >(),
     "sine_waves args + swing_scale twist_scale at end (args 22–23). Stronger swing/twist = shorter wavelength. "
-    "Example: sine_waves_swing 2400 0 8192 65535 -2000 0 0 0 65535 0 0 0 65535 0 0 0 65535 0 0 0 65535 0 65535 12000 8000"
+    "Example: sine_waves_swing 2400 0 12.5% 100% -2000 0 0 0 100% 0 0 0 100% 0 0 0 100% 0 0 0 100% 0 100% 12000 8000"
   },
   { "noise_flicker",
     StylePtr<BrownNoiseFlicker<RgbArg<1, Black>, RgbArg<2, White>, 100> >(),

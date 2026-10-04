@@ -4,6 +4,7 @@
  * @module ui/elements/po-style-layer-stack.keys
  */
 export const styleLayerStackKeys = {
+  layerToggleAria: 'layerToggle.aria',
   moveTowardTopAria: 'moveTowardTop.aria',
   moveTowardTopTitle: 'moveTowardTop.title',
   moveTowardBaseAria: 'moveTowardBase.aria',

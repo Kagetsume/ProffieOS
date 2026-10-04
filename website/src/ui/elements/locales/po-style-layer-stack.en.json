@@ -1,4 +1,5 @@
 {
+  "layerToggle.aria": "Layer ${stackIndex}: ${layerSummary}",
   "moveTowardTop.aria": "Move layer ${stackIndex} toward top",
   "moveTowardTop.title": "Move toward top",
   "moveTowardBase.aria": "Move layer ${stackIndex} toward base",

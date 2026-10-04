@@ -15,6 +15,8 @@ export type StyleArgDef = {
   default: string;
   /** When true, values use 0–32768 scale (UI shows 0–100%). */
   scale32768?: boolean;
+  /** When true, values use 0–65535 multiply-mask scale (UI shows 0–100%). */
+  scale65535?: boolean;
 };
 
 export type NamedStyleDef = {
@@ -69,6 +71,13 @@ export function isOpacityScaleArg(styleId: string, slot: string): boolean {
   const def = getNamedStyle(styleId);
   const arg = def?.args?.find((entry) => entry.slot === slot);
   return arg?.scale32768 === true;
+}
+
+/** True when a style arg slot uses firmware 0–65535 multiply-mask brightness scale. */
+export function isBrightness65535ScaleArg(styleId: string, slot: string): boolean {
+  const def = getNamedStyle(styleId);
+  const arg = def?.args?.find((entry) => entry.slot === slot);
+  return arg?.scale65535 === true;
 }
 
 /** Default positional args for a style id. */

@@ -1735,14 +1735,16 @@
           "label": "Min 1",
           "type": "number",
           "default": "0",
-          "hint": "Mask at trough (0–65535)"
+          "hint": "Mask at trough (0–100% or raw >100",
+          "scale65535": true
         },
         {
           "slot": "max1",
           "label": "Max 1",
           "type": "number",
-          "default": "65535",
-          "hint": "Mask at peak; white = multiply-neutral"
+          "default": "100%",
+          "hint": "Mask at peak; white = multiply-neutral",
+          "scale65535": true
         },
         {
           "slot": "speed1",
@@ -1768,13 +1770,15 @@
           "slot": "min2",
           "label": "Min 2",
           "type": "number",
-          "default": "0"
+          "default": "0",
+          "scale65535": true
         },
         {
           "slot": "max2",
           "label": "Max 2",
           "type": "number",
-          "default": "65535"
+          "default": "100%",
+          "scale65535": true
         },
         {
           "slot": "speed2",
@@ -1798,13 +1802,15 @@
           "slot": "min3",
           "label": "Min 3",
           "type": "number",
-          "default": "0"
+          "default": "0",
+          "scale65535": true
         },
         {
           "slot": "max3",
           "label": "Max 3",
           "type": "number",
-          "default": "65535"
+          "default": "100%",
+          "scale65535": true
         },
         {
           "slot": "speed3",
@@ -1828,13 +1834,15 @@
           "slot": "min4",
           "label": "Min 4",
           "type": "number",
-          "default": "0"
+          "default": "0",
+          "scale65535": true
         },
         {
           "slot": "max4",
           "label": "Max 4",
           "type": "number",
-          "default": "65535"
+          "default": "100%",
+          "scale65535": true
         },
         {
           "slot": "speed4",
@@ -1846,8 +1854,9 @@
           "slot": "strength",
           "label": "Strength",
           "type": "number",
-          "default": "65535",
-          "hint": "Optional; 65535 = full effect, lower mixes toward white"
+          "default": "100%",
+          "hint": "Optional; 65535 = full effect, lower mixes toward white",
+          "scale65535": true
         }
       ]
     },
@@ -1892,27 +1901,141 @@
       "group": "texture",
       "description": "Triangle linear-ramp waves (same slots as sine_waves). Multiply mask; period 0 disables a slot.",
       "args": [
-        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
-        { "slot": "phase1", "label": "Phase 1", "type": "number", "default": "0" },
-        { "slot": "min1", "label": "Min 1", "type": "number", "default": "0" },
-        { "slot": "max1", "label": "Max 1", "type": "number", "default": "65535" },
-        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
-        { "slot": "period2", "label": "Period 2", "type": "number", "default": "0" },
-        { "slot": "phase2", "label": "Phase 2", "type": "number", "default": "0" },
-        { "slot": "min2", "label": "Min 2", "type": "number", "default": "0" },
-        { "slot": "max2", "label": "Max 2", "type": "number", "default": "65535" },
-        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "0" },
-        { "slot": "period3", "label": "Period 3", "type": "number", "default": "0" },
-        { "slot": "phase3", "label": "Phase 3", "type": "number", "default": "0" },
-        { "slot": "min3", "label": "Min 3", "type": "number", "default": "0" },
-        { "slot": "max3", "label": "Max 3", "type": "number", "default": "65535" },
-        { "slot": "speed3", "label": "Speed 3", "type": "number", "default": "0" },
-        { "slot": "period4", "label": "Period 4", "type": "number", "default": "0" },
-        { "slot": "phase4", "label": "Phase 4", "type": "number", "default": "0" },
-        { "slot": "min4", "label": "Min 4", "type": "number", "default": "0" },
-        { "slot": "max4", "label": "Max 4", "type": "number", "default": "65535" },
-        { "slot": "speed4", "label": "Speed 4", "type": "number", "default": "0" },
-        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" }
+        {
+          "slot": "period1",
+          "label": "Period 1",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "phase1",
+          "label": "Phase 1",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min1",
+          "label": "Min 1",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max1",
+          "label": "Max 1",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed1",
+          "label": "Speed 1",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "period2",
+          "label": "Period 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase2",
+          "label": "Phase 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min2",
+          "label": "Min 2",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max2",
+          "label": "Max 2",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed2",
+          "label": "Speed 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period3",
+          "label": "Period 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase3",
+          "label": "Phase 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min3",
+          "label": "Min 3",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max3",
+          "label": "Max 3",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed3",
+          "label": "Speed 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period4",
+          "label": "Period 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase4",
+          "label": "Phase 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min4",
+          "label": "Min 4",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max4",
+          "label": "Max 4",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed4",
+          "label": "Speed 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "strength",
+          "label": "Strength",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        }
       ]
     },
     {
@@ -1921,11 +2044,40 @@
       "group": "texture",
       "description": "Rolling hard on/off square bands (multiply mask). period 0 = passthrough; duty 0–100% is lit fraction.",
       "args": [
-        { "slot": "period", "label": "Period", "type": "number", "default": "2400" },
-        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "duty", "label": "Duty (%)", "type": "number", "default": "50%", "scale32768": true, "hint": "Lit fraction; 50% ≈ half on (raw >100 still accepted in INI)" }
+        {
+          "slot": "period",
+          "label": "Period",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "duty",
+          "label": "Duty (%)",
+          "type": "number",
+          "default": "50%",
+          "scale32768": true,
+          "hint": "Lit fraction; 50% ≈ half on (raw >100 still accepted in INI)"
+        }
       ]
     },
     {
@@ -1934,11 +2086,39 @@
       "group": "texture",
       "description": "Sine multiply mask with spatial frequency sweep along the blade. period_base 0 = passthrough.",
       "args": [
-        { "slot": "period_base", "label": "Period base", "type": "number", "default": "2400" },
-        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "chirp_rate", "label": "Chirp rate", "type": "number", "default": "64", "hint": "Period change per LED toward tip" }
+        {
+          "slot": "period_base",
+          "label": "Period base",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "chirp_rate",
+          "label": "Chirp rate",
+          "type": "number",
+          "default": "64",
+          "hint": "Period change per LED toward tip"
+        }
       ]
     },
     {
@@ -1947,11 +2127,38 @@
       "group": "texture",
       "description": "Rolling soft rectangular bands (smoothstep edges). period 0 = multiply-neutral passthrough.",
       "args": [
-        { "slot": "period", "label": "Period", "type": "number", "default": "2400" },
-        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "edge_width", "label": "Edge width", "type": "number", "default": "400" }
+        {
+          "slot": "period",
+          "label": "Period",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "edge_width",
+          "label": "Edge width",
+          "type": "number",
+          "default": "400"
+        }
       ]
     },
     {
@@ -1960,11 +2167,38 @@
       "group": "texture",
       "description": "1D smooth hash noise along blade + scroll. scale 0 = passthrough.",
       "args": [
-        { "slot": "scale", "label": "Scale", "type": "number", "default": "2400" },
-        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "seed", "label": "Seed", "type": "number", "default": "0" }
+        {
+          "slot": "scale",
+          "label": "Scale",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "seed",
+          "label": "Seed",
+          "type": "number",
+          "default": "0"
+        }
       ]
     },
     {
@@ -1973,11 +2207,39 @@
       "group": "texture",
       "description": "Fixed 3-octave 1D noise (cheap FBM). strength mixes toward neutral white.",
       "args": [
-        { "slot": "scale", "label": "Scale", "type": "number", "default": "2400" },
-        { "slot": "speed", "label": "Speed", "type": "number", "default": "-2000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" }
+        {
+          "slot": "scale",
+          "label": "Scale",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "speed",
+          "label": "Speed",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "strength",
+          "label": "Strength",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        }
       ]
     },
     {
@@ -1986,12 +2248,44 @@
       "group": "texture",
       "description": "Two scrolling linear ramps multiplied (moire beat). period 0 = that ramp neutral.",
       "args": [
-        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
-        { "slot": "period2", "label": "Period 2", "type": "number", "default": "2450" },
-        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
-        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "2100" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" }
+        {
+          "slot": "period1",
+          "label": "Period 1",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "period2",
+          "label": "Period 2",
+          "type": "number",
+          "default": "2450"
+        },
+        {
+          "slot": "speed1",
+          "label": "Speed 1",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "speed2",
+          "label": "Speed 2",
+          "type": "number",
+          "default": "2100"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        }
       ]
     },
     {
@@ -2000,11 +2294,39 @@
       "group": "texture",
       "description": "Soft bump along blade (center/width). center 0=hilt, 32768=tip; optional scrolling center speed.",
       "args": [
-        { "slot": "center", "label": "Center (%)", "type": "number", "default": "50%", "scale32768": true },
-        { "slot": "width", "label": "Width", "type": "number", "default": "6000" },
-        { "slot": "min", "label": "Min", "type": "number", "default": "0" },
-        { "slot": "max", "label": "Max", "type": "number", "default": "65535" },
-        { "slot": "speed", "label": "Center speed", "type": "number", "default": "0" }
+        {
+          "slot": "center",
+          "label": "Center (%)",
+          "type": "number",
+          "default": "50%",
+          "scale32768": true
+        },
+        {
+          "slot": "width",
+          "label": "Width",
+          "type": "number",
+          "default": "6000"
+        },
+        {
+          "slot": "min",
+          "label": "Min",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max",
+          "label": "Max",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed",
+          "label": "Center speed",
+          "type": "number",
+          "default": "0"
+        }
       ]
     },
     {
@@ -2013,29 +2335,153 @@
       "group": "texture",
       "description": "sine_waves plus swing_scale and twist_scale (args 22–23). Stronger swing/twist = shorter wavelength.",
       "args": [
-        { "slot": "period1", "label": "Period 1", "type": "number", "default": "2400" },
-        { "slot": "phase1", "label": "Phase 1", "type": "number", "default": "0" },
-        { "slot": "min1", "label": "Min 1", "type": "number", "default": "0" },
-        { "slot": "max1", "label": "Max 1", "type": "number", "default": "65535" },
-        { "slot": "speed1", "label": "Speed 1", "type": "number", "default": "-2000" },
-        { "slot": "period2", "label": "Period 2", "type": "number", "default": "0" },
-        { "slot": "phase2", "label": "Phase 2", "type": "number", "default": "0" },
-        { "slot": "min2", "label": "Min 2", "type": "number", "default": "0" },
-        { "slot": "max2", "label": "Max 2", "type": "number", "default": "65535" },
-        { "slot": "speed2", "label": "Speed 2", "type": "number", "default": "0" },
-        { "slot": "period3", "label": "Period 3", "type": "number", "default": "0" },
-        { "slot": "phase3", "label": "Phase 3", "type": "number", "default": "0" },
-        { "slot": "min3", "label": "Min 3", "type": "number", "default": "0" },
-        { "slot": "max3", "label": "Max 3", "type": "number", "default": "65535" },
-        { "slot": "speed3", "label": "Speed 3", "type": "number", "default": "0" },
-        { "slot": "period4", "label": "Period 4", "type": "number", "default": "0" },
-        { "slot": "phase4", "label": "Phase 4", "type": "number", "default": "0" },
-        { "slot": "min4", "label": "Min 4", "type": "number", "default": "0" },
-        { "slot": "max4", "label": "Max 4", "type": "number", "default": "65535" },
-        { "slot": "speed4", "label": "Speed 4", "type": "number", "default": "0" },
-        { "slot": "strength", "label": "Strength", "type": "number", "default": "65535" },
-        { "slot": "swing_scale", "label": "Swing scale", "type": "number", "default": "0" },
-        { "slot": "twist_scale", "label": "Twist scale", "type": "number", "default": "0" }
+        {
+          "slot": "period1",
+          "label": "Period 1",
+          "type": "number",
+          "default": "2400"
+        },
+        {
+          "slot": "phase1",
+          "label": "Phase 1",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min1",
+          "label": "Min 1",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max1",
+          "label": "Max 1",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed1",
+          "label": "Speed 1",
+          "type": "number",
+          "default": "-2000"
+        },
+        {
+          "slot": "period2",
+          "label": "Period 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase2",
+          "label": "Phase 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min2",
+          "label": "Min 2",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max2",
+          "label": "Max 2",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed2",
+          "label": "Speed 2",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period3",
+          "label": "Period 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase3",
+          "label": "Phase 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min3",
+          "label": "Min 3",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max3",
+          "label": "Max 3",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed3",
+          "label": "Speed 3",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "period4",
+          "label": "Period 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "phase4",
+          "label": "Phase 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "min4",
+          "label": "Min 4",
+          "type": "number",
+          "default": "0",
+          "scale65535": true
+        },
+        {
+          "slot": "max4",
+          "label": "Max 4",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "speed4",
+          "label": "Speed 4",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "strength",
+          "label": "Strength",
+          "type": "number",
+          "default": "100%",
+          "scale65535": true
+        },
+        {
+          "slot": "swing_scale",
+          "label": "Swing scale",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "slot": "twist_scale",
+          "label": "Twist scale",
+          "type": "number",
+          "default": "0"
+        }
       ]
     },
     {
@@ -2140,7 +2586,12 @@
       "group": "texture",
       "description": "WaterBlade idle texture — angle-reactive stripes and swing flow reversal (Fett263 OS7). Stack normal over solid_bend.",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        }
       ]
     },
     {
@@ -2149,7 +2600,12 @@
       "group": "texture",
       "description": "DarkSaber idle texture — metallic stripes, brown-noise, audio flicker, swing gleam (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        }
       ]
     },
     {
@@ -2158,7 +2614,12 @@
       "group": "texture",
       "description": "StaticElectricity charge texture — swing builds charge; clash/lockup resets (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "deepskyblue" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "deepskyblue"
+        }
       ]
     },
     {
@@ -2167,7 +2628,12 @@
       "group": "texture",
       "description": "PowerWave idle texture — wide slow reverse stripes (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        }
       ]
     },
     {
@@ -2176,7 +2642,12 @@
       "group": "texture",
       "description": "FallenOrder idle texture — wide stripes with pulsing mid-band (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        }
       ]
     },
     {
@@ -2185,7 +2656,12 @@
       "group": "texture",
       "description": "ShimmerBlade idle texture — HoldPeakF swing shimmer (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "cyan" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "cyan"
+        }
       ]
     },
     {
@@ -2194,7 +2670,12 @@
       "group": "texture",
       "description": "Rotoscope idle texture — SwingAcceleration OT bands (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "silver" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "silver"
+        }
       ]
     },
     {
@@ -2203,7 +2684,12 @@
       "group": "texture",
       "description": "PulseStripes idle texture — ignition-surge stripes + pulsing mid-band (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        }
       ]
     },
     {
@@ -2212,8 +2698,18 @@
       "group": "texture",
       "description": "KineticCharge texture — clash/lockup build kinetic stripes; swing decay releases (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" },
-        { "slot": "kinetic", "label": "Kinetic color", "type": "color", "default": "purple" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        },
+        {
+          "slot": "kinetic",
+          "label": "Kinetic color",
+          "type": "color",
+          "default": "purple"
+        }
       ]
     },
     {
@@ -2222,7 +2718,12 @@
       "group": "texture",
       "description": "RotatingPulse idle texture — Saw-modulated stripe direction reversal (Fett263 OS7 EnergyBlade).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "blue" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "blue"
+        }
       ]
     },
     {
@@ -2231,7 +2732,12 @@
       "group": "texture",
       "description": "TrickleBlade idle texture — angle stripes + tip StaticFire trickle (Fett263 OS7).",
       "args": [
-        { "slot": "base", "label": "Base color", "type": "color", "default": "green" }
+        {
+          "slot": "base",
+          "label": "Base color",
+          "type": "color",
+          "default": "green"
+        }
       ]
     },
     {
@@ -2240,9 +2746,24 @@
       "group": "texture",
       "description": "Cylon scanner band — stack with add over solid_bend (black sections add nothing).",
       "args": [
-        { "slot": "scan", "label": "Scan color", "type": "color", "default": "red" },
-        { "slot": "percent", "label": "Lit percent", "type": "number", "default": "25" },
-        { "slot": "rpm", "label": "RPM", "type": "number", "default": "200" }
+        {
+          "slot": "scan",
+          "label": "Scan color",
+          "type": "color",
+          "default": "red"
+        },
+        {
+          "slot": "percent",
+          "label": "Lit percent",
+          "type": "number",
+          "default": "25"
+        },
+        {
+          "slot": "rpm",
+          "label": "RPM",
+          "type": "number",
+          "default": "200"
+        }
       ]
     },
     {
@@ -2251,9 +2772,26 @@
       "group": "texture",
       "description": "Spark color at the extension front (InOutSparkTip). Match ext/ret to solid_bend base; stack with add or normal.",
       "args": [
-        { "slot": "spark", "label": "Spark color", "type": "color", "default": "white" },
-        { "slot": "ext", "label": "Extend ms", "type": "number", "default": "300", "hint": "-1 uses ignition sound length" },
-        { "slot": "ret", "label": "Retract ms", "type": "number", "default": "800", "hint": "-1 uses retraction sound length" }
+        {
+          "slot": "spark",
+          "label": "Spark color",
+          "type": "color",
+          "default": "white"
+        },
+        {
+          "slot": "ext",
+          "label": "Extend ms",
+          "type": "number",
+          "default": "300",
+          "hint": "-1 uses ignition sound length"
+        },
+        {
+          "slot": "ret",
+          "label": "Retract ms",
+          "type": "number",
+          "default": "800",
+          "hint": "-1 uses retraction sound length"
+        }
       ]
     },
     {
