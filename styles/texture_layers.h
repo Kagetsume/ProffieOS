@@ -2,7 +2,7 @@
 #define STYLES_TEXTURE_LAYERS_H
 
 // Non-opaque-friendly texture overlays for config/blade_styles.ini layering.
-// Use over an opaque base (solid, solid_bend, standard, …) with multiply, screen, or add.
+// Use over an opaque base (solid, solid_bend, standard, …) with multiply, screen, add, or hue.
 // ConfigLayersStyle automatically clips overlay layers (index >= 1) to lit pixels on the
 // base layer during extend/retract — no ext/ret args on texture lines needed.
 //
@@ -34,6 +34,7 @@
 #include "random_bands.h"
 #include "sine_waves.h"
 #include "saw_waves.h"
+#include "hue_waves.h"
 #include "pulse_train.h"
 #include "chirp.h"
 #include "smoothstep_bands.h"
@@ -126,6 +127,20 @@ template<
   class P4, class PH4, class MN4, class MX4, class SP4,
   class STRENGTH = Int<65535>>
 using SawWavesLayer = SawWavesX<
+  P1, PH1, MN1, MX1, SP1,
+  P2, PH2, MN2, MX2, SP2,
+  P3, PH3, MN3, MX3, SP3,
+  P4, PH4, MN4, MX4, SP4,
+  STRENGTH>;
+
+// Up to four sine hue-offset waves (hue blend rotates pixels below; period 0 = slot off).
+template<
+  class P1, class PH1, class MN1, class MX1, class SP1,
+  class P2, class PH2, class MN2, class MX2, class SP2,
+  class P3, class PH3, class MN3, class MX3, class SP3,
+  class P4, class PH4, class MN4, class MX4, class SP4,
+  class STRENGTH = Int<65535>>
+using HueWavesLayer = HueWavesX<
   P1, PH1, MN1, MX1, SP1,
   P2, PH2, MN2, MX2, SP2,
   P3, PH3, MN3, MX3, SP3,

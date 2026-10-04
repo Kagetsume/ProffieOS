@@ -63,6 +63,12 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #ifndef STRIP_COLUMN_TICK_MAX_LOAD_SLICES
 #define STRIP_COLUMN_TICK_MAX_LOAD_SLICES 1
 #endif
+// frames_y: start the next multi-row read when this many frames, or fewer,
+// are already buffered strictly ahead of the displayed frame. Steady state
+// refills at 1, while the last frame of the previous block is still queued.
+#ifndef STRIP_COLUMN_Y_AHEAD_WATERMARK
+#define STRIP_COLUMN_Y_AHEAD_WATERMARK 1
+#endif
 // Only if EFFECT_RETRACTION sound_length is 0. Matches this style's default retract_ms.
 #ifndef STRIP_COLUMN_RETRACT_FALLBACK_MS
 #define STRIP_COLUMN_RETRACT_FALLBACK_MS 800
@@ -200,7 +206,9 @@ public:
     return AdvanceBmpColumnLoad(file, bmp, axis, source_height, buf, frame_index);
   }
 
-  // One animation tick: swap when ready + up to two SD slices (finish column → prefetch sooner).
+  // One animation tick: swap when ready, then one SD load.
+  // frames_y: that load is one multi-row read once the ahead-watermark is hit.
+  // frames_x: that load is one column slice.
   void Tick(FileReader* file, StripColumnBmpInfo* bmp, StripColumnBmpFrameAxis axis,
             int source_height, int frame_ms, uint32_t num_frames) {
     if (!file || !bmp || num_frames == 0) return;
@@ -225,6 +233,11 @@ public:
         continue;
       }
 
+      if (axis == STRIP_COLUMN_FRAMES_ALONG_Y) {
+        PrefetchFramesAlongY(file, bmp, source_height, num_frames);
+        return;
+      }
+
       display_frame = frames_[current_].frame;
       for (int offset = 1; offset < STRIP_COLUMN_FRAME_RING_SIZE; offset++) {
         uint32_t want = (display_frame + (uint32_t)offset) % num_frames;
@@ -246,6 +259,63 @@ private:
     return false;
   }
 
+  // How many complete frames sit in a row immediately after the displayed frame.
+  int CountBufferedAhead(uint32_t display_frame, uint32_t num_frames) const {
+    int limit = STRIP_COLUMN_FRAME_RING_SIZE - 1;
+    if ((int)num_frames - 1 < limit) limit = (int)num_frames - 1;
+    int n = 0;
+    for (int offset = 1; offset <= limit; offset++) {
+      uint32_t want = (display_frame + (uint32_t)offset) % num_frames;
+      if (!SlotHasCompleteFrame(want)) break;
+      n++;
+    }
+    return n;
+  }
+
+  // frames_y tick load. Card stays idle while more than STRIP_COLUMN_Y_AHEAD_WATERMARK
+  // frames are already buffered strictly ahead of the playhead. At the watermark
+  // (and when nothing is queued yet), one seek reads up to STRIP_COLUMN_BMP_Y_BULK_ROWS
+  // upcoming rows, or fewer when fewer ring slots are free.
+  void PrefetchFramesAlongY(FileReader* file, StripColumnBmpInfo* bmp,
+                            int source_height, uint32_t num_frames) {
+    uint32_t display_frame = frames_[current_].frame;
+    int ahead = CountBufferedAhead(display_frame, num_frames);
+    if (ahead > STRIP_COLUMN_Y_AHEAD_WATERMARK) return;
+    if (!file->IsOpen()) return;
+
+    uint32_t wants[STRIP_COLUMN_BMP_Y_BULK_ROWS];
+    int slots[STRIP_COLUMN_BMP_Y_BULK_ROWS];
+    uint8_t* outs[STRIP_COLUMN_BMP_Y_BULK_ROWS];
+    int n = 0;
+    const int cap = STRIP_COLUMN_BMP_Y_BULK_ROWS;
+    for (int k = 0; n < cap; k++) {
+      int offset = ahead + 1 + k;
+      if ((uint32_t)offset > num_frames) break;
+      uint32_t want = (display_frame + (uint32_t)offset) % num_frames;
+      if (want == display_frame) break;
+      if (SlotHasCompleteFrame(want)) break;
+      int slot = PickSlotForLoad(display_frame, num_frames, slots, n);
+      if (slot < 0) break;
+      wants[n] = want;
+      slots[n] = slot;
+      outs[n] = frames_[slot].data;
+      n++;
+    }
+    if (n < 1) return;
+
+    if (StripColumnBmpLoadFramesAlongYBulk(file, bmp, wants, n, source_height, outs,
+                                           STRIP_COLUMN_RECORD_SIZE)) {
+      for (int i = 0; i < n; i++) frames_[slots[i]].frame = wants[i];
+      loading_buf_ = -1;
+      rows_loaded_ = 0;
+      return;
+    }
+
+    // Non-contiguous BMP rows (loop wrap) or a short bulk read: one frame only.
+    AdvanceBmpColumnLoad(file, bmp, STRIP_COLUMN_FRAMES_ALONG_Y, source_height,
+                         slots[0], wants[0]);
+  }
+
   bool FrameInPrefetchWindow(uint32_t display_frame, uint32_t num_frames,
                              uint32_t candidate) const {
     for (int offset = 1; offset < STRIP_COLUMN_FRAME_RING_SIZE; offset++) {
@@ -254,16 +324,26 @@ private:
     return false;
   }
 
-  int PickSlotForLoad(uint32_t display_frame, uint32_t num_frames) const {
+  bool SlotSkipped(int idx, const int* skip, int skip_n) const {
+    if (idx == current_ || idx == loading_buf_) return true;
+    if (!skip || skip_n <= 0) return false;
+    for (int s = 0; s < skip_n; s++) {
+      if (skip[s] == idx) return true;
+    }
+    return false;
+  }
+
+  int PickSlotForLoad(uint32_t display_frame, uint32_t num_frames,
+                      const int* skip = nullptr, int skip_n = 0) const {
     for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
-      if (i == current_ || i == loading_buf_) continue;
+      if (SlotSkipped(i, skip, skip_n)) continue;
       if (frames_[i].frame == ~0u) return i;
     }
     // Prefer evicting the oldest frame behind the playhead (not in prefetch window).
     int best = -1;
     uint32_t best_dist = 0;
     for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
-      if (i == current_ || i == loading_buf_) continue;
+      if (SlotSkipped(i, skip, skip_n)) continue;
       uint32_t f = frames_[i].frame;
       if (f == ~0u) return i;
       if (FrameInPrefetchWindow(display_frame, num_frames, f)) continue;

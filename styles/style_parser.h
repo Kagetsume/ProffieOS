@@ -107,6 +107,9 @@ inline bool TryParseConfigLayerLine(const char* layer_line,
   } else if (FirstWord(p, "normal")) {
     blend = CONFIG_LAYER_BLEND_NORMAL;
     p = SkipWord(p);
+  } else if (FirstWord(p, "hue")) {
+    blend = CONFIG_LAYER_BLEND_HUE;
+    p = SkipWord(p);
   }
   const char* parse_from = p;
   if (FirstWord(p, "opacity")) {
@@ -650,6 +653,19 @@ NamedStyle named_styles[] = {
     > >(),
     "Triangle brightness waves along blade (multiply mask). Same args as sine_waves (period 0 = slot off). "
     "Example: saw_waves 2400 0 8192 65535 -2000"
+  },
+  { "hue_waves",
+    StylePtr<HueWavesLayer<
+      IntArg<1, 2400>, IntArg<2, 0>, IntArg<3, 0>, IntArg<4, 8192>, IntArg<5, -2000>,
+      IntArg<6, 0>, IntArg<7, 0>, IntArg<8, 0>, IntArg<9, 8192>, IntArg<10, 0>,
+      IntArg<11, 0>, IntArg<12, 0>, IntArg<13, 0>, IntArg<14, 8192>, IntArg<15, 0>,
+      IntArg<16, 0>, IntArg<17, 0>, IntArg<18, 0>, IntArg<19, 8192>, IntArg<20, 0>,
+      IntArg<21, 65535>
+    > >(),
+    "Sine hue-offset waves along blade. Five ints per wave: period phase min_hue max_hue speed; "
+    "period 0 disables a slot (default waves 2–4 off). min/max are RotateColorsX units "
+    "(0 = no shift, 16384 = 180 deg, 32768 = 360 deg). Optional strength (default 65535) mixes toward 0. "
+    "Stack with hue blend, not multiply. Example: hue_waves 2400 0 0 8192 -2000"
   },
   { "pulse_train",
     StylePtr<PulseTrainLayer<

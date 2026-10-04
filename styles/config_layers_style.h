@@ -23,6 +23,9 @@ enum ConfigLayerBlend : uint8_t {
   CONFIG_LAYER_BLEND_MULTIPLY = 1,
   CONFIG_LAYER_BLEND_SCREEN = 2,
   CONFIG_LAYER_BLEND_ADD = 3,
+  // Rotate hue of the straight base color. Overlay red is a RotateColorsX offset
+  // (0 = none, 32768 = 360 degrees): angle = (r & 0x7fff) * 3, same as RotateColorsX.
+  CONFIG_LAYER_BLEND_HUE = 4,
 };
 
 // Combine premultiplied base with straight overlay color using blend mode, then alpha-over (same as <<).
@@ -31,11 +34,17 @@ enum ConfigLayerBlend : uint8_t {
 inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend_mode) {
   if (!over.alpha) return base;
   if (blend_mode == CONFIG_LAYER_BLEND_NORMAL) return base << over;
-  // Multiply/screen need a visible base; alpha-over on transparent stack paints masks as
+  // Hue rotate needs a visible base and a non-zero offset. Zero offset (or no base)
+  // leaves the stack unchanged so a trough does not repaint or crush the color.
+  if (blend_mode == CONFIG_LAYER_BLEND_HUE) {
+    if (!base.alpha || !(over.c.r & 0x7fff)) return base;
+  }
+  // Multiply/screen/hue need a visible base; alpha-over on transparent stack paints masks as
   // solid texture (e.g. sine_waves grayscale) when strip_column BMP failed to open.
   if (!base.alpha) {
     if (blend_mode == CONFIG_LAYER_BLEND_MULTIPLY ||
-        blend_mode == CONFIG_LAYER_BLEND_SCREEN)
+        blend_mode == CONFIG_LAYER_BLEND_SCREEN ||
+        blend_mode == CONFIG_LAYER_BLEND_HUE)
       return base;
     return base << over;
   }
@@ -68,6 +77,15 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
       mr = (uint32_t)(tr > 65535 ? 65535 : tr);
       mg = (uint32_t)(tg > 65535 ? 65535 : tg);
       mb = (uint32_t)(tb > 65535 ? 65535 : tb);
+      break;
+    }
+    case CONFIG_LAYER_BLEND_HUE: {
+      // Same angle formula as RotateColorsX in styles/rotate_color.h.
+      int angle = (int)((over.c.r & 0x7fff) * 3);
+      Color16 rotated = Color16((uint16_t)br, (uint16_t)bg, (uint16_t)bb).rotate(angle);
+      mr = rotated.r;
+      mg = rotated.g;
+      mb = rotated.b;
       break;
     }
     default:

@@ -34,6 +34,10 @@ enum StripColumnBmpFrameAxis : uint8_t {
 #ifndef STRIP_COLUMN_BMP_MAX_ROW_READ
 #define STRIP_COLUMN_BMP_MAX_ROW_READ 512
 #endif
+// frames_y: one tick reads at most this many BMP rows (one seek + one read).
+#ifndef STRIP_COLUMN_BMP_Y_BULK_ROWS
+#define STRIP_COLUMN_BMP_Y_BULK_ROWS 4
+#endif
 
 struct StripColumnBmpInfo {
   uint32_t width;
@@ -165,6 +169,29 @@ inline bool StripColumnBmpLoadColumnRows(FileReader* f, const StripColumnBmpInfo
   return true;
 }
 
+// BMP file row for animation frame_index. Bottom-up files store frame 0 at the last row.
+inline uint32_t StripColumnBmpFrameFileRow(const StripColumnBmpInfo* info,
+                                          uint32_t frame_index) {
+  return info->top_down ? frame_index : (info->height - 1u - frame_index);
+}
+
+// One BMP row (BGR, pixel 0 at the start of the row) into an RGB column.
+// Bytes past width*3 are row padding and are not copied.
+inline bool StripColumnBmpStoreFrameRow(const uint8_t* row_bgr, int source_height,
+                                       uint8_t* out_buf, size_t out_buf_size) {
+  if (!row_bgr || !out_buf || out_buf_size == 0) return false;
+  memset(out_buf, 0, out_buf_size);
+  for (int i = 0; i < source_height; i++) {
+    if ((size_t)(i + 1) * 3u > out_buf_size) return false;
+    uint32_t off = (uint32_t)i * 3u;
+    uint8_t* px = out_buf + (size_t)i * 3;
+    px[0] = row_bgr[off + 2];
+    px[1] = row_bgr[off + 1];
+    px[2] = row_bgr[off];
+  }
+  return true;
+}
+
 // frames_y: one animation frame = one BMP row; copy width pixels into column buffer (row 0 = hilt).
 inline bool StripColumnBmpLoadFrameAlongY(FileReader* f, const StripColumnBmpInfo* info,
                                           uint32_t frame_index, int source_height,
@@ -174,8 +201,7 @@ inline bool StripColumnBmpLoadFrameAlongY(FileReader* f, const StripColumnBmpInf
   if (source_height < 0) source_height = 0;
   if (source_height > (int)info->width) source_height = (int)info->width;
 
-  uint32_t file_row =
-      info->top_down ? frame_index : (info->height - 1u - frame_index);
+  uint32_t file_row = StripColumnBmpFrameFileRow(info, frame_index);
 
   LOCK_SD(true);
   uint8_t row_buf[STRIP_COLUMN_BMP_MAX_ROW_READ];
@@ -189,14 +215,68 @@ inline bool StripColumnBmpLoadFrameAlongY(FileReader* f, const StripColumnBmpInf
   LOCK_SD(false);
   if (got != (int)info->row_stride) return false;
 
-  memset(out_buf, 0, out_buf_size);
-  for (int i = 0; i < source_height; i++) {
-    if ((size_t)(i + 1) * 3u > out_buf_size) return false;
-    uint32_t off = (uint32_t)i * 3u;
-    uint8_t* px = out_buf + i * 3;
-    px[0] = row_buf[off + 2];
-    px[1] = row_buf[off + 1];
-    px[2] = row_buf[off];
+  if (!StripColumnBmpStoreFrameRow(row_buf, source_height, out_buf, out_buf_size))
+    return false;
+  Looper::DoHFLoop();
+  return true;
+}
+
+// frames_y: seek once and read n contiguous BMP rows (n * row_stride) under one LOCK_SD.
+// Playback order may walk the file backward (bottom-up BMP); the read is the contiguous
+// span from the lowest file row. Returns false when the rows are not one contiguous span,
+// the stride does not fit, or the read is short. Those failures happen before any slot is written.
+inline bool StripColumnBmpLoadFramesAlongYBulk(FileReader* f, const StripColumnBmpInfo* info,
+                                              const uint32_t* frame_indices, int n,
+                                              int source_height,
+                                              uint8_t* const* out_bufs, size_t out_buf_size) {
+  if (!f || !info || !frame_indices || !out_bufs || n < 1) return false;
+  if (n > STRIP_COLUMN_BMP_Y_BULK_ROWS) return false;
+  if (info->row_stride == 0 || info->row_stride > STRIP_COLUMN_BMP_MAX_ROW_READ) return false;
+
+  uint32_t file_rows[STRIP_COLUMN_BMP_Y_BULK_ROWS];
+  for (int i = 0; i < n; i++) {
+    if (!out_bufs[i] || frame_indices[i] >= info->height) return false;
+    file_rows[i] = StripColumnBmpFrameFileRow(info, frame_indices[i]);
+  }
+  for (int i = 1; i < n; i++) {
+    uint32_t prev = file_rows[i - 1];
+    uint32_t cur = file_rows[i];
+    const bool forward = (cur == prev + 1u);
+    const bool backward = (prev != 0u && cur + 1u == prev);
+    if (!forward && !backward) return false;
+    const bool first_forward = (file_rows[1] == file_rows[0] + 1u);
+    if (forward != first_forward) return false;
+  }
+  uint32_t min_row = file_rows[0];
+  uint32_t max_row = file_rows[0];
+  for (int i = 1; i < n; i++) {
+    if (file_rows[i] < min_row) min_row = file_rows[i];
+    if (file_rows[i] > max_row) max_row = file_rows[i];
+  }
+  if (max_row - min_row + 1u != (uint32_t)n) return false;
+
+  if (source_height < 0) source_height = 0;
+  if (source_height > (int)info->width) source_height = (int)info->width;
+  if (source_height > 0 && (size_t)source_height * 3u > out_buf_size) return false;
+
+  const uint32_t nbytes = info->row_stride * (uint32_t)n;
+  if (nbytes / info->row_stride != (uint32_t)n) return false;
+
+  // Static: up to 4 * 512 bytes. Must not live on the style-loop stack (L452).
+  static uint8_t bulk[STRIP_COLUMN_BMP_MAX_ROW_READ * STRIP_COLUMN_BMP_Y_BULK_ROWS];
+  if (nbytes > sizeof(bulk)) return false;
+
+  LOCK_SD(true);
+  uint32_t pos = info->pixel_offset + min_row * info->row_stride;
+  f->Seek(pos);
+  int got = f->Read(bulk, (int)nbytes);
+  LOCK_SD(false);
+  if (got != (int)nbytes) return false;
+
+  for (int i = 0; i < n; i++) {
+    const uint8_t* row = bulk + (size_t)(file_rows[i] - min_row) * info->row_stride;
+    if (!StripColumnBmpStoreFrameRow(row, source_height, out_bufs[i], out_buf_size))
+      return false;
   }
   Looper::DoHFLoop();
   return true;

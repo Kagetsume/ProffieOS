@@ -145,6 +145,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `hard_stripes` | `multiply opacity 55% hard_stripes 1200 -4000 black white` | Hard-edged bands |
 | `random_bands` | `multiply opacity 67% random_bands -600 green black 3000` | Irregular rolling bands — **`[smoke_laser]`** (not **`stripes`** like **`[smoke_blade]`**) |
 | `sine_waves` / `saw_waves` | `multiply opacity 67% sine_waves 2400 0 8192 65535 -2000` | Up to 4 wave slots; **`[sine_waves_cyan]`**, demos **`demo_sine_waves`** … |
+| `hue_waves` | `hue opacity 100% hue_waves 2400 0 0 8192 -2000` | Up to 4 sine **hue** offsets (RotateColorsX units). **`hue`** blend, not multiply. Recipe **`[demo_hue_waves]`** |
 | `pulse_train` / `chirp` | `multiply opacity 67% pulse_train 2400 -2000 0 65535 50%` | Square bands / frequency-sweep sine — presets 21–22 |
 | `smoothstep_bands` | `multiply opacity 61% smoothstep_bands 2400 -2000 8192 65535 400` | Soft rolling bands — preset 13 |
 | `value_noise` / `fbm_noise` | `multiply opacity 55% value_noise 2400 -2000 8192 65535 0` | Hash / FBM noise masks — presets 14–15 |
@@ -162,7 +163,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 **Layering rule:** Opaque full blades cover everything below unless you use **`add`**, **`multiply`**, **`screen`**, or **`opacity`**. Overlays like **`blast`**, **`clash`**, **`pulse`**, and preon/postoff handle transparency internally.
 
-Example sections in `examples/config/blade_styles.ini`: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`** (first presets in **`presets.ini`**), texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`** (presets 12–22), then **`[composable_checklist]`** (capstone + layer catalog in comments), `[rainbow_pulse]`, `[smoke_blade]`, composable + OS7 sections, `[greyscale_mercenary]`, `[energy_blade]`, and monolithic Fett263 wrappers.
+Example sections in `examples/config/blade_styles.ini`: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`** (first presets in **`presets.ini`**), texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`** (presets 12–22) plus **`[demo_hue_waves]`** (hue blend, not a numbered preset), then **`[composable_checklist]`** (capstone + layer catalog in comments), `[rainbow_pulse]`, `[smoke_blade]`, composable + OS7 sections, `[greyscale_mercenary]`, `[energy_blade]`, and monolithic Fett263 wrappers.
 
 **First presets (main blade / blade 0 only):** 0 = Sine Waves Cyan, 1 = Smoke Laser, 2 = Smoke Sine Cyan, 3 = Red (`standard`), … 11 = Smoke Blade, 12–22 = texture demos. Each preset in **`examples/config/presets.ini`** uses **four** `style =` lines when **`NUM_BLADES` is 4** (accent lines 2–4).
 
