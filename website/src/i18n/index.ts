@@ -33,6 +33,21 @@ export { DEFAULT_LOCALE, getAppLocale, resolveLocale, setAppLocale } from './res
 export { sanitizeI18nString } from './sanitize.js';
 export { applySubstitutions } from './substitute.js';
 export { rootI18n } from './root.js';
+export { buildRootLocaleBundles } from './root-bundles.js';
+export {
+  getStoredAppLocale,
+  LOCALE_STORAGE_KEY,
+  resolveInitialAppLocale,
+  setStoredAppLocale,
+} from './locale-preference.js';
+export { PO_APP_LOCALE_CHANGE, switchAppLocale } from './switch-app-locale.js';
+export {
+  SUPPORTED_LOCALES,
+  LOCALE_ALIASES,
+  applyLocaleAliases,
+  resolveSupportedAppLocale,
+  type SupportedLocale,
+} from './supported-locales.js';
 export { commonKeys } from './common-keys.js';
 export type {
   DateFormatLength,

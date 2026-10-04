@@ -1,0 +1,11 @@
+{
+  "stylePreview": "style = ${preview}",
+  "label.styleMode": "入力",
+  "option.preset": "プリセットスタイル",
+  "option.custom": "カスタム行",
+  "label.style": "スタイル",
+  "label.overrides": "Overrides（任意）",
+  "placeholder.overrides": "base=magenta clash=yellow",
+  "label.customLine": "スタイル行（「style =」なし）",
+  "placeholder.customLine": "standard cyan white 300 800"
+}

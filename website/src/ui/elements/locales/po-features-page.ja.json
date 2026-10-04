@@ -1,0 +1,10 @@
+{
+  "title": "機能",
+  "lead": "<code>config/features.ini</code> の機能トグル。<code>config/board.ini</code> の後に読み込まれ — ボードファイルのジェスチャー／ツイスト設定を上書き（コンテスト SD 向け）。",
+  "feature.gesture.label": "ジェスチャー点火",
+  "feature.gesture.description": "オン：スイング、スラスト、ツイストでボタンなし点火可能。オフ：ボタンのみで点灯。",
+  "feature.twistOn.label": "ツイストで点灯",
+  "feature.twistOn.description": "オン：ツイストジェスチャーで点灯。オフ：ツイストでは点火不可 — ボタンのみ。",
+  "feature.twistOff.label": "ツイストで消灯",
+  "feature.twistOff.description": "オン：ツイストで消灯。オフ：ツイスト消灯無効 — パフォーマンス中の誤消灯防止に常用。"
+}

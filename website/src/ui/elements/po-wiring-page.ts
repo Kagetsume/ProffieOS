@@ -5,7 +5,7 @@
  *
  * @module ui/elements/po-wiring-page
  */
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -30,8 +30,9 @@ import { EffectorController } from '../effector-controller.js';
 import { wiringPageI18n } from './po-wiring-page.i18n.js';
 import { wiringPageKeys } from './po-wiring-page.keys.js';
 import './po-blade-card.js';
+import { PoElement } from './po-element.js';
 
-export class PoWiringPage extends LitElement {
+export class PoWiringPage extends PoElement {
   private readonly wiringController = new EffectorController(this, $wiring);
   private readonly profileController = new EffectorController(this, $boardProfileId);
 

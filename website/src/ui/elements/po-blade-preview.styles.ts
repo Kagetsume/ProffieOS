@@ -28,7 +28,8 @@ export const poBladePreviewStyles = css`
     display: block;
     width: 100%;
     box-sizing: border-box;
-    color: #f4f6f8;
+    /* Preview sits on a dark well (po-styles-page .preview-well). */
+    color: var(--wa-color-neutral-90, #e4e4e7);
     container-type: inline-size;
     container-name: blade-preview;
   }
@@ -263,7 +264,7 @@ export const poBladePreviewStyles = css`
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #f4f6f8;
+    color: inherit;
     opacity: 1;
   }
 
@@ -276,22 +277,32 @@ export const poBladePreviewStyles = css`
 
   .control-group-body wa-button {
     min-width: 0;
-    color: #f4f6f8;
-    --wa-color-on-loud: #f4f6f8;
-    --wa-color-neutral-on-loud: #f4f6f8;
-    --wa-color-on-normal: #f4f6f8;
-    --wa-color-neutral-on-normal: #f4f6f8;
-    --wa-color-on-quiet: #f4f6f8;
-    --wa-color-neutral-on-quiet: #f4f6f8;
-    --wa-color-brand-on-loud: #f4f6f8;
   }
 
-  .control-group-body wa-button::part(button) {
-    color: #f4f6f8;
+  /*
+   * Neutral controls sit on the dark preview well. In app dark mode, default
+   * wa-button neutral fills stay light while inherited text is light — unreadable.
+   */
+  .control-group-body wa-button[variant='neutral']::part(button) {
+    border: 1px solid var(--wa-color-neutral-30, #52525b);
+    background: var(--wa-color-neutral-15, #27272a);
+    color: var(--wa-color-neutral-80, #d4d4d8);
   }
 
-  .control-group-body wa-button[disabled] {
-    opacity: 1;
+  .control-group-body wa-button[variant='neutral']:hover:not([disabled])::part(button) {
+    border-color: var(--wa-color-brand-50, #0ea5e9);
+    color: var(--wa-color-brand-50, #0ea5e9);
+    background: var(--wa-color-neutral-20, #303036);
+  }
+
+  .control-group-body wa-button[variant='neutral']:focus-visible::part(button) {
+    outline: 2px solid var(--wa-color-brand-60, #0ea5e9);
+    outline-offset: 2px;
+  }
+
+  .control-group-body wa-button[variant='neutral'][disabled]::part(button) {
+    opacity: 0.55;
+    cursor: not-allowed;
   }
 
   .combat-toggle {
@@ -301,13 +312,13 @@ export const poBladePreviewStyles = css`
     font-size: 0.8125rem;
     font-weight: 600;
     padding: 0.15rem 0.35rem;
-    color: #f4f6f8;
+    color: inherit;
     opacity: 1;
   }
 
   .combat-toggle--disabled {
-    color: #f4f6f8;
-    opacity: 1;
+    color: inherit;
+    opacity: 0.55;
     pointer-events: none;
   }
 
@@ -337,7 +348,7 @@ export const poBladePreviewStyles = css`
   .blade-angle-value {
     font-weight: normal;
     font-variant-numeric: tabular-nums;
-    color: #f4f6f8;
+    color: inherit;
     opacity: 1;
   }
 
@@ -350,8 +361,8 @@ export const poBladePreviewStyles = css`
   .blade-angle-hint {
     font-weight: normal;
     font-size: 0.75rem;
-    color: #f4f6f8;
-    opacity: 1;
+    color: inherit;
+    opacity: 0.85;
     line-height: 1.35;
   }
 
@@ -359,8 +370,8 @@ export const poBladePreviewStyles = css`
     margin: 0.5rem auto 0;
     max-width: min(480px, 100%);
     font-size: 0.7rem;
-    color: #f4f6f8;
-    opacity: 1;
+    color: inherit;
+    opacity: 0.85;
     text-align: center;
   }
 

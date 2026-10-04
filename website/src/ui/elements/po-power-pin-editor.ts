@@ -7,7 +7,7 @@
  *
  * @module ui/elements/po-power-pin-editor
  */
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import type { BladeDefinition } from '../../model/blades';
 import { MAX_POWER_PINS } from '../../validation/limits';
@@ -21,6 +21,7 @@ import { contextLogger } from '../../logger/index.js';
 import { powerPinEditorI18n } from './po-power-pin-editor.i18n.js';
 import { powerPinEditorKeys } from './po-power-pin-editor.keys.js';
 import './po-pin-picker.js';
+import { PoElement } from './po-element.js';
 
 /**
  * Returns the firmware field label for one power-pin row (`power_pin` or `power_pinN`).
@@ -41,7 +42,7 @@ function powerPinFieldLabel(index: number, count: number): string {
  *
  * @fires pins-change - `{ pins: string[] }`
  */
-export class PoPowerPinEditor extends LitElement {
+export class PoPowerPinEditor extends PoElement {
   static properties = {
     pins: { attribute: false },
     bladeIndex: { type: Number, attribute: 'blade-index' },

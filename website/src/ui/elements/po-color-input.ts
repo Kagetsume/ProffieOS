@@ -5,7 +5,7 @@
  *
  * @module ui/elements/po-color-input
  */
-import { LitElement, html, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -19,13 +19,14 @@ import {
 import { contextLogger } from '../../logger/index.js';
 import { colorInputI18n } from './po-color-input.i18n.js';
 import { colorInputKeys } from './po-color-input.keys.js';
+import { PoElement } from './po-element.js';
 
 /**
  * Firmware color picker — named color catalog with swatch preview and custom hex/r,g,b entry.
  *
  * @fires color-change - `{ value: string }`
  */
-export class PoColorInput extends LitElement {
+export class PoColorInput extends PoElement {
   static properties = {
     value: { type: String },
     /** Accessible name when the control is not wrapped in a visible `<label>`. */

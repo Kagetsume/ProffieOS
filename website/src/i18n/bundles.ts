@@ -3,7 +3,8 @@
  *
  * @module i18n/bundles
  */
-import { normalizeLocaleTag } from './locale-chain.js';
+import { localeLookupChain, normalizeLocaleTag } from './locale-chain.js';
+import { DEFAULT_LOCALE } from './resolve-locale.js';
 import type { I18nLocaleBundles, I18nMessages } from './types.js';
 
 export type NormalizedBundles = Readonly<Record<string, I18nMessages>>;
@@ -23,19 +24,12 @@ export function normalizeBundles(bundles: I18nLocaleBundles): NormalizedBundles 
   return normalized;
 }
 
-/** Tags to search for one key: `en_US`, `en`, then `root`. */
+/** Tags to search for one key: locale chain, then `en`, then `root` (English canonical). */
 export function bundleLookupTags(locale: string): string[] {
-  const normalized = normalizeLocaleTag(locale);
-  const parts = normalized.split('_').filter(Boolean);
-  const tags: string[] = [];
-
-  if (parts.length > 1) {
-    tags.push(normalized);
-  }
-  if (parts.length >= 1) {
-    tags.push(parts[0]!);
+  const tags = [...localeLookupChain(normalizeLocaleTag(locale))];
+  if (!tags.includes(DEFAULT_LOCALE)) {
+    tags.push(DEFAULT_LOCALE);
   }
   tags.push('root');
-
   return tags;
 }

@@ -2,6 +2,7 @@
  * Application bar — title, export link, and theme toggle.
  */
 import { describe, expect, it } from 'vitest';
+import { getAppLocale, LOCALE_STORAGE_KEY, switchAppLocale } from '../../i18n/index.js';
 import { getByTestId, mount } from '../../test/lit-host-utils.js';
 import './po-app-shell.js';
 
@@ -27,6 +28,27 @@ describe('po-app-shell', () => {
     expect(el.shadowRoot?.querySelector('.theme-toggle span')?.textContent).toBe('Dark mode');
     localStorage.removeItem('po-theme');
     document.documentElement.classList.remove('wa-dark');
+    unmount();
+  });
+
+  it('renders locale select and switches language on change', async () => {
+    localStorage.removeItem(LOCALE_STORAGE_KEY);
+    switchAppLocale('en');
+    const { el, unmount } = await mount(document.createElement('po-app-shell'));
+    const select = getByTestId(el, 'app-shell-locale-select') as HTMLElement & { value: string };
+    expect(select).toBeTruthy();
+    expect(select.getAttribute('aria-label')).toBe('Language');
+    select.value = 'fr';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    await el.updateComplete;
+    expect(getAppLocale()).toBe('fr');
+    expect(localStorage.getItem(LOCALE_STORAGE_KEY)).toBe('fr');
+    expect(el.shadowRoot?.querySelector('.app-title')?.textContent).toBe('LayerBlade');
+    expect(el.shadowRoot?.querySelector('.app-tagline')?.textContent).toBe(
+      'Styles de lame SD pour ProffieOS',
+    );
+    switchAppLocale('en');
+    localStorage.removeItem(LOCALE_STORAGE_KEY);
     unmount();
   });
 });

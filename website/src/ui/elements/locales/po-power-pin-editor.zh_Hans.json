@@ -1,0 +1,5 @@
+{
+  "heading": "电源引脚",
+  "hint": "六个 FET 引脚（bladePowerPin1–6）在所有 NeoPixel 光刃间共享 — 整剑中每个引脚只能使用一次。",
+  "addPowerPin": "添加电源引脚"
+}

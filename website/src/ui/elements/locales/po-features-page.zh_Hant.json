@@ -1,0 +1,10 @@
+{
+  "title": "功能",
+  "lead": "<code>config/features.ini</code> 的功能開關。於 <code>config/board.ini</code> 之後載入 — 這些值會覆寫主機板檔中的手勢與扭轉設定（適用比賽 SD）。",
+  "feature.gesture.label": "手勢點火",
+  "feature.gesture.description": "開啟：揮動、刺擊或扭轉等手勢可不按激活鍵點火。關閉：僅按鈕點火。",
+  "feature.twistOn.label": "扭轉點火",
+  "feature.twistOn.description": "開啟：扭轉手勢可開刃。關閉：扭轉不能點火 — 僅按鈕。",
+  "feature.twistOff.label": "扭轉關刃",
+  "feature.twistOff.description": "開啟：扭轉手勢關刃。關閉：停用扭轉關刃 — 比賽常用以防表演中誤關。"
+}

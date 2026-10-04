@@ -1,0 +1,10 @@
+{
+  "title": "Placa",
+  "lead": "Opciones de hardware para <code>config/board.ini</code> — botones, OLED y Bluetooth. Los interruptores de gestos y twist también se exportan aquí (y en <code>config/features.ini</code> para overrides de concurso).",
+  "label.buttonCount": "Número de botones",
+  "option.buttons1": "1 botón",
+  "option.buttons2": "2 botones",
+  "option.buttons3": "3 botones",
+  "label.oled": "Pantalla OLED",
+  "label.bluetooth": "Serie Bluetooth"
+}

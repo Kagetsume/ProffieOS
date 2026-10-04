@@ -1,0 +1,16 @@
+{
+  "header": "Blade ${index}",
+  "label.type": "Type",
+  "option.ws2811": "NeoPixel (ws2811)",
+  "option.simple": "Simple PWM LED",
+  "label.dataPin": "data_pin",
+  "label.boardPin": "Board pin (silkscreen)",
+  "placeholder.dataPin": "Select a data pin…",
+  "label.comment": "Note (optional)",
+  "placeholder.comment": "e.g. Crystal chamber accent",
+  "label.led": "led",
+  "label.activeState": "active_state",
+  "option.high": "high",
+  "option.low": "low",
+  "label.pixels": "pixels"
+}

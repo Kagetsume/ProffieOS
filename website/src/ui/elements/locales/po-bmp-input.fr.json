@@ -1,0 +1,7 @@
+{
+  "label.path": "Chemin BMP sur la carte SD",
+  "placeholder.path": "animations/plasma.bmp",
+  "button.upload": "Envoyer BMP",
+  "hint.format": "BMP 24 bits non compressé · aperçu uniquement (copiez le fichier sur la SD à ce chemin)",
+  "aria.fileInput": "Choisir un fichier BMP sur votre ordinateur"
+}

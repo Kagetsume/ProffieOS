@@ -1,0 +1,11 @@
+{
+  "stylePreview": "style = ${preview}",
+  "label.styleMode": "Saisie",
+  "option.preset": "Style prédéfini",
+  "option.custom": "Ligne personnalisée",
+  "label.style": "Style",
+  "label.overrides": "Overrides (facultatif)",
+  "placeholder.overrides": "base=magenta clash=yellow",
+  "label.customLine": "Ligne style (sans « style = »)",
+  "placeholder.customLine": "standard cyan white 300 800"
+}

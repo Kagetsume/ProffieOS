@@ -1,0 +1,18 @@
+{
+  "layerToggle.aria": "Couche ${stackIndex} : ${layerSummary}",
+  "moveTowardTop.aria": "Monter la couche ${stackIndex}",
+  "moveTowardTop.title": "Monter vers le haut",
+  "moveTowardBase.aria": "Descendre la couche ${stackIndex}",
+  "moveTowardBase.title": "Descendre vers la base",
+  "removeLayer.aria": "Supprimer la couche ${stackIndex}",
+  "removeLayer.title": "Supprimer la couche",
+  "removeLayer.only.title": "Impossible de supprimer la seule couche",
+  "label.style": "Style",
+  "label.blend": "Blend",
+  "label.opacity": "Opacité (%)",
+  "hint.configExport": "Exporte comme <code>layer = config ${configSection}</code>.",
+  "hint.sectionVar": "Var section <code>${varName}</code>",
+  "button.towardBase": "↓ Vers la base",
+  "button.towardTop": "↑ Vers le haut",
+  "button.removeLayer": "Supprimer la couche"
+}

@@ -8,7 +8,7 @@ import { getDefaultParentClient } from './client-registry.js';
 import { formatDate as formatDateValue } from './format-date.js';
 import { formatNumber as formatNumberValue } from './format-number.js';
 import { normalizeLocaleTag } from './locale-chain.js';
-import { setAppLocale } from './resolve-locale.js';
+import { getAppLocale, setAppLocale } from './resolve-locale.js';
 import { applySubstitutions } from './substitute.js';
 import type {
   FormatDateOptions,
@@ -24,7 +24,8 @@ import type {
  * Resolves translation keys from locale bundles, then an optional parent client chain.
  *
  * Lookup order for locale `en_US`:
- * 1. `en_US` bundle → 2. `en` bundle → 3. `root` bundle → 4. parent client (same rules)
+ * 1. `en_US` bundle → 2. `en` bundle → 3. `root` bundle → 4. parent client (same rules).
+ * Other locales insert `en` before `root` when not already in the chain (e.g. `fr` → `en` → `root`).
  *
  * @example Component-local client (parents to app root by default)
  * ```ts
@@ -93,9 +94,17 @@ export class I18nClient {
     return formatDateValue(date, { ...options, client: this });
   }
 
+  /** Locale used for local bundle lookup (child clients follow {@link getAppLocale}). */
+  private localeForBundleLookup(): LocaleId {
+    if (this.parentExplicit === null) {
+      return this.localeId;
+    }
+    return getAppLocale();
+  }
+
   /** Read a message without substitution or sanitization (testing / tooling). */
   resolveRaw(key: string): string {
-    for (const tag of bundleLookupTags(this.localeId)) {
+    for (const tag of bundleLookupTags(this.localeForBundleLookup())) {
       const bundle = this.bundles[tag];
       if (bundle && Object.prototype.hasOwnProperty.call(bundle, key)) {
         return bundle[key]!;

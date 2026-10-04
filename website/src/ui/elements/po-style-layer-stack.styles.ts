@@ -7,6 +7,11 @@ import { css } from 'lit';
 
 /** Expandable layer list, reorder/remove controls, and layer editor form. */
 export const poStyleLayerStackStyles = css`
+  :host {
+    display: block;
+    color: var(--wa-color-text-normal, inherit);
+  }
+
   .layer-stack {
     display: flex;
     flex-direction: column;
@@ -199,5 +204,48 @@ export const poStyleLayerStackStyles = css`
   .layer-form > .layer-form-grid:first-child {
     max-height: 5.5rem;
     overflow: hidden;
+  }
+
+  :host-context(html.wa-dark) .layer-item {
+    border-color: var(--wa-color-neutral-25, #3f3f46);
+    background: var(--wa-color-neutral-15, #27272a);
+  }
+
+  :host-context(html.wa-dark) .layer-item--expanded {
+    border-color: var(--wa-color-brand-50, #0ea5e9);
+    background: var(--wa-color-neutral-12, #1c1c1f);
+  }
+
+  :host-context(html.wa-dark) .layer-item--expanded .layer-row {
+    border-bottom-color: var(--wa-color-neutral-25, #3f3f46);
+    background: var(--wa-color-neutral-20, #303036);
+  }
+
+  :host-context(html.wa-dark) .layer-badge {
+    background: var(--wa-color-neutral-25, #3f3f46);
+    color: var(--wa-color-neutral-70, #a1a1aa);
+  }
+
+  :host-context(html.wa-dark) .layer-reorder,
+  :host-context(html.wa-dark) .layer-remove {
+    border-color: var(--wa-color-neutral-30, #52525b);
+    background: var(--wa-color-neutral-15, #27272a);
+    color: var(--wa-color-neutral-80, #d4d4d8);
+  }
+
+  :host-context(html.wa-dark) .layer-reorder:hover:not(:disabled) {
+    border-color: var(--wa-color-brand-50, #0ea5e9);
+    color: var(--wa-color-brand-50, #0ea5e9);
+    background: var(--wa-color-neutral-20, #303036);
+  }
+
+  :host-context(html.wa-dark) .layer-remove:hover:not(:disabled) {
+    border-color: var(--wa-color-danger-50, #ef4444);
+    color: var(--wa-color-danger-50, #ef4444);
+    background: var(--wa-color-neutral-20, #303036);
+  }
+
+  :host-context(html.wa-dark) .layer-form-footer {
+    border-top-color: var(--wa-color-neutral-25, #3f3f46);
   }
 `;

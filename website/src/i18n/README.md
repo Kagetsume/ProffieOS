@@ -39,6 +39,14 @@ html`<wa-button>${copyPanelI18n.translate('actions.copy')}</wa-button>`;
 copyPanelI18n.translate('hint.filename', { filename: this.filename });
 ```
 
+### Locale changes in the UI
+
+Call `switchAppLocale(locale)` from `switch-app-locale.ts`. That updates `rootI18n`, persistence, `document.documentElement.lang`, and dispatches `po-locale-change` on `window`.
+
+Component `createComponentI18n*` clients do **not** cache the app locale: local bundle lookup uses `getAppLocale()` on every `translate()` (see `I18nClient.localeForBundleLookup`).
+
+Lit components must **re-render** after a locale switch so `translate()` runs again. Extend `PoElement` (`ui/elements/po-element.ts`), which listens for `po-locale-change` and calls `requestUpdate()`. Do not extend raw `LitElement` for translated `<po-*>` tags.
+
 ## Message lookup order
 
 For active locale `en_US`, **each client** resolves keys in this order:
@@ -48,6 +56,8 @@ For active locale `en_US`, **each client** resolves keys in this order:
 3. `root` bundle (client-wide fallback, not the root *client*)
 4. **Parent client** (same rules, recursively)
 5. Raw key string (missing translation)
+
+For other locales the chain is the same pattern with language/region tags first, then **`en`**, then **`root`** (both hold English strings; `root/common.json` is the canonical English fallback). The default UI locale is **`en`** when the browser tag is unsupported.
 
 Browser tags like `en-US` are normalized to `en_US` for bundle keys. Missing bundle tables are skipped (no error).
 
@@ -94,8 +104,28 @@ Root shared bundles:
 i18n/locales/
   root/common.json
   en/common.json
+  fr/common.json
+  es/common.json
+  de/common.json
+  ja/common.json
+  zh_Hans/common.json
+  zh_Hant/common.json
   en_US/common.json   ← add when needed
 ```
+
+Supported UI locale tags: `en`, `fr`, `es`, `de`, `ja`, `zh_Hans`, `zh_Hant`. Regional aliases `zh_CN` → `zh_Hans` and `zh_TW` → `zh_Hant` are applied automatically in bundle maps.
+
+On first load, `rootI18n` uses `resolveSupportedAppLocale(detectBrowserLocale())` so the UI matches `navigator.language` when a supported locale (or alias) is available; otherwise it stays on `en`.
+
+Switch language in code (no locale picker UI yet):
+
+```ts
+import { switchAppLocale } from '../../i18n';
+
+switchAppLocale('fr');
+```
+
+Component locale files follow `ui/elements/locales/po-<component>.<locale>.json`; `createComponentI18nFor('po-<component>')` loads every matching file via `import.meta.glob`.
 
 ## API reference
 

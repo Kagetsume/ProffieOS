@@ -1,0 +1,7 @@
+{
+  "placeholder.data": "Data-Pin wählen…",
+  "placeholder.power": "Power-Pin wählen…",
+  "option.custom": "Benutzerdefiniert (Pinname oder Nummer)",
+  "option.inUse": "${label} (belegt)",
+  "placeholder.custom": "z. B. 20 oder bladePin"
+}

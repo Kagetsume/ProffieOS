@@ -1,0 +1,19 @@
+{
+  "ariaLabel": "光刃預覽",
+  "sectionPower": "電源",
+  "sectionCombat": "戰鬥",
+  "sectionLockup": "Lockup",
+  "powerOn": "開刃",
+  "powerOff": "關刃",
+  "blast": "Blast",
+  "clash": "Clash",
+  "swing": "Swing",
+  "force": "Force",
+  "lockup": "Lockup",
+  "lightningBlock": "Lightning Block",
+  "drag": "Drag",
+  "melt": "Melt",
+  "bladeAngle": "光刃角度",
+  "bladeAngleHint": "移動鎖刃感應區（柄 ↔ 尖端）",
+  "caption": "近似預覽（簡化圖層計算，非韌體）· ${sectionId}${transitionSuffix}"
+}

@@ -1,0 +1,7 @@
+{
+  "label.path": "BMP-Dateipfad auf der SD-Karte",
+  "placeholder.path": "animations/plasma.bmp",
+  "button.upload": "BMP hochladen",
+  "hint.format": "24-Bit unkomprimiertes BMP · nur Vorschau (Datei auf SD unter diesem Pfad kopieren)",
+  "aria.fileInput": "BMP-Datei auf Ihrem Computer wählen"
+}

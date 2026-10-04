@@ -6,7 +6,7 @@
  *
  * @module ui/elements/po-bmp-input
  */
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import { decodeStripColumnBmp, parseStripColumnLayerArgs } from '../../preview/strip-column-bmp';
@@ -14,8 +14,9 @@ import { registerBmpAsset } from '../../stores/bmpAssets';
 import { contextLogger } from '../../logger/index.js';
 import { bmpInputI18n } from './po-bmp-input.i18n.js';
 import { bmpInputKeys } from './po-bmp-input.keys.js';
+import { PoElement } from './po-element.js';
 
-export class PoBmpInput extends LitElement {
+export class PoBmpInput extends PoElement {
   static properties = {
     value: { type: String },
     frameAxis: { type: String },

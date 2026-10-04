@@ -9,7 +9,7 @@
  *
  * @module ui/elements/po-blade-card
  */
-import { LitElement, html, nothing } from 'lit';
+import { html, nothing } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
@@ -25,6 +25,7 @@ import { bladeCardKeys } from './po-blade-card.keys.js';
 import './po-pin-picker.js';
 import './po-power-pin-editor.js';
 import './po-sub-blade-editor.js';
+import { PoElement } from './po-element.js';
 
 /**
  * Lit card for editing one blade's wiring — type, pins, NeoPixel fields, or simple-LED fields.
@@ -32,7 +33,7 @@ import './po-sub-blade-editor.js';
  * @fires blade-patch - `{ index: number, patch: Partial<BladeDefinition> }`
  * @fires blade-remove - `{ index: number }`
  */
-export class PoBladeCard extends LitElement {
+export class PoBladeCard extends PoElement {
   static properties = {
     blade: { attribute: false },
     blades: { attribute: false },

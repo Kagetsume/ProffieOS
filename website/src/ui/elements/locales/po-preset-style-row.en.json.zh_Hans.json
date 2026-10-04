@@ -1,0 +1,11 @@
+{
+  "stylePreview": "style = ${preview}",
+  "label.styleMode": "Input",
+  "option.preset": "Preset style",
+  "option.custom": "Custom line",
+  "label.style": "Style",
+  "label.overrides": "Overrides (optional)",
+  "placeholder.overrides": "base=magenta clash=yellow",
+  "label.customLine": "Style line (without \"style =\")",
+  "placeholder.customLine": "standard cyan white 300 800"
+}

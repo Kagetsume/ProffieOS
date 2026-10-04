@@ -1,0 +1,5 @@
+{
+  "heading": "Broches d’alimentation",
+  "hint": "Six broches FET (bladePowerPin1–6) sont partagées entre toutes les lames NeoPixel — chaque broche ne peut être utilisée qu’une fois sur le sabre.",
+  "addPowerPin": "Ajouter broche alim"
+}

@@ -1,0 +1,11 @@
+{
+  "stylePreview": "style = ${preview}",
+  "label.styleMode": "输入方式",
+  "option.preset": "预设样式",
+  "option.custom": "自定义行",
+  "label.style": "样式",
+  "label.overrides": "Overrides（可选）",
+  "placeholder.overrides": "base=magenta clash=yellow",
+  "label.customLine": "样式行（不含「style =」）",
+  "placeholder.customLine": "standard cyan white 300 800"
+}

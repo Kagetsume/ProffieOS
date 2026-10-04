@@ -1,0 +1,23 @@
+{
+  "actions.add": "追加",
+  "actions.copy": "コピー",
+  "actions.copied": "コピーしました！",
+  "actions.download": "ダウンロード",
+  "actions.duplicate": "複製",
+  "actions.remove": "削除",
+  "actions.reset": "既定値にリセット",
+  "actions.new": "新規",
+  "nav.route.home": "概要",
+  "nav.route.board": "ボード",
+  "nav.route.features": "機能",
+  "nav.route.blades": "ブレード",
+  "nav.route.styles": "ブレードスタイル",
+  "nav.route.presets": "プリセット",
+  "nav.route.export": "エクスポート",
+  "nav.configFiles": "設定ファイル",
+  "nav.output": "出力",
+  "nav.ariaLabel": "アプリケーションのセクション",
+  "nav.stubSoon": "近日",
+  "hint.exportFooter": "変更はエクスポートページに ${filename} として表示されます。",
+  "hint.exportAs": "変更はエクスポートページに ${filename} として表示されます。"
+}

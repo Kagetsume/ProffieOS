@@ -1,0 +1,16 @@
+{
+  "header": "Hoja ${index}",
+  "label.type": "Tipo",
+  "option.ws2811": "NeoPixel (ws2811)",
+  "option.simple": "LED PWM simple",
+  "label.dataPin": "data_pin",
+  "label.boardPin": "Pin de placa (serigrafía)",
+  "placeholder.dataPin": "Seleccionar pin de datos…",
+  "label.comment": "Nota (opcional)",
+  "placeholder.comment": "p. ej. acento cámara de cristal",
+  "label.led": "led",
+  "label.activeState": "active_state",
+  "option.high": "high",
+  "option.low": "low",
+  "label.pixels": "pixels"
+}

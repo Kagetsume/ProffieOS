@@ -1,0 +1,18 @@
+{
+  "layerToggle.aria": "レイヤー ${stackIndex}：${layerSummary}",
+  "moveTowardTop.aria": "レイヤー ${stackIndex} を上へ",
+  "moveTowardTop.title": "上へ移動",
+  "moveTowardBase.aria": "レイヤー ${stackIndex} をベース側へ",
+  "moveTowardBase.title": "ベース側へ",
+  "removeLayer.aria": "レイヤー ${stackIndex} を削除",
+  "removeLayer.title": "レイヤーを削除",
+  "removeLayer.only.title": "唯一のレイヤーは削除できません",
+  "label.style": "スタイル",
+  "label.blend": "Blend",
+  "label.opacity": "不透明度 (%)",
+  "hint.configExport": "<code>layer = config ${configSection}</code> としてエクスポート。",
+  "hint.sectionVar": "セクション変数 <code>${varName}</code>",
+  "button.towardBase": "↓ ベース側",
+  "button.towardTop": "↑ 上へ",
+  "button.removeLayer": "レイヤーを削除"
+}

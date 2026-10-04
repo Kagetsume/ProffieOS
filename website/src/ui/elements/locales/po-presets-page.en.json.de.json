@@ -1,0 +1,18 @@
+{
+  "title": "Presets",
+  "lead": "Edit <code>config/presets.ini</code>. Each preset sets font, track, display name, and one <code>style =</code> line per logical blade. Use <strong>Config recipe</strong> to reference sections from <code>blade_styles.ini</code>, or pick a <strong>Named style</strong> directly.",
+  "help.summary": "How presets connect to blades and styles",
+  "help.bladeCount": "<strong>Blade count</strong> — must match logical blades from the Blades page and firmware <code>NUM_BLADES</code> (currently ${slotCount}).",
+  "help.configRecipe": "<strong>Config recipe</strong> — <code>style = config smoke_blade</code> loads the <code>[smoke_blade]</code> section from <code>blade_styles.ini</code>.",
+  "help.overrides": "<strong>Overrides</strong> — <code>style = config with_vars base=magenta</code> replaces <code>{{base}}</code> for that preset only.",
+  "help.accents": "<strong>Accents</strong> — blades 2–4 on a five-blade build typically use <code>accent_*</code> named styles (PWM outputs in <code>blades.ini</code>).",
+  "label.preset": "Preset",
+  "addPreset": "Add preset",
+  "label.font": "Font",
+  "label.track": "Track",
+  "label.presetName": "Preset name",
+  "label.variation": "Variation",
+  "label.comment": "Note (optional, exported as comment)",
+  "heading.styleLines": "Style lines — one per logical blade",
+  "hint.footer": "${presetCount} preset${presetSuffix} · ${slotCount} style line${styleSuffix} each · Export on the Export page."
+}

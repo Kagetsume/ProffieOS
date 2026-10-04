@@ -7,7 +7,7 @@
  * @fires sub-blades-change - `{ subBlades: SubBladeRange[] }`
  * @module ui/elements/po-sub-blade-editor
  */
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import type { SubBladeRange } from '../../model/blades';
@@ -22,13 +22,14 @@ import { MAX_SUB_BLADES } from '../../validation/limits';
 import { contextLogger } from '../../logger/index.js';
 import { subBladeEditorI18n } from './po-sub-blade-editor.i18n.js';
 import { subBladeEditorKeys } from './po-sub-blade-editor.keys.js';
+import { PoElement } from './po-element.js';
 
 /**
  * Editable list of sub-blade pixel ranges for one NeoPixel strip.
  *
  * @fires sub-blades-change - `{ subBlades: SubBladeRange[] }`
  */
-export class PoSubBladeEditor extends LitElement {
+export class PoSubBladeEditor extends PoElement {
   static properties = {
     subBlades: { attribute: false },
     pixels: { type: Number },

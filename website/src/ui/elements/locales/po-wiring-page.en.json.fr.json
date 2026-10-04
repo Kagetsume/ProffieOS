@@ -1,0 +1,16 @@
+{
+  "title": "Blades — ${profileName}",
+  "lead": "Edit blade definitions for <code>config/blades.ini</code>. No server — changes stay in the browser until you export.",
+  "help.summary": "What is this file for?",
+  "help.neopixel": "<strong>NeoPixel strips</strong> — main blade, second strips, pixel pommels: <code>data_pin</code>, <code>pixels</code>, power FET(s).",
+  "help.simple": "<strong>Simple PWM accents</strong> — Free1–3, motors, single LEDs: <code>type = simple</code> + <code>led</code>; pair with <code>accent_*</code> styles in <code>presets.ini</code>.",
+  "help.subBlades": "<strong>Sub-blades</strong> — split one physical strip into styled segments (e.g. main body + crystal chamber on one data line).",
+  "help.wiringNote": "Wiring lives here; colors and effects live in <code>presets.ini</code> (<code>style =</code> per logical blade). Match firmware <code>NUM_BLADES</code> to the logical blade count shown below.",
+  "help.examplesPrefix": "Examples and setup guide:",
+  "help.examplesLink": "website/BLADES.md",
+  "help.examplesSuffix": "(also in the repo next to this editor).",
+  "label.boardProfile": "Board profile",
+  "resetProfile": "Reset to profile defaults",
+  "addBlade": "Add blade",
+  "hint.footer": "Up to ${maxBlades} wiring entries. Logical blades for presets: ${logicalCount} (match <code>NUM_BLADES</code> and <code>style =</code> count — sub-blade ranges each add one logical blade)."
+}

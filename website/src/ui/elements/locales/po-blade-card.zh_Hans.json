@@ -1,0 +1,16 @@
+{
+  "header": "光刃 ${index}",
+  "label.type": "类型",
+  "option.ws2811": "NeoPixel (ws2811)",
+  "option.simple": "简单 PWM LED",
+  "label.dataPin": "data_pin",
+  "label.boardPin": "板载引脚（丝印）",
+  "placeholder.dataPin": "选择数据引脚…",
+  "label.comment": "备注（可选）",
+  "placeholder.comment": "例如：水晶室 accent",
+  "label.led": "led",
+  "label.activeState": "active_state",
+  "option.high": "high",
+  "option.low": "low",
+  "label.pixels": "pixels"
+}

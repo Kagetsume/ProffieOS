@@ -1,0 +1,19 @@
+{
+  "ariaLabel": "Blade preview",
+  "sectionPower": "Power",
+  "sectionCombat": "Combat",
+  "sectionLockup": "Lockup",
+  "powerOn": "Power on",
+  "powerOff": "Power off",
+  "blast": "Blast",
+  "clash": "Clash",
+  "swing": "Swing",
+  "force": "Force",
+  "lockup": "Lockup",
+  "lightningBlock": "Lightning Block",
+  "drag": "Drag",
+  "melt": "Melt",
+  "bladeAngle": "Blade angle",
+  "bladeAngleHint": "Moves responsive lockup zone (hilt ↔ tip)",
+  "caption": "Approximate preview (simplified layer math, not firmware) · ${sectionId}${transitionSuffix}"
+}

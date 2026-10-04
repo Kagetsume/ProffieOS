@@ -1,0 +1,10 @@
+{
+  "title": "匯出",
+  "lead": "複製或下載產生的 INI，用於 SD 卡 <code>config/</code> 資料夾。",
+  "summary": "<strong>${count}</strong> 個設定檔可供複製",
+  "tab.blades": "blades.ini",
+  "tab.bladeStyles": "blade_styles.ini",
+  "tab.presets": "presets.ini",
+  "tab.board": "board.ini",
+  "tab.features": "features.ini"
+}

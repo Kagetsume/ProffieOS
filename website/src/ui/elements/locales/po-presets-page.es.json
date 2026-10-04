@@ -1,0 +1,18 @@
+{
+  "title": "Preajustes",
+  "lead": "Edite <code>config/presets.ini</code>. Cada preajuste define fuente, pista, nombre y una línea <code>style =</code> por hoja lógica. Use <strong>Receta config</strong> para referenciar <code>blade_styles.ini</code>, o un <strong>Estilo con nombre</strong>.",
+  "help.summary": "Cómo se conectan preajustes, hojas y estilos",
+  "help.bladeCount": "<strong>Recuento de hojas</strong> — debe coincidir con las hojas lógicas de la página Hojas y <code>NUM_BLADES</code> del firmware (${slotCount}).",
+  "help.configRecipe": "<strong>Receta config</strong> — <code>style = config smoke_blade</code> carga la sección <code>[smoke_blade]</code> de <code>blade_styles.ini</code>.",
+  "help.overrides": "<strong>Overrides</strong> — <code>style = config with_vars base=magenta</code> reemplaza <code>{{base}}</code> solo en este preajuste.",
+  "help.accents": "<strong>Acentos</strong> — hojas 2–4 en builds de cinco hojas suelen usar estilos <code>accent_*</code> (salidas PWM en <code>blades.ini</code>).",
+  "label.preset": "Preajuste",
+  "addPreset": "Añadir preajuste",
+  "label.font": "Fuente",
+  "label.track": "Pista",
+  "label.presetName": "Nombre del preajuste",
+  "label.variation": "Variación",
+  "label.comment": "Nota (opcional, se exporta como comentario)",
+  "heading.styleLines": "Líneas style — una por hoja lógica",
+  "hint.footer": "${presetCount} preajuste${presetSuffix} · ${slotCount} línea${styleSuffix} style cada uno · Exportar en la página Exportar."
+}

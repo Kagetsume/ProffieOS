@@ -1,0 +1,23 @@
+{
+  "actions.add": "新增",
+  "actions.copy": "複製",
+  "actions.copied": "已複製！",
+  "actions.download": "下載",
+  "actions.duplicate": "建立副本",
+  "actions.remove": "移除",
+  "actions.reset": "重設為預設",
+  "actions.new": "新建",
+  "nav.route.home": "概覽",
+  "nav.route.board": "主機板",
+  "nav.route.features": "功能",
+  "nav.route.blades": "光刃",
+  "nav.route.styles": "光刃樣式",
+  "nav.route.presets": "預設",
+  "nav.route.export": "匯出",
+  "nav.configFiles": "設定檔",
+  "nav.output": "輸出",
+  "nav.ariaLabel": "應用程式區段",
+  "nav.stubSoon": "即將推出",
+  "hint.exportFooter": "變更會出現在匯出頁面，檔名為 ${filename}。",
+  "hint.exportAs": "變更會出現在匯出頁面，檔名為 ${filename}。"
+}

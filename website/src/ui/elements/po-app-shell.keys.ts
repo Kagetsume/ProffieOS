@@ -11,5 +11,6 @@ export const appShellKeys = {
   exportLink: 'exportLink',
   darkMode: 'darkMode',
   lightMode: 'lightMode',
+  localeSelectAriaLabel: 'localeSelectAriaLabel',
   exportRoute: commonKeys.nav.route.export,
 } as const;

@@ -1,0 +1,18 @@
+{
+  "title": "預設",
+  "lead": "編輯 <code>config/presets.ini</code>。每個預設設定字型、音軌、顯示名稱，以及每個邏輯光刃一行 <code>style =</code>。用 <strong>Config 配方</strong> 引用 <code>blade_styles.ini</code>，或直接選 <strong>命名樣式</strong>。",
+  "help.summary": "預設如何連接光刃與樣式",
+  "help.bladeCount": "<strong>光刃數量</strong> — 須與光刃頁邏輯光刃及韌體 <code>NUM_BLADES</code> 一致（目前 ${slotCount}）。",
+  "help.configRecipe": "<strong>Config 配方</strong> — <code>style = config smoke_blade</code> 從 <code>blade_styles.ini</code> 載入 <code>[smoke_blade]</code>。",
+  "help.overrides": "<strong>Overrides</strong> — <code>style = config with_vars base=magenta</code> 僅在該預設替換 <code>{{base}}</code>。",
+  "help.accents": "<strong>Accent</strong> — 五刃建置中光刃 2–4 通常使用 <code>accent_*</code> 命名樣式（<code>blades.ini</code> 中的 PWM）。",
+  "label.preset": "預設",
+  "addPreset": "新增預設",
+  "label.font": "字型",
+  "label.track": "音軌",
+  "label.presetName": "預設名稱",
+  "label.variation": "變體",
+  "label.comment": "備註（選填，匯出為註解）",
+  "heading.styleLines": "樣式行 — 每個邏輯光刃一行",
+  "hint.footer": "${presetCount} 個預設${presetSuffix} · 各 ${slotCount} 條樣式行${styleSuffix} · 於匯出頁匯出。"
+}

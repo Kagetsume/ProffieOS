@@ -1,0 +1,18 @@
+{
+  "layerToggle.aria": "Capa ${stackIndex}: ${layerSummary}",
+  "moveTowardTop.aria": "Subir capa ${stackIndex}",
+  "moveTowardTop.title": "Mover hacia arriba",
+  "moveTowardBase.aria": "Bajar capa ${stackIndex}",
+  "moveTowardBase.title": "Mover hacia la base",
+  "removeLayer.aria": "Eliminar capa ${stackIndex}",
+  "removeLayer.title": "Eliminar capa",
+  "removeLayer.only.title": "No se puede eliminar la única capa",
+  "label.style": "Estilo",
+  "label.blend": "Blend",
+  "label.opacity": "Opacidad (%)",
+  "hint.configExport": "Exporta como <code>layer = config ${configSection}</code>.",
+  "hint.sectionVar": "Var de sección <code>${varName}</code>",
+  "button.towardBase": "↓ Hacia la base",
+  "button.towardTop": "↑ Hacia arriba",
+  "button.removeLayer": "Eliminar capa"
+}

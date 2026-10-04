@@ -1,0 +1,11 @@
+{
+  "heading": "Sub-blades",
+  "hint": "將此燈帶拆分為 ${logicalCount} 個邏輯光刃${logicalSuffix}（每個預設 ${logicalCount} 行 <code>style =</code>${logicalSuffix}）。留空表示整段燈帶。最多 ${maxSubBlades} 段 — <code>sub_blade = first, last</code>（從 0 起，含端點）。",
+  "empty": "整段燈帶 — 不匯出 sub_blade 行。",
+  "slotLabel": "sub_blade",
+  "label.first": "first",
+  "label.last": "last",
+  "meta.ledCount": "${count} 顆 LED${ledSuffix}",
+  "meta.invalid": "無效（須滿足 0 ≤ first ≤ last < ${pixels}）",
+  "addRange": "新增 sub-blade 範圍"
+}

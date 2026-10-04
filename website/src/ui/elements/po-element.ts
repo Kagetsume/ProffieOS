@@ -11,6 +11,7 @@
  */
 import { LitElement, type PropertyValues } from 'lit';
 import { discover } from '@awesome.me/webawesome';
+import { PO_APP_LOCALE_CHANGE } from '../../i18n/switch-app-locale.js';
 import { contextLogger } from '../../logger/index.js';
 
 type DiscoverRoot = Document | Element | ShadowRoot;
@@ -47,6 +48,10 @@ export class PoElement extends LitElement {
   private waObserver: MutationObserver | null = null;
   private discoverFrame = 0;
 
+  private onAppLocaleChange = (): void => {
+    this.requestUpdate();
+  };
+
   /**
    * Lit lifecycle hook invoked when the element is inserted into the document.
    *
@@ -58,6 +63,7 @@ export class PoElement extends LitElement {
     const log = contextLogger('po-element', 'connectedCallback');
     log.entry({ tagName: this.tagName });
     super.connectedCallback();
+    window.addEventListener(PO_APP_LOCALE_CHANGE, this.onAppLocaleChange);
     log.exit();
   }
 
@@ -72,6 +78,7 @@ export class PoElement extends LitElement {
   disconnectedCallback(): void {
     const log = contextLogger('po-element', 'disconnectedCallback');
     log.entry({ tagName: this.tagName, hasPendingFrame: !!this.discoverFrame });
+    window.removeEventListener(PO_APP_LOCALE_CHANGE, this.onAppLocaleChange);
     this.stopWebAwesomeObserver();
     if (this.discoverFrame) {
       log.debug('branch: cancel pending discover frame', { frame: this.discoverFrame });

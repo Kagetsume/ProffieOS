@@ -1,0 +1,16 @@
+{
+  "title": "Hojas — ${profileName}",
+  "lead": "Edite definiciones para <code>config/blades.ini</code>. Sin servidor — los cambios permanecen en el navegador hasta exportar.",
+  "help.summary": "¿Para qué sirve este archivo?",
+  "help.neopixel": "<strong>Tiras NeoPixel</strong> — hoja principal, segundas tiras, pomos pixel: <code>data_pin</code>, <code>pixels</code>, FET de alimentación.",
+  "help.simple": "<strong>Acentos PWM simples</strong> — Free1–3, motores, LED sueltos: <code>type = simple</code> + <code>led</code>; combine con estilos <code>accent_*</code> en <code>presets.ini</code>.",
+  "help.subBlades": "<strong>Sub-blades</strong> — dividir una tira física en segmentos con estilo (p. ej. cuerpo + cámara de cristal en una línea data).",
+  "help.wiringNote": "El cableado está aquí; colores y efectos en <code>presets.ini</code> (<code>style =</code> por hoja lógica). Igual <code>NUM_BLADES</code> del firmware al recuento lógico inferior.",
+  "help.examplesPrefix": "Ejemplos y guía:",
+  "help.examplesLink": "website/BLADES.md",
+  "help.examplesSuffix": "(también en el repo junto a este editor).",
+  "label.boardProfile": "Perfil de placa",
+  "resetProfile": "Restablecer valores del perfil",
+  "addBlade": "Añadir hoja",
+  "hint.footer": "Hasta ${maxBlades} entradas de cableado. Hojas lógicas para preajustes: ${logicalCount} (igual <code>NUM_BLADES</code> y recuento de <code>style =</code> — cada rango sub-blade añade una hoja lógica)."
+}

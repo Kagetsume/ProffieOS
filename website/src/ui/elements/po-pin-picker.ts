@@ -9,7 +9,7 @@
  *
  * @fires pin-change - `{ value: string }` when the committed pin changes
  */
-import { LitElement, html } from 'lit';
+import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -23,13 +23,14 @@ import {
 } from './pin-picker-utils';
 import { pinPickerI18n } from './po-pin-picker.i18n.js';
 import { pinPickerKeys } from './po-pin-picker.keys.js';
+import { PoElement } from './po-element.js';
 
 /**
  * Board pin selector — preset catalog dropdown with optional custom pin entry.
  *
  * @fires pin-change - `{ value: string }`
  */
-export class PoPinPicker extends LitElement {
+export class PoPinPicker extends PoElement {
   static properties = {
     value: { type: String },
     usedPresets: { attribute: false },

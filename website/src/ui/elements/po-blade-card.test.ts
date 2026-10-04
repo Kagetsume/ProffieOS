@@ -1,7 +1,8 @@
 /**
  * Blade card — data pin dropdown for Simple PWM and NeoPixel blades.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
+import { switchAppLocale } from '../../i18n/index.js';
 import type { BladeDefinition } from '../../model/blades';
 import { getUsedDataPinsForPicker } from '../../stores/data-pin-usage';
 import { getByTestId, mount } from '../../test/lit-host-utils.js';
@@ -9,6 +10,33 @@ import './po-pin-picker.js';
 import './po-blade-card.js';
 
 describe('po-blade-card', () => {
+  afterEach(() => {
+    switchAppLocale('en');
+  });
+
+  it('updates visible strings after switchAppLocale', async () => {
+    const blades: BladeDefinition[] = [
+      { index: 2, type: 'ws2811', dataPin: 'blade1Pin', pixels: 144, powerPins: ['fet1'] },
+    ];
+    const card = document.createElement('po-blade-card') as HTMLElement & {
+      blade: BladeDefinition;
+      blades: BladeDefinition[];
+    };
+    card.blade = blades[0];
+    card.blades = blades;
+    switchAppLocale('en');
+    const { unmount } = await mount(card);
+
+    const headerText = () =>
+      card.querySelector('.blade-card-header strong')?.textContent?.trim();
+    expect(headerText()).toBe('Blade 2');
+
+    switchAppLocale('fr');
+    await (card as HTMLElement & { updateComplete: Promise<boolean> }).updateComplete;
+    expect(headerText()).toBe('Lame 2');
+    unmount();
+  });
+
   it('renders a data pin picker with labeled options for simple PWM', async () => {
     const blades: BladeDefinition[] = [
       { index: 2, type: 'simple', dataPin: 'blade5Pin', led: 'CreeXPE2White', activeState: 'high' },

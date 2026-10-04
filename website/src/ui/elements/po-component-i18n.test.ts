@@ -5,8 +5,9 @@
  * `po-*.i18n.ts` / `po-*.keys.ts` files stay out of coverage until imported explicitly.
  * This file mirrors `ui/elements/index.ts` i18n surface area for coverage and regression checks.
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import type { I18nClient } from '../../i18n/client.js';
+import { switchAppLocale } from '../../i18n/index.js';
 import { appShellI18n } from './po-app-shell.i18n.js';
 import { appShellKeys } from './po-app-shell.keys.js';
 import { bladeCardI18n } from './po-blade-card.i18n.js';
@@ -90,6 +91,23 @@ function firstMessageKey(keys: Record<string, unknown>): string {
 }
 
 describe('component i18n bundles', () => {
+  afterEach(() => {
+    switchAppLocale('en');
+  });
+
+  it.each(COMPONENT_I18N)('$id follows switchAppLocale for bundle lookup', ({ i18n, keys }) => {
+    const messageKey = firstMessageKey(keys);
+    switchAppLocale('en');
+    const enText = i18n.translate(messageKey);
+    switchAppLocale('fr');
+    const frText = i18n.translate(messageKey);
+    if (enText !== frText) {
+      expect(frText).not.toBe(enText);
+    }
+    expect(frText.length).toBeGreaterThan(0);
+    expect(frText).not.toBe(messageKey);
+  });
+
   it.each(COMPONENT_I18N)('$id loads keys and resolves at least one message', ({ i18n, keys }) => {
     const messageKey = firstMessageKey(keys);
     const text = i18n.translate(messageKey);

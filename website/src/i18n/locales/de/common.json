@@ -1,0 +1,23 @@
+{
+  "actions.add": "Hinzufügen",
+  "actions.copy": "Kopieren",
+  "actions.copied": "Kopiert!",
+  "actions.download": "Herunterladen",
+  "actions.duplicate": "Duplizieren",
+  "actions.remove": "Entfernen",
+  "actions.reset": "Auf Standard zurücksetzen",
+  "actions.new": "Neu",
+  "nav.route.home": "Übersicht",
+  "nav.route.board": "Board",
+  "nav.route.features": "Funktionen",
+  "nav.route.blades": "Klingen",
+  "nav.route.styles": "Klingenstile",
+  "nav.route.presets": "Presets",
+  "nav.route.export": "Export",
+  "nav.configFiles": "Config-Dateien",
+  "nav.output": "Ausgabe",
+  "nav.ariaLabel": "Anwendungsbereiche",
+  "nav.stubSoon": "Demnächst",
+  "hint.exportFooter": "Änderungen erscheinen auf der Export-Seite als ${filename}.",
+  "hint.exportAs": "Änderungen erscheinen auf der Export-Seite als ${filename}."
+}

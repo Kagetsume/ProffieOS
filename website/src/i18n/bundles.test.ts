@@ -43,7 +43,12 @@ describe('bundleLookupTags', () => {
     expect(bundleLookupTags('en')).toEqual(['en', 'root']);
   });
 
+  it('inserts en before root for non-English locales', () => {
+    expect(bundleLookupTags('fr')).toEqual(['fr', 'en', 'root']);
+    expect(bundleLookupTags('de_DE')).toEqual(['de_DE', 'de', 'en', 'root']);
+  });
+
   it('handles multi-part region tags', () => {
-    expect(bundleLookupTags('zh_Hans_CN')).toEqual(['zh_Hans_CN', 'zh', 'root']);
+    expect(bundleLookupTags('zh_Hans_CN')).toEqual(['zh_Hans_CN', 'zh', 'en', 'root']);
   });
 });

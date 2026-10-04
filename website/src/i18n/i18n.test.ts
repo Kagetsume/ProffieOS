@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest';
 import { getAppLocale } from './resolve-locale.js';
-import { createI18nClient, createRootI18nClient, rootI18n } from './index.js';
+import {
+  createI18nClient,
+  createRootI18nClient,
+  rootI18n,
+  switchAppLocale,
+} from './index.js';
 
 describe('I18nClient', () => {
   const local = createI18nClient({
@@ -81,6 +86,22 @@ describe('I18nClient', () => {
     expect(client.translate('only.en')).toBe('en-only');
     expect(client.translate('only.root')).toBe('root-only');
     expect(client.translate('shared')).toBe('us-value');
+  });
+
+  it('falls back from fr to en then root for missing keys', () => {
+    const client = createRootI18nClient({
+      locale: 'fr',
+      bundles: {
+        root: { key: 'root-only' },
+        en: { key: 'en-value', 'only.en': 'from-en' },
+        fr: { 'only.fr': 'from-fr' },
+      },
+    });
+
+    expect(client.translate('only.fr')).toBe('from-fr');
+    expect(client.translate('only.en')).toBe('from-en');
+    expect(client.translate('key')).toBe('en-value');
+    expect(client.translate('root-only')).toBe('root-only');
   });
 
   it('falls back from en_US to en when a regional bundle is missing', () => {
@@ -184,6 +205,21 @@ describe('I18nClient', () => {
 
     expect(client.locale).toBe('en_US');
     expect(client.translate('key')).toBe('us');
+  });
+
+  it('child clients follow switchAppLocale for local bundle lookup', () => {
+    const child = createI18nClient({
+      locale: 'en',
+      bundles: {
+        en: { greet: 'Hello' },
+        fr: { greet: 'Bonjour' },
+      },
+    });
+
+    switchAppLocale('fr');
+    expect(child.translate('greet')).toBe('Bonjour');
+    switchAppLocale('en');
+    expect(child.translate('greet')).toBe('Hello');
   });
 
   it('walks a multi-level parent chain', () => {

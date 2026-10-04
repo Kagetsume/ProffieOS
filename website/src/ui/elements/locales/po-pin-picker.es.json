@@ -1,0 +1,7 @@
+{
+  "placeholder.data": "Seleccionar pin data…",
+  "placeholder.power": "Seleccionar pin alimentación…",
+  "option.custom": "Personalizado (nombre o número de pin)",
+  "option.inUse": "${label} (en uso)",
+  "placeholder.custom": "p. ej. 20 o bladePin"
+}

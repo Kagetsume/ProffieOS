@@ -1,0 +1,16 @@
+{
+  "title": "光刃 — ${profileName}",
+  "lead": "編輯 <code>config/blades.ini</code> 的光刃定義。無伺服器 — 匯出前變更保存在瀏覽器中。",
+  "help.summary": "此檔的用途",
+  "help.neopixel": "<strong>NeoPixel 燈帶</strong> — 主刃、副條、像素 pommel：<code>data_pin</code>、<code>pixels</code>、電源 FET。",
+  "help.simple": "<strong>簡單 PWM accent</strong> — Free1–3、馬達、單顆 LED：<code>type = simple</code> + <code>led</code>；在 <code>presets.ini</code> 配 <code>accent_*</code> 樣式。",
+  "help.subBlades": "<strong>Sub-blades</strong> — 將一條實體燈帶拆成多段樣式（例如同一資料線的主刃 + 水晶室）。",
+  "help.wiringNote": "佈線在此；顏色與效果在 <code>presets.ini</code>（每邏輯光刃一行 <code>style =</code>）。韌體 <code>NUM_BLADES</code> 須與下方邏輯光刃數一致。",
+  "help.examplesPrefix": "範例與設定指南：",
+  "help.examplesLink": "website/BLADES.md",
+  "help.examplesSuffix": "（儲存庫中與本編輯器並列）。",
+  "label.boardProfile": "主機板設定",
+  "resetProfile": "重設為設定預設",
+  "addBlade": "新增光刃",
+  "hint.footer": "最多 ${maxBlades} 條佈線。預設用邏輯光刃：${logicalCount}（符合 <code>NUM_BLADES</code> 與 <code>style =</code> 數量 — 每個 sub-blade 範圍增加一個邏輯光刃）。"
+}

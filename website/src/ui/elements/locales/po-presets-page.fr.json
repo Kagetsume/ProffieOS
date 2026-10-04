@@ -1,0 +1,18 @@
+{
+  "title": "Préréglages",
+  "lead": "Modifiez <code>config/presets.ini</code>. Chaque préréglage définit police, piste, nom affiché et une ligne <code>style =</code> par lame logique. Utilisez <strong>Recette config</strong> pour référencer <code>blade_styles.ini</code>, ou un <strong>Style nommé</strong>.",
+  "help.summary": "Lien préréglages ↔ lames et styles",
+  "help.bladeCount": "<strong>Nombre de lames</strong> — doit correspondre aux lames logiques de la page Lames et au <code>NUM_BLADES</code> firmware (${slotCount}).",
+  "help.configRecipe": "<strong>Recette config</strong> — <code>style = config smoke_blade</code> charge la section <code>[smoke_blade]</code> de <code>blade_styles.ini</code>.",
+  "help.overrides": "<strong>Overrides</strong> — <code>style = config with_vars base=magenta</code> remplace <code>{{base}}</code> pour ce préréglage seulement.",
+  "help.accents": "<strong>Accents</strong> — lames 2–4 sur un build cinq lames utilisent souvent des styles <code>accent_*</code> (sorties PWM dans <code>blades.ini</code>).",
+  "label.preset": "Préréglage",
+  "addPreset": "Ajouter préréglage",
+  "label.font": "Police",
+  "label.track": "Piste",
+  "label.presetName": "Nom du préréglage",
+  "label.variation": "Variation",
+  "label.comment": "Note (facultatif, exportée en commentaire)",
+  "heading.styleLines": "Lignes style — une par lame logique",
+  "hint.footer": "${presetCount} préréglage${presetSuffix} · ${slotCount} ligne${styleSuffix} style chacun · Export sur la page Export."
+}

@@ -1,0 +1,18 @@
+{
+  "layerToggle.aria": "圖層 ${stackIndex}：${layerSummary}",
+  "moveTowardTop.aria": "將圖層 ${stackIndex} 上移",
+  "moveTowardTop.title": "移向上層",
+  "moveTowardBase.aria": "將圖層 ${stackIndex} 移向底層",
+  "moveTowardBase.title": "移向底層",
+  "removeLayer.aria": "移除圖層 ${stackIndex}",
+  "removeLayer.title": "移除圖層",
+  "removeLayer.only.title": "無法移除唯一圖層",
+  "label.style": "樣式",
+  "label.blend": "Blend",
+  "label.opacity": "不透明度 (%)",
+  "hint.configExport": "匯出為 <code>layer = config ${configSection}</code>。",
+  "hint.sectionVar": "區段變數 <code>${varName}</code>",
+  "button.towardBase": "↓ 向底層",
+  "button.towardTop": "↑ 向上層",
+  "button.removeLayer": "移除圖層"
+}

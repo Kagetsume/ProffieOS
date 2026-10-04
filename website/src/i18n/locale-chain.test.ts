@@ -25,9 +25,10 @@ describe('locale-chain', () => {
     expect(localeLookupChain('en')).toEqual(['en']);
   });
 
-  it('appends root after locale tags for bundle lookup', () => {
+  it('appends en then root after locale tags for bundle lookup', () => {
     expect(bundleLookupTags('en_US')).toEqual(['en_US', 'en', 'root']);
     expect(bundleLookupTags('en')).toEqual(['en', 'root']);
+    expect(bundleLookupTags('de')).toEqual(['de', 'en', 'root']);
   });
 
   it('detectBrowserLocale returns a normalized tag', () => {

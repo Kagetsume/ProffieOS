@@ -1,0 +1,10 @@
+{
+  "title": "Export",
+  "lead": "Generierte INI-Dateien für den Ordner <code>config/</code> auf der SD-Karte kopieren oder herunterladen.",
+  "summary": "<strong>${count}</strong> Config-Dateien zum Kopieren bereit",
+  "tab.blades": "blades.ini",
+  "tab.bladeStyles": "blade_styles.ini",
+  "tab.presets": "presets.ini",
+  "tab.board": "board.ini",
+  "tab.features": "features.ini"
+}

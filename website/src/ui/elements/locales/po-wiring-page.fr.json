@@ -1,0 +1,16 @@
+{
+  "title": "Lames — ${profileName}",
+  "lead": "Modifiez les définitions pour <code>config/blades.ini</code>. Pas de serveur — les changements restent dans le navigateur jusqu’à l’export.",
+  "help.summary": "À quoi sert ce fichier ?",
+  "help.neopixel": "<strong>Bandes NeoPixel</strong> — lame principale, secondes bandes, pommeaux pixel : <code>data_pin</code>, <code>pixels</code>, FET(s) d’alim.",
+  "help.simple": "<strong>Accents PWM simples</strong> — Free1–3, moteurs, LED seules : <code>type = simple</code> + <code>led</code> ; associez des styles <code>accent_*</code> dans <code>presets.ini</code>.",
+  "help.subBlades": "<strong>Sub-blades</strong> — segmenter une bande physique (p. ex. corps + chambre cristal sur une data line).",
+  "help.wiringNote": "Le câblage est ici ; couleurs et effets dans <code>presets.ini</code> (<code>style =</code> par lame logique). Alignez <code>NUM_BLADES</code> firmware sur le nombre logique ci-dessous.",
+  "help.examplesPrefix": "Exemples et guide :",
+  "help.examplesLink": "website/BLADES.md",
+  "help.examplesSuffix": "( aussi dans le dépôt à côté de cet éditeur ).",
+  "label.boardProfile": "Profil carte",
+  "resetProfile": "Réinitialiser au profil par défaut",
+  "addBlade": "Ajouter lame",
+  "hint.footer": "Jusqu’à ${maxBlades} entrées câblage. Lames logiques pour préréglages : ${logicalCount} (alignez <code>NUM_BLADES</code> et le nombre de <code>style =</code> — chaque plage sub-blade ajoute une lame logique)."
+}

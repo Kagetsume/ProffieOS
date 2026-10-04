@@ -1,0 +1,10 @@
+{
+  "title": "主板",
+  "lead": "<code>config/board.ini</code> 的硬件选项 — 按钮数量、OLED 与蓝牙。手势与扭转开关也会导出到此（比赛覆盖见 <code>config/features.ini</code>）。",
+  "label.buttonCount": "按钮数量",
+  "option.buttons1": "1 个按钮",
+  "option.buttons2": "2 个按钮",
+  "option.buttons3": "3 个按钮",
+  "label.oled": "OLED 显示屏",
+  "label.bluetooth": "蓝牙串口"
+}

@@ -3,5 +3,6 @@
   "tagline": "SD blade styles for ProffieOS",
   "exportLink": "Export",
   "darkMode": "Dark mode",
-  "lightMode": "Light mode"
+  "lightMode": "Light mode",
+  "localeSelectAriaLabel": "Language"
 }

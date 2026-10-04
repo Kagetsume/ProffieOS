@@ -1,0 +1,16 @@
+{
+  "title": "ブレード — ${profileName}",
+  "lead": "<code>config/blades.ini</code> のブレード定義を編集。サーバーなし — エクスポートまでブラウザ内に保持。",
+  "help.summary": "このファイルの目的",
+  "help.neopixel": "<strong>NeoPixel ストリップ</strong> — メインブレード、追加ストリップ、ピクセルポメル：<code>data_pin</code>、<code>pixels</code>、電源 FET。",
+  "help.simple": "<strong>シンプル PWM アクセント</strong> — Free1–3、モーター、単体 LED：<code>type = simple</code> + <code>led</code>；<code>presets.ini</code> の <code>accent_*</code> と組み合わせ。",
+  "help.subBlades": "<strong>Sub-blades</strong> — 1 本の物理ストリップをスタイル付きセグメントに分割（例：本体＋クリスタルチャンバーが同一データ線）。",
+  "help.wiringNote": "配線はここ；色とエフェクトは <code>presets.ini</code>（論理ブレードごとの <code>style =</code>）。ファーム <code>NUM_BLADES</code> を下の論理数に合わせる。",
+  "help.examplesPrefix": "例とセットアップ：",
+  "help.examplesLink": "website/BLADES.md",
+  "help.examplesSuffix": "（リポジトリ内、このエディター横にもあります）。",
+  "label.boardProfile": "ボードプロファイル",
+  "resetProfile": "プロファイル既定にリセット",
+  "addBlade": "ブレードを追加",
+  "hint.footer": "配線エントリ最大 ${maxBlades}。プリセット用論理ブレード：${logicalCount}（<code>NUM_BLADES</code> と <code>style =</code> 数を一致 — サブブレード範囲ごとに論理ブレード +1）。"
+}

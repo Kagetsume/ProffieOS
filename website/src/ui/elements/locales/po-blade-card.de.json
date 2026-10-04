@@ -1,0 +1,16 @@
+{
+  "header": "Klinge ${index}",
+  "label.type": "Typ",
+  "option.ws2811": "NeoPixel (ws2811)",
+  "option.simple": "Einfache PWM-LED",
+  "label.dataPin": "data_pin",
+  "label.boardPin": "Board-Pin (Beschriftung)",
+  "placeholder.dataPin": "Daten-Pin wählen…",
+  "label.comment": "Notiz (optional)",
+  "placeholder.comment": "z. B. Kristallkammer-Akzent",
+  "label.led": "led",
+  "label.activeState": "active_state",
+  "option.high": "high",
+  "option.low": "low",
+  "label.pixels": "pixels"
+}

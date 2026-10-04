@@ -1,0 +1,10 @@
+{
+  "title": "Carte",
+  "lead": "Options matériel pour <code>config/board.ini</code> — nombre de boutons, OLED et Bluetooth. Les bascules gestes et twist sont aussi exportées ici (et dans <code>config/features.ini</code> pour les overrides de concours).",
+  "label.buttonCount": "Nombre de boutons",
+  "option.buttons1": "1 bouton",
+  "option.buttons2": "2 boutons",
+  "option.buttons3": "3 boutons",
+  "label.oled": "Écran OLED",
+  "label.bluetooth": "Série Bluetooth"
+}

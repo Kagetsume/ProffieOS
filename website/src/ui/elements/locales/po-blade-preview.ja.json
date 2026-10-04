@@ -1,0 +1,19 @@
+{
+  "ariaLabel": "ブレードプレビュー",
+  "sectionPower": "電源",
+  "sectionCombat": "コンバット",
+  "sectionLockup": "Lockup",
+  "powerOn": "点灯",
+  "powerOff": "消灯",
+  "blast": "Blast",
+  "clash": "Clash",
+  "swing": "Swing",
+  "force": "Force",
+  "lockup": "Lockup",
+  "lightningBlock": "Lightning Block",
+  "drag": "Drag",
+  "melt": "Melt",
+  "bladeAngle": "ブレード角度",
+  "bladeAngleHint": "ロックアップゾーンを移動（柄 ↔ 先端）",
+  "caption": "おおよそのプレビュー（簡略レイヤー計算、ファームウェアではありません）· ${sectionId}${transitionSuffix}"
+}

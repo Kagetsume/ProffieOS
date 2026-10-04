@@ -1,0 +1,10 @@
+{
+  "title": "Funktionen",
+  "lead": "Schalter für <code>config/features.ini</code>. Wird nach <code>config/board.ini</code> geladen — diese Werte überschreiben Gesten und Twist aus der Board-Datei (nützlich für Wettkampf-SD-Karten).",
+  "feature.gesture.label": "Gesten-Zündung",
+  "feature.gesture.description": "Ein: Bewegungsgesten (swing, thrust oder twist) können die Klinge ohne Taste zünden. Aus: nur Einschalten per Taste.",
+  "feature.twistOn.label": "Twist zum Einschalten",
+  "feature.twistOn.description": "Ein: Drehen im Twist-Gest zündet den Saber. Aus: Twist kann nicht zünden — nur Taste.",
+  "feature.twistOff.label": "Twist zum Ausschalten",
+  "feature.twistOff.description": "Ein: Twist-Gest schaltet ab. Aus: Twist-off deaktiviert — üblich bei Wettkämpfen gegen versehentliches Abschalten."
+}

@@ -1,0 +1,10 @@
+{
+  "title": "エクスポート",
+  "lead": "SD カードの <code>config/</code> 用に生成された INI をコピーまたはダウンロードします。",
+  "summary": "コピー可能な設定ファイル <strong>${count}</strong> 件",
+  "tab.blades": "blades.ini",
+  "tab.bladeStyles": "blade_styles.ini",
+  "tab.presets": "presets.ini",
+  "tab.board": "board.ini",
+  "tab.features": "features.ini"
+}
