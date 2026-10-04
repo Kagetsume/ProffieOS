@@ -15,7 +15,7 @@ Browser editor for **Proffie – LayerBlade** SD config: `blade_styles.ini` laye
 **Frontend-only.** No backend, API, database, or auth. All state lives in [Effector](https://effector.dev/) stores in the browser. Persistence is via copy/download (LocalStorage planned).
 
 ```
-Lit custom elements (<po-*>) + Web Awesome (<wa-*>)
+Lit custom elements (<lb-*>) + Web Awesome (<wa-*>)
         ↓
 Effector stores (in-memory)
         ↓
@@ -31,7 +31,7 @@ See **[PLAN.md](./PLAN.md)** for roadmap notes and **[src/README.md](./src/READM
 | Layer | Choice | Notes |
 |-------|--------|--------|
 | Build | [Vite](https://vite.dev/) | Dev server + static `dist/` output |
-| UI | [Lit](https://lit.dev/) + [Web Awesome](https://webawesome.com/) | App `<po-*>` elements compose `<wa-*>` |
+| UI | [Lit](https://lit.dev/) + [Web Awesome](https://webawesome.com/) | App `<lb-*>` elements compose `<wa-*>` |
 | State | [Effector](https://effector.dev/) | Stores/events; Lit watches in `connectedCallback` |
 | Language | TypeScript | Models, serializers, validation |
 | Tests | Vitest + jsdom | Pure model/serialize tests + Lit element tests |
@@ -125,8 +125,8 @@ Firmware and example configs this editor targets:
 - Section/layer stack editor with style catalog and color pickers
 - Recipe library starters (`smoke_blade`, `water_blade`, …) from bundled catalog
 - Section variables (`{{base}}`, …) and preset override hints
-- Approximate live preview on `<po-blade-preview>` (not firmware-accurate)
-- **`strip_column` / `strip_column_mask`:** SD path field plus **local BMP upload** (`<po-bmp-input>`) so flipbook previews work without copying files to a card; decode follows firmware **`frames_y`** / **`frames_x`** rules (`website/src/preview/strip-column-bmp.ts`)
+- Approximate live preview on `<lb-blade-preview>` (not firmware-accurate)
+- **`strip_column` / `strip_column_mask`:** SD path field plus **local BMP upload** (`<lb-bmp-input>`) so flipbook previews work without copying files to a card; decode follows firmware **`frames_y`** / **`frames_x`** rules (`website/src/preview/strip-column-bmp.ts`)
 - Recipe library includes **`demo_strip_column`**, mask demos, and OS7 stacks from `catalog/config-styles.json`
 - Collapsible help on the Styles page → [BLADE_STYLES.md](./BLADE_STYLES.md)
 

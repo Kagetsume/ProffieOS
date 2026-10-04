@@ -11,7 +11,7 @@ import { rootI18n } from './root.js';
 import type { LocaleId } from './types.js';
 
 /** Window event — Lit hosts re-render translated UI when locale changes. */
-export const PO_APP_LOCALE_CHANGE = 'po-locale-change';
+export const PO_APP_LOCALE_CHANGE = 'lb-locale-change';
 
 /** Change active locale for shared strings and component fall-through. */
 export function switchAppLocale(locale: LocaleId): void {

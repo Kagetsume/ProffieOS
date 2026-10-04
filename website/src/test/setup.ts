@@ -2,7 +2,7 @@
  * Vitest + jsdom setup — polyfills for Web Awesome form-associated custom elements.
  */
 
-/** jsdom may lack Clipboard API — used by `<po-copy-panel>`. */
+/** jsdom may lack Clipboard API — used by `<lb-copy-panel>`. */
 if (typeof navigator !== 'undefined' && !navigator.clipboard) {
   Object.assign(navigator, {
     clipboard: {
@@ -104,7 +104,7 @@ if (typeof HTMLCanvasElement !== 'undefined') {
   } as typeof HTMLCanvasElement.prototype.getContext;
 }
 
-/** jsdom may lack ResizeObserver — required by `<po-blade-preview>`. */
+/** jsdom may lack ResizeObserver — required by `<lb-blade-preview>`. */
 if (typeof globalThis.ResizeObserver === 'undefined') {
   class ResizeObserverStub implements ResizeObserver {
     constructor(private readonly callback: ResizeObserverCallback) {}

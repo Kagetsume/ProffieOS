@@ -24,7 +24,7 @@ export default {
     'hint.exportFooter': 'Änderungen erscheinen auf der Export-Seite als ${filename}.',
     'hint.exportAs': 'Änderungen erscheinen auf der Export-Seite als ${filename}.',
   },
-  'po-app-shell': {
+  'lb-app-shell': {
     title: 'LayerBlade',
     tagline: 'SD-Klingenstile für ProffieOS',
     importLink: 'Import',
@@ -32,7 +32,7 @@ export default {
     darkMode: 'Dunkelmodus',
     lightMode: 'Hellmodus',
   },
-  'po-blade-card': {
+  'lb-blade-card': {
     header: 'Klinge ${index}',
     'label.type': 'Typ',
     'option.ws2811': 'NeoPixel (ws2811)',
@@ -48,7 +48,7 @@ export default {
     'option.low': 'low',
     'label.pixels': 'pixels',
   },
-  'po-blade-preview': {
+  'lb-blade-preview': {
     ariaLabel: 'Klingenvorschau',
     sectionPower: 'Strom',
     sectionCombat: 'Kampf',
@@ -68,7 +68,7 @@ export default {
     caption:
       'Ungefähre Vorschau (vereinfachte Layer-Mathematik, kein Firmware) · ${sectionId}${transitionSuffix}',
   },
-  'po-bmp-input': {
+  'lb-bmp-input': {
     'label.path': 'BMP-Dateipfad auf der SD-Karte',
     'placeholder.path': 'animations/plasma.bmp',
     'button.upload': 'BMP hochladen',
@@ -76,7 +76,7 @@ export default {
       '24-Bit unkomprimiertes BMP · nur Vorschau (Datei auf SD unter diesem Pfad kopieren)',
     'aria.fileInput': 'BMP-Datei auf Ihrem Computer wählen',
   },
-  'po-board-page': {
+  'lb-board-page': {
     title: 'Board',
     lead: 'Hardware-Optionen für <code>config/board.ini</code> — Tastenanzahl, OLED und Bluetooth. Gesten- und Twist-Schalter werden hier exportiert (und in <code>config/features.ini</code> für Wettkampf-Overrides).',
     'label.buttonCount': 'Anzahl Tasten',
@@ -86,17 +86,17 @@ export default {
     'label.oled': 'OLED-Display',
     'label.bluetooth': 'Bluetooth-Seriell',
   },
-  'po-color-input': {
+  'lb-color-input': {
     'placeholder.color': 'Farbe…',
     'option.custom': 'Benutzerdefiniert…',
     'placeholder.custom': '#rrggbb oder r,g,b',
   },
-  'po-config-stub-page': {
+  'lb-config-stub-page': {
     stubHint: 'Dieser Bereich ist ein Platzhalter — Editor-Oberfläche folgt in einer späteren Phase.',
   },
-  'po-copy-panel': {},
-  'po-import-page': {},
-  'po-export-page': {
+  'lb-copy-panel': {},
+  'lb-import-page': {},
+  'lb-export-page': {
     title: 'Export',
     lead: 'Generierte INI-Dateien für den Ordner <code>config/</code> auf der SD-Karte kopieren oder herunterladen.',
     summary: '<strong>${count}</strong> Config-Dateien zum Kopieren bereit',
@@ -106,7 +106,7 @@ export default {
     'tab.board': 'board.ini',
     'tab.features': 'features.ini',
   },
-  'po-features-page': {
+  'lb-features-page': {
     title: 'Funktionen',
     lead: 'Schalter für <code>config/features.ini</code>. Wird nach <code>config/board.ini</code> geladen — diese Werte überschreiben Gesten und Twist aus der Board-Datei (nützlich für Wettkampf-SD-Karten).',
     'feature.gesture.label': 'Gesten-Zündung',
@@ -119,7 +119,7 @@ export default {
     'feature.twistOff.description':
       'Ein: Twist-Gest schaltet ab. Aus: Twist-off deaktiviert — üblich bei Wettkämpfen gegen versehentliches Abschalten.',
   },
-  'po-home-page': {
+  'lb-home-page': {
     title: 'Willkommen',
     lead: '<strong>LayerBlade</strong> hilft beim Erstellen und Bearbeiten der INI-Dateien auf der SD-Karte eines Proffie-Sabers — SD-Config-Layer, Klingenstil-Rezepte und Presets — ohne Firmware neu zu kompilieren oder für alltägliche Verdrahtungs- und Look-Änderungen Serial zu nutzen.',
     requirement:
@@ -156,19 +156,19 @@ export default {
     'action.editBlades': 'Klingen bearbeiten',
     'action.export': 'Export',
   },
-  'po-pin-picker': {
+  'lb-pin-picker': {
     'placeholder.data': 'Data-Pin wählen…',
     'placeholder.power': 'Power-Pin wählen…',
     'option.custom': 'Benutzerdefiniert (Pinname oder Nummer)',
     'option.inUse': '${label} (belegt)',
     'placeholder.custom': 'z. B. 20 oder bladePin',
   },
-  'po-power-pin-editor': {
+  'lb-power-pin-editor': {
     heading: 'Power-Pins',
     hint: 'Sechs FET-Pins (bladePowerPin1–6) werden von allen NeoPixel-Klingen geteilt — jeder Pin darf im Saber nur einmal verwendet werden.',
     addPowerPin: 'Power-Pin hinzufügen',
   },
-  'po-preset-style-row': {
+  'lb-preset-style-row': {
     stylePreview: 'style = ${preview}',
     'label.styleMode': 'Eingabe',
     'option.preset': 'Preset-Stil',
@@ -179,7 +179,7 @@ export default {
     'label.customLine': 'Style-Zeile (ohne „style =“)',
     'placeholder.customLine': 'standard cyan white 300 800',
   },
-  'po-presets-page': {
+  'lb-presets-page': {
     title: 'Presets',
     lead: 'Bearbeiten Sie <code>config/presets.ini</code>. Jedes Preset setzt Font, Track, Anzeigenamen und eine <code>style =</code>-Zeile pro logischer Klinge. <strong>Config-Rezept</strong> verweist auf <code>blade_styles.ini</code>, oder wählen Sie einen <strong>Benannten Stil</strong>.',
     'help.summary': 'Wie Presets mit Klingen und Stilen zusammenhängen',
@@ -202,11 +202,11 @@ export default {
     'hint.footer':
       '${presetCount} Preset${presetSuffix} · ${slotCount} Style-Zeile${styleSuffix} je · Export auf der Export-Seite.',
   },
-  'po-sidebar-nav': {
+  'lb-sidebar-nav': {
     toggleCollapseAriaLabel: 'Seitenleiste einklappen',
     toggleExpandAriaLabel: 'Seitenleiste ausklappen',
   },
-  'po-style-layer-stack': {
+  'lb-style-layer-stack': {
     'layerToggle.aria': 'Layer ${stackIndex}: ${layerSummary}',
     'moveTowardTop.aria': 'Layer ${stackIndex} nach oben',
     'moveTowardTop.title': 'Nach oben',
@@ -224,7 +224,7 @@ export default {
     'button.towardTop': '↑ Nach oben',
     'button.removeLayer': 'Layer entfernen',
   },
-  'po-styles-page': {
+  'lb-styles-page': {
     title: 'Klingenstile',
     lead: 'Bearbeiten Sie <code>config/blade_styles.ini</code>. Ein <strong>Klingenstil</strong> ist ein Rezept: <strong>Basisklinge</strong> (Farbe + extend/retract) plus Overlay-Layer für smoke, clash, lockup usw. <code>solid</code> für eine komponierbare Basis ohne eingebauten Kampf. Presets wählen das ganze Rezept: <code>style = config smoke_blade</code>.',
     'help.summary': 'Was sind Klingenstil-Rezepte?',
@@ -258,7 +258,7 @@ export default {
     'removeVar.aria': 'Variable ${key} entfernen',
     'removeVar.title': '${key} entfernen',
   },
-  'po-sub-blade-editor': {
+  'lb-sub-blade-editor': {
     heading: 'Sub-blades',
     hint: 'Strip in ${logicalCount} logische Klinge${logicalSuffix} teilen (${logicalCount} <code>style =</code>-Zeile${logicalSuffix} pro Preset). Leer lassen für ganzen Strip. Bis ${maxSubBlades} Bereiche — <code>sub_blade = first, last</code> (0-basiert, inklusiv).',
     empty: 'Ganzer Strip — keine sub_blade-Zeilen exportiert.',
@@ -269,7 +269,7 @@ export default {
     'meta.invalid': 'Ungültig (0 ≤ first ≤ last < ${pixels} erforderlich)',
     addRange: 'Sub-blade-Bereich hinzufügen',
   },
-  'po-wiring-page': {
+  'lb-wiring-page': {
     title: 'Klingen — ${profileName}',
     lead: 'Klingendefinitionen für <code>config/blades.ini</code> bearbeiten. Kein Server — Änderungen bleiben im Browser bis zum Export.',
     'help.summary': 'Wofür ist diese Datei?',

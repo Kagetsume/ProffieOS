@@ -4,7 +4,7 @@
  * @module ui/theme
  */
 
-const STORAGE_KEY = 'po-theme';
+const STORAGE_KEY = 'lb-theme';
 
 export type ThemePreference = 'light' | 'dark';
 
@@ -13,6 +13,12 @@ export function getStoredTheme(): ThemePreference | null {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') {
     return stored;
+  }
+  const legacy = localStorage.getItem('po-theme');
+  if (legacy === 'light' || legacy === 'dark') {
+    localStorage.setItem(STORAGE_KEY, legacy);
+    localStorage.removeItem('po-theme');
+    return legacy;
   }
   return null;
 }

@@ -6,37 +6,37 @@ ProffieOS config editor UI. Registered via `index.ts` (imported from `main.ts`).
 
 | Tag | Role |
 |-----|------|
-| `<po-home-page>` | Overview, config file readiness table |
-| `<po-sidebar-nav>` | Hash navigation sidebar |
-| `<po-board-page>` | `config/board.ini` editor |
-| `<po-features-page>` | `config/features.ini` editor |
-| `<po-wiring-page>` | Blades wiring route (toolbar + blade list + collapsible help) |
-| `<po-styles-page>` | Blade styles layer stack + preview + collapsible help |
-| `<po-presets-page>` | Presets list + per-blade style line editors |
-| `<po-preset-style-row>` | One logical blade's style = line (named / config / custom) |
-| `<po-config-stub-page>` | Placeholder for future routes |
-| `<po-blade-preview>` | Approximate vertical saber preview canvas |
+| `<lb-home-page>` | Overview, config file readiness table |
+| `<lb-sidebar-nav>` | Hash navigation sidebar |
+| `<lb-board-page>` | `config/board.ini` editor |
+| `<lb-features-page>` | `config/features.ini` editor |
+| `<lb-wiring-page>` | Blades wiring route (toolbar + blade list + collapsible help) |
+| `<lb-styles-page>` | Blade styles layer stack + preview + collapsible help |
+| `<lb-presets-page>` | Presets list + per-blade style line editors |
+| `<lb-preset-style-row>` | One logical blade's style = line (named / config / custom) |
+| `<lb-config-stub-page>` | Placeholder for future routes |
+| `<lb-blade-preview>` | Approximate vertical saber preview canvas |
 
 ## Wiring components
 
 | Tag / module | Role |
 |--------------|------|
-| `<po-blade-card>` | One blade form: type, data pin, board label, note, NeoPixel/simple fields |
-| `<po-pin-picker>` | One pin dropdown — `mode="power"` (FET) or `mode="data"` (strip/Free pins) |
-| `<po-power-pin-editor>` | Multi-row power pins for one NeoPixel blade |
-| `<po-sub-blade-editor>` | LED index ranges → `sub_blade = first, last` lines |
+| `<lb-blade-card>` | One blade form: type, data pin, board label, note, NeoPixel/simple fields |
+| `<lb-pin-picker>` | One pin dropdown — `mode="power"` (FET) or `mode="data"` (strip/Free pins) |
+| `<lb-power-pin-editor>` | Multi-row power pins for one NeoPixel blade |
+| `<lb-sub-blade-editor>` | LED index ranges → `sub_blade = first, last` lines |
 | `pin-picker-utils.ts` | Pin catalogs, declarative option labels, custom pin value |
 
 ## Style components
 
 | Tag | Role |
 |-----|------|
-| `<po-color-input>` | Grouped color select with per-option swatches |
-| `<po-bmp-input>` | SD path + **Upload BMP** for **`strip_column`** / mask layers (registers flipbook in **`bmpAssets`**) |
+| `<lb-color-input>` | Grouped color select with per-option swatches |
+| `<lb-bmp-input>` | SD path + **Upload BMP** for **`strip_column`** / mask layers (registers flipbook in **`bmpAssets`**) |
 
 ## Component file layout
 
-Each `po-*.ts` class follows this order:
+Each `lb-*.ts` class follows this order:
 
 1. Static fields (`static styles`, `static properties`, …)
 2. Instance fields
@@ -49,9 +49,9 @@ Each `po-*.ts` class follows this order:
 
 | Module | Role |
 |--------|------|
-| `po-element.ts` | Shadow-DOM base — Web Awesome `discover()` after Lit updates |
-| `po-shared-styles.ts` | Shared layout CSS (host, page shell, config forms, wiring widgets) |
-| `po-*.styles.ts` | Per-component Lit `css` — imported as `static styles` (keeps `.ts` files small) |
+| `lb-element.ts` | Shadow-DOM base — Web Awesome `discover()` after Lit updates |
+| `lb-shared-styles.ts` | Shared layout CSS (host, page shell, config forms, wiring widgets) |
+| `lb-*.styles.ts` | Per-component Lit `css` — imported as `static styles` (keeps `.ts` files small) |
 
 ## Light DOM + Web Awesome
 
@@ -59,14 +59,14 @@ Wiring elements use **Light DOM** (`createRenderRoot() { return this; }`) so `wa
 `wa-option` behave per [Web Awesome docs](https://webawesome.com/docs/components/select).
 Global layout classes live in `app.css`.
 
-`PoElement` + `po-shared-styles.ts` are used for shadow-encapsulated pages (styles, preview, home).
+`LbElement` + `lb-shared-styles.ts` are used for shadow-encapsulated pages (styles, preview, home).
 
 ## Pin picker UX
 
 1. Preset options show human labels (data pins) or pin names (power pins).
 2. Presets in use on **other blades** (or sibling power-pin rows) get `option.disabled = true`.
 3. **Custom** option allows raw pin names or GPIO numbers.
-4. All `<po-pin-picker>` instances subscribe to `$wiring` via `registerPowerPinEditorRefresh()`.
+4. All `<lb-pin-picker>` instances subscribe to `$wiring` via `registerPowerPinEditorRefresh()`.
 
 ## Sub-blade UX
 
@@ -87,8 +87,8 @@ Do not use CSS class names or Web Awesome tag names in tests when a `data-testid
 
 ## Tests
 
-All `<po-*>` elements have a colocated `po-*.test.ts` beside the component (jsdom via `vite.config.ts`).
+All `<lb-*>` elements have a colocated `lb-*.test.ts` beside the component (jsdom via `vite.config.ts`).
 
 Each spec imports its element (and any child elements the template needs), uses `data-testid` + `getByTestId` from `src/test/lit-host-utils.ts`, and covers mount smoke tests plus behavior where relevant.
 
-Shared non-component tests: `pin-picker-utils.test.ts`, `po-component-i18n.test.ts`.
+Shared non-component tests: `pin-picker-utils.test.ts`, `lb-component-i18n.test.ts`.

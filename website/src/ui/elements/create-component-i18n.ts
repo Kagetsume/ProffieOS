@@ -21,7 +21,7 @@ const localeFilePattern = /^\.\/locales\/(.+)\.([^.]+)\.json$/;
 /**
  * Load every `locales/<stem>.<locale>.json` table for one component.
  *
- * @param stem - File stem (e.g. `po-app-shell`)
+ * @param stem - File stem (e.g. `lb-app-shell`)
  */
 export function bundlesForComponent(stem: string): I18nLocaleBundles {
   const bundles: I18nLocaleBundles = {};
@@ -57,7 +57,7 @@ export function createComponentI18n(bundles: I18nLocaleBundles) {
 /**
  * Create a component client from all locale JSON files matching `locales/<stem>.*.json`.
  *
- * @param stem - Component locale file stem (e.g. `po-export-page`)
+ * @param stem - Component locale file stem (e.g. `lb-export-page`)
  */
 export function createComponentI18nFor(stem: string) {
   return createComponentI18n(bundlesForComponent(stem));

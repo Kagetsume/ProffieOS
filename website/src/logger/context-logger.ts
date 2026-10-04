@@ -6,12 +6,12 @@
  *
  * ```ts
  * function saveBlade() {
- *   const log = contextLogger('po-blade-card', 'saveBlade');
+ *   const log = contextLogger('lb-blade-card', 'saveBlade');
  *   log.entry();
  *   log.debug('payload', payload);
  *   log.exit('ok');
  * }
- * // → [2026-09-21T03:14:00.000Z] [po-blade-card][saveBlade] → entry
+ * // → [2026-09-21T03:14:00.000Z] [lb-blade-card][saveBlade] → entry
  * ```
  *
  * Both `objectName` and `functionName` are optional. Omitted labels are left out of the prefix.
@@ -59,15 +59,15 @@ let contextFilter: ContextLoggerFilter = {};
  *
  * @example
  * ```ts
- * // Only po-blade-card, any function
- * configureContextLoggerFilter({ objectNames: ['po-blade-card'] });
+ * // Only lb-blade-card, any function
+ * configureContextLoggerFilter({ objectNames: ['lb-blade-card'] });
  *
  * // Only saveBlade across all components
  * configureContextLoggerFilter({ functionNames: ['saveBlade'] });
  *
  * // Intersection: one component + one function
  * configureContextLoggerFilter({
- *   objectNames: ['po-blade-card'],
+ *   objectNames: ['lb-blade-card'],
  *   functionNames: ['saveBlade'],
  * });
  * ```
@@ -99,8 +99,8 @@ export function getContextLoggerFilter(): ContextLoggerFilter {
  *
  * @example
  * ```ts
- * buildContextPrefix('po-foo', 'bar'); // '[po-foo][bar] '
- * buildContextPrefix('po-foo');        // '[po-foo] '
+ * buildContextPrefix('lb-foo', 'bar'); // '[lb-foo][bar] '
+ * buildContextPrefix('lb-foo');        // '[lb-foo] '
  * buildContextPrefix(undefined, 'bar'); // '[bar] '
  * buildContextPrefix();                // ''
  * ```
@@ -188,13 +188,13 @@ function createContextEmitter(
 /**
  * Create a scoped logger for one component and/or function.
  *
- * @param objectName — Component or module id (e.g. `'po-blade-card'`). Omitted → no object segment.
+ * @param objectName — Component or module id (e.g. `'lb-blade-card'`). Omitted → no object segment.
  * @param functionName — Function or method name. Omitted → no function segment.
  *
  * @example
  * ```ts
  * fooFunction() {
- *   const log = contextLogger('po-foo-component', 'fooFunction');
+ *   const log = contextLogger('lb-foo-component', 'fooFunction');
  *   log.entry();
  *   log.debug('state', state);
  *   log.exit('done');

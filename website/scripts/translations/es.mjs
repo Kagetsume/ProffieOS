@@ -24,7 +24,7 @@ export default {
     'hint.exportFooter': 'Los cambios aparecen en Exportar como ${filename}.',
     'hint.exportAs': 'Los cambios aparecen en Exportar como ${filename}.',
   },
-  'po-app-shell': {
+  'lb-app-shell': {
     title: 'LayerBlade',
     tagline: 'Estilos de hoja SD para ProffieOS',
     importLink: 'Importar',
@@ -32,7 +32,7 @@ export default {
     darkMode: 'Modo oscuro',
     lightMode: 'Modo claro',
   },
-  'po-blade-card': {
+  'lb-blade-card': {
     header: 'Hoja ${index}',
     'label.type': 'Tipo',
     'option.ws2811': 'NeoPixel (ws2811)',
@@ -48,7 +48,7 @@ export default {
     'option.low': 'low',
     'label.pixels': 'pixels',
   },
-  'po-blade-preview': {
+  'lb-blade-preview': {
     ariaLabel: 'Vista previa de hoja',
     sectionPower: 'Encendido',
     sectionCombat: 'Combate',
@@ -68,7 +68,7 @@ export default {
     caption:
       'Vista previa aproximada (capas simplificadas, no firmware) · ${sectionId}${transitionSuffix}',
   },
-  'po-bmp-input': {
+  'lb-bmp-input': {
     'label.path': 'Ruta BMP en la tarjeta SD',
     'placeholder.path': 'animations/plasma.bmp',
     'button.upload': 'Subir BMP',
@@ -76,7 +76,7 @@ export default {
       'BMP 24 bits sin comprimir · solo vista previa (copie el archivo a la SD en esta ruta)',
     'aria.fileInput': 'Elegir archivo BMP en su equipo',
   },
-  'po-board-page': {
+  'lb-board-page': {
     title: 'Placa',
     lead: 'Opciones de hardware para <code>config/board.ini</code> — botones, OLED y Bluetooth. Los interruptores de gestos y twist también se exportan aquí (y en <code>config/features.ini</code> para overrides de concurso).',
     'label.buttonCount': 'Número de botones',
@@ -86,16 +86,16 @@ export default {
     'label.oled': 'Pantalla OLED',
     'label.bluetooth': 'Serie Bluetooth',
   },
-  'po-color-input': {
+  'lb-color-input': {
     'placeholder.color': 'Color…',
     'option.custom': 'Personalizado…',
     'placeholder.custom': '#rrggbb o r,g,b',
   },
-  'po-config-stub-page': {
+  'lb-config-stub-page': {
     stubHint: 'Esta sección es provisional — la interfaz del editor llegará más adelante.',
   },
-  'po-copy-panel': {},
-  'po-import-page': {
+  'lb-copy-panel': {},
+  'lb-import-page': {
     title: 'Importar',
     lead: 'Cargue los <code>config/*.ini</code> existentes de la tarjeta SD del sable en el editor.',
     browserNotice:
@@ -107,7 +107,7 @@ export default {
     statusChooseFolder: 'Elija primero una carpeta del sable',
     statusPickCancelled: 'Selección de carpeta cancelada',
   },
-  'po-export-page': {
+  'lb-export-page': {
     title: 'Exportar',
     lead: 'Copie o descargue los INI generados para la carpeta <code>config/</code> de su tarjeta SD.',
     summary: '<strong>${count}</strong> archivos config listos para copiar',
@@ -117,7 +117,7 @@ export default {
     'tab.board': 'board.ini',
     'tab.features': 'features.ini',
   },
-  'po-features-page': {
+  'lb-features-page': {
     title: 'Funciones',
     lead: 'Interruptores para <code>config/features.ini</code>. Se carga después de <code>config/board.ini</code> — estos valores anulan gestos y twist de la placa (útil para SD de concurso).',
     'feature.gesture.label': 'Encendido por gesto',
@@ -130,7 +130,7 @@ export default {
     'feature.twistOff.description':
       'Activado: un twist apaga el sable. Desactivado: twist-off deshabilitado — común en concursos para evitar apagados accidentales.',
   },
-  'po-home-page': {
+  'lb-home-page': {
     title: 'Bienvenido',
     lead: '<strong>LayerBlade</strong> le ayuda a crear y editar los INI de la tarjeta SD de un sable Proffie — capas config SD, recetas de estilo y preajustes — sin recompilar firmware ni usar el puerto serie para cambios habituales de cableado y aspecto.',
     requirement:
@@ -167,19 +167,19 @@ export default {
     'action.editBlades': 'Editar hojas',
     'action.export': 'Exportar',
   },
-  'po-pin-picker': {
+  'lb-pin-picker': {
     'placeholder.data': 'Seleccionar pin data…',
     'placeholder.power': 'Seleccionar pin alimentación…',
     'option.custom': 'Personalizado (nombre o número de pin)',
     'option.inUse': '${label} (en uso)',
     'placeholder.custom': 'p. ej. 20 o bladePin',
   },
-  'po-power-pin-editor': {
+  'lb-power-pin-editor': {
     heading: 'Pines de alimentación',
     hint: 'Seis pines FET (bladePowerPin1–6) se comparten entre todas las hojas NeoPixel — cada pin solo puede usarse una vez en el sable.',
     addPowerPin: 'Añadir pin de alimentación',
   },
-  'po-preset-style-row': {
+  'lb-preset-style-row': {
     stylePreview: 'style = ${preview}',
     'label.styleMode': 'Entrada',
     'option.preset': 'Estilo predefinido',
@@ -190,7 +190,7 @@ export default {
     'label.customLine': 'Línea style (sin « style = »)',
     'placeholder.customLine': 'standard cyan white 300 800',
   },
-  'po-presets-page': {
+  'lb-presets-page': {
     title: 'Preajustes',
     lead: 'Edite <code>config/presets.ini</code>. Cada preajuste define fuente, pista, nombre y una línea <code>style =</code> por hoja lógica. Use <strong>Receta config</strong> para referenciar <code>blade_styles.ini</code>, o un <strong>Estilo con nombre</strong>.',
     'help.summary': 'Cómo se conectan preajustes, hojas y estilos',
@@ -213,11 +213,11 @@ export default {
     'hint.footer':
       '${presetCount} preajuste${presetSuffix} · ${slotCount} línea${styleSuffix} style cada uno · Exportar en la página Exportar.',
   },
-  'po-sidebar-nav': {
+  'lb-sidebar-nav': {
     toggleCollapseAriaLabel: 'Contraer la barra lateral',
     toggleExpandAriaLabel: 'Expandir la barra lateral',
   },
-  'po-style-layer-stack': {
+  'lb-style-layer-stack': {
     'layerToggle.aria': 'Capa ${stackIndex}: ${layerSummary}',
     'moveTowardTop.aria': 'Subir capa ${stackIndex}',
     'moveTowardTop.title': 'Mover hacia arriba',
@@ -235,7 +235,7 @@ export default {
     'button.towardTop': '↑ Hacia arriba',
     'button.removeLayer': 'Eliminar capa',
   },
-  'po-styles-page': {
+  'lb-styles-page': {
     title: 'Estilos de hoja',
     lead: 'Edite <code>config/blade_styles.ini</code>. Un <strong>estilo de hoja</strong> es una receta: <strong>hoja base</strong> (color + extend/retract) más capas overlay para smoke, clash, lockup, etc. Use <code>solid</code> para una base componible sin combate integrado. Los preajustes eligen la receta: <code>style = config smoke_blade</code>.',
     'help.summary': '¿Qué son las recetas de estilo?',
@@ -269,7 +269,7 @@ export default {
     'removeVar.aria': 'Eliminar variable ${key}',
     'removeVar.title': 'Eliminar ${key}',
   },
-  'po-sub-blade-editor': {
+  'lb-sub-blade-editor': {
     heading: 'Sub-blades',
     hint: 'Divida esta tira en ${logicalCount} hoja${logicalSuffix} lógica${logicalSuffix} (${logicalCount} línea${logicalSuffix} <code>style =</code> por preajuste). Deje vacío para la tira completa. Hasta ${maxSubBlades} rangos — <code>sub_blade = first, last</code> (base 0, inclusivo).',
     empty: 'Tira completa — no se exportan líneas sub_blade.',
@@ -280,7 +280,7 @@ export default {
     'meta.invalid': 'Inválido (se requiere 0 ≤ first ≤ last < ${pixels})',
     addRange: 'Añadir rango sub-blade',
   },
-  'po-wiring-page': {
+  'lb-wiring-page': {
     title: 'Hojas — ${profileName}',
     lead: 'Edite definiciones para <code>config/blades.ini</code>. Sin servidor — los cambios permanecen en el navegador hasta exportar.',
     'help.summary': '¿Para qué sirve este archivo?',

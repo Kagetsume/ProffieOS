@@ -11,7 +11,7 @@
  * logger.log('project loaded');
  *
  * function saveBlade() {
- *   const log = contextLogger('po-blade-card', 'saveBlade');
+ *   const log = contextLogger('lb-blade-card', 'saveBlade');
  *   log.entry();
  *   log.debug('payload', payload);
  *   log.exit();

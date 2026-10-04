@@ -8,25 +8,25 @@
 ui/
   copy-panel.ts              Read-only INI preview + copy/download
   elements/
-    po-sidebar-nav.ts        Sidebar navigation
-    po-home-page.ts          Overview / config file status
-    po-board-page.ts         Board hardware form
-    po-features-page.ts      Gesture/twist toggles
-    po-wiring-page.ts        Blades wiring route
-    po-blade-card.ts         One blade wiring card
-    po-pin-picker.ts         Pin dropdown (power or data mode)
-    po-power-pin-editor.ts   Multi-row power pin list
-    po-sub-blade-editor.ts   NeoPixel sub-blade ranges
-    po-styles-page.ts        Blade styles + layer stack
-    po-color-input.ts        Grouped color picker with swatches
-    po-blade-preview.ts      Approximate saber preview canvas
-    po-config-stub-page.ts   Placeholder for unimplemented routes
+    lb-sidebar-nav.ts        Sidebar navigation
+    lb-home-page.ts          Overview / config file status
+    lb-board-page.ts         Board hardware form
+    lb-features-page.ts      Gesture/twist toggles
+    lb-wiring-page.ts        Blades wiring route
+    lb-blade-card.ts         One blade wiring card
+    lb-pin-picker.ts         Pin dropdown (power or data mode)
+    lb-power-pin-editor.ts   Multi-row power pin list
+    lb-sub-blade-editor.ts   NeoPixel sub-blade ranges
+    lb-styles-page.ts        Blade styles + layer stack
+    lb-color-input.ts        Grouped color picker with swatches
+    lb-blade-preview.ts      Approximate saber preview canvas
+    lb-config-stub-page.ts   Placeholder for unimplemented routes
     pin-picker-utils.ts      Pin catalog + wa-option helpers
-    po-element.ts            Base for shadow-DOM + Web Awesome discover
-    po-shared-styles.ts      CSS for shadow-DOM pages
+    lb-element.ts            Base for shadow-DOM + Web Awesome discover
+    lb-shared-styles.ts      CSS for shadow-DOM pages
     index.ts                 Side-effect registration
   pages/
-    *-page.ts                Thin mount wrappers → `<po-*>` or copy panel
+    *-page.ts                Thin mount wrappers → `<lb-*>` or copy panel
     mount-page.ts            Shared mount helpers
 ```
 
@@ -39,22 +39,22 @@ Pages export `mountXPage(root): () => void`. Lit elements subscribe to Effector 
 
 ### Effector + Lit
 
-- `$wiring` is the source of truth; `po-wiring-page` watches it and passes `.blade` /
-  `.blades` to each `po-blade-card`.
+- `$wiring` is the source of truth; `lb-wiring-page` watches it and passes `.blade` /
+  `.blades` to each `lb-blade-card`.
 - Pin pickers register with `registerPowerPinEditorRefresh()` so all pickers refresh
   when `$wiring` changes (disabled states + selection sync).
 - `$export` drives the export page copy panels.
 
 ### Light DOM vs shadow DOM
 
-**Wiring pickers** (`po-blade-card`, `po-pin-picker`, editors) use **Light DOM** so Web Awesome
+**Wiring pickers** (`lb-blade-card`, `lb-pin-picker`, editors) use **Light DOM** so Web Awesome
 selects work without shadow-root autoload workarounds.
 
-**Styles/preview pages** use **`PoElement`** + shadow DOM for encapsulated layout and canvas.
+**Styles/preview pages** use **`LbElement`** + shadow DOM for encapsulated layout and canvas.
 See `elements/README.md`.
 
 ## Tests
 
-Each `elements/po-*.ts` component has a matching `elements/po-*.test.ts` (mount + behavior where relevant).
+Each `elements/lb-*.ts` component has a matching `elements/lb-*.test.ts` (mount + behavior where relevant).
 
-Shared: `pin-picker-utils.test.ts`, `po-component-i18n.test.ts`.
+Shared: `pin-picker-utils.test.ts`, `lb-component-i18n.test.ts`.

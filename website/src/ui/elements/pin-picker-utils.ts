@@ -1,5 +1,5 @@
 /**
- * Pure helpers for {@link PoPinPicker} — catalog lookup and value mapping.
+ * Pure helpers for {@link LbPinPicker} — catalog lookup and value mapping.
  *
  * @module ui/elements/pin-picker-utils
  */

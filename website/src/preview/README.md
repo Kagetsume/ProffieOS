@@ -1,6 +1,6 @@
 # Blade preview (approximate)
 
-Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>` (on the Styles page) calls into this folder.
+Pure TypeScript — no Effector, no DOM in render math. Lit `<lb-blade-preview>` (on the Styles page) calls into this folder.
 
 **Important:** Preview output is an **approximation** of firmware blade styles, not a pixel-accurate emulator. Recipe concepts and INI examples: [BLADE_STYLES.md](../../BLADE_STYLES.md).
 
@@ -22,7 +22,7 @@ Pure TypeScript — no Effector, no DOM in render math. Lit `<po-blade-preview>`
 
 Renderer details: [renderers/README.md](./renderers/README.md).
 
-Uploaded BMPs for preview are registered in **`stores/bmpAssets.ts`** (path string must match the layer’s SD path arg). The Styles page **`po-bmp-input`** element handles upload + path edits.
+Uploaded BMPs for preview are registered in **`stores/bmpAssets.ts`** (path string must match the layer’s SD path arg). The Styles page **`lb-bmp-input`** element handles upload + path edits.
 | `layout.ts` | Horizontal saber mock geometry (legacy) |
 | `hilt-asset.ts` | Public URL for hilt SVG |
 | `responsive-lockup.ts` | Lockup overlay positioning helpers |
@@ -32,13 +32,13 @@ Uploaded BMPs for preview are registered in **`stores/bmpAssets.ts`** (path stri
 1. `$styleSections` → active section layers + vars
 2. `$previewSim` → effect simulation state
 3. `renderStylePreview()` → pixel buffer
-4. `<po-blade-preview>` → canvas draw + ResizeObserver
+4. `<lb-blade-preview>` → canvas draw + ResizeObserver
 
 ## Responsive layout contract
 
 The preview must scale when the viewport or styles-page pane resizes.
 
-### DOM structure (inside `<po-blade-preview>` shadow root)
+### DOM structure (inside `<lb-blade-preview>` shadow root)
 
 ```html
 <div class="preview-mock">

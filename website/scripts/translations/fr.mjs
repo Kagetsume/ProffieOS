@@ -24,7 +24,7 @@ export default {
     'hint.exportFooter': 'Les modifications apparaissent sur la page Export sous ${filename}.',
     'hint.exportAs': 'Les modifications apparaissent sur la page Export sous ${filename}.',
   },
-  'po-app-shell': {
+  'lb-app-shell': {
     title: 'LayerBlade',
     tagline: 'Styles de lame SD pour ProffieOS',
     importLink: 'Importer',
@@ -32,7 +32,7 @@ export default {
     darkMode: 'Mode sombre',
     lightMode: 'Mode clair',
   },
-  'po-blade-card': {
+  'lb-blade-card': {
     header: 'Lame ${index}',
     'label.type': 'Type',
     'option.ws2811': 'NeoPixel (ws2811)',
@@ -48,7 +48,7 @@ export default {
     'option.low': 'low',
     'label.pixels': 'pixels',
   },
-  'po-blade-preview': {
+  'lb-blade-preview': {
     ariaLabel: 'Aperçu de lame',
     sectionPower: 'Alimentation',
     sectionCombat: 'Combat',
@@ -68,7 +68,7 @@ export default {
     caption:
       'Aperçu approximatif (calcul de couches simplifié, pas le firmware) · ${sectionId}${transitionSuffix}',
   },
-  'po-bmp-input': {
+  'lb-bmp-input': {
     'label.path': 'Chemin BMP sur la carte SD',
     'placeholder.path': 'animations/plasma.bmp',
     'button.upload': 'Envoyer BMP',
@@ -76,7 +76,7 @@ export default {
       'BMP 24 bits non compressé · aperçu uniquement (copiez le fichier sur la SD à ce chemin)',
     'aria.fileInput': 'Choisir un fichier BMP sur votre ordinateur',
   },
-  'po-board-page': {
+  'lb-board-page': {
     title: 'Carte',
     lead: 'Options matériel pour <code>config/board.ini</code> — nombre de boutons, OLED et Bluetooth. Les bascules gestes et twist sont aussi exportées ici (et dans <code>config/features.ini</code> pour les overrides de concours).',
     'label.buttonCount': 'Nombre de boutons',
@@ -86,17 +86,17 @@ export default {
     'label.oled': 'Écran OLED',
     'label.bluetooth': 'Série Bluetooth',
   },
-  'po-color-input': {
+  'lb-color-input': {
     'placeholder.color': 'Couleur…',
     'option.custom': 'Personnalisée…',
     'placeholder.custom': '#rrggbb ou r,g,b',
   },
-  'po-config-stub-page': {
+  'lb-config-stub-page': {
     stubHint: 'Cette section est un placeholder — interface éditeur prévue ultérieurement.',
   },
-  'po-copy-panel': {},
-  'po-import-page': {},
-  'po-export-page': {
+  'lb-copy-panel': {},
+  'lb-import-page': {},
+  'lb-export-page': {
     title: 'Export',
     lead: 'Copiez ou téléchargez les fichiers INI générés pour le dossier <code>config/</code> de votre carte SD.',
     summary: '<strong>${count}</strong> fichiers config prêts à copier',
@@ -106,7 +106,7 @@ export default {
     'tab.board': 'board.ini',
     'tab.features': 'features.ini',
   },
-  'po-features-page': {
+  'lb-features-page': {
     title: 'Fonctions',
     lead: 'Bascules pour <code>config/features.ini</code>. Chargé après <code>config/board.ini</code> — ces valeurs remplacent gestes et twist du fichier carte (utile pour des cartes SD de concours).',
     'feature.gesture.label': 'Allumage par geste',
@@ -119,7 +119,7 @@ export default {
     'feature.twistOff.description':
       'Activé : un twist éteint le sabre. Désactivé : twist-off désactivé — réglage courant en concours pour éviter une extinction accidentelle.',
   },
-  'po-home-page': {
+  'lb-home-page': {
     title: 'Bienvenue',
     lead: '<strong>LayerBlade</strong> vous aide à créer et modifier les fichiers INI de la carte SD d’un sabre Proffie — couches config SD, recettes de style et préréglages — sans recompiler le firmware ni utiliser le port série pour le câblage et l’apparence au quotidien.',
     requirement:
@@ -156,19 +156,19 @@ export default {
     'action.editBlades': 'Modifier les lames',
     'action.export': 'Export',
   },
-  'po-pin-picker': {
+  'lb-pin-picker': {
     'placeholder.data': 'Choisir broche data…',
     'placeholder.power': 'Choisir broche alim…',
     'option.custom': 'Personnalisée (nom ou numéro de broche)',
     'option.inUse': '${label} (utilisée)',
     'placeholder.custom': 'p. ex. 20 ou bladePin',
   },
-  'po-power-pin-editor': {
+  'lb-power-pin-editor': {
     heading: 'Broches d’alimentation',
     hint: 'Six broches FET (bladePowerPin1–6) sont partagées entre toutes les lames NeoPixel — chaque broche ne peut être utilisée qu’une fois sur le sabre.',
     addPowerPin: 'Ajouter broche alim',
   },
-  'po-preset-style-row': {
+  'lb-preset-style-row': {
     stylePreview: 'style = ${preview}',
     'label.styleMode': 'Saisie',
     'option.preset': 'Style prédéfini',
@@ -179,7 +179,7 @@ export default {
     'label.customLine': 'Ligne style (sans « style = »)',
     'placeholder.customLine': 'standard cyan white 300 800',
   },
-  'po-presets-page': {
+  'lb-presets-page': {
     title: 'Préréglages',
     lead: 'Modifiez <code>config/presets.ini</code>. Chaque préréglage définit police, piste, nom affiché et une ligne <code>style =</code> par lame logique. Utilisez <strong>Recette config</strong> pour référencer <code>blade_styles.ini</code>, ou un <strong>Style nommé</strong>.',
     'help.summary': 'Lien préréglages ↔ lames et styles',
@@ -202,11 +202,11 @@ export default {
     'hint.footer':
       '${presetCount} préréglage${presetSuffix} · ${slotCount} ligne${styleSuffix} style chacun · Export sur la page Export.',
   },
-  'po-sidebar-nav': {
+  'lb-sidebar-nav': {
     toggleCollapseAriaLabel: 'Réduire la barre latérale',
     toggleExpandAriaLabel: 'Développer la barre latérale',
   },
-  'po-style-layer-stack': {
+  'lb-style-layer-stack': {
     'layerToggle.aria': 'Couche ${stackIndex} : ${layerSummary}',
     'moveTowardTop.aria': 'Monter la couche ${stackIndex}',
     'moveTowardTop.title': 'Monter vers le haut',
@@ -224,7 +224,7 @@ export default {
     'button.towardTop': '↑ Vers le haut',
     'button.removeLayer': 'Supprimer la couche',
   },
-  'po-styles-page': {
+  'lb-styles-page': {
     title: 'Styles de lame',
     lead: 'Modifiez <code>config/blade_styles.ini</code>. Un <strong>style de lame</strong> est une recette : <strong>lame de base</strong> (couleur + extend/retract) plus des couches overlay (smoke, clash, lockup, etc.). Utilisez <code>solid</code> pour une base composable sans combat intégré. Les préréglages choisissent la recette : <code>style = config smoke_blade</code>.',
     'help.summary': 'Que sont les recettes de style ?',
@@ -258,7 +258,7 @@ export default {
     'removeVar.aria': 'Supprimer la variable ${key}',
     'removeVar.title': 'Supprimer ${key}',
   },
-  'po-sub-blade-editor': {
+  'lb-sub-blade-editor': {
     heading: 'Sub-blades',
     hint: 'Divisez cette bande en ${logicalCount} lame${logicalSuffix} logique${logicalSuffix} (${logicalCount} ligne${logicalSuffix} <code>style =</code> par préréglage). Laissez vide pour la bande entière. Jusqu’à ${maxSubBlades} plages — <code>sub_blade = first, last</code> (0-based, inclusif).',
     empty: 'Bande entière — aucune ligne sub_blade exportée.',
@@ -269,7 +269,7 @@ export default {
     'meta.invalid': 'Invalide (il faut 0 ≤ first ≤ last < ${pixels})',
     addRange: 'Ajouter plage sub-blade',
   },
-  'po-wiring-page': {
+  'lb-wiring-page': {
     title: 'Lames — ${profileName}',
     lead: 'Modifiez les définitions pour <code>config/blades.ini</code>. Pas de serveur — les changements restent dans le navigateur jusqu’à l’export.',
     'help.summary': 'À quoi sert ce fichier ?',

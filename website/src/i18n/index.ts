@@ -5,7 +5,7 @@
  * Each component can ship its own `locales/<locale>.json` and a dedicated client:
  *
  * ```ts
- * // ui/elements/po-copy-panel.i18n.ts
+ * // ui/elements/lb-copy-panel.i18n.ts
  * import en from './locales/en.json';
  * import enUs from './locales/en_US.json';
  * import root from './locales/root.json';

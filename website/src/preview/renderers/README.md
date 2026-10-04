@@ -24,7 +24,7 @@ Capability gating for preview UI buttons lives in `../preview-capabilities.ts` (
 
 ## Debugging
 
-- **UI actions** — `contextLogger` in `<po-blade-preview>` (`onBlast`, `onPowerOn`, …).
+- **UI actions** — `contextLogger` in `<lb-blade-preview>` (`onBlast`, `onPowerOn`, …).
 - **Sim transitions** — `contextLogger` in `simulation.ts` (`previewPowerOn`, `previewTriggerEvent`, …).
 - **Store events** — `contextLogger` in `stores/previewEvents.ts` `event.watch` callbacks.
 - Do **not** log inside per-frame render loops or `renderStylePreview()` — use DevTools performance tab instead.

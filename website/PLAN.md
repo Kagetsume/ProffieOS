@@ -56,7 +56,7 @@ stores and serializers so they stay portable and do not assume a server.
 | Layer | Choice | Notes |
 |-------|--------|--------|
 | Build | **Vite** | Dev server, production bundle, static deploy |
-| UI | **Lit** + **Web Awesome** | App custom elements (`<po-*>`) compose `<wa-*>` |
+| UI | **Lit** + **Web Awesome** | App custom elements (`<lb-*>`) compose `<wa-*>` |
 | State | **Effector** | Stores, events, derived units; Lit elements watch in `connectedCallback` |
 | Language | **TypeScript** | Serializers, catalogs, validation |
 | Styling | Web Awesome theme + utilities | No React, no JSX |
@@ -64,7 +64,7 @@ stores and serializers so they stay portable and do not assume a server.
 **Hard rule:** no React (or React wrappers). App UI is Lit custom elements; design system is Web Awesome:
 
 ```html
-<po-wiring-page></po-wiring-page>
+<lb-wiring-page></lb-wiring-page>
 <wa-button variant="brand">Save</wa-button>
 ```
 
@@ -129,13 +129,13 @@ website/
         overlay-events.ts
         ...
     ui/
-      elements/           ← Lit `<po-*>` custom elements (extend PoElement)
-        po-element.ts     ← Web Awesome discover(shadowRoot) + MutationObserver
-        po-wiring-page.ts
-        po-blade-card.ts
-        po-power-pin-editor.ts
-        po-pin-picker.ts
-        po-shared-styles.ts
+      elements/           ← Lit `<lb-*>` custom elements (extend LbElement)
+        lb-element.ts     ← Web Awesome discover(shadowRoot) + MutationObserver
+        lb-wiring-page.ts
+        lb-blade-card.ts
+        lb-power-pin-editor.ts
+        lb-pin-picker.ts
+        lb-shared-styles.ts
         pin-picker-utils.ts
       pages/              ← thin mount wrappers (insert Lit page elements)
         wiring-page.ts
@@ -152,7 +152,7 @@ Built output: **`website/dist/`** (gitignored). Deploy as static files; no serve
 ### Frontend-only data flow
 
 ```
-User edits UI (Lit `<po-*>` + Web Awesome `<wa-*>`)
+User edits UI (Lit `<lb-*>` + Web Awesome `<wa-*>`)
         ↓
 Effector stores (in-memory)
         ↓
@@ -344,10 +344,10 @@ The preview is not a bare pixel bar — a **cool-looking saber mock** composes:
 
 - **100% vector** — paths, shapes, gradients, strokes only. **No** embedded PNG/JPEG/WebP, `<image href="…">`, or raster filters.
 - Use a proper **`viewBox`** (and optional `preserveAspectRatio`) so the mock scales via CSS width/height without fixed pixel dimensions.
-- Inline the SVG in `<po-blade-preview>` shadow DOM (fetch + inject or Vite `?raw` import) — not a fixed-size bitmap. This keeps emitter coordinates readable and allows `currentColor` theming later.
+- Inline the SVG in `<lb-blade-preview>` shadow DOM (fetch + inject or Vite `?raw` import) — not a fixed-size bitmap. This keeps emitter coordinates readable and allows `currentColor` theming later.
 - The **blade LED strip** may stay on canvas for animation performance; the **hilt must remain SVG** so only the colored pixels are rasterized, not the saber body.
 
-Implementation sketch for `<po-blade-preview>`:
+Implementation sketch for `<lb-blade-preview>`:
 
 - Container: CSS-scaled SVG hilt + absolutely positioned canvas blade aligned to `#emitter`.
 - Size mock to fit preview pane; scale blade length to pixel count (cap max width for UI).
@@ -360,7 +360,7 @@ The saber mock must reflow when the styles page or browser viewport changes — 
 
 | Layer | Scaling rule |
 |-------|----------------|
-| **`<po-blade-preview>` host** | `display: block; width: 100%` — fills preview column on desktop, stacks full-width on mobile |
+| **`<lb-blade-preview>` host** | `display: block; width: 100%` — fills preview column on desktop, stacks full-width on mobile |
 | **`.preview-mock` container** | `position: relative; width: 100%; max-width: min(100%, 48rem)` — grows/shrinks with pane |
 | **Hilt SVG** | `width: 100%; height: auto; display: block` + author `viewBox` — vector scales, never fixed `width`/`height` attributes in HTML |
 | **Canvas (blade)** | **CSS size** from layout math; **backing store** `canvas.width/height = cssSize × devicePixelRatio` for sharp pixels on retina |
@@ -368,7 +368,7 @@ The saber mock must reflow when the styles page or browser viewport changes — 
 
 **Do not** hard-code canvas `width="800" height="40"` in markup without syncing on resize — that breaks responsive layout.
 
-**`<po-blade-preview>` lifecycle:**
+**`<lb-blade-preview>` lifecycle:**
 
 1. **`ResizeObserver`** on `.preview-mock` (and optionally `window` `resize`) → call `measurePreviewLayout()` in [`preview/layout.ts`](src/preview/layout.ts).
 2. Update canvas CSS box + backing store dimensions; reposition canvas over emitter.
@@ -422,7 +422,7 @@ See [`src/preview/README.md`](src/preview/README.md) for the layout module API a
 5. Texture renderers — stripes, masks, noise (approximate math, iterative refinement)
 6. Optional — swing slider, time scrubber, mic for `audio` style (later)
 
-Preview module stays **pure TS** (no Effector); Lit `<po-blade-preview>` reads `$styleSections` +
+Preview module stays **pure TS** (no Effector); Lit `<lb-blade-preview>` reads `$styleSections` +
 `$wiring` and calls `preview/frame.ts`.
 
 ---
@@ -502,7 +502,7 @@ Validation before export and **inline on the styles/presets pages** (warnings in
 - [ ] `preview/` module: `composite.ts`, `frame.ts`, `registry.ts`.
 - [ ] User-provided **`public/saber-hilt.svg`** integrated into preview mock (hilt + emitter-aligned blade).
 - [ ] `preview/layout.ts` + tests — responsive canvas CSS vs backing store, emitter positioning.
-- [ ] `<po-blade-preview>` — `ResizeObserver`, 100% width host, no fixed canvas attributes in HTML.
+- [ ] `<lb-blade-preview>` — `ResizeObserver`, 100% width host, no fixed canvas attributes in HTML.
 - [ ] Static + composited preview (blend/opacity faithful; layers reorder live).
 - [ ] Idle renderers: `standard`, `rainbow`, `fire`, `gradient`, `strobe` (medium tier).
 - [ ] Event simulation: clash, lockup, swing (overlay flash on demand).
@@ -557,7 +557,7 @@ export const $wiring = createStore<BladeDefinition[]>(defaultBlades)
     blades.map((b) => (b.index === index ? { ...b, ...patch } : b)),
   );
 
-// ui/elements/po-wiring-page.ts (Lit)
+// ui/elements/lb-wiring-page.ts (Lit)
 connectedCallback() {
   this.blades = $wiring.getState();
   super.connectedCallback();
@@ -572,15 +572,15 @@ disconnectedCallback() {
 }
 ```
 
-Cross-blade power pin disables: `stores/power-pin-usage.ts` derives from `$wiring`; `<po-pin-picker>` registers refresh callbacks on connect.
+Cross-blade power pin disables: `stores/power-pin-usage.ts` derives from `$wiring`; `<lb-pin-picker>` registers refresh callbacks on connect.
 
-Page mounts stay thin: `mountWiringPage(root)` appends `<po-wiring-page>` and returns cleanup.
+Page mounts stay thin: `mountWiringPage(root)` appends `<lb-wiring-page>` and returns cleanup.
 
 ---
 
 ## Testing strategy
 
-- **Unit tests** (Vitest): serializers snapshot against golden strings from `examples/config/*.ini` subsets; model helpers (`power-pins.ts`); Lit elements via `.shadowRoot` (`po-power-pin-editor.test.ts`, `pin-picker-utils.test.ts`).
+- **Unit tests** (Vitest): serializers snapshot against golden strings from `examples/config/*.ini` subsets; model helpers (`power-pins.ts`); Lit elements via `.shadowRoot` (`lb-power-pin-editor.test.ts`, `pin-picker-utils.test.ts`).
 - **Validation tests:** edge cases (16 blades, 6 power pins, empty preset).
 - **Preview tests:** compositing (`composite.ts`); golden RGBA snapshots for select renderers.
 - **Manual:** copy generated files to SD card, verify firmware accepts (serial `list_named_styles`, boot logs); compare strip preview loosely to hardware.

@@ -16,7 +16,7 @@ Example file: [`examples/config/blades.ini`](../examples/config/blades.ini)
 | One NeoPixel strip only | [§1 Single main blade](#1-single-main-blade-beginner) | 1 | Simplest; one `style =` per preset |
 | Main strip + crystal on same wire | [§2 Main + crystal sub-blade](#2-main--crystal-sub-blade-one-strip-two-styles) | 2 | Two styles, one `data_pin` |
 | Main + second strip (e.g. pixel pommel) | [§3 Two NeoPixel strips](#3-two-neopixel-strips) | 2 | Two wiring entries |
-| Main + Free1–3 accents (repo default) | [§4 Full four-blade saber](#4-full-four-blade-saber-example-repo-default) | 4 | Match `examples/config/blades.ini` |
+| Main + Free1–3 accents (repo default) | [§4 Full four-blade saber](#4-full-four-blade-saber-example-relb-default) | 4 | Match `examples/config/blades.ini` |
 | Main strip + one accent LED | [§5 NeoPixel + one accent](#5-neopixel-main--one-accent-only) | 2 | Drop unused Free pins |
 | Motor / bar graph on a Free pin | [§6 Motor or sound-driven accent](#6-motor-or-sound-driven-accent) | 2+ | `type=simple` + `accent_on` or `accent_sound_on` |
 | RGB LED star (no pixels) | [§7 RGB star (simple PWM)](#7-rgb-led-star-simple-pwm) | 1 | `pin1`…`pin3`, not NeoPixel |

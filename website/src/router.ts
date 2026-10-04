@@ -2,7 +2,7 @@
  * Hash-based client router for static hosting.
  *
  * Routes use `location.hash` (`#/board`, `#/blades`, …). Sidebar navigation is
- * handled by {@link PoSidebarNav}; this module mounts page content into `#page-root`.
+ * handled by {@link LbSidebarNav}; this module mounts page content into `#page-root`.
  *
  * @module router
  */
@@ -62,7 +62,7 @@ export function startRouter(pageRoot: HTMLElement): () => void {
     cleanup?.();
     const route = routes.find((r) => r.id === id) ?? routes[0]!;
     cleanup = route.mount(pageRoot);
-    document.dispatchEvent(new CustomEvent('po-route-change', { detail: { id } }));
+    document.dispatchEvent(new CustomEvent('lb-route-change', { detail: { id } }));
   };
 
   window.addEventListener('hashchange', renderPage);

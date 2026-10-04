@@ -1,27 +1,27 @@
 /**
- * Register LayerBlade Lit custom elements (`po-*`).
+ * Register LayerBlade Lit custom elements (`lb-*`).
  *
  * Side-effect imports — load once from `main.ts`.
  *
  * @module ui/elements
  */
-import './po-app-shell.js';
-import './po-sidebar-nav.js';
-import './po-home-page.js';
-import './po-board-page.js';
-import './po-features-page.js';
-import './po-blade-preview.js';
-import './po-styles-page.js';
-import './po-style-layer-stack.js';
-import './po-import-page.js';
-import './po-export-page.js';
-import './po-copy-panel.js';
-import './po-presets-page.js';
-import './po-preset-style-row.js';
-import './po-config-stub-page.js';
-import './po-color-input.js';
-import './po-pin-picker.js';
-import './po-power-pin-editor.js';
-import './po-sub-blade-editor.js';
-import './po-blade-card.js';
-import './po-wiring-page.js';
+import './lb-app-shell.js';
+import './lb-sidebar-nav.js';
+import './lb-home-page.js';
+import './lb-board-page.js';
+import './lb-features-page.js';
+import './lb-blade-preview.js';
+import './lb-styles-page.js';
+import './lb-style-layer-stack.js';
+import './lb-import-page.js';
+import './lb-export-page.js';
+import './lb-copy-panel.js';
+import './lb-presets-page.js';
+import './lb-preset-style-row.js';
+import './lb-config-stub-page.js';
+import './lb-color-input.js';
+import './lb-pin-picker.js';
+import './lb-power-pin-editor.js';
+import './lb-sub-blade-editor.js';
+import './lb-blade-card.js';
+import './lb-wiring-page.js';

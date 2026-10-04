@@ -12,7 +12,7 @@ import type { RouteMeta } from '../../route-config';
  * The returned cleanup function clears `root` when the route is torn down.
  *
  * @param root - DOM node that becomes the page shell (typically the router outlet).
- * @param tagName - Custom element tag to instantiate (for example `po-home-page`).
+ * @param tagName - Custom element tag to instantiate (for example `lb-home-page`).
  * @returns Cleanup callback that removes all children from `root`.
  */
 export function mountCustomElementPage(root: HTMLElement, tagName: string): () => void {
@@ -25,7 +25,7 @@ export function mountCustomElementPage(root: HTMLElement, tagName: string): () =
 }
 
 /**
- * Mounts {@link PoConfigStubPage} with SD-card path and copy from route metadata.
+ * Mounts {@link LbConfigStubPage} with SD-card path and copy from route metadata.
  *
  * Used for config sections that are not yet fully implemented in the web editor.
  *
@@ -35,7 +35,7 @@ export function mountCustomElementPage(root: HTMLElement, tagName: string): () =
  */
 export function mountConfigStubPage(root: HTMLElement, meta: RouteMeta): () => void {
   root.innerHTML = '';
-  const element = document.createElement('po-config-stub-page') as HTMLElement & {
+  const element = document.createElement('lb-config-stub-page') as HTMLElement & {
     title: string;
     sdPath: string;
     description: string;

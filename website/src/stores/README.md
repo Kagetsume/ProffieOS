@@ -32,7 +32,7 @@ Application state and derived export strings. UI pages subscribe with `.watch()`
 |--------|------|
 | `$masterUsedPresetPins` | Derived list of preset FET pins in use |
 | `getUsedPresetsForPicker()` | Presets to disable in one picker (sibling rows + other blades) |
-| `registerPowerPinEditorRefresh()` | Fan-out from `$wiring` to mounted `<po-pin-picker>` elements |
+| `registerPowerPinEditorRefresh()` | Fan-out from `$wiring` to mounted `<lb-pin-picker>` elements |
 
 One app-lifetime `$wiring.watch` notifies registered refresh callbacks. Each picker unsubscribes in `disconnectedCallback`.
 
@@ -82,7 +82,7 @@ configureLogger({ debug: true });
 configureContextLoggerFilter({ objectNames: ['wiring', 'presets'] });
 ```
 
-UI components log user handlers separately (`contextLogger('po-*', …)`). Together they trace: click → store event → `$export` → serialize (also logged in each `serialize*Ini`).
+UI components log user handlers separately (`contextLogger('lb-*', …)`). Together they trace: click → store event → `$export` → serialize (also logged in each `serialize*Ini`).
 
 **Not logged:** `previewSimTick`, derived `presetStyleSlotsSynced` (fires on every wiring change — use `wiring` events instead).
 

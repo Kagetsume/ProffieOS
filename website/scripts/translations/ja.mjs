@@ -24,7 +24,7 @@ export default {
     'hint.exportFooter': '変更はエクスポートページに ${filename} として表示されます。',
     'hint.exportAs': '変更はエクスポートページに ${filename} として表示されます。',
   },
-  'po-app-shell': {
+  'lb-app-shell': {
     title: 'LayerBlade',
     tagline: 'ProffieOS 向け SD ブレードスタイル',
     importLink: 'インポート',
@@ -32,7 +32,7 @@ export default {
     darkMode: 'ダークモード',
     lightMode: 'ライトモード',
   },
-  'po-blade-card': {
+  'lb-blade-card': {
     header: 'ブレード ${index}',
     'label.type': 'タイプ',
     'option.ws2811': 'NeoPixel (ws2811)',
@@ -48,7 +48,7 @@ export default {
     'option.low': 'low',
     'label.pixels': 'pixels',
   },
-  'po-blade-preview': {
+  'lb-blade-preview': {
     ariaLabel: 'ブレードプレビュー',
     sectionPower: '電源',
     sectionCombat: 'コンバット',
@@ -68,14 +68,14 @@ export default {
     caption:
       'おおよそのプレビュー（簡略レイヤー計算、ファームウェアではありません）· ${sectionId}${transitionSuffix}',
   },
-  'po-bmp-input': {
+  'lb-bmp-input': {
     'label.path': 'SD カード上の BMP パス',
     'placeholder.path': 'animations/plasma.bmp',
     'button.upload': 'BMP をアップロード',
     'hint.format': '24 ビット非圧縮 BMP · プレビューのみ（このパスに SD へコピー）',
     'aria.fileInput': 'コンピュータから BMP ファイルを選択',
   },
-  'po-board-page': {
+  'lb-board-page': {
     title: 'ボード',
     lead: '<code>config/board.ini</code> のハードウェアオプション — ボタン数、OLED、Bluetooth。ジェスチャーとツイストの切替もここにエクスポート（コンテスト用は <code>config/features.ini</code> も）。',
     'label.buttonCount': 'ボタン数',
@@ -85,17 +85,17 @@ export default {
     'label.oled': 'OLED ディスプレイ',
     'label.bluetooth': 'Bluetooth シリアル',
   },
-  'po-color-input': {
+  'lb-color-input': {
     'placeholder.color': '色…',
     'option.custom': 'カスタム…',
     'placeholder.custom': '#rrggbb または r,g,b',
   },
-  'po-config-stub-page': {
+  'lb-config-stub-page': {
     stubHint: 'このセクションはスタブです — エディター UI は今後追加されます。',
   },
-  'po-copy-panel': {},
-  'po-import-page': {},
-  'po-export-page': {
+  'lb-copy-panel': {},
+  'lb-import-page': {},
+  'lb-export-page': {
     title: 'エクスポート',
     lead: 'SD カードの <code>config/</code> 用に生成された INI をコピーまたはダウンロードします。',
     summary: 'コピー可能な設定ファイル <strong>${count}</strong> 件',
@@ -105,7 +105,7 @@ export default {
     'tab.board': 'board.ini',
     'tab.features': 'features.ini',
   },
-  'po-features-page': {
+  'lb-features-page': {
     title: '機能',
     lead: '<code>config/features.ini</code> の機能トグル。<code>config/board.ini</code> の後に読み込まれ — ボードファイルのジェスチャー／ツイスト設定を上書き（コンテスト SD 向け）。',
     'feature.gesture.label': 'ジェスチャー点火',
@@ -118,7 +118,7 @@ export default {
     'feature.twistOff.description':
       'オン：ツイストで消灯。オフ：ツイスト消灯無効 — パフォーマンス中の誤消灯防止に常用。',
   },
-  'po-home-page': {
+  'lb-home-page': {
     title: 'ようこそ',
     lead: '<strong>LayerBlade</strong> は Proffie セーバーの SD カード上の INI（SD 設定レイヤー、ブレードスタイルレシピ、プリセット）を、ファーム再ビルドや日常の配線・見た目変更のたびのシリアル接続なしで編集するのに役立ちます。',
     requirement:
@@ -155,19 +155,19 @@ export default {
     'action.editBlades': 'ブレードを編集',
     'action.export': 'エクスポート',
   },
-  'po-pin-picker': {
+  'lb-pin-picker': {
     'placeholder.data': 'データピンを選択…',
     'placeholder.power': '電源ピンを選択…',
     'option.custom': 'カスタム（ピン名または番号）',
     'option.inUse': '${label}（使用中）',
     'placeholder.custom': '例：20 または bladePin',
   },
-  'po-power-pin-editor': {
+  'lb-power-pin-editor': {
     heading: '電源ピン',
     hint: '6 つの FET ピン（bladePowerPin1–6）は全 NeoPixel ブレードで共有 — 各ピンはセーバー全体で 1 回のみ使用可。',
     addPowerPin: '電源ピンを追加',
   },
-  'po-preset-style-row': {
+  'lb-preset-style-row': {
     stylePreview: 'style = ${preview}',
     'label.styleMode': '入力',
     'option.preset': 'プリセットスタイル',
@@ -178,7 +178,7 @@ export default {
     'label.customLine': 'スタイル行（「style =」なし）',
     'placeholder.customLine': 'standard cyan white 300 800',
   },
-  'po-presets-page': {
+  'lb-presets-page': {
     title: 'プリセット',
     lead: '<code>config/presets.ini</code> を編集。各プリセットはフォント、トラック、表示名、論理ブレードごとに 1 行の <code>style =</code> を設定。<strong>Config レシピ</strong> で <code>blade_styles.ini</code> を参照、または <strong>名前付きスタイル</strong> を選択。',
     'help.summary': 'プリセットとブレード・スタイルの関係',
@@ -201,11 +201,11 @@ export default {
     'hint.footer':
       'プリセット ${presetCount} 件${presetSuffix} · 各 ${slotCount} スタイル行${styleSuffix} · エクスポートページで出力。',
   },
-  'po-sidebar-nav': {
+  'lb-sidebar-nav': {
     toggleCollapseAriaLabel: 'サイドバーを折りたたむ',
     toggleExpandAriaLabel: 'サイドバーを展開する',
   },
-  'po-style-layer-stack': {
+  'lb-style-layer-stack': {
     'layerToggle.aria': 'レイヤー ${stackIndex}：${layerSummary}',
     'moveTowardTop.aria': 'レイヤー ${stackIndex} を上へ',
     'moveTowardTop.title': '上へ移動',
@@ -223,7 +223,7 @@ export default {
     'button.towardTop': '↑ 上へ',
     'button.removeLayer': 'レイヤーを削除',
   },
-  'po-styles-page': {
+  'lb-styles-page': {
     title: 'ブレードスタイル',
     lead: '<code>config/blade_styles.ini</code> を編集。<strong>ブレードスタイル</strong> はレシピ：<strong>ベースブレード</strong>（色＋ extend/retract）と smoke、clash、lockup などのオーバーレイ。<code>solid</code> で組み合わせ可能なベース（組み込みコンバットなし）。プリセットは <code>style = config smoke_blade</code> でレシピ全体を選択。',
     'help.summary': 'ブレードスタイルレシピとは',
@@ -257,7 +257,7 @@ export default {
     'removeVar.aria': '変数 ${key} を削除',
     'removeVar.title': '${key} を削除',
   },
-  'po-sub-blade-editor': {
+  'lb-sub-blade-editor': {
     heading: 'Sub-blades',
     hint: 'このストリップを論理ブレード ${logicalCount} 本${logicalSuffix}に分割（プリセットごと <code>style =</code> 行 ${logicalCount} 本${logicalSuffix}）。空欄でストリップ全体。最大 ${maxSubBlades} 範囲 — <code>sub_blade = first, last</code>（0 始まり、両端含む）。',
     empty: 'ストリップ全体 — sub_blade 行はエクスポートされません。',
@@ -268,7 +268,7 @@ export default {
     'meta.invalid': '無効（0 ≤ first ≤ last < ${pixels} が必要）',
     addRange: 'サブブレード範囲を追加',
   },
-  'po-wiring-page': {
+  'lb-wiring-page': {
     title: 'ブレード — ${profileName}',
     lead: '<code>config/blades.ini</code> のブレード定義を編集。サーバーなし — エクスポートまでブラウザ内に保持。',
     'help.summary': 'このファイルの目的',

@@ -19,12 +19,12 @@ rootI18n.translate('actions.copy'); // "Copy"
 ### Component client
 
 Use `createComponentI18n()` from `ui/elements/create-component-i18n.ts` (parents to
-`rootI18n` automatically). One `*.i18n.ts` + `locales/po-<component>.en.json` per component:
+`rootI18n` automatically). One `*.i18n.ts` + `locales/lb-<component>.en.json` per component:
 
 ```ts
-// ui/elements/po-copy-panel.i18n.ts
+// ui/elements/lb-copy-panel.i18n.ts
 import { createComponentI18n } from './create-component-i18n.js';
-import en from './locales/po-copy-panel.en.json';
+import en from './locales/lb-copy-panel.en.json';
 
 /** Empty local bundle — Copy/Download/Copied! come from root common.json. */
 export const copyPanelI18n = createComponentI18n({ en });
@@ -41,11 +41,11 @@ copyPanelI18n.translate('hint.filename', { filename: this.filename });
 
 ### Locale changes in the UI
 
-Call `switchAppLocale(locale)` from `switch-app-locale.ts`. That updates `rootI18n`, persistence, `document.documentElement.lang`, and dispatches `po-locale-change` on `window`.
+Call `switchAppLocale(locale)` from `switch-app-locale.ts`. That updates `rootI18n`, persistence, `document.documentElement.lang`, and dispatches `lb-locale-change` on `window`.
 
 Component `createComponentI18n*` clients do **not** cache the app locale: local bundle lookup uses `getAppLocale()` on every `translate()` (see `I18nClient.localeForBundleLookup`).
 
-Lit components must **re-render** after a locale switch so `translate()` runs again. Extend `PoElement` (`ui/elements/po-element.ts`), which listens for `po-locale-change` and calls `requestUpdate()`. Do not extend raw `LitElement` for translated `<po-*>` tags.
+Lit components must **re-render** after a locale switch so `translate()` runs again. Extend `LbElement` (`ui/elements/lb-element.ts`), which listens for `lb-locale-change` and calls `requestUpdate()`. Do not extend raw `LitElement` for translated `<lb-*>` tags.
 
 ## Message lookup order
 
@@ -82,16 +82,16 @@ One file per locale tag per component. Flat `key → string` objects:
 }
 ```
 
-All `po-*` components follow this layout (see `ui/elements/locales/`):
+All `lb-*` components follow this layout (see `ui/elements/locales/`):
 
 ```
 ui/elements/
-  po-copy-panel.ts
-  po-copy-panel.i18n.ts
+  lb-copy-panel.ts
+  lb-copy-panel.i18n.ts
   create-component-i18n.ts
   locales/
-    po-copy-panel.en.json
-    po-export-page.en.json
+    lb-copy-panel.en.json
+    lb-export-page.en.json
     …
 ```
 
@@ -125,7 +125,7 @@ import { switchAppLocale } from '../../i18n';
 switchAppLocale('fr');
 ```
 
-Component locale files follow `ui/elements/locales/po-<component>.<locale>.json`; `createComponentI18nFor('po-<component>')` loads every matching file via `import.meta.glob`.
+Component locale files follow `ui/elements/locales/lb-<component>.<locale>.json`; `createComponentI18nFor('lb-<component>')` loads every matching file via `import.meta.glob`.
 
 ## API reference
 
@@ -243,4 +243,4 @@ Test files mirror modules: `i18n.test.ts`, `format.test.ts`, `locale-chain.test.
 
 - Locale picker Effector store wired to `rootI18n.setLocale()`
 - Lazy-loaded JSON bundles per language
-- Wire `translate()` into existing `<po-*>` components
+- Wire `translate()` into existing `<lb-*>` components

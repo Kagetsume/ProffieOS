@@ -2,7 +2,7 @@
  * Responsive geometry for the saber preview mock (hilt SVG + canvas blade).
  *
  * Pure functions — no DOM. {@link measurePreviewLayout} is called from
- * `<po-blade-preview>` on mount and on `ResizeObserver` callbacks.
+ * `<lb-blade-preview>` on mount and on `ResizeObserver` callbacks.
  *
  * @module preview/layout
  */

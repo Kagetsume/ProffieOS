@@ -24,7 +24,7 @@ export default {
     'hint.exportFooter': '變更會出現在匯出頁面，檔名為 ${filename}。',
     'hint.exportAs': '變更會出現在匯出頁面，檔名為 ${filename}。',
   },
-  'po-app-shell': {
+  'lb-app-shell': {
     title: 'LayerBlade',
     tagline: 'ProffieOS SD 光刃樣式',
     importLink: '匯入',
@@ -32,7 +32,7 @@ export default {
     darkMode: '深色模式',
     lightMode: '淺色模式',
   },
-  'po-blade-card': {
+  'lb-blade-card': {
     header: '光刃 ${index}',
     'label.type': '類型',
     'option.ws2811': 'NeoPixel (ws2811)',
@@ -48,7 +48,7 @@ export default {
     'option.low': 'low',
     'label.pixels': 'pixels',
   },
-  'po-blade-preview': {
+  'lb-blade-preview': {
     ariaLabel: '光刃預覽',
     sectionPower: '電源',
     sectionCombat: '戰鬥',
@@ -67,14 +67,14 @@ export default {
     bladeAngleHint: '移動鎖刃感應區（柄 ↔ 尖端）',
     caption: '近似預覽（簡化圖層計算，非韌體）· ${sectionId}${transitionSuffix}',
   },
-  'po-bmp-input': {
+  'lb-bmp-input': {
     'label.path': 'SD 卡上的 BMP 路徑',
     'placeholder.path': 'animations/plasma.bmp',
     'button.upload': '上傳 BMP',
     'hint.format': '24 位元未壓縮 BMP · 僅預覽（請將檔案複製到 SD 的此路徑）',
     'aria.fileInput': '從電腦選擇 BMP 檔案',
   },
-  'po-board-page': {
+  'lb-board-page': {
     title: '主機板',
     lead: '<code>config/board.ini</code> 的硬體選項 — 按鈕數量、OLED 與藍牙。手勢與扭轉開關也會匯出於此（比賽覆寫見 <code>config/features.ini</code>）。',
     'label.buttonCount': '按鈕數量',
@@ -84,17 +84,17 @@ export default {
     'label.oled': 'OLED 顯示器',
     'label.bluetooth': '藍牙序列埠',
   },
-  'po-color-input': {
+  'lb-color-input': {
     'placeholder.color': '顏色…',
     'option.custom': '自訂…',
     'placeholder.custom': '#rrggbb 或 r,g,b',
   },
-  'po-config-stub-page': {
+  'lb-config-stub-page': {
     stubHint: '此區為占位 — 編輯器介面將於後續階段提供。',
   },
-  'po-copy-panel': {},
-  'po-import-page': {},
-  'po-export-page': {
+  'lb-copy-panel': {},
+  'lb-import-page': {},
+  'lb-export-page': {
     title: '匯出',
     lead: '複製或下載產生的 INI，用於 SD 卡 <code>config/</code> 資料夾。',
     summary: '<strong>${count}</strong> 個設定檔可供複製',
@@ -104,7 +104,7 @@ export default {
     'tab.board': 'board.ini',
     'tab.features': 'features.ini',
   },
-  'po-features-page': {
+  'lb-features-page': {
     title: '功能',
     lead: '<code>config/features.ini</code> 的功能開關。於 <code>config/board.ini</code> 之後載入 — 這些值會覆寫主機板檔中的手勢與扭轉設定（適用比賽 SD）。',
     'feature.gesture.label': '手勢點火',
@@ -117,7 +117,7 @@ export default {
     'feature.twistOff.description':
       '開啟：扭轉手勢關刃。關閉：停用扭轉關刃 — 比賽常用以防表演中誤關。',
   },
-  'po-home-page': {
+  'lb-home-page': {
     title: '歡迎',
     lead: '<strong>LayerBlade</strong> 協助您建立與編輯 Proffie 光劍 SD 卡上的 INI — SD 設定層、光刃樣式配方與預設 — 無需重新編譯韌體，日常改線與外觀也無需序列埠。',
     requirement:
@@ -154,19 +154,19 @@ export default {
     'action.editBlades': '編輯光刃',
     'action.export': '匯出',
   },
-  'po-pin-picker': {
+  'lb-pin-picker': {
     'placeholder.data': '選擇資料腳位…',
     'placeholder.power': '選擇電源腳位…',
     'option.custom': '自訂（輸入腳位名稱或編號）',
     'option.inUse': '${label}（使用中）',
     'placeholder.custom': '例如 20 或 bladePin',
   },
-  'po-power-pin-editor': {
+  'lb-power-pin-editor': {
     heading: '電源腳位',
     hint: '六個 FET 腳位（bladePowerPin1–6）在所有 NeoPixel 光刃間共用 — 整支光劍中每個腳位只能使用一次。',
     addPowerPin: '新增電源腳位',
   },
-  'po-preset-style-row': {
+  'lb-preset-style-row': {
     stylePreview: 'style = ${preview}',
     'label.styleMode': '輸入方式',
     'option.preset': '預設樣式',
@@ -177,7 +177,7 @@ export default {
     'label.customLine': '樣式行（不含「style =」）',
     'placeholder.customLine': 'standard cyan white 300 800',
   },
-  'po-presets-page': {
+  'lb-presets-page': {
     title: '預設',
     lead: '編輯 <code>config/presets.ini</code>。每個預設設定字型、音軌、顯示名稱，以及每個邏輯光刃一行 <code>style =</code>。用 <strong>Config 配方</strong> 引用 <code>blade_styles.ini</code>，或直接選 <strong>命名樣式</strong>。',
     'help.summary': '預設如何連接光刃與樣式',
@@ -200,11 +200,11 @@ export default {
     'hint.footer':
       '${presetCount} 個預設${presetSuffix} · 各 ${slotCount} 條樣式行${styleSuffix} · 於匯出頁匯出。',
   },
-  'po-sidebar-nav': {
+  'lb-sidebar-nav': {
     toggleCollapseAriaLabel: '摺疊側邊欄',
     toggleExpandAriaLabel: '展開側邊欄',
   },
-  'po-style-layer-stack': {
+  'lb-style-layer-stack': {
     'layerToggle.aria': '圖層 ${stackIndex}：${layerSummary}',
     'moveTowardTop.aria': '將圖層 ${stackIndex} 上移',
     'moveTowardTop.title': '移向上層',
@@ -222,7 +222,7 @@ export default {
     'button.towardTop': '↑ 向上層',
     'button.removeLayer': '移除圖層',
   },
-  'po-styles-page': {
+  'lb-styles-page': {
     title: '光刃樣式',
     lead: '編輯 <code>config/blade_styles.ini</code>。<strong>光刃樣式</strong> 是配方：<strong>底刃</strong>（顏色 + extend/retract）加上 smoke、clash、lockup 等疊加層。用 <code>solid</code> 作可組合底刃、無內建戰鬥。預設選擇整份配方：<code>style = config smoke_blade</code>。',
     'help.summary': '什麼是光刃樣式配方？',
@@ -256,7 +256,7 @@ export default {
     'removeVar.aria': '移除變數 ${key}',
     'removeVar.title': '移除 ${key}',
   },
-  'po-sub-blade-editor': {
+  'lb-sub-blade-editor': {
     heading: 'Sub-blades',
     hint: '將此燈帶拆分為 ${logicalCount} 個邏輯光刃${logicalSuffix}（每個預設 ${logicalCount} 行 <code>style =</code>${logicalSuffix}）。留空表示整段燈帶。最多 ${maxSubBlades} 段 — <code>sub_blade = first, last</code>（從 0 起，含端點）。',
     empty: '整段燈帶 — 不匯出 sub_blade 行。',
@@ -267,7 +267,7 @@ export default {
     'meta.invalid': '無效（須滿足 0 ≤ first ≤ last < ${pixels}）',
     addRange: '新增 sub-blade 範圍',
   },
-  'po-wiring-page': {
+  'lb-wiring-page': {
     title: '光刃 — ${profileName}',
     lead: '編輯 <code>config/blades.ini</code> 的光刃定義。無伺服器 — 匯出前變更保存在瀏覽器中。',
     'help.summary': '此檔的用途',

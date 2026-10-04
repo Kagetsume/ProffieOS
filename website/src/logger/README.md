@@ -54,7 +54,7 @@ For function- or component-level tracing, create a **context logger** at the top
 import { contextLogger } from '../logger';
 
 fooFunction() {
-  const log = contextLogger('po-foo-component', 'fooFunction');
+  const log = contextLogger('lb-foo-component', 'fooFunction');
   log.entry();
   log.debug('processing', payload);
   log.warn('recoverable issue');
@@ -65,9 +65,9 @@ fooFunction() {
 DevTools output (base logger adds the timestamp; context logger adds labels):
 
 ```
-[2026-09-21T03:14:00.000Z] [po-foo-component][fooFunction] → entry
-[2026-09-21T03:14:00.012Z] [po-foo-component][fooFunction] processing { ... }
-[2026-09-21T03:14:00.050Z] [po-foo-component][fooFunction] ← exit done { ... }
+[2026-09-21T03:14:00.000Z] [lb-foo-component][fooFunction] → entry
+[2026-09-21T03:14:00.012Z] [lb-foo-component][fooFunction] processing { ... }
+[2026-09-21T03:14:00.050Z] [lb-foo-component][fooFunction] ← exit done { ... }
 ```
 
 ### Prefix rules
@@ -76,16 +76,16 @@ Both `objectName` and `functionName` are **optional**. Omitted segments are left
 
 | Call | Context prefix |
 |------|----------------|
-| `contextLogger('po-blade-card', 'save')` | `[po-blade-card][save] ` |
-| `contextLogger('po-blade-card')` | `[po-blade-card] ` |
+| `contextLogger('lb-blade-card', 'save')` | `[lb-blade-card][save] ` |
+| `contextLogger('lb-blade-card')` | `[lb-blade-card] ` |
 | `contextLogger(undefined, 'save')` | `[save] ` |
 | `contextLogger()` | *(none — same as base logger)* |
 
 String messages merge into the prefix (then the base logger prepends the timestamp):
 
 ```ts
-log.debug('ready');  // … [po-foo][bar] ready
-log.debug({ id: 1 }); // … [po-foo][bar], { id: 1 }
+log.debug('ready');  // … [lb-foo][bar] ready
+log.debug({ id: 1 }); // … [lb-foo][bar], { id: 1 }
 ```
 
 ### `entry` and `exit`
@@ -122,14 +122,14 @@ When many components log at once, restrict which contexts may emit:
 import { configureContextLoggerFilter } from '../logger';
 
 // Only this component (any function)
-configureContextLoggerFilter({ objectNames: ['po-blade-card'] });
+configureContextLoggerFilter({ objectNames: ['lb-blade-card'] });
 
 // Only this function name (any component)
 configureContextLoggerFilter({ functionNames: ['saveBlade'] });
 
 // Intersection — both must match
 configureContextLoggerFilter({
-  objectNames: ['po-blade-card'],
+  objectNames: ['lb-blade-card'],
   functionNames: ['saveBlade'],
 });
 
@@ -159,7 +159,7 @@ call site args
 | Noisy debug in production | `if (DEV) console.debug(...)` at every site | One `configureLogger({ debug: false })` |
 | Consistent format across modules | Ad-hoc prefixes | Single formatting rules |
 | Swapping transport later | Every call site uses `console` | One implementation change behind `logger` / `contextLogger` |
-| Finding logs for one component | Search ad-hoc strings | Filter `[po-blade-card]` or `configureContextLoggerFilter` |
+| Finding logs for one component | Search ad-hoc strings | Filter `[lb-blade-card]` or `configureContextLoggerFilter` |
 
 Today the logger is a thin pass-through to `console` with formatting and gating. The API is shaped so a future hosted build can add backend shipping without changing component code.
 
@@ -294,7 +294,7 @@ Prefer `contextLogger` inside functions so labels stay consistent:
 import { contextLogger } from '../../logger';
 
 async function runWebAwesomeDiscover(root: DiscoverRoot) {
-  const log = contextLogger('po-element', 'runWebAwesomeDiscover');
+  const log = contextLogger('lb-element', 'runWebAwesomeDiscover');
   log.entry();
   try {
     await discover(root);

@@ -1,7 +1,7 @@
 /**
  * Cross-blade data pin usage — derived from `$wiring`.
  *
- * Used by `<po-pin-picker mode="data">` on blade cards to disable pins assigned on other blades.
+ * Used by `<lb-pin-picker mode="data">` on blade cards to disable pins assigned on other blades.
  *
  * @module stores/data-pin-usage
  */

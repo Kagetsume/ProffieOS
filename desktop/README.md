@@ -17,7 +17,7 @@ cargo --version
 
 If those commands are not found, install Rust from [rustup.rs](https://rustup.rs/) and reopen your terminal. Icon generation (`npm run tauri icon …`) only needs Node; compiling the shell needs Rust.
 
-**Scaffold check (Oct 2025):** bundle icons were generated under `src-tauri/icons/` from `website/public/favicon.svg`. `cargo check` / `npm run build` were **not** run on the agent machine because Rust was not on `PATH`. After installing Rust locally:
+**Icons:** bundle assets live under `src-tauri/icons/`, generated from `website/public/layerblade-icon.jpg` (see below). After installing Rust locally:
 
 ```bash
 cd desktop/src-tauri && cargo check
@@ -85,7 +85,7 @@ Bundle icons live in `src-tauri/icons/`. Regenerate from the site favicon after 
 
 ```bash
 cd desktop
-npm run tauri icon ../website/public/favicon.svg
+npm run tauri icon ../website/public/layerblade-icon.jpg
 ```
 
 ## Frontend build note
