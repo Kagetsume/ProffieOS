@@ -94,6 +94,15 @@ export class PoAppShell extends PoElement {
         </div>
         <div class="app-bar-actions">
           <wa-button
+            data-testid="app-shell-import-link"
+            variant="neutral"
+            size="small"
+            href="#/import"
+          >
+            <wa-icon name="file-import" aria-hidden="true"></wa-icon>
+            ${appShellI18n.translate(appShellKeys.importLink)}
+          </wa-button>
+          <wa-button
             data-testid="app-shell-export-link"
             variant="neutral"
             size="small"

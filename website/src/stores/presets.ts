@@ -37,6 +37,9 @@ export const presetStyleUpdated = createEvent<{
 export const presetsResetToDefaults = createEvent<void>();
 export const presetStyleSlotsSynced = createEvent<number>();
 
+/** Replace preset list from imported `config/presets.ini`. */
+export const presetsImported = createEvent<PresetDefinition[]>();
+
 function findPreset(presets: PresetDefinition[], id: string): PresetDefinition | undefined {
   return presets.find((preset) => preset.id === id);
 }
@@ -49,6 +52,15 @@ export const $presets = createStore<PresetsState>({
   presets: defaultPresets,
   activePresetId: defaultPresets[0]!.id,
 })
+  .on(presetsImported, (_state, presets) => {
+    if (presets.length === 0) {
+      return _state;
+    }
+    return {
+      presets,
+      activePresetId: presets[0]!.id,
+    };
+  })
   .on(activePresetChanged, (state, id) => {
     if (!findPreset(state.presets, id)) {
       return state;

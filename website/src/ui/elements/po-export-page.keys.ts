@@ -7,6 +7,14 @@ export const exportPageKeys = {
   title: 'title',
   lead: 'lead',
   summary: 'summary',
+  desktopWriteLead: 'desktopWriteLead',
+  saberRootNotSet: 'saberRootNotSet',
+  writeAllConfig: 'writeAllConfig',
+  writeFile: 'writeFile',
+  statusChooseFolder: 'statusChooseFolder',
+  statusWroteFile: 'statusWroteFile',
+  statusWroteAll: 'statusWroteAll',
+  statusWriteErrors: 'statusWriteErrors',
 } as const;
 
 export type ExportFileId = 'blades' | 'bladeStyles' | 'presets' | 'board' | 'features';

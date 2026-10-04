@@ -24,8 +24,12 @@ export const bladeRemoved = createEvent<number>();
 /** Replace entire wiring table from the active board profile catalog entry. */
 export const applyProfileDefaults = createEvent<void>();
 
+/** Replace wiring from imported `config/blades.ini`. */
+export const wiringImported = createEvent<BladeDefinition[]>();
+
 /** All blade definitions, initially loaded from `proffie_v3` profile. */
 export const $wiring = createStore<BladeDefinition[]>(getProfileBlades('proffie_v3'))
+  .on(wiringImported, (_, blades) => blades)
   .on(bladeUpdated, (blades, { index, patch }) =>
     blades.map((b) => (b.index === index ? { ...b, ...patch } : b)),
   )

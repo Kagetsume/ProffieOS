@@ -15,6 +15,7 @@ export default {
     'nav.route.blades': '光刃',
     'nav.route.styles': '光刃樣式',
     'nav.route.presets': '預設',
+    'nav.route.import': '匯入',
     'nav.route.export': '匯出',
     'nav.configFiles': '設定檔',
     'nav.output': '輸出',
@@ -26,6 +27,7 @@ export default {
   'po-app-shell': {
     title: 'LayerBlade',
     tagline: 'ProffieOS SD 光刃樣式',
+    importLink: '匯入',
     exportLink: '匯出',
     darkMode: '深色模式',
     lightMode: '淺色模式',
@@ -91,6 +93,7 @@ export default {
     stubHint: '此區為占位 — 編輯器介面將於後續階段提供。',
   },
   'po-copy-panel': {},
+  'po-import-page': {},
   'po-export-page': {
     title: '匯出',
     lead: '複製或下載產生的 INI，用於 SD 卡 <code>config/</code> 資料夾。',

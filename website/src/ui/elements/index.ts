@@ -13,6 +13,7 @@ import './po-features-page.js';
 import './po-blade-preview.js';
 import './po-styles-page.js';
 import './po-style-layer-stack.js';
+import './po-import-page.js';
 import './po-export-page.js';
 import './po-copy-panel.js';
 import './po-presets-page.js';

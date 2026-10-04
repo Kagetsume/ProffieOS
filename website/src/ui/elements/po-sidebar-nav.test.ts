@@ -7,10 +7,12 @@ import { getAllByTestIdPrefix, getByTestId, mount } from '../../test/lit-host-ut
 import './po-sidebar-nav.js';
 
 describe('po-sidebar-nav', () => {
-  it('renders route links', async () => {
+  it('renders route links including Import before Export in Output', async () => {
     const { el, unmount } = await mount(document.createElement('po-sidebar-nav'));
     expect(getByTestId(el, 'sidebar-nav')).toBeTruthy();
     expect(getAllByTestIdPrefix(el, 'sidebar-nav-link-').length).toBeGreaterThan(0);
+    expect(getByTestId(el, 'sidebar-nav-link-import')).toBeTruthy();
+    expect(getByTestId(el, 'sidebar-nav-link-export')).toBeTruthy();
     unmount();
   });
 

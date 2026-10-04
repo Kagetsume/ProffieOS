@@ -13,6 +13,7 @@
   "nav.route.blades": "Blades",
   "nav.route.styles": "Blade styles",
   "nav.route.presets": "Presets",
+  "nav.route.import": "Import",
   "nav.route.export": "Export",
   "nav.configFiles": "Config files",
   "nav.output": "Output",

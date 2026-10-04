@@ -21,5 +21,6 @@ export const sidebarNavRouteKeys: Record<RouteId, (typeof commonKeys.nav.route)[
     blades: commonKeys.nav.route.blades,
     styles: commonKeys.nav.route.styles,
     presets: commonKeys.nav.route.presets,
+    import: commonKeys.nav.route.import,
     export: commonKeys.nav.route.export,
   };

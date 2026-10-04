@@ -13,6 +13,7 @@
   "nav.route.blades": "Lames",
   "nav.route.styles": "Styles de lame",
   "nav.route.presets": "Préréglages",
+  "nav.route.import": "Importer",
   "nav.route.export": "Export",
   "nav.configFiles": "Fichiers config",
   "nav.output": "Sortie",

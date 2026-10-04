@@ -13,6 +13,7 @@
   "nav.route.blades": "ブレード",
   "nav.route.styles": "ブレードスタイル",
   "nav.route.presets": "プリセット",
+  "nav.route.import": "インポート",
   "nav.route.export": "エクスポート",
   "nav.configFiles": "設定ファイル",
   "nav.output": "出力",

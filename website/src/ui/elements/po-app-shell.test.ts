@@ -7,9 +7,10 @@ import { getByTestId, mount } from '../../test/lit-host-utils.js';
 import './po-app-shell.js';
 
 describe('po-app-shell', () => {
-  it('renders title, export link, and theme toggle', async () => {
+  it('renders title, import and export links, and theme toggle', async () => {
     const { el, unmount } = await mount(document.createElement('po-app-shell'));
     expect(getByTestId(el, 'app-shell-title').textContent?.length).toBeGreaterThan(0);
+    expect(getByTestId(el, 'app-shell-import-link').getAttribute('href')).toBe('#/import');
     expect(getByTestId(el, 'app-shell-export-link').getAttribute('href')).toBe('#/export');
     expect(getByTestId(el, 'app-shell-theme-toggle')).toBeTruthy();
     unmount();

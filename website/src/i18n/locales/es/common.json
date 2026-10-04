@@ -13,6 +13,7 @@
   "nav.route.blades": "Hojas",
   "nav.route.styles": "Estilos de hoja",
   "nav.route.presets": "Preajustes",
+  "nav.route.import": "Importar",
   "nav.route.export": "Exportar",
   "nav.configFiles": "Archivos config",
   "nav.output": "Salida",

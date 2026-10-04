@@ -1,0 +1,30 @@
+# ProffieOS — generated / local artifacts (see desktop/.gitignore, website/.gitignore)
+
+# Dependencies (npm)
+**/node_modules/
+
+# Website (Vite / Vitest)
+website/dist/
+website/.vite/
+website/coverage/
+website/.vitest/
+
+# Desktop (Tauri / Rust)
+desktop/src-tauri/target/
+desktop/src-tauri/gen/
+
+# Tooling caches (repo-wide safety net)
+.vite/
+.vitest/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini

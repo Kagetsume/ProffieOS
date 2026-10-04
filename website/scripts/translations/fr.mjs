@@ -15,6 +15,7 @@ export default {
     'nav.route.blades': 'Lames',
     'nav.route.styles': 'Styles de lame',
     'nav.route.presets': 'Préréglages',
+    'nav.route.import': 'Importer',
     'nav.route.export': 'Export',
     'nav.configFiles': 'Fichiers config',
     'nav.output': 'Sortie',
@@ -26,6 +27,7 @@ export default {
   'po-app-shell': {
     title: 'LayerBlade',
     tagline: 'Styles de lame SD pour ProffieOS',
+    importLink: 'Importer',
     exportLink: 'Export',
     darkMode: 'Mode sombre',
     lightMode: 'Mode clair',
@@ -93,6 +95,7 @@ export default {
     stubHint: 'Cette section est un placeholder — interface éditeur prévue ultérieurement.',
   },
   'po-copy-panel': {},
+  'po-import-page': {},
   'po-export-page': {
     title: 'Export',
     lead: 'Copiez ou téléchargez les fichiers INI générés pour le dossier <code>config/</code> de votre carte SD.',

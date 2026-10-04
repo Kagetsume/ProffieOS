@@ -15,6 +15,7 @@ export default {
     'nav.route.blades': 'ブレード',
     'nav.route.styles': 'ブレードスタイル',
     'nav.route.presets': 'プリセット',
+    'nav.route.import': 'インポート',
     'nav.route.export': 'エクスポート',
     'nav.configFiles': '設定ファイル',
     'nav.output': '出力',
@@ -26,6 +27,7 @@ export default {
   'po-app-shell': {
     title: 'LayerBlade',
     tagline: 'ProffieOS 向け SD ブレードスタイル',
+    importLink: 'インポート',
     exportLink: 'エクスポート',
     darkMode: 'ダークモード',
     lightMode: 'ライトモード',
@@ -92,6 +94,7 @@ export default {
     stubHint: 'このセクションはスタブです — エディター UI は今後追加されます。',
   },
   'po-copy-panel': {},
+  'po-import-page': {},
   'po-export-page': {
     title: 'エクスポート',
     lead: 'SD カードの <code>config/</code> 用に生成された INI をコピーまたはダウンロードします。',

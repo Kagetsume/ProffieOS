@@ -15,6 +15,7 @@ export default {
     'nav.route.blades': 'Klingen',
     'nav.route.styles': 'Klingenstile',
     'nav.route.presets': 'Presets',
+    'nav.route.import': 'Import',
     'nav.route.export': 'Export',
     'nav.configFiles': 'Config-Dateien',
     'nav.output': 'Ausgabe',
@@ -26,6 +27,7 @@ export default {
   'po-app-shell': {
     title: 'LayerBlade',
     tagline: 'SD-Klingenstile für ProffieOS',
+    importLink: 'Import',
     exportLink: 'Export',
     darkMode: 'Dunkelmodus',
     lightMode: 'Hellmodus',
@@ -93,6 +95,7 @@ export default {
     stubHint: 'Dieser Bereich ist ein Platzhalter — Editor-Oberfläche folgt in einer späteren Phase.',
   },
   'po-copy-panel': {},
+  'po-import-page': {},
   'po-export-page': {
     title: 'Export',
     lead: 'Generierte INI-Dateien für den Ordner <code>config/</code> auf der SD-Karte kopieren oder herunterladen.',

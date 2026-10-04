@@ -117,3 +117,8 @@ if (typeof globalThis.ResizeObserver === 'undefined') {
   }
   globalThis.ResizeObserver = ResizeObserverStub;
 }
+
+import { BrowserSaberStorage } from '../platform/browser-storage.js';
+import { setSaberStorage } from '../platform/storage.js';
+
+setSaberStorage(new BrowserSaberStorage());

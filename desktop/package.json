@@ -1,0 +1,14 @@
+{
+  "name": "layerblade-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "LayerBlade desktop shell (Tauri 2) for the ProffieOS website editor",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.9.0"
+  }
+}

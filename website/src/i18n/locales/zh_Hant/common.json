@@ -13,6 +13,7 @@
   "nav.route.blades": "光刃",
   "nav.route.styles": "光刃樣式",
   "nav.route.presets": "預設",
+  "nav.route.import": "匯入",
   "nav.route.export": "匯出",
   "nav.configFiles": "設定檔",
   "nav.output": "輸出",

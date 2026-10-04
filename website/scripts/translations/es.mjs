@@ -15,6 +15,7 @@ export default {
     'nav.route.blades': 'Hojas',
     'nav.route.styles': 'Estilos de hoja',
     'nav.route.presets': 'Preajustes',
+    'nav.route.import': 'Importar',
     'nav.route.export': 'Exportar',
     'nav.configFiles': 'Archivos config',
     'nav.output': 'Salida',
@@ -26,6 +27,7 @@ export default {
   'po-app-shell': {
     title: 'LayerBlade',
     tagline: 'Estilos de hoja SD para ProffieOS',
+    importLink: 'Importar',
     exportLink: 'Exportar',
     darkMode: 'Modo oscuro',
     lightMode: 'Modo claro',
@@ -93,6 +95,18 @@ export default {
     stubHint: 'Esta sección es provisional — la interfaz del editor llegará más adelante.',
   },
   'po-copy-panel': {},
+  'po-import-page': {
+    title: 'Importar',
+    lead: 'Cargue los <code>config/*.ini</code> existentes de la tarjeta SD del sable en el editor.',
+    browserNotice:
+      'Importar desde una carpeta de tarjeta SD requiere la app de escritorio LayerBlade. En el navegador, copie los INI manualmente o use Exportar tras editar.',
+    desktopCardLead: 'Carpeta del sable (escritorio — lee <code>config/*.ini</code>)',
+    saberRootNotSet: 'Sin definir — abra la raíz SD / sable',
+    openFolder: 'Abrir e importar carpeta del sable',
+    reloadFromFolder: 'Recargar desde carpeta',
+    statusChooseFolder: 'Elija primero una carpeta del sable',
+    statusPickCancelled: 'Selección de carpeta cancelada',
+  },
   'po-export-page': {
     title: 'Exportar',
     lead: 'Copie o descargue los INI generados para la carpeta <code>config/</code> de su tarjeta SD.',

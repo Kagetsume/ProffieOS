@@ -66,6 +66,9 @@ export const styleLayerMoved = createEvent<{
 /** Add a bundled config file style (e.g. smoke_blade) as a new `[section]`. */
 export const configStyleAdded = createEvent<string>();
 
+/** Replace all style sections from imported `config/blade_styles.ini`. */
+export const styleSectionsImported = createEvent<StyleSection[]>();
+
 function findSection(sections: StyleSection[], id: string): StyleSection | undefined {
   return sections.find((section) => section.id === id);
 }
@@ -94,6 +97,17 @@ export const $styleSections = createStore<StyleSectionsState>({
   activeSectionId: defaults[0]!.id,
   activeLayerId: defaultActiveLayerId(defaults),
 })
+  .on(styleSectionsImported, (_state, sections) => {
+    if (sections.length === 0) {
+      return _state;
+    }
+    const activeSection = sections[0]!;
+    return {
+      sections,
+      activeSectionId: activeSection.id,
+      activeLayerId: activeLayerForSection(activeSection, ''),
+    };
+  })
   .on(activeSectionChanged, (state, id) => {
     const section = findSection(state.sections, id);
     if (!section) {

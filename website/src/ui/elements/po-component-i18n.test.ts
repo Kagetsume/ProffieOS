@@ -26,6 +26,8 @@ import { copyPanelI18n } from './po-copy-panel.i18n.js';
 import { copyPanelKeys } from './po-copy-panel.keys.js';
 import { exportPageI18n } from './po-export-page.i18n.js';
 import { exportPageKeys } from './po-export-page.keys.js';
+import { importPageI18n } from './po-import-page.i18n.js';
+import { importPageKeys } from './po-import-page.keys.js';
 import { featuresPageI18n } from './po-features-page.i18n.js';
 import { featuresPageKeys } from './po-features-page.keys.js';
 import { homePageI18n } from './po-home-page.i18n.js';
@@ -64,6 +66,7 @@ const COMPONENT_I18N: ComponentI18nCase[] = [
   { id: 'po-color-input', i18n: colorInputI18n, keys: colorInputKeys },
   { id: 'po-config-stub-page', i18n: configStubPageI18n, keys: configStubPageKeys },
   { id: 'po-copy-panel', i18n: copyPanelI18n, keys: copyPanelKeys },
+  { id: 'po-import-page', i18n: importPageI18n, keys: importPageKeys },
   { id: 'po-export-page', i18n: exportPageI18n, keys: exportPageKeys },
   { id: 'po-features-page', i18n: featuresPageI18n, keys: featuresPageKeys },
   { id: 'po-home-page', i18n: homePageI18n, keys: homePageKeys },

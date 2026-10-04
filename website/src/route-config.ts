@@ -5,7 +5,15 @@
  */
 
 /** Application hash routes. */
-export type RouteId = 'home' | 'board' | 'features' | 'blades' | 'presets' | 'styles' | 'export';
+export type RouteId =
+  | 'home'
+  | 'board'
+  | 'features'
+  | 'blades'
+  | 'presets'
+  | 'styles'
+  | 'import'
+  | 'export';
 
 /** Sidebar grouping. */
 export type RouteGroup = 'intro' | 'config' | 'tools';
@@ -79,6 +87,13 @@ export const ROUTE_CATALOG: readonly RouteMeta[] = [
     sdPath: 'config/presets.ini',
     group: 'config',
     description: 'Font, track, preset name, and one style line per blade.',
+  },
+  {
+    id: 'import',
+    label: 'Import',
+    icon: 'file-import',
+    group: 'tools',
+    description: 'Load config INI files from your saber SD card into the editor.',
   },
   {
     id: 'export',

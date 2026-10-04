@@ -1,6 +1,7 @@
 {
   "title": "LayerBlade",
   "tagline": "SD blade styles for ProffieOS",
+  "importLink": "Import",
   "exportLink": "Export",
   "darkMode": "Dark mode",
   "lightMode": "Light mode",

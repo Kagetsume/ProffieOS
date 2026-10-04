@@ -10,6 +10,7 @@ import '@awesome.me/webawesome/dist/styles/webawesome.css';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 
 import './app.css';
+import { initPlatformStorage } from './platform/init.js';
 import { initTheme } from './ui/theme.js';
 import './ui/elements/index.js';
 import { ROUTE_CATALOG, type RouteId } from './route-config';
@@ -17,6 +18,7 @@ import { registerRoute, startRouter } from './router';
 import { mountHomePage } from './ui/pages/home-page';
 import { mountBoardPage } from './ui/pages/board-page';
 import { mountExportPage } from './ui/pages/export-page';
+import { mountImportPage } from './ui/pages/import-page';
 import { mountFeaturesPage } from './ui/pages/features-page';
 import { mountPresetsPage } from './ui/pages/presets-page';
 import { mountStylesPage } from './ui/pages/styles-page';
@@ -29,6 +31,7 @@ const PAGE_MOUNTS: Record<RouteId, (root: HTMLElement) => () => void> = {
   blades: mountWiringPage,
   presets: mountPresetsPage,
   styles: mountStylesPage,
+  import: mountImportPage,
   export: mountExportPage,
 };
 
@@ -41,6 +44,8 @@ for (const meta of ROUTE_CATALOG) {
 }
 
 initTheme();
+
+await initPlatformStorage();
 
 const pageRoot = document.querySelector<HTMLElement>('#page-root')!;
 

@@ -6,6 +6,17 @@
 import { html } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/card/card.js';
+import { formatSaberWriteStatus } from '../../export/format-saber-write-status.js';
+import { writeSaberConfigFiles } from '../../export/write-saber-config.js';
+import {
+  BLADES_INI,
+  BLADE_STYLES_INI,
+  BOARD_INI,
+  FEATURES_INI,
+  PRESETS_INI,
+  getSaberStorage,
+  isDesktopStorage,
+} from '../../platform/index.js';
 import { $export } from '../../stores/export';
 import { EffectorController } from '../effector-controller.js';
 import { PoElement } from './po-element.js';
@@ -24,8 +35,10 @@ const EXPORT_FILE_COUNT = 5;
 type ExportFileSpec = {
   id: ExportFileId;
   testId: string;
+  writeTestId: string;
   title: string;
   filename: string;
+  relativePath: string;
   contentKey: 'bladesIni' | 'bladeStylesIni' | 'presetsIni' | 'boardIni' | 'featuresIni';
 };
 
@@ -33,36 +46,46 @@ const EXPORT_FILES: ExportFileSpec[] = [
   {
     id: 'blades',
     testId: 'export-panel-blades',
+    writeTestId: 'export-write-blades',
     title: 'blades.ini',
     filename: 'blades.ini',
+    relativePath: BLADES_INI,
     contentKey: 'bladesIni',
   },
   {
     id: 'bladeStyles',
     testId: 'export-panel-blade-styles',
+    writeTestId: 'export-write-blade-styles',
     title: 'blade_styles.ini',
     filename: 'blade_styles.ini',
+    relativePath: BLADE_STYLES_INI,
     contentKey: 'bladeStylesIni',
   },
   {
     id: 'presets',
     testId: 'export-panel-presets',
+    writeTestId: 'export-write-presets',
     title: 'presets.ini',
     filename: 'presets.ini',
+    relativePath: PRESETS_INI,
     contentKey: 'presetsIni',
   },
   {
     id: 'board',
     testId: 'export-panel-board',
+    writeTestId: 'export-write-board',
     title: 'board.ini',
     filename: 'board.ini',
+    relativePath: BOARD_INI,
     contentKey: 'boardIni',
   },
   {
     id: 'features',
     testId: 'export-panel-features',
+    writeTestId: 'export-write-features',
     title: 'features.ini',
     filename: 'features.ini',
+    relativePath: FEATURES_INI,
     contentKey: 'featuresIni',
   },
 ];
@@ -73,6 +96,121 @@ export class PoExportPage extends PoElement {
   private readonly exportState = new EffectorController(this, $export);
 
   private selectedFile: ExportFileId = 'blades';
+
+  private saberRoot: string | null = null;
+
+  private writeStatus = '';
+
+  /**
+   * Shows the current saber root on desktop for write-to-SD actions.
+   */
+  connectedCallback(): void {
+    super.connectedCallback();
+    void this.refreshSaberRoot();
+  }
+
+  private async refreshSaberRoot(): Promise<void> {
+    if (!isDesktopStorage()) {
+      return;
+    }
+    try {
+      const storage = getSaberStorage();
+      this.saberRoot = await storage.getRoot();
+      this.requestUpdate();
+    } catch {
+      /* storage not ready */
+    }
+  }
+
+  private writeStatusMessages() {
+    return {
+      wroteAll: (params: { count: string; names: string }) =>
+        exportPageI18n.translate(exportPageKeys.statusWroteAll, params),
+      wroteFile: (params: { path: string; bytes: string }) =>
+        exportPageI18n.translate(exportPageKeys.statusWroteFile, params),
+      writeErrors: (params: { details: string }) =>
+        exportPageI18n.translate(exportPageKeys.statusWriteErrors, params),
+    };
+  }
+
+  private async resolveSaberRootForWrite(): Promise<boolean> {
+    const storage = getSaberStorage();
+    const root = this.saberRoot ?? (await storage.getRoot());
+    if (!root) {
+      this.writeStatus = exportPageI18n.translate(exportPageKeys.statusChooseFolder);
+      this.requestUpdate();
+      return false;
+    }
+    this.saberRoot = root;
+    return true;
+  }
+
+  private async runWrite(specs: ExportFileSpec[]): Promise<void> {
+    if (!(await this.resolveSaberRootForWrite())) {
+      return;
+    }
+    const storage = getSaberStorage();
+    const state = this.exportState.value;
+    const results = await writeSaberConfigFiles(
+      storage,
+      specs.map((file) => ({
+        relativePath: file.relativePath,
+        label: file.filename,
+        content: state[file.contentKey],
+      })),
+    );
+    this.writeStatus = formatSaberWriteStatus(results, this.writeStatusMessages());
+    this.requestUpdate();
+  }
+
+  private onWriteAllConfigFiles = async (): Promise<void> => {
+    await this.runWrite(EXPORT_FILES);
+  };
+
+  private onWriteFile = (file: ExportFileSpec) => async (): Promise<void> => {
+    await this.runWrite([file]);
+  };
+
+  private renderDesktopWriteActions() {
+    if (!isDesktopStorage()) {
+      return null;
+    }
+    return html`
+      <wa-card class="section-card" data-testid="export-desktop-write">
+        <p>${exportPageI18n.translate(exportPageKeys.desktopWriteLead)}</p>
+        <p data-testid="export-saber-root">
+          ${this.saberRoot ?? exportPageI18n.translate(exportPageKeys.saberRootNotSet)}
+        </p>
+        <div class="export-saber-actions">
+          <wa-button
+            size="small"
+            variant="brand"
+            data-testid="export-write-all"
+            @click=${this.onWriteAllConfigFiles}
+          >
+            ${exportPageI18n.translate(exportPageKeys.writeAllConfig)}
+          </wa-button>
+          ${EXPORT_FILES.map(
+            (file) => html`
+              <wa-button
+                size="small"
+                variant="neutral"
+                data-testid=${file.writeTestId}
+                @click=${this.onWriteFile(file)}
+              >
+                ${exportPageI18n.translate(exportPageKeys.writeFile, {
+                  filename: file.filename,
+                })}
+              </wa-button>
+            `,
+          )}
+        </div>
+        ${this.writeStatus
+          ? html`<p data-testid="export-write-status">${this.writeStatus}</p>`
+          : null}
+      </wa-card>
+    `;
+  }
 
   /**
    * Selects which INI file preview is shown.
@@ -145,6 +283,8 @@ export class PoExportPage extends PoElement {
             ${exportPageI18n.translate(exportPageKeys.summary, { count: String(EXPORT_FILE_COUNT) })}
           </p>
         </wa-card>
+
+        ${this.renderDesktopWriteActions()}
 
         ${this.renderFileSelector()}
 

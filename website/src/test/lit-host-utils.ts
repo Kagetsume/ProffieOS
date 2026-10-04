@@ -34,6 +34,12 @@ export function getByTestId(host: HTMLElement, testId: string): HTMLElement {
   return match;
 }
 
+/** Like {@link getByTestId} but returns null when the test id is absent. */
+export function queryByTestId(host: HTMLElement, testId: string): HTMLElement | null {
+  const match = renderRoot(host).querySelector(`[data-testid="${testId}"]`);
+  return match instanceof HTMLElement ? match : null;
+}
+
 /** Find all elements with the same `data-testid` within a host. */
 export function getAllByTestId(host: HTMLElement, testId: string): HTMLElement[] {
   return [...renderRoot(host).querySelectorAll(`[data-testid="${testId}"]`)].filter(

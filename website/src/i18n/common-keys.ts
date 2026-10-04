@@ -26,6 +26,7 @@ export const commonKeys = {
       blades: 'nav.route.blades',
       styles: 'nav.route.styles',
       presets: 'nav.route.presets',
+      import: 'nav.route.import',
       export: 'nav.route.export',
     },
   },

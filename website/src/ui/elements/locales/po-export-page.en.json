@@ -6,5 +6,13 @@
   "tab.bladeStyles": "blade_styles.ini",
   "tab.presets": "presets.ini",
   "tab.board": "board.ini",
-  "tab.features": "features.ini"
+  "tab.features": "features.ini",
+  "desktopWriteLead": "Write generated files to the saber folder (desktop — set folder on Import)",
+  "saberRootNotSet": "Not set — open your saber folder on the Import page",
+  "writeAllConfig": "Write all config files",
+  "writeFile": "Write ${filename}",
+  "statusChooseFolder": "Choose a saber folder on the Import page first",
+  "statusWroteFile": "Wrote ${path} (${bytes} bytes)",
+  "statusWroteAll": "Wrote ${count} file(s): ${names}",
+  "statusWriteErrors": "Errors: ${details}"
 }
