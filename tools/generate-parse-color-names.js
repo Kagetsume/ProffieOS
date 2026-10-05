@@ -9,13 +9,47 @@
  *
  * Run from repo root: node tools/generate-parse-color-names.js
  * Output: styles/parse_color_arg_table.generated.h (committed; Arduino needs no Node).
+ *
+ * colors.json source (first match):
+ *   1. LAYERBLADE_COLORS_JSON — absolute path
+ *   2. LAYERBLADE_ROOT/website/src/catalog/colors.json (default sibling: ../LayerBlade)
+ *   3. website/src/catalog/colors.json (legacy in-tree copy until website/ is removed)
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const CATALOG_JSON = path.join(REPO_ROOT, 'website', 'src', 'catalog', 'colors.json');
+
+function resolveCatalogJson() {
+  if (process.env.LAYERBLADE_COLORS_JSON) {
+    const p = path.resolve(process.env.LAYERBLADE_COLORS_JSON);
+    if (!fs.existsSync(p)) {
+      throw new Error(`LAYERBLADE_COLORS_JSON not found: ${p}`);
+    }
+    return p;
+  }
+
+  const layerBladeRoot = process.env.LAYERBLADE_ROOT
+    ? path.resolve(process.env.LAYERBLADE_ROOT)
+    : path.join(REPO_ROOT, '..', 'LayerBlade');
+
+  const candidates = [
+    path.join(layerBladeRoot, 'website', 'src', 'catalog', 'colors.json'),
+    path.join(REPO_ROOT, 'website', 'src', 'catalog', 'colors.json'),
+  ];
+
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p;
+  }
+
+  throw new Error(
+    `colors.json not found. Tried:\n${candidates.map((c) => `  ${c}`).join('\n')}\n` +
+      'Set LAYERBLADE_ROOT or LAYERBLADE_COLORS_JSON.'
+  );
+}
+
+const CATALOG_JSON = resolveCatalogJson();
 const COLORS_H = path.join(REPO_ROOT, 'styles', 'colors.h');
 const FETT263_SOURCE = path.join(REPO_ROOT, 'props', 'saber_fett263_buttons.h');
 const OUT_HEADER = path.join(REPO_ROOT, 'styles', 'parse_color_arg_table.generated.h');
@@ -174,6 +208,7 @@ function main() {
 
   fs.writeFileSync(OUT_HEADER, emitHeader(entries), 'utf8');
 
+  console.log(`Catalog: ${path.relative(REPO_ROOT, CATALOG_JSON) || CATALOG_JSON}`);
   console.log(`Wrote ${path.relative(REPO_ROOT, OUT_HEADER)} (${entries.length} names)`);
   if (conflicts.length) {
     console.log(`Skipped ${conflicts.length} duplicate name(s) with different RGB (first source wins):`);

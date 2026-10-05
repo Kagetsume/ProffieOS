@@ -2348,8 +2348,8 @@ SaberFett263Buttons() : PropBase() {}
 #endif
   }
 
-  bool chdir(const StringPiece dir) override {
-    bool ret = PropBase::chdir(dir);
+  bool chdir(const StringPiece dir, int optional_dirs_at_start = 0) override {
+    bool ret = PropBase::chdir(dir, optional_dirs_at_start);
     num_tracks_ = RunCommandAndGetSingleLine("list_current_tracks", nullptr, 0, 0, 0);
     track_num_ = 0;
 #ifdef FETT263_SAVE_CHOREOGRAPHY

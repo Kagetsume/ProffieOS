@@ -29,6 +29,7 @@ The format is the same as the save-dir `presets.ini` used for saving state. Pars
 ```
 new_preset
 font=YourFontName
+font_overlay=names/YourPresetName
 track=tracks/your_track.wav
 style=standard cyan white 300 800
 style=standard red white 300 800
@@ -42,6 +43,7 @@ end
 
 - **`new_preset`** – starts a new preset (first line of the file can be `new_preset` for preset 0).
 - **`font=`** – primary font directory (e.g. `LiquidStatic` → `/LiquidStatic` on SD, usually `Fonts/LiquidStatic/`).
+- **`font_overlay=`** – optional SD path(s), scanned **before** **`font=`** (same **`;`-separated** rules as **`font=`**). Use for per-preset WAV overrides (e.g. `font.wav` in `/names/Luke/`) while **`font=`** supplies the shared hum/clash pack. Missing overlay directories are ignored (no error).
 - **`voice=`** – optional **full SD path** to the voice pack search directory (after **`font=`**). **If omitted, `/common` is always used** — install prompts at **`SD:/common/`** (same level as **`Fonts/`** and **`config/`**). Override only for a non-default pack, e.g. **`voice=/common/AltPack`**. Do not use shorthand names; path must be complete. Do not append **`;common`** to **`font=`**.
 - **`track=`** – path to the track WAV (e.g. `tracks/hum.wav`).
 - **`style=`** – one line per blade; use named styles and arguments (e.g. `standard cyan white 300 800`, `fire red yellow`, `rainbow 300 800`). For multiple blades, list one `style=` per blade in order.

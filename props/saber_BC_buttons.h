@@ -2127,13 +2127,13 @@ void DoSavedTwist() {
     }
   }
 
-  bool chdir(const StringPiece dir) override {
+  bool chdir(const StringPiece dir, int optional_dirs_at_start = 0) override {
     if (track_player_) {
       track_player_->Stop();
       track_player_.Free();
     }
 
-    bool ret = PropBase::chdir(dir);
+    bool ret = PropBase::chdir(dir, optional_dirs_at_start);
     track_[0] = 0;
     return ret;
   }

@@ -10,6 +10,7 @@
 #endif
 #endif
 #include "../common/debug_preset_cycle_flash.h"
+#include "../common/font_search_path.h"
 
 #ifndef PROP_INHERIT_PREFIX
 #define PROP_INHERIT_PREFIX
@@ -258,11 +259,12 @@ public:
     Clash2(stab, strength);
   }
 
-  virtual bool chdir(const StringPiece dir) {
+  virtual bool chdir(const StringPiece dir, int optional_dirs_at_start = 0) {
     if (dir.len > 1 && dir[dir.len-1] == '/') {
       STDOUT.println("Directory must not end with slash.");
       return false;
     }
+    SetOptionalFontSearchDirsAtStart(optional_dirs_at_start);
 #ifdef ENABLE_AUDIO
     smooth_swing_v2.Deactivate();
     looped_swing_wrapper.Deactivate();
@@ -440,7 +442,7 @@ public:
 #endif
     current_preset_.SetPreset(preset_num);
     AllocateBladeStyles();
-    chdir(current_preset_.font.get());
+    chdir(current_preset_.font.get(), current_preset_.FontOverlayDirectoryCount());
     if (previously_on.on()) FastOn(EffectLocation(0, previously_on));
     if (announce) {
       PVLOG_STATUS << "Current Preset: " << current_preset_name() << "\n";
@@ -477,7 +479,7 @@ public:
     FreeBladeStyles();
     current_preset_.SetPreset(current_preset_.preset_num);
     AllocateBladeStyles();
-    chdir(current_preset_.font.get());
+    chdir(current_preset_.font.get(), current_preset_.FontOverlayDirectoryCount());
     if (previously_on.on()) On(EffectLocation(0, previously_on));
     TRACE(PROP, "end");
   }

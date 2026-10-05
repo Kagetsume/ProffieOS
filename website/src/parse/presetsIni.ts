@@ -67,6 +67,8 @@ export function parsePresetsIni(text: string): PresetDefinition[] {
 
     if (key === 'font') {
       draft.font = kv.value;
+    } else if (key === 'font_overlay') {
+      draft.fontOverlay = kv.value;
     } else if (key === 'voice') {
       draft.voice = kv.value;
     } else if (key === 'track') {

@@ -103,6 +103,21 @@ inline char* ComposePresetFontWithVoice(const char* font_path, const char* voice
   free(voice_path);
   return NormalizePresetFontPath((char*)mkstr(StringPiece(combo)));
 }
+
+// overlay → font → voice (/common). Overlay dirs are scanned first; missing files fall through.
+inline char* ComposePresetFontWithOverlayAndVoice(const char* overlay,
+                                                  const char* font_path,
+                                                  const char* voice) {
+  char* composed = ComposePresetFontWithVoice(font_path, voice);
+  if (!overlay || !overlay[0]) return composed;
+  char* overlay_norm = NormalizePresetFontPath((char*)mkstr(StringPiece(overlay)));
+  if (!composed || !composed[0]) return overlay_norm;
+  char combo[256];
+  snprintf(combo, sizeof(combo), "%s;%s", overlay_norm, composed);
+  free(overlay_norm);
+  free(composed);
+  return NormalizePresetFontPath((char*)mkstr(StringPiece(combo)));
+}
 #endif  // ENABLE_SD (font path helpers)
 
 #ifdef ENABLE_SD_CONFIG_FILES
@@ -113,6 +128,7 @@ inline char* ComposePresetFontWithVoice(const char* font_path, const char* voice
 
 struct SDPresetDef {
   LSPtr<char> font;
+  LSPtr<char> font_overlay;
   LSPtr<char> voice;
   LSPtr<char> track;
   LSPtr<char> name;
@@ -146,7 +162,7 @@ inline size_t GetNumPresets() {
 // Load preset list from SD card config/presets.ini if present.
 // Call after SD is mounted, and before FindBlade() (see ProffieOS.ino) so UseSDConfig() is true
 // when SetPreset runs. Does not require current_config.
-// Format: same as save-dir presets.ini (new_preset, font=, voice=, track=, style=, name=, variation=, end).
+// Format: same as save-dir presets.ini (new_preset, font=, font_overlay=, voice=, track=, style=, name=, variation=, end).
 // Whitespace (space, tab, newline) is tolerated. Malformed lines or parts are ignored and do not crash.
 inline void LoadSDConfig() {
 #ifdef ENABLE_SD
@@ -183,6 +199,7 @@ inline void LoadSDConfig() {
   int current_style_idx = 0;
   for (size_t i = 0; i < SD_MAX_PRESETS; i++) {
     sd_presets_storage[i].font.set("");
+    sd_presets_storage[i].font_overlay.set("");
     sd_presets_storage[i].voice.set("");
     sd_presets_storage[i].track.set("");
     sd_presets_storage[i].name.set("");
@@ -238,6 +255,9 @@ inline void LoadSDConfig() {
     } else if (!strcmp(variable, "font")) {
       char* s = f.readString();
       sd_presets_storage[idx].font.set(s ? NormalizePresetFontPath(s) : "");
+    } else if (!strcmp(variable, "font_overlay")) {
+      char* s = f.readString();
+      sd_presets_storage[idx].font_overlay.set(s ? NormalizePresetFontPath(s) : "");
     } else if (!strcmp(variable, "voice")) {
       char* s = f.readString();
       if (s) {

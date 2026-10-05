@@ -14,6 +14,13 @@ describe('serializePresetsIni', () => {
     expect(ini).toContain('end');
   });
 
+  it('exports font_overlay when set', () => {
+    const presets = createDefaultPresets(5).slice(0, 1);
+    presets[0]!.fontOverlay = 'names/Luke';
+    const ini = serializePresetsIni(presets);
+    expect(ini).toContain('font_overlay = names/Luke');
+  });
+
   it('exports config style with overrides', () => {
     const presets = createDefaultPresets(5);
     const magenta = presets.find((preset) => preset.name === 'Magenta vars');

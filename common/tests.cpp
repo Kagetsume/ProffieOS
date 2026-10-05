@@ -27,6 +27,8 @@
 #define previous_current_directory(dir) nullptr
 #define last_current_directory() "."
 
+int optional_font_search_dirs_at_start = 0;
+
 int random(int x) { return rand() % x; }
 
 const char* GetSaveDir() { return NULL; }
@@ -812,6 +814,18 @@ void test_compose_preset_font_with_voice() {
   free(r);
 }
 
+void test_compose_preset_font_with_overlay() {
+  char* r = ComposePresetFontWithOverlayAndVoice("/names/Luke", "/LiquidStatic", nullptr);
+  CHECK_STREQ(r, "/names/Luke;/LiquidStatic;/common");
+  free(r);
+  r = ComposePresetFontWithOverlayAndVoice("", "/LiquidStatic", "/common/AltPack");
+  CHECK_STREQ(r, "/LiquidStatic;/common/AltPack");
+  free(r);
+  r = ComposePresetFontWithOverlayAndVoice("/a;/b", "/Font", nullptr);
+  CHECK_STREQ(r, "/a;/b;/Font;/common");
+  free(r);
+}
+
 void test_patterns() {
   TEST_FORMAT_PATTERN("*;common", "font", "font;common");
   TEST_FORMAT_PATTERN("*", "font", "font");
@@ -911,6 +925,7 @@ int main() {
   test_range_stripe_intersect();
   test_command_line_capture();
   test_compose_preset_font_with_voice();
+  test_compose_preset_font_with_overlay();
   test_patterns();
   test_effect_location();
   test_cyclint();

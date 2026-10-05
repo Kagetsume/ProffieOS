@@ -19,6 +19,7 @@ export const presetsPageKeys = {
   remove: commonKeys.actions.remove,
   reset: commonKeys.actions.reset,
   labelFont: 'label.font',
+  labelFontOverlay: 'label.fontOverlay',
   labelTrack: 'label.track',
   labelPresetName: 'label.presetName',
   labelVariation: 'label.variation',

@@ -14,6 +14,8 @@ export type PresetDefinition = {
   /** Stable id for editor state (not exported). */
   id: string;
   font: string;
+  /** SD path(s) scanned before font= for per-preset WAV overrides (e.g. font.wav). */
+  fontOverlay?: string;
   /** Full SD voice pack path; omit in INI to use default /common. Exported as voice= when set. */
   voice?: string;
   track: string;

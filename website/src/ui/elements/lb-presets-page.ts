@@ -65,6 +65,17 @@ export class LbPresetsPage extends LbElement {
               this.patchPreset(preset.id, { font: (event.target as HTMLInputElement).value })}
           ></wa-input>
         </label>
+        <label class="span-2">
+          ${presetsPageI18n.translate(presetsPageKeys.labelFontOverlay)}
+          <wa-input
+            .value=${preset.fontOverlay ?? ''}
+            placeholder="names/Luke"
+            @wa-input=${(event: Event) => {
+              const v = (event.target as HTMLInputElement).value.trim();
+              this.patchPreset(preset.id, { fontOverlay: v || undefined });
+            }}
+          ></wa-input>
+        </label>
         <label>
           ${presetsPageI18n.translate(presetsPageKeys.labelTrack)}
           <wa-input

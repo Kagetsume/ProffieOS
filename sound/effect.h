@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "../common/atomic.h"
 #include "../common/file_reader.h"
+#include "../common/font_search_path.h"
 
 class Effect;
 Effect* all_effects = NULL;
@@ -612,7 +613,7 @@ class Effect {
   };
 #endif
 
-  static void ScanOneDirectory(const char* dir) {
+  static void ScanOneDirectory(const char* dir, bool optional_if_missing = false) {
     STDOUT.print("Scanning sound font: ");
     STDOUT << dir << "\n";
 
@@ -635,7 +636,8 @@ class Effect {
       scanner.Scan(dir);
       STDOUT.println(" done");
     } else {
-      if (strlen(dir)) ProffieOSErrors::font_directory_not_found();
+      if (strlen(dir) && !optional_if_missing)
+        ProffieOSErrors::font_directory_not_found();
     }
 #endif   // ENABLE_SD
   }
@@ -647,9 +649,13 @@ class Effect {
       e->reset();
     }
 
+    int dir_index = 0;
     for (const char* dir = current_directory; dir; dir = next_current_directory(dir)) {
-      ScanOneDirectory(dir);
+      bool optional = dir_index < optional_font_search_dirs_at_start;
+      ScanOneDirectory(dir, optional);
+      dir_index++;
     }
+    SetOptionalFontSearchDirsAtStart(0);
 
     bool warned = false;
     for (Effect* e = all_effects; e; e = e->next_) {

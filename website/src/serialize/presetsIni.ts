@@ -21,6 +21,9 @@ function serializePreset(preset: PresetDefinition): string[] {
     ...commentBlock(preset.comment),
     'new_preset',
     'font = ' + preset.font.trim(),
+    ...(preset.fontOverlay?.trim()
+      ? (['font_overlay = ' + preset.fontOverlay.trim()] as const)
+      : []),
     ...(preset.voice?.trim()
       ? (['voice = ' + preset.voice.trim()] as const)
       : []),

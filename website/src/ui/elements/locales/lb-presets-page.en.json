@@ -9,6 +9,7 @@
   "label.preset": "Preset",
   "addPreset": "Add preset",
   "label.font": "Font",
+  "label.fontOverlay": "Font overlay (optional SD path, scanned before font — e.g. names/Luke for font.wav)",
   "label.track": "Track",
   "label.presetName": "Preset name",
   "label.variation": "Variation",

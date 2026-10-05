@@ -420,6 +420,7 @@ bool AvoidIdleSDAccess();
 // Double-zero terminated array of search paths.
 // No trailing slashes!
 char current_directory[128];
+int optional_font_search_dirs_at_start = 0;
 const char* next_current_directory(const char* dir) {
   dir += strlen(dir);
   dir++;

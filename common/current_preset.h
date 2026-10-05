@@ -5,6 +5,7 @@
 #include "file_reader.h"
 #include "blade_config.h"
 #include "sd_config.h"
+#include "font_search_path.h"
 #include "arg_parser.h"
 
 class CurrentPreset {
@@ -16,6 +17,7 @@ public:
   uint32_t iteration_ = 0;
   LSPtr<char> font;
   LSPtr<char> font_primary;
+  LSPtr<char> font_overlay;
   LSPtr<char> voice;
   LSPtr<char> track;
 #if NUM_BLADES > 0
@@ -105,9 +107,16 @@ public:
 #define DOVALIDATE(X) do {  } while(0)
 #endif
 
+  int FontOverlayDirectoryCount() const {
+    return CountSemicolonSeparatedPaths(font_overlay.get());
+  }
+
   void FinalizeFontSearchPath() {
 #ifdef ENABLE_SD
-    font = ComposePresetFontWithVoice(font_primary.get() ? font_primary.get() : font.get(), voice.get());
+    font = ComposePresetFontWithOverlayAndVoice(
+        font_overlay.get(),
+        font_primary.get() ? font_primary.get() : font.get(),
+        voice.get());
 #else
     if (font_primary.get() && font_primary.get()[0]) {
       font = font_primary;
@@ -154,6 +163,7 @@ public:
   void Clear() {
     font = "";
     font_primary = "";
+    font_overlay = "";
     voice = "";
     track = "";
 #if NUM_BLADES > 0
@@ -173,6 +183,7 @@ public:
     preset_type = PRESET_DISK;
     preset_num = num;
     font_primary = p->font.get() ? mkstr(StringPiece(p->font.get())) : "";
+    font_overlay = p->font_overlay.get() ? mkstr(StringPiece(p->font_overlay.get())) : "";
     voice = p->voice.get() ? mkstr(StringPiece(p->voice.get())) : "";
     font = "";
     FinalizeFontSearchPath();
@@ -276,6 +287,15 @@ public:
 	/* LSPtr owns tmp when assigned; do not free */
 	continue;
       }
+      if (!strcmp(variable, "font_overlay")) {
+	char* tmp = f->readString();
+	if (tmp) {
+	  font_overlay.set(NormalizePresetFontPath(tmp));
+	} else {
+	  font_overlay = "";
+	}
+	continue;
+      }
       if (!strcmp(variable, "voice")) {
 	char* tmp = f->readString();
 	voice = tmp ? tmp : "";
@@ -329,6 +349,8 @@ public:
     if (voice.get() && voice.get()[0] && font_primary.get() && font_primary.get()[0])
       font_out = font_primary.get();
     f->write_key_value("font", font_out);
+    if (font_overlay.get() && font_overlay.get()[0])
+      f->write_key_value("font_overlay", font_overlay.get());
     if (voice.get() && voice.get()[0])
       f->write_key_value("voice", voice.get());
     DOVALIDATE(*this);
