@@ -16,7 +16,7 @@ Each **`[section_name]`** is one **recipe**. Presets reference it with **`style 
 
 **Author-facing units vs firmware scales** (colors, opacity, speed, period, ext/ret, …): **README_blade_styles_config.md** — section *Author-facing units (INI) vs firmware internals*.
 
-**Editor guide with functional examples:** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md).
+**LayerBlade editor guide** (separate repo): `website/BLADE_STYLES.md`.
 
 ### Named style catalog (firmware)
 

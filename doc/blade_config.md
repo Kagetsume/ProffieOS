@@ -18,7 +18,7 @@ A **blade configuration file** on the SD card defines which **data line** contro
 When this file is **missing**, the saber uses blade drivers compiled into your `CONFIG_FILE`.
 When it is **present** (Proffieboard), it **replaces** that wiring at runtime.
 
-Editor guide with more examples: [`website/BLADES.md`](../website/BLADES.md).
+LayerBlade wiring guide (separate repo): `website/BLADES.md`.
 
 ## Location and name
 

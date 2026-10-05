@@ -1,7 +1,0 @@
-{
-  "placeholder.data": "选择数据引脚…",
-  "placeholder.power": "选择电源引脚…",
-  "option.custom": "自定义（输入引脚名或编号）",
-  "option.inUse": "${label}（已占用）",
-  "placeholder.custom": "例如 20 或 bladePin"
-}

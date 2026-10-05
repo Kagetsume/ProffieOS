@@ -1,7 +1,0 @@
-{
-  "placeholder.data": "Choisir broche data…",
-  "placeholder.power": "Choisir broche alim…",
-  "option.custom": "Personnalisée (nom ou numéro de broche)",
-  "option.inUse": "${label} (utilisée)",
-  "placeholder.custom": "p. ex. 20 ou bladePin"
-}

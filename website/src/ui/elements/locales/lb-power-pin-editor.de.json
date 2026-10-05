@@ -1,5 +1,0 @@
-{
-  "heading": "Power-Pins",
-  "hint": "Sechs FET-Pins (bladePowerPin1–6) werden von allen NeoPixel-Klingen geteilt — jeder Pin darf im Saber nur einmal verwendet werden.",
-  "addPowerPin": "Power-Pin hinzufügen"
-}

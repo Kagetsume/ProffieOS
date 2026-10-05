@@ -1,5 +1,0 @@
-{
-  "heading": "電源ピン",
-  "hint": "6 つの FET ピン（bladePowerPin1–6）は全 NeoPixel ブレードで共有 — 各ピンはセーバー全体で 1 回のみ使用可。",
-  "addPowerPin": "電源ピンを追加"
-}

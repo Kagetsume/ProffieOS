@@ -233,7 +233,7 @@ function appendixSectionC(colors) {
 
   return `### Section C — Editor catalog extras
 
-Source: \`website/src/catalog/colors.json\` (extended + vivid). Same vivid typedefs live in \`styles/colors.h\`.
+Source: \`tools/catalog/colors.json\` (extended + vivid; sync from LayerBlade). Same vivid typedefs live in \`styles/colors.h\`.
 
 | Swatch | Editor name | Rgb (0–255) | Hex | Scope |
 | --- | --- | --- | --- | --- |

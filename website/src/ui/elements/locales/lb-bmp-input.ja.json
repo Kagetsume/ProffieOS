@@ -1,7 +1,0 @@
-{
-  "label.path": "SD カード上の BMP パス",
-  "placeholder.path": "animations/plasma.bmp",
-  "button.upload": "BMP をアップロード",
-  "hint.format": "24 ビット非圧縮 BMP · プレビューのみ（このパスに SD へコピー）",
-  "aria.fileInput": "コンピュータから BMP ファイルを選択"
-}

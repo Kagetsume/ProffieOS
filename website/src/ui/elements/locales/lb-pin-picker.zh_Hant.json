@@ -1,7 +1,0 @@
-{
-  "placeholder.data": "選擇資料腳位…",
-  "placeholder.power": "選擇電源腳位…",
-  "option.custom": "自訂（輸入腳位名稱或編號）",
-  "option.inUse": "${label}（使用中）",
-  "placeholder.custom": "例如 20 或 bladePin"
-}

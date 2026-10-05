@@ -13,7 +13,7 @@
  * colors.json source (first match):
  *   1. LAYERBLADE_COLORS_JSON — absolute path
  *   2. LAYERBLADE_ROOT/website/src/catalog/colors.json (default sibling: ../LayerBlade)
- *   3. website/src/catalog/colors.json (legacy in-tree copy until website/ is removed)
+ *   3. tools/catalog/colors.json (in-repo copy for firmware builds without LayerBlade)
  */
 
 const fs = require('fs');
@@ -36,7 +36,7 @@ function resolveCatalogJson() {
 
   const candidates = [
     path.join(layerBladeRoot, 'website', 'src', 'catalog', 'colors.json'),
-    path.join(REPO_ROOT, 'website', 'src', 'catalog', 'colors.json'),
+    path.join(REPO_ROOT, 'tools', 'catalog', 'colors.json'),
   ];
 
   for (const p of candidates) {

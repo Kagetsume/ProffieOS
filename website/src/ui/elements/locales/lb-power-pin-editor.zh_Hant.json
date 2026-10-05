@@ -1,5 +1,0 @@
-{
-  "heading": "電源腳位",
-  "hint": "六個 FET 腳位（bladePowerPin1–6）在所有 NeoPixel 光刃間共用 — 整支光劍中每個腳位只能使用一次。",
-  "addPowerPin": "新增電源腳位"
-}

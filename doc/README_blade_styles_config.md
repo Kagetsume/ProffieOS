@@ -2,7 +2,7 @@
 
 Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc.) using **`config/blade_styles.ini`** on the SD card. **INI recipes** can be edited on the SD card without recompiling. **New firmware named styles** (e.g. **`water_flow`**, **`fallen_order`**) need a one-time reflash; colors and overlays remain SD-editable afterward.
 
-**User guide (examples + use cases):** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md).
+**LayerBlade user guide** (separate repo): `website/BLADE_STYLES.md`.
 
 **Use in presets:** set the style to **`config <effect_name>`** where `effect_name` is a section name in the config file. Optional **`key=value`** tokens after the section name override **`{{name}}`** for that preset only (up to 16 pairs).
 
@@ -31,7 +31,7 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 
 **Implementation references:** color tokens → **`styles/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and duty/center args → **`OpacityScaleIntArg`** / **`ParseOpacityScaleToken`**; multiply-mask **min/max/strength** → **`Brightness65535ScaleIntArg`** / **`ParseBrightness65535Token`** (**`common/opacity_scale.h`**, **`functions/int_arg.h`**).
 
-**Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/parse_color_arg_table.generated.h`** (from **`website/src/catalog/colors.json`** plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
+**Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/parse_color_arg_table.generated.h`** (from **`tools/catalog/colors.json`** / LayerBlade’s catalog plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
 
 | What you write in INI | Meaning for humans | Internal / notes | Legacy escape |
 |----------------------|--------------------|------------------|---------------|
@@ -102,7 +102,7 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine **`speed`** to **`0`**, or try a low **`fps`** (e.g. **`2`**) before tuning texture speeds.
 
-**LayerBlade preview:** The browser editor decodes the same 24-bit rules in **`website/src/preview/strip-column-bmp.ts`**; upload a local BMP on **`#/styles`** for **`strip_column`** / **`strip_column_mask`** path fields (approximate timing vs hardware).
+**LayerBlade preview:** The LayerBlade editor approximates **`strip_column`** / **`strip_column_mask`** BMP flipbooks in the browser (see LayerBlade repo); on-saber SD timing still needs hardware tests.
 
 | **standard** | base color, clash color, extension ms, retraction ms | `standard cyan white 300 800` |
 | **rainbow** | extension ms, retraction ms | `rainbow 300 800` |
@@ -546,7 +546,7 @@ Edit Mode does **not** open **`blade_styles.ini`**, does not pick a layer index,
 - **`style = config <section> base=red clash=white …`** — overrides are **words on the preset line**. You can change those values on the SD card or, in principle, via **`SetArgument`** on argument indices **after** `config` and the section name (same mechanism as **`base=magenta`** in **`examples/config/presets.ini`**).
 - **Direct named styles** on the preset (`standard`, `fire`, `fallen_order`, …) — Edit Mode color menus match **positional args** in that string (Fett263 “Edit Mode color editing” styles). Saving updates **`presets.ini`** as builders expect.
 - **Twist / color-change** — if the **composed** blade style reports handled color change (or smooth/stepped variation applies), twist can still shift hue on some stacks; that is **not** the same as editing each layer’s colors in the INI.
-- **Website SD Config Editor** — the **Blade styles** page (`website/BLADE_STYLES.md`, `#/styles`) is the **layer-aware** path: edit **`blade_styles.ini`**, export, copy to SD. Preset lines still choose **`config <section>`** and optional overrides.
+- **LayerBlade** — **Blade styles** (`#/styles`) is the **layer-aware** path: edit **`blade_styles.ini`**, export, copy to SD. Preset lines still choose **`config <section>`** and optional overrides.
 
 ### What does not work today
 
@@ -574,4 +574,4 @@ Edit Mode does **not** open **`blade_styles.ini`**, does not pick a layer index,
 - **blade_config.md** — Blade hardware config (pins, blades) on the SD card.
 - **examples/README.md** — Full composable layer catalog and Fett263 approximation table.
 - **examples/config/** — Copy-ready SD layout; **`blade_styles.ini`** documents each feature inline.
-- **website/BLADE_STYLES.md** — User guide with functional examples and editor workflow.
+- **LayerBlade** — `website/BLADE_STYLES.md` user guide with functional examples and editor workflow.

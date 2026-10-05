@@ -1,19 +1,11 @@
-# ProffieOS — generated / local artifacts (see desktop/.gitignore, website/.gitignore)
+# ProffieOS — generated / local artifacts
 
-# Dependencies (npm)
+# Dependencies (npm) — LayerBlade lives in a separate repo; ignore stray local trees
 **/node_modules/
+website/
+desktop/
 
-# Website (Vite / Vitest)
-website/dist/
-website/.vite/
-website/coverage/
-website/.vitest/
-
-# Desktop (Tauri / Rust)
-desktop/src-tauri/target/
-desktop/src-tauri/gen/
-
-# Tooling caches (repo-wide safety net)
+# Tooling caches
 .vite/
 .vitest/
 

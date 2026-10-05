@@ -4,6 +4,6 @@ In ProffieOS, anything that can light up is a "blade". Originally, ProffieOS was
 
 In this directory you will find the code for all the blades, including the underlying hardware drivers.
 
-**SD card wiring (`config/blades.ini`):** [`doc/blade_config.md`](../doc/blade_config.md) and [`website/BLADES.md`](../website/BLADES.md).
+**SD card wiring (`config/blades.ini`):** [`doc/blade_config.md`](../doc/blade_config.md). LayerBlade wiring guide: `website/BLADES.md` in the LayerBlade repo.
 
 **Compiled config / wiki:** https://github.com/profezzorn/ProffieOS/wiki/The-CONFIG_PRESETS-section

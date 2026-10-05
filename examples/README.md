@@ -26,8 +26,8 @@ The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `bl
 |------|---------|
 | **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
 | **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
-| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). **Guide:** [`website/BLADES.md`](../website/BLADES.md) (examples + use cases). |
-| **blade_styles.ini** | Named style "recipes" as layers. **Guide:** [`website/BLADE_STYLES.md`](../website/BLADE_STYLES.md). See table below for full feature list. |
+| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). **Guide:** LayerBlade `website/BLADES.md`. |
+| **blade_styles.ini** | Named style "recipes" as layers. **Guide:** LayerBlade `website/BLADE_STYLES.md`. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |
 | **presets.ini** | Preset list: font, track, style, name. Includes examples of **`config <section>`**, variable overrides, nested configs, preon/postoff, and direct named styles. On-saber Edit Mode changes **`style=`** lines only — not **`blade_styles.ini`** layers; see **`doc/README_blade_styles_config.md`** (*Edit Mode and on-saber menus vs layer stacks*). |

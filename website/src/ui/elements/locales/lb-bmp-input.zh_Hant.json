@@ -1,7 +1,0 @@
-{
-  "label.path": "SD 卡上的 BMP 路徑",
-  "placeholder.path": "animations/plasma.bmp",
-  "button.upload": "上傳 BMP",
-  "hint.format": "24 位元未壓縮 BMP · 僅預覽（請將檔案複製到 SD 的此路徑）",
-  "aria.fileInput": "從電腦選擇 BMP 檔案"
-}

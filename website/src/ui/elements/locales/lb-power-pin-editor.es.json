@@ -1,5 +1,0 @@
-{
-  "heading": "Pines de alimentación",
-  "hint": "Seis pines FET (bladePowerPin1–6) se comparten entre todas las hojas NeoPixel — cada pin solo puede usarse una vez en el sable.",
-  "addPowerPin": "Añadir pin de alimentación"
-}

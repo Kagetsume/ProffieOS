@@ -1,7 +1,0 @@
-{
-  "placeholder.data": "データピンを選択…",
-  "placeholder.power": "電源ピンを選択…",
-  "option.custom": "カスタム（ピン名または番号）",
-  "option.inUse": "${label}（使用中）",
-  "placeholder.custom": "例：20 または bladePin"
-}
