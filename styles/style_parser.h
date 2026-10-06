@@ -743,10 +743,11 @@ NamedStyle named_styles[] = {
     "Stack as: layer = multiply opacity 32768 base_flicker 10 300 500"
   },
   { "pulse_layer",
-    StylePtr<PulseLayerOverlay<IntArg<1, 3000>> >(),
-    "Smooth breathing brightness pulse over layers below: pulse_ms (default 3000). "
+    StylePtr<PulseLayerOverlay<IntArg<1, 3000>, IntArg<2, 10>> >(),
+    "Smooth breathing brightness pulse over layers below: pulse_ms [delta_percent] (defaults 3000, 10). "
+    "delta_percent = +/- brightness swing (try 18–25 for visible idle pulse). "
     "No ext/ret on layer line (multiply stack). "
-    "Stack as: layer = multiply opacity 32768 pulse_layer 3000"
+    "Stack as: layer = multiply opacity 100% pulse_layer 2000 20"
   },
   { "swing_layer",
     StylePtr<SwingLayerOverlay<IntArg<1, 10>, IntArg<2, 200>> >(),

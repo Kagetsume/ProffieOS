@@ -201,10 +201,10 @@ using BaseFlickerOverlay = BrightnessOverlayLayer<
   RandomHoldWaveF<MIN_MS, MAX_MS>,
   DELTA>;
 
-// Smooth breathing pulse — pulse_ms (delta defaults to 10%).
-template<class PULSE_MS>
+// Smooth breathing pulse — pulse_ms; optional delta_percent (default 10).
+template<class PULSE_MS, class DELTA = Int<10>>
 using PulseLayerOverlay = BrightnessOverlayLayer<
-  PulsingF<PULSE_MS>>;
+  PulsingF<PULSE_MS>, DELTA>;
 
 // Uniform swing brightening — idle = no change, harder swing = up to +delta% (multiply preserves hue).
 template<class DELTA = Int<10>, class THRESHOLD = Int<200>>
