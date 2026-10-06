@@ -2,6 +2,10 @@
 
 ProffieOS can load the **preset list** from a config file on the SD card instead of using the presets compiled into the firmware. This lets you change fonts, styles, and preset names without recompiling.
 
+## Fork vs upstream (contributors / agents)
+
+SD **`config/`** work must stay in the **fork allowlist**. **If you need a core file, ask first** — do not edit upstream paths (e.g. `common/serial.h`, `common/errors.h`, `props/`) until the user approves that file and change. See **`.cursor/rules/sd-config-fork-boundary.mdc`**. Before commit: **`scripts/check-fork-boundary.ps1`**.
+
 ## Opt-in firmware support
 
 SD **`config/`** INI loading is **not** always compiled in. Enable it in your **`CONFIG_FILE`** ( **`CONFIG_TOP`** section):

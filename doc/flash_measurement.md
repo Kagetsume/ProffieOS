@@ -54,3 +54,7 @@ For remaining `StylePtr` roots and dedup tiers, see **`doc/flash_styleptr_profil
 - **Expect:** ~0–2 KB vs a build that still had duplicate accent glow `Style<>` instantiations (often **0** if the linker already merged identical templates — still worth keeping for maintainability).
 
 Record baseline **Sketch uses** bytes, rebuild, compare (e.g. baseline 409480).
+
+## Optional help text (`ENABLE_CONFIG_FILE_HELP_TEXT`)
+
+Named-style catalog blurbs and `describe_named_style` text are **off by default**. Define **`ENABLE_CONFIG_FILE_HELP_TEXT`** in **`CONFIG_TOP`** to compile them; see **`common/help_text.h`**. Compare sketch size before/after — expect on the order of **~15–25 KB** saved when off (profile-dependent).
