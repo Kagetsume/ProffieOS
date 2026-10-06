@@ -514,9 +514,9 @@ NamedStyle named_styles[] = {
     NAMED_STYLE_DESC(    "Clash flash overlay layer: flash_color (transparent until clash)")
   },
   { "localized_clash",
-    StylePtr<LocalizedClashL<RgbArg<1, White>, IntArg<2, 40>, IntArg<3, 50>> >(),
-    NAMED_STYLE_DESC(    "Localized clash overlay: flash_color [clash_ms] [width_percent] (defaults 40 50). "
-    "Monolith unstable uses white 60 100.")
+    StylePtr<LocalizedClashL<RgbArg<1, White>> >(),
+    NAMED_STYLE_DESC(    "Localized clash overlay: flash_color (positioned band; transparent until clash). "
+    "Timing/width are compile-time defaults (40 ms, 50%% width).")
   },
   { "responsive_clash",
     StylePtr<ResponsiveClashL<RgbArg<1, White>> >(),

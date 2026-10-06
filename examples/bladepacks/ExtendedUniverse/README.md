@@ -15,7 +15,7 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, and a full style par
 
 ## Wiring
 
-Same as OST: see `config/blades.ini` (data pin 1, power pins 1–3, 144 pixels default).
+Same as OST: see `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pixels default).
 
 ## Presets
 

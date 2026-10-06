@@ -9,15 +9,17 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes).
+Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes). Proffieboard V3 pin names: [`doc/pin_reference.md`](../doc/pin_reference.md) and a printable [pin card](config-layers-pin-card.md) (from `config/proffieboard_v3_config.h`).
 
 Regenerate markdown and PDFs from the repo root:
 
 ```bash
 node tools/generate-parse-color-names.js
 node examples/generate-named-colors-appendix.js
+node examples/generate-pin-reference-card.js
 npx md-to-pdf examples/config-layers-user-guide.md --config-file examples/config-layers-user-guide.config.js
 npx md-to-pdf examples/config-layers-color-card.md --config-file examples/config-layers-color-card.config.js
+npx md-to-pdf examples/config-layers-pin-card.md --config-file examples/config-layers-pin-card.config.js
 ```
 
 The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
@@ -26,7 +28,7 @@ The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `bl
 |------|---------|
 | **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
 | **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
-| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). **Guide:** LayerBlade `website/BLADES.md`. |
+| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, `power_pin1`…) or simple PWM (`type=simple`, `pin1`…). **Use board pin names** (`bladePin`, `bladePowerPin1`–`3`, `blade5Pin`, …) — not numeric GPIO (numbers are literal MCU pins, not “FET #1”). Replaces compiled blade config when present (Proffieboard). **Guide:** [`doc/blade_config.md`](../doc/blade_config.md), LayerBlade `website/BLADES.md`. |
 | **blade_styles.ini** | Named style "recipes" as layers. **Guide:** LayerBlade `website/BLADE_STYLES.md`. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |

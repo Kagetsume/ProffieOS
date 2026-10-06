@@ -19,13 +19,13 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, full named-style cat
 
 ## Style notes
 
-**`fo_kylo_unstable`** composes monolith **`unstable`**: **`unstable_layer`**, **`on_spark_layer`**, **`unstable_lockup_layer`**, **`localized_clash`** 60 100, **`blast`**, **`sparktip_layer`**, drag/melt/lb. Fett263 **UnstableBlades** uses **`unstable_stripes`** / **`unstable_blades`** (EU pack).
+**`fo_kylo_unstable`** composes monolith **`unstable`**: **`unstable_layer`**, **`on_spark_layer`**, **`unstable_lockup_layer`**, **`localized_clash`**, **`blast`**, **`sparktip_layer`**, drag/melt/lb. Fett263 **UnstableBlades** uses **`unstable_stripes`** / **`unstable_blades`** (EU pack).
 
 Crossguard **quillons** need a second LED strip or accent config; this pack targets the **main** blade only.
 
 ## Wiring
 
-See `config/blades.ini` (same defaults as OST / Extended Universe).
+See `config/blades.ini` — **`bladePin`**, **`bladePowerPin1`–`3`**, 144 pixels (same as OST / Extended Universe).
 
 ## Fonts
 

@@ -116,6 +116,8 @@ config/blades.ini          (when you use the SD blade map)
 animations/cyan-gold-plasma.bmp   (only for the strip-column demo)
 ```
 
+**`blades.ini` pins:** Use **board pin names** from your Proffieboard config — **`bladePin`**, **`bladePowerPin1`–`3`**, **`blade5Pin`** … — not small integers like `1`/`2`/`3` (those are raw GPIO indices and do not mean “power FET slot 1”). Full V3 (3.9) tables: [`doc/pin_reference.md`](../doc/pin_reference.md) · printable pin card: `node examples/generate-pin-reference-card.js` then build **`config-layers-pin-card.pdf`** (see [`examples/README.md`](README.md)). See also [`doc/blade_config.md`](../doc/blade_config.md) and **`examples/bladepacks/*/config/blades.ini`**.
+
 Start from `examples/config/` in this repo. The folder on the card must be named `config`. Lines that begin with `#` or `;` are comments. Blank lines are fine.
 
 The shipped example assumes **four blades** (`NUM_BLADES` 4):

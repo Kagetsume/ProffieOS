@@ -9,7 +9,7 @@ A **blade style config file** on the SD card lets you build blade effects from *
 | Name a reusable layer stack | `[section]` + `layer =` lines | — |
 | Assign that stack to a blade | — | `style = config section` in `presets.ini` |
 | Change color for one preset only | Section variables + `{{name}}` | `style = config section base=red` in presets |
-| Wire GPIO / pixel count | — | `config/blades.ini` |
+| Wire blades (pin **names**, pixel count) | — | `config/blades.ini` — prefer `bladePin`, `bladePowerPin*` (see [`blade_config.md`](blade_config.md)) |
 | Simple PWM accent (motor pulse) | Optional layered `accent_*` recipes | Usually direct `style = accent_*` in presets |
 
 Each **`[section_name]`** is one **recipe**. Presets reference it with **`style = config section_name`**. Layers composite **bottom → top** (first `layer =` is the base).
@@ -297,7 +297,7 @@ Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html
 
 **Fett263 base-style fidelity notes:** Monolith named styles **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, and **`fallen_order`** bake in OS7 base + wrapper (one firmware reflash). DarkSaber idle is **`darksaber_layer`** only. SD sections stack optional layers and lockup overlays. Still simpler than full OS7 for lockup/clash (no Real Clash V1 dual-path or Bump lockup zones). Each section documents an SD-only fallback if firmware is not updated yet.
 
-**`unstable_blades` vs `unstable`:** Fett263 **UnstableBlades** OS7 uses **`unstable_blades`** or **`unstable_stripes`**. Kylo / **`unstable`** composable stack: **`solid_bend`** + **`unstable_layer`** + **`on_spark_layer`** + **`unstable_lockup_layer`** + **`localized_clash`** (60 100) + **`blast`** (+ drag/melt/lb). See **`[composable_classic_unstable]`** / **`fo_kylo_unstable`**. Monolith **`unstable`** remains one-line ( **`[chaos_inferno]`** ).
+**`unstable_blades` vs `unstable`:** Fett263 **UnstableBlades** OS7 uses **`unstable_blades`** or **`unstable_stripes`**. Kylo / **`unstable`** composable stack: **`solid_bend`** + **`unstable_layer`** + **`on_spark_layer`** + **`unstable_lockup_layer`** + **`localized_clash`** + **`blast`** (+ drag/melt/lb). See **`[composable_classic_unstable]`** / **`fo_kylo_unstable`**. Monolith **`unstable`** remains one-line ( **`[chaos_inferno]`** ).
 
 **Usage in presets:** `style = config fallen_order_blade`, `style = fallen_order silver white 300 800`, `style = config unstable_blades`, `style = unstable_blades silver white 300 800`, etc. Colors: **`silver`** = Rgb&lt;100,100,150&gt;; **`deepskyblue`** = Rgb&lt;0,135,255&gt;.
 

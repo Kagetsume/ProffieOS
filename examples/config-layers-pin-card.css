@@ -1,0 +1,128 @@
+/* Proffieboard V3 pin reference card (md-to-pdf / Chromium). */
+
+@page {
+  size: Letter;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+  font-size: 8.5pt;
+  line-height: 1.3;
+  color: #1c2330;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.title-page {
+  min-height: 9.25in;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  page-break-after: always;
+  break-after: page;
+}
+
+.title-page h1 {
+  font-size: 28pt;
+  font-weight: 700;
+  color: #0d3b66;
+  margin: 0 0 0.35em;
+  border: none;
+}
+
+.title-page .subtitle {
+  font-size: 13pt;
+  color: #1c4f7a;
+  margin: 0.1em 0;
+}
+
+.title-page .rule {
+  width: 2.5in;
+  border: none;
+  border-top: 2.5px solid #2f6fad;
+  margin: 1em auto;
+}
+
+.title-page .purpose {
+  font-size: 10.5pt;
+  max-width: 5.4in;
+  color: #243044;
+  margin: 0;
+  text-align: left;
+}
+
+.title-page .meta {
+  margin-top: 2em;
+  font-size: 10pt;
+  color: #5c6570;
+}
+
+.pin-card-section {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: 0.45in;
+}
+
+.pin-card-section-title {
+  font-size: 11pt;
+  font-weight: 700;
+  color: #0d3b66;
+  margin: 0 0 0.15em;
+  border-bottom: 1px solid #c5d4e8;
+  padding-bottom: 0.12em;
+}
+
+.pin-card-section-lead {
+  font-size: 8pt;
+  color: #5c6570;
+  margin: 0 0 0.35em;
+}
+
+.pin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+}
+
+.pin-table th {
+  text-align: left;
+  background: #e8f0fa;
+  color: #0d3b66;
+  padding: 0.2em 0.35em;
+  border: 1px solid #c5d4e8;
+}
+
+.pin-table td {
+  padding: 0.15em 0.35em;
+  border: 1px solid #dde4ec;
+  vertical-align: top;
+}
+
+.pin-table td code {
+  font-size: 7.5pt;
+  color: #1a4d7a;
+}
+
+.pin-row-sd td:first-child {
+  background: #f4faf4;
+}
+
+.pin-row-sd td:first-child code {
+  font-weight: 600;
+}
+
+.pin-card-foot .pin-card-section-lead {
+  font-size: 9pt;
+  color: #243044;
+}

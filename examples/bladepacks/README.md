@@ -7,7 +7,7 @@ These folders are **copy-to-SD recipe packs**: small `config/blade_styles.ini` +
 ## How to use a pack
 
 1. Copy the pack’s **`config/`** to the SD card **`config/`** (merge or replace `presets.ini` / `blade_styles.ini` deliberately—you usually keep one pack’s presets unless you merge by hand).
-2. Match **`config/blades.ini`** to your **`NUM_BLADES`** and wiring (defaults assume 144-pixel blade, data pin 1).
+2. Match **`config/blades.ini`** to your **`NUM_BLADES`** and wiring. Pack defaults use **board pin names** — **`bladePin`**, **`bladePowerPin1`–`3`** — not numeric GPIO (numbers in ini are literal pin indices, not “FET 1/2/3”).
 3. Point a preset at a section: **`style = config <section_name>`** with optional **`key=value`** overrides.
 4. Read the section in **`blade_styles.ini`**—that file is the real tutorial.
 
@@ -84,7 +84,7 @@ A hope for this layout: people **author and ship packs** the way the community s
 |---------|---------|
 | `config/blade_styles.ini` | Your `[sections]` — the product |
 | `config/presets.ini` | Optional ready-made presets |
-| `config/blades.ini` | Optional; comment “edit pixels/pins for your install” |
+| `config/blades.ini` | **`bladePin`** + **`bladePowerPin1`–`3`**; edit `pixels=` for your strip (keep pin **names**, not numeric GPIO) |
 | `README.md` | Install path, firmware needs (`*_layer` names, BMP), credits |
 | `font/` overlays | Optional per-character WAV overrides |
 | `animations/` or doc paths | BMP flipbooks if your pack uses `strip_column` |

@@ -17,8 +17,8 @@ Firmware must define **`NUM_BLADES` 1** and enable **`ENABLE_SD_CONFIG_FILES`** 
 
 ## Wiring (`config/blades.ini`)
 
-- NeoPixel **data pin 1**
-- **Power FETs** on pins **1**, **2**, and **3**
+Use **board pin names** (not raw GPIO numbers): **`bladePin`**, **`bladePowerPin1`–`3`**. Numeric values in ini are MCU pin indices and usually wrong on Proffieboards.
+
 - Default **144** pixels — change `pixels=` to match your strip
 
 ## Presets

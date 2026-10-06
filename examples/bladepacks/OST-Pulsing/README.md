@@ -22,4 +22,4 @@ Tune idle: `style = config ost_pulsing base=green pulse_ms=4000` (slower) or `pu
 
 ## Presets, fonts, wiring
 
-Same table as the OST pack: LukeANH, ObiWan, Vader, LukeROTJ, Windu, TempleGuard; **`font = SmthJedi`**; **`font_overlay = font/<PresetName>`**; blade **data pin 1**, power **1–3**, **144** pixels default (`config/blades.ini`).
+Same table as the OST pack: LukeANH, ObiWan, Vader, LukeROTJ, Windu, TempleGuard; **`font = SmthJedi`**; **`font_overlay = font/<PresetName>`**; **`bladePin`**, **`bladePowerPin1`–`3`**, **144** pixels default (`config/blades.ini`).
