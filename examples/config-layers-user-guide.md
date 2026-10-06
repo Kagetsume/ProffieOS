@@ -529,7 +529,7 @@ Add these above the base. Most stay invisible until the saber actually does that
 | Clash in one place | `localized_clash white` | A band at a random spot along the blade. |
 | Clash that follows the angle | `responsive_clash white` | A bump placed from the blade angle. |
 | Real Clash (OS7) | `real_clash white 49%` | Strength of the hit picks a bump, wave, spark, or fade. `49%` pins the band on the blade. `angle` lets the band follow tilt: `real_clash white angle`. This is what `[demo_strip_column]` uses. |
-| Lockup | `lockup white` or `responsive_lockup white` | While a lockup is held. The bump follows blade angle. Both names are the same effect. |
+| Lockup | `responsive_lockup white` | While a lockup is held. The bump follows blade angle. |
 | Blast, fixed wave | `blast white` | A blast event. Timing is fixed in the firmware (about 200 / 100 / 400 ms). Only the color is yours. `[fire_blast]` and `[smoke_laser]` use this. |
 | Blast, random wave | `blast_wave_random white` | An OS7-style wave whose size and place vary. `[demo_strip_column]` uses this. |
 | Blast that follows the angle | `responsive_blast white` | Wave placed from the blade angle. `[composable_checklist_responsive]` uses this. |

@@ -71,7 +71,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 
 ### Layered accents (`config` on PWM blades)
 
-Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `lockup`, `real_clash`, `drag`, `melt`, …) and **composable texture** layers (`audio_layer`, `pulse_layer`, `fire_mask`, `hard_stripes`, `responsive_flame_layer`, …). On one PWM LED, textures modulate uniform brightness. See **`examples/config/blade_styles.ini`** — GPIO ACCENT RECIPES (`accent_reactive`, `accent_os7_combat`, `accent_composable_audio`, `accent_composable_crackle`, …).
+Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `responsive_lockup`, `real_clash`, `drag`, `melt`, …) and **composable texture** layers (`audio_layer`, `pulse_layer`, `fire_mask`, `hard_stripes`, `responsive_flame_layer`, …). On one PWM LED, textures modulate uniform brightness. See **`examples/config/blade_styles.ini`** — GPIO ACCENT RECIPES (`accent_reactive`, `accent_os7_combat`, `accent_composable_audio`, `accent_composable_crackle`, …).
 
 Example preset line (Blade 5):
 
@@ -95,7 +95,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 | Style | Example | Notes |
 |-------|---------|-------|
-| `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / lockup overlays for composable recipes |
+| `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / `responsive_lockup` overlays for composable recipes |
 | `solid_bend` | `solid_bend cyan 300 800` | Like `solid` with OS7 BendTimePow in/out |
 | `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column base (default **`frames_y`**: width = blade, height = frames). BMP opens **when saber is on** only (**sd_style_boot_order.md**). Ring-buffer prefetch + bulk row reads on SD — see **doc/README_blade_styles_config.md** and **config-layers-user-guide.md** (*Strip column*) |
 | `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
@@ -137,7 +137,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `localized_clash` | `localized_clash white` | Positioned clash band (random position) |
 | `responsive_clash` | `responsive_clash white` | Blade-angle positioned clash bump |
 | `real_clash` | `real_clash white 49%` or `real_clash white angle` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
-| `lockup` | `lockup cyan` | Lockup / drag / melt tint |
+| `responsive_lockup` | `responsive_lockup cyan` | Lockup / drag / melt tint (blade-angle bump) |
 | `sparkle` | `add opacity 24% sparkle white` | Random sparkles |
 | `pulse` | `multiply opacity 73% pulse white 3000` | Breathing brightness |
 | `swing` | `add opacity 37% swing white 200` | Brightens when swinging |

@@ -145,7 +145,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **clash** / **localized_clash** | clash color | Standard clash overlays |
 | **responsive_clash** | clash color (optional) | Blade-angle bump on clash |
 | **real_clash** | clash color, blade position (optional) | OS7 Real Clash V1 — **`49%`** or **`angle`** |
-| **lockup** / **responsive_lockup** | lockup colors… | Held lockup overlays |
+| **responsive_lockup** | lockup_color | Held lockup overlay (blade-angle bump) |
 | **drag** / **melt** / **lb** | colors… | Lockup suite overlays |
 | **swing** | swing color | Swing brightening overlay |
 | **force_glow** | glow color (optional) | Audio-reactive glow on **`EFFECT_FORCE`** while blade is on |
