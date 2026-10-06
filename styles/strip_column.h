@@ -22,11 +22,14 @@
 //   layer = strip_column animations/cyan-plasma.bmp 144 30 {{ext}} {{ret}}
 //
 // Stack multiply / clash / lockup overlays via additional layer = lines as today.
+//
+// Missing/invalid BMP: scrolling strobe red bands (two sweeps up, two down) instead of a blank base.
 
 #include "bend_inout.h"
 #include "colors.h"
 #include "style_ptr.h"
 #include "strip_column_bmp.h"
+#include "strip_column_fallback.h"
 #include "../common/file_reader.h"
 #include "../common/math.h"
 #include "../blades/blade_base.h"
@@ -413,7 +416,8 @@ private:
 template<class SOURCE_HEIGHT, class FPS>
 class StripColumnL {
 public:
-  StripColumnL() : opened_(false), height_warned_(false), open_fail_logged_(false),
+  StripColumnL() : opened_(false), bmp_missing_(false), show_missing_fallback_(false),
+                   height_warned_(false), open_fail_logged_(false),
                    open_ok_logged_(false), num_frames_(0), num_leds_(0), source_height_(0),
                    frame_ms_(33), header_ok_(false), was_on_(false), retract_armed_(false),
                    retract_deadline_ms_(0) {
@@ -456,6 +460,8 @@ public:
       retract_ticking = (int32_t)(retract_deadline_ms_ - millis()) > 0;
       if (!retract_ticking) retract_armed_ = false;
     }
+    show_missing_fallback_ = bmp_missing_ && (on || retract_ticking);
+
     if (!(on || retract_ticking)) {
       if (file_.IsOpen()) file_.Close();
       return true;
@@ -470,9 +476,10 @@ public:
         path_[sizeof(path_) - 1] = 0;
       }
       if (!path_[0]) {
+        bmp_missing_ = true;
         if (!open_fail_logged_) {
           open_fail_logged_ = true;
-          STDOUT << "strip_column: empty file path (layer transparent)\n";
+          STDOUT << "strip_column: empty file path (danger fallback pattern)\n";
         }
         return true;
       }
@@ -480,15 +487,21 @@ public:
       if (!header_ok_) {
         if (!StripColumnOpenPath(&file_, path_)) {
           LOCK_SD(false);
+          bmp_missing_ = true;
           if (!open_fail_logged_) {
             open_fail_logged_ = true;
-            STDOUT << "strip_column: missing SD file " << path_ << " (layer transparent)\n";
+            STDOUT << "strip_column: missing SD file " << path_
+                   << " (danger fallback pattern)\n";
           }
           return true;
         }
         file_.Seek(0);
         if (!StripColumnBmpParseHeader(&file_, &bmp_info_)) {
-          STDOUT << "strip_column: need 24-bit uncompressed BMP\n";
+          bmp_missing_ = true;
+          if (!open_fail_logged_) {
+            open_fail_logged_ = true;
+            STDOUT << "strip_column: need 24-bit uncompressed BMP (danger fallback pattern)\n";
+          }
           file_.Close();
           LOCK_SD(false);
           return true;
@@ -514,7 +527,10 @@ public:
             cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
                                   source_height_, 0, 0)) {
           opened_ = true;
+          bmp_missing_ = false;
           cache_.OnFirstFrameReady();
+        } else if (header_ok_) {
+          bmp_missing_ = true;
         }
       }
       LOCK_SD(false);
@@ -542,6 +558,9 @@ public:
       uint8_t r, g, b;
       StripColumnSampleAtLed(data, led, num_leds_, source_height_, &r, &g, &b);
       return SimpleColor(Color16(sqr(r), sqr(g), sqr(b)));
+    }
+    if (show_missing_fallback_ && num_leds_ > 0) {
+      return SimpleColor(StripColumnMissingMediaColor(led, num_leds_, millis()));
     }
     return Black().getColor(led);
   }
@@ -579,6 +598,8 @@ private:
   FileReader file_;
   StripColumnColumnCache cache_;
   bool opened_;
+  bool bmp_missing_;
+  bool show_missing_fallback_;
   bool height_warned_;
   bool open_fail_logged_;
   bool open_ok_logged_;

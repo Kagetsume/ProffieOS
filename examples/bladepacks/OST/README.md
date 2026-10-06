@@ -51,3 +51,9 @@ All presets use **`style = config ost_classic base=<color>`** from `config/blade
 3. **`responsive_clash`**, **`responsive_blast`**, **`responsive_lockup`**, **`drag`**, **`melt`**, **`lb`**, **`swing`**
 
 Override timing or colors from a preset, e.g. `style = config ost_classic base=green clash=cyan`.
+
+## One style, many presets (variables)
+
+Every OT character preset points at the **same** `[ost_classic]` section. The blade recipe does not change—only **`base=`** (and optional **`clash=`**, **`lockup=`**, …) on the preset line. Section vars at the top of `[ost_classic]` (`base = blue`, `ext = -1`, …) are defaults; **`style = config ost_classic base=green`** overrides **`{{base}}`** on every layer that references it.
+
+Compare **[OST-Pulsing](../OST-Pulsing/)**: identical combat stack, one different idle layer (`pulse_layer` instead of `base_flicker`). That is the intended teaching path—**fork the section** or **swap one layer line**, not duplicate whole styles per character.

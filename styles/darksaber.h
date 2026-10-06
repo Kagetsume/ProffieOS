@@ -6,9 +6,8 @@
 // OS7.15 v3.44p
 //
 // Base Style: Clone Wars Darksaber (AudioFlicker + BrownNoiseFlicker + Stripes + SwingSpeed gleam).
-// This file contains the OS7 base-layer template only; clash/lockup/blast/in-out
-// are provided by the "darksaber" named style wrapper in style_parser.h
-// (Os7BladeWithBendInOut — BendTimePow extend/retract).
+// Use named style darksaber_layer in config/blade_styles.ini over solid_bend + combat overlays.
+// (Monolithic "darksaber" full-blade named style removed — layer stack only.)
 
 #include "audio_flicker.h"
 #include "brown_noise_flicker.h"

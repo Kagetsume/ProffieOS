@@ -25,7 +25,6 @@ static Os7MonolithFromBaseStyleFactory<WaterFlowOs7Base> water_flow_factory;
 
 using DarkSaberOs7Base = DarkSaberFlickerBase<RgbArg<1, Rgb<100, 100, 150>>>;
 static Os7IdleBaseStyleFactory<DarkSaberOs7Base> darksaber_layer_factory;
-static Os7MonolithFromBaseStyleFactory<DarkSaberOs7Base> darksaber_factory;
 
 using StaticElectricityOs7Base = StaticElectricityBladeBase<RgbArg<1, Rgb<0, 135, 255>>>;
 static Os7IdleBaseStyleFactory<StaticElectricityOs7Base> static_electricity_layer_factory;

@@ -69,7 +69,7 @@ Use the same style names and arguments as in the serial/editor:
 - **rainbow** – e.g. `rainbow 300 800`.
 - **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
 - **strobe**, **cycle**, **unstable**, **advanced**.
-- **Fett263 OS7 base styles** (firmware): **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`** — each takes **`base clash extend retract`** (e.g. `fallen_order cyan white 300 800`). Distinct from built-in **`unstable`**.
+- **Fett263 OS7** (firmware): monolith names **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`**, … take **`base clash extend retract`**. **DarkSaber:** use **`darksaber_layer`** + **`config composable_darksaber`** (monolith **`darksaber`** removed). Distinct from built-in **`unstable`**.
 - **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.

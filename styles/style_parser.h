@@ -229,7 +229,8 @@ NamedStyle named_styles[] = {
   { "strip_column", &strip_column_factory,
     "SD column animation base: file_path source_height fps extend_ms retract_ms. "
     "Normal 24-bit uncompressed .bmp on SD (GIMP/Photoshop export; width=frames, height=blade). "
-    "Use -1 for extend/retract to match sound length. Stack overlays via additional layer lines."
+    "Use -1 for extend/retract to match sound length. Missing/invalid file: scrolling strobe red "
+    "danger bands on the base. Stack overlays via additional layer lines."
   },
   // Combine onspark, inoutsparktip, gradient, customizable blast/clash/lockup colors
   { "advanced",
@@ -384,11 +385,6 @@ NamedStyle named_styles[] = {
     &water_flow_factory,
     "Interactive water-flow blade (Fett263 WaterBlade stripes): base_color clash_color extend_ms retract_ms. "
     "Stripe speed/direction follows blade angle; hard upward swing can reverse flow. OS7 BendTimePow in/out."
-  },
-  { "darksaber",
-    &darksaber_factory,
-    "Clone Wars DarkSaber blade (Fett263 OS7): base_color clash_color extend_ms retract_ms. "
-    "Metallic stripes, brown-noise texture, audio flicker, swing brightening to white. OS7 BendTimePow in/out."
   },
   { "static_electricity",
     &static_electricity_factory,

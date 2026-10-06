@@ -112,7 +112,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **advanced** | hilt color, middle color, tip color, onspark color, onspark time, blast color, lockup color, clash color, extension ms, retraction ms, spark tip color | `advanced red blue green white 10 white magenta white 300 800 white` |
 | **unstable** | warm, warmer, hot, sparks, extension ms, retraction ms | `unstable red orange yellow 100 200` |
 | **water_flow** | base, clash, extend ms, retract ms | `water_flow blue white 300 800` |
-| **darksaber** | base, clash, extend ms, retract ms | `darksaber silver white 300 800` |
+| **darksaber_layer** | base color | `darksaber_layer silver` — stack on **`solid_bend`** + combat overlays; use **`config composable_darksaber`** |
 | **static_electricity** | base, clash, extend ms, retract ms | `static_electricity deepskyblue white 300 800` |
 | **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
 | **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
@@ -495,7 +495,7 @@ Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 O
 | `[sine_waves_cyan]` / `[smoke_sine_cyan]` | Sine Waves Cyan / Smoke Sine Cyan (presets 0 / 2) | **`sine_waves`** multiply masks + OS7 combat; **`[smoke_sine_cyan]`** adds **`smoke_flow`** on **`solid_bend`** |
 | Texture demos | Presets 12–22 | **`[demo_saw_waves]`** … **`[demo_chirp]`** — one composable mask each (see **`examples/config/presets.ini`**) |
 | `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
-| `[darksaber_blade]` | Dark Saber | Needs **`darksaber`** in firmware |
+| `[composable_darksaber]` / `[darksaber_blade]` | Dark Saber | **`darksaber_layer`** + **`solid_bend`** + OS7 overlays (monolith **`darksaber`** removed) |
 | `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |
 | `[power_wave_blade]` | Power Wave | Needs **`power_wave`** in firmware |
 | `[unstable_blades]` | Unstable Blades | Needs **`unstable_blades`** (not **`unstable`**) |

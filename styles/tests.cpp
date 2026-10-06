@@ -184,6 +184,7 @@ Monitoring monitor;
 #include "../transitions/extend.h"
 #include "strip_column.h"
 #include "strip_column_bmp.h"
+#include "strip_column_fallback.h"
 
 Color16 TestRgbArgColors[256];
 
@@ -1323,6 +1324,10 @@ void test_strip_column_bmp() {
 
 void test_strip_column() {
   test_strip_column_bmp();
+  Color16 c0 = StripColumnMissingMediaColor(0, 80, 1000);
+  Color16 c1 = StripColumnMissingMediaColor(40, 80, 1000);
+  CHECK(c0.r > 0 || c1.r > 0);
+  CHECK(c0.r != c1.r || c0.g != c1.g);
   int row = 0;
   int frac = 0;
   StripColumnMapLed(0, 144, 144, &row, &frac);
@@ -1487,14 +1492,14 @@ void test_os7_monolith_factories() {
     CurrentArgParser = nullptr;
   }
   {
-    ArgParser ap("rgb100100150 white 300 800");
+    ArgParser ap("silver");
     CurrentArgParser = &ap;
-    BladeStyle* mono = darksaber_factory.make();
-    if (!mono) {
-      fprintf(stderr, "os7 darksaber factory make() failed\n");
+    BladeStyle* layer = darksaber_layer_factory.make();
+    if (!layer) {
+      fprintf(stderr, "os7 darksaber_layer factory make() failed\n");
       exit(1);
     }
-    delete mono;
+    delete layer;
     CurrentArgParser = nullptr;
   }
   {

@@ -5,6 +5,7 @@
 
 #include "strip_column.h"
 #include "strip_column_bmp.h"
+#include "strip_column_fallback.h"
 #include "../common/file_reader.h"
 #include "../common/math.h"
 #include "../common/color.h"
@@ -60,7 +61,6 @@ struct StripColumnOpenOptions {
   const char* style_name;
 };
 
-// Returns true when the layer should contribute no pixels (missing/invalid media).
 inline RGBA_um_nod StripColumnLayerTransparent() {
   return RGBA_um_nod::Transparent();
 }
@@ -119,12 +119,19 @@ public:
   void LogOpenFailureOnce(const StripColumnOpenOptions& opts, const char* reason) {
     if (open_warned_) return;
     open_warned_ = true;
+    media_failed_ = true;
     const char* tag = opts.style_name ? opts.style_name : "strip_column";
     if (path_[0]) {
-      STDERR << tag << ": " << reason << " " << path_ << " (layer transparent)\n";
+      STDERR << tag << ": " << reason << " " << path_ << " (danger fallback pattern)\n";
     } else {
-      STDERR << tag << ": " << reason << " (layer transparent)\n";
+      STDERR << tag << ": " << reason << " (danger fallback pattern)\n";
     }
+  }
+
+  bool MediaFailed() const { return media_failed_; }
+
+  bool MissingMediaFallbackActive(BladeBase* blade) {
+    return media_failed_ && MediaPlaybackActive(blade);
   }
 
   void LogOpenSuccessOnce(const StripColumnOpenOptions& opts) {
@@ -224,8 +231,7 @@ public:
       }
       file_.Seek(0);
       if (!StripColumnBmpParseHeader(&file_, &bmp_info_)) {
-        const char* tag = opts.style_name ? opts.style_name : "strip_column";
-        STDERR << tag << ": need 24-bit uncompressed BMP\n";
+        LogOpenFailureOnce(opts, "need 24-bit uncompressed BMP");
         file_.Close();
         LOCK_SD(false);
         return false;
@@ -247,7 +253,10 @@ public:
           cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
                                 source_height_, 0, 0)) {
         opened_ = true;
+        media_failed_ = false;
         cache_.OnFirstFrameReady();
+      } else if (header_ok_) {
+        media_failed_ = true;
       }
     }
     return opened_;
@@ -299,6 +308,7 @@ private:
     height_warned_ = false;
     open_warned_ = false;
     open_ok_logged_ = false;
+    media_failed_ = false;
     num_frames_ = 0;
     source_height_ = 0;
     was_on_ = false;
@@ -315,6 +325,7 @@ private:
   bool height_warned_;
   bool open_warned_;
   bool open_ok_logged_;
+  bool media_failed_;
   StripColumnBmpInfo bmp_info_;
   uint32_t num_frames_;
   int source_height_;

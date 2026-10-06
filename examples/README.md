@@ -109,7 +109,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `cylon` | `cylon red white 300 800` | Scanner / KR effect |
 | `pulse_blade` | `pulse_blade black cyan 2000 300 800` | Whole blade pulses (monolithic) |
 | `water_flow` | `water_flow blue white 300 800` | Angle-reactive stripes (Fett263 WaterBlade base; firmware required) |
-| `darksaber` | `darksaber silver white 300 800` | Metallic stripes + noise + audio (Fett263 DarkSaber base) |
+| `darksaber_layer` | `normal opacity 100% darksaber_layer silver` | DarkSaber idle texture — use **`config composable_darksaber`** for full stack |
 | `static_electricity` | `static_electricity deepskyblue white 300 800` | Swing charge / clash dissipate (Fett263 StaticElectricity base) |
 | `power_wave` | `power_wave silver white 300 800` | Wide slow reverse stripes (Fett263 PowerWave base) |
 | `unstable_blades` | `unstable_blades silver white 300 800` | Crackling StripesX (Fett263 UnstableBlades — **not** `unstable`) |
@@ -190,7 +190,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | Smoke laser (SD) | `smoke_laser` | Smoke Laser (preset 1) | Green base + **`smoke_flow`** + **`random_bands`** + classic clash/blast | Same gaps as SmokeBlade; band mask differs from **`smoke_blade`** |
 | Sine waves (SD) | `sine_waves_cyan` | Sine Waves Cyan (preset 0) | Four **`sine_waves`** multiply slots + OS7 combat | N/A (demo / builder recipe) |
 | [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `composable_water_flow` or `water_blade` | Water Blade | **`water_flow_layer`** + `solid_bend` + OS7 overlays, or monolithic **`water_flow`** | Bump lockup absorb shapes |
-| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + composable combat, or monolithic **`darksaber`** | Bump lockup absorb shapes |
+| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + **`solid_bend`** + composable combat | Bump lockup absorb shapes |
 | [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `composable_static_electricity` | Static Electricity | **`static_electricity_layer`** + composable combat | Bump lockup absorb shapes |
 | [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `composable_power_wave` or `power_wave_blade` | Power Wave | **`power_wave_layer`** + composable combat, or monolithic **`power_wave`** | Bump lockup absorb shapes |
 | [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `composable_unstable_blades` | Unstable Blades | **`unstable_stripes`** over `solid_bend` (~90%); or monolithic **`unstable_blades`** | **not** named style `unstable` |
@@ -221,7 +221,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | **Layer styles** | Full blades (`solid`, `solid_bend`, `standard`, `fire`, `rainbow`, `gradient`, `audio`, …) plus overlay layers (`blast`, `clash`, `pulse`, `sparkle`, `swing`, …). Composable recipes use **`solid`** + overlay `clash`/`blast`. |
 | **Preon/postoff** | `preon_glow`, `preon_wipe`, `preon_sputter`, `postoff_glow`, `postoff_wipe`, `postoff_sputter` -- transparent transition layers that play before ignition or after retraction, with duration and intensity driven by sound files. See section below. |
 | **Ignition flash** | `ignition_flash` -- full-blade color flash during `EFFECT_IGNITION` (SeismicCharge OS7). Args: `color extend_ms fade_ms`. |
-| **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`**, **`solid_bend`** (linear **`standard`** / **`solid`** unchanged). |
+| **Bend in/out** | Composable OS7 recipes use **`solid_bend`**. Remaining monolithic OS7 names (`water_flow`, `fallen_order`, …) use BendTimePow via **`Os7BladeWithBendInOut`**; DarkSaber is **layer-only** (`darksaber_layer`). |
 | **Blend modes** | `normal`, `multiply`, `screen`, `add` -- control how layers combine. |
 | **Opacity** | `opacity <0-100%>` -- per-layer transparency control (raw >100 still accepted). |
 | **Variables** | `name = value` + `{{name}}` -- section-local variables with preset overrides (`config section key=value`). |
