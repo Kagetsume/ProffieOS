@@ -30,7 +30,7 @@ The **full layer laboratory** remains **`examples/config/blade_styles.ini`** (26
 - **OST vs OST-Pulsing** swaps a **single idle layer line** (flicker vs pulse)—combat unchanged. Forkers learn: change one layer, keep the rest.
 
 Extended Universe uses the same idea with more idle variants (`eu_fallen_order`, `eu_darksaber`, …) but the same combat block and **`ext = -1` / `ret = -1`** vars everywhere.
-| **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo **unstable** monolith base) | `unstable` + drag/melt/lb |
+| **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo crackle) | `unstable_layer` + composable overlays |
 | **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid_bend` + `*_layer` + Real Clash stack |
 
 Nothing stops you from mixing: e.g. **`ost_classic`** combat with **`eu_darksaber`** idle, or a **`strip_column`** BMP base from the main config catalog under any pack’s preset.

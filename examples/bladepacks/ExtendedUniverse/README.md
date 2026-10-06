@@ -11,7 +11,7 @@ Copy this pack’s contents to the **root** of your SD card:
 | `config/` | `config/` |
 | `font/<PresetName>/` (optional) | `font/<PresetName>/` |
 
-Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, and a full style parser build with OS7 **`*_layer`** names used in this ini (`darksaber_layer`, `fallen_order_layer`, `unstable_stripes`, `power_wave_layer`, `static_electricity_layer`, `water_flow_layer`, plus composable texture layers for **`eu_crackle`**).
+Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, and a full style parser build with OS7 **`*_layer`** names used in this ini (`darksaber_layer`, `drifting_bands_with_pulse_layer`, `unstable_stripes`, `power_wave_layer`, `static_electricity_layer`, `water_flow_layer`, plus composable texture layers for **`eu_crackle`**).
 
 ## Wiring
 
@@ -24,6 +24,8 @@ Same as OST: see `config/blades.ini` (data pin 1, power pins 1–3, 144 pixels d
 | DarkSaber | `eu_darksaber` | Silver default; `base=steelblue` |
 | EUCrackle | `eu_crackle` | Generic EU crackle; `base=purple` / `red` |
 | CalKestis | `eu_fallen_order` | Fallen Order stripes; default **cyan** |
+| NomiSunrider | `eu_nomi_sunrider` | Teal **aquamarine** + drifting pulsing bands (Legends) |
+| MaraJade | `eu_mara_jade` | **vividviolet** + ShimmerBlade swing shimmer (Legends) |
 | UnstableBlades | `eu_unstable_blades` | OS7 stripe unstable (≠ Kylo `unstable`) |
 | PowerWave | `eu_power_wave` | Wide slow silver bands |
 | StaticCharge | `eu_static_electricity` | Swing charge / clash reset |

@@ -507,7 +507,7 @@ Stack with `normal` or `multiply` over `solid_bend`. They are the moving part of
 | `darksaber_layer` | base color |
 | `static_electricity_layer` | base color |
 | `power_wave_layer` | base color |
-| `fallen_order_layer` | base color |
+| `drifting_bands_with_pulse_layer` | base color — wide drifting stripes + 800 ms pulsing mid-band (FallenOrder OS7 idle) |
 | `shimmer_blade_layer` | base color |
 | `rotoscope_layer` | base color |
 | `pulse_stripes_layer` | base color |

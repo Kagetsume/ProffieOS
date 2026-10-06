@@ -46,6 +46,31 @@ inline void StyleParserCopyArgBounded(char* output, size_t output_max, const cha
 #include "ignition_effects.h"
 #include "transition_config_shared.h"
 #include "responsive_styles.h"
+#include "brown_noise_flicker.h"
+#include "sparkle.h"
+#include "strobe.h"
+#include "on_spark.h"
+#include "lockup.h"
+#include "audio_flicker.h"
+#include "alpha.h"
+
+// Classic named-style "unstable" idle (Kylo crackle) — composable as unstable_layer.
+template<class WARM, class WARMER, class HOT, class SPARKS>
+using ClassicUnstableIdleBase = BrownNoiseFlicker<
+  Strobe<WARM, Sparkle<HOT, SPARKS, 100, 1024>, 100, 50>,
+  Strobe<WARMER, WARM, 50, 5>,
+  100>;
+
+template<class WARMER>
+using ClassicUnstableLockupIdle = BrownNoiseFlicker<
+  Strobe<Black, Yellow, 50, 1>,
+  Strobe<WARMER, Black, 50, 1>,
+  50>;
+
+template<class WARMER, class SPARK, class SPARK_MS>
+using ClassicUnstableLockupLayerColor = AudioFlicker<
+  OnSparkX<ClassicUnstableLockupIdle<WARMER>, SPARK, SPARK_MS>,
+  SPARK>;
 
 class NamedStyle {
 public:
@@ -267,7 +292,12 @@ NamedStyle named_styles[] = {
     NAMED_STYLE_DESC(    "Fire blade, warm color, hot color")
   },
   { "unstable",
-    StylePtr<InOutHelperX<LocalizedClash<Lockup<Blast<OnSpark<BrownNoiseFlicker<Strobe<RgbArg<1, Rgb<150, 0, 0>>,Sparkle<RgbArg<3, Rgb<255,40,0>>, RgbArg<4, Rgb<255,255,10>>,100,1024>,100,50>,Strobe<RgbArg<2, Red>,RgbArg<1, Rgb<150, 0, 0>>,50,5>,100>,White,100>,White,200,100,400>,AudioFlicker<OnSpark<BrownNoiseFlicker<Strobe<Black,Yellow,50,1>,Strobe<RgbArg<2, Red>,Black,50,1>,50>,White,200>,White>,AudioFlicker<OnSpark<BrownNoiseFlicker<Strobe<Black,Yellow,50,1>,Strobe<RgbArg<2, Red>,Black,50,1>,50>,White,200>,White>>,White,60,100>,InOutFuncAuto<IntArg<5, 100>,IntArg<6, 200>>,Black>>(),
+    StylePtr<InOutHelperX<LocalizedClash<Lockup<Blast<OnSpark<
+          ClassicUnstableIdleBase<RgbArg<1, Rgb<150, 0, 0>>, RgbArg<2, Red>, RgbArg<3, Rgb<255,40,0>>, RgbArg<4, Rgb<255,255,10>>>,
+          White, 100>, White, 200, 100, 400>,
+        AudioFlicker<OnSpark<ClassicUnstableLockupIdle<RgbArg<2, Red>>, White, 200>, White>,
+        AudioFlicker<OnSpark<ClassicUnstableLockupIdle<RgbArg<2, Red>>, White, 200>, White>>,
+      White, 60, 100>, InOutFuncAuto<IntArg<5, 100>, IntArg<6, 200>>, Black>>(),
     NAMED_STYLE_DESC(    "Unstable blade, warm, warmer, hot, sparks, extension time, retraction time. "
     "Use -1 for extension/retraction time to match the ignition/retraction sound length.")
   },
@@ -484,8 +514,9 @@ NamedStyle named_styles[] = {
     NAMED_STYLE_DESC(    "Clash flash overlay layer: flash_color (transparent until clash)")
   },
   { "localized_clash",
-    StylePtr<LocalizedClashL<RgbArg<1, White>> >(),
-    NAMED_STYLE_DESC(    "Localized clash overlay: flash_color (positioned band; transparent until clash)")
+    StylePtr<LocalizedClashL<RgbArg<1, White>, IntArg<2, 40>, IntArg<3, 50>> >(),
+    NAMED_STYLE_DESC(    "Localized clash overlay: flash_color [clash_ms] [width_percent] (defaults 40 50). "
+    "Monolith unstable uses white 60 100.")
   },
   { "responsive_clash",
     StylePtr<ResponsiveClashL<RgbArg<1, White>> >(),
@@ -641,9 +672,28 @@ NamedStyle named_styles[] = {
     "Idle = no change; faster swing = up to +delta%% brightness (hue preserved vs add swing). "
     "No ext/ret on layer line (multiply stack). Stack: layer = multiply opacity 32768 swing_layer 10 200")
   },
+  { "unstable_layer",
+    StylePtr<ClassicUnstableIdleBase<RgbArg<1, Rgb<150, 0, 0>>, RgbArg<2, Red>, RgbArg<3, Rgb<255, 40, 0>>, RgbArg<4, Rgb<255, 255, 10>>> >(),
+    NAMED_STYLE_DESC(    "Classic unstable idle (Kylo crackle): warm warmer hot sparks — BrownNoiseFlicker + Strobe + Sparkle "
+    "(same idle as monolith unstable). Stack normal opacity 100% over solid_bend.")
+  },
+  { "on_spark_layer",
+    StylePtr<AlphaL<RgbArg<1, White>, OnSparkF<IntArg<2, 100>>> >(),
+    NAMED_STYLE_DESC(    "Ignition OnSpark flash over layers below: spark_color fade_ms (monolith unstable idle uses white 100). "
+    "Stack add opacity 100% over unstable_layer.")
+  },
+  { "unstable_lockup_layer",
+    StylePtr<LockupL<
+      ClassicUnstableLockupLayerColor<RgbArg<1, Red>, RgbArg<2, White>, IntArg<3, 200>>,
+      ClassicUnstableLockupLayerColor<RgbArg<1, Red>, RgbArg<2, White>, IntArg<3, 200>>
+    >>(),
+    NAMED_STYLE_DESC(    "Monolith unstable lockup idle: warmer spark_color onspark_fade_ms (default red white 200). "
+    "AudioFlicker + OnSpark + lockup strobe tree — use instead of responsive_lockup for Kylo match.")
+  },
   { "unstable_stripes",
     StylePtr<UnstableStripesLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
-    NAMED_STYLE_DESC(    "Crackling UnstableBlades stripe band texture; base_color (default silver). Use multiply/add over opaque base")
+    NAMED_STYLE_DESC(    "Crackling UnstableBlades stripe band texture; base_color (default silver). Fett263 OS7 idle band only — "
+    "not named style unstable (use unstable_layer for Kylo). Use multiply/add/normal over solid_bend.")
   },
   { "per_led_flicker",
     StylePtr<PerLedFlickerLayer>(),
@@ -687,10 +737,10 @@ NamedStyle named_styles[] = {
     NAMED_STYLE_DESC(    "PowerWave idle texture (Fett263 OS7): wide slow reverse stripes. base_color (default silver). "
     "Stack normal/multiply over solid_bend.")
   },
-  { "fallen_order_layer",
+  { "drifting_bands_with_pulse_layer",
     &fallen_order_layer_factory,
-    NAMED_STYLE_DESC(    "FallenOrder idle texture (Fett263 OS7): wide stripes with pulsing mid-band (800 ms). "
-    "base_color (default silver). Stack normal over solid_bend.")
+    NAMED_STYLE_DESC(    "Wide drifting stripes with pulsing mid-band (800 ms). base_color (default silver). "
+    "Same idle band as Fett263 FallenOrder OS7 / monolith fallen_order. Stack normal over solid_bend.")
   },
   { "shimmer_blade_layer",
     &shimmer_blade_layer_factory,

@@ -158,7 +158,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 
 **OS7 composable texture layers** (no ext/ret on layer line; need matching firmware):
 `water_flow_layer`, `darksaber_layer`, `static_electricity_layer`, `power_wave_layer`,
-`fallen_order_layer`, `shimmer_blade_layer`, `rotoscope_layer`, `pulse_stripes_layer`,
+`drifting_bands_with_pulse_layer`, `shimmer_blade_layer`, `rotoscope_layer`, `pulse_stripes_layer`,
 `kinetic_charge_layer`, `rotating_pulse_layer`, `trickle_blade_layer`, `cylon_layer`,
 `thunder_loop_layer`, `responsive_flame_layer`.
 
