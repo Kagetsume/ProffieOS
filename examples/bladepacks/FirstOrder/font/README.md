@@ -2,4 +2,4 @@
 
 Copy to SD root as `font/KyloRen/` to match `font_overlay=` in `config/presets.ini`.
 
-Override `in/`, `out/`, `clash/`, hum, etc. from your primary `font=` pack.
+Override **`name.wav`**, `in/`, `out/`, `clash/`, hum, etc. from your primary `font=` pack. Subfolder **`KyloRen/`** is included as a placeholder.

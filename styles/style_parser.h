@@ -260,6 +260,11 @@ NamedStyle named_styles[] = {
     "Use -1 for extend/retract to match sound length. Missing/invalid file: scrolling strobe red "
     "danger bands on the base. Stack overlays via additional layer lines.")
   },
+  { "strip_column_mask", &strip_column_mask_factory,
+    NAMED_STYLE_DESC(    "SD column BMP multiply mask: file_path source_height fps. Same 24-bit BMP layout as "
+    "strip_column (always frames_y). Grayscale R=G=B; stack as multiply opacity … strip_column_mask. "
+    "Missing/invalid file: danger fallback pattern while blade is on.")
+  },
   // Combine onspark, inoutsparktip, gradient, customizable blast/clash/lockup colors
   { "advanced",
     StylePtr<

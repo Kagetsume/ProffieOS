@@ -32,6 +32,7 @@ The **full layer laboratory** remains **`examples/config/blade_styles.ini`** (26
 Extended Universe uses the same idea with more idle variants (`eu_fallen_order`, `eu_darksaber`, …) but the same combat block and **`ext = -1` / `ret = -1`** vars everywhere.
 | **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo crackle) | `unstable_layer` + composable overlays |
 | **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid_bend` + `*_layer` + Real Clash stack |
+| **[BMP](BMP/)** | **SD flipbook bases** — same combat, swap `strip_column` art (3 BMPs ship; 3 specs in README) | `strip_column` + Real Clash stack |
 
 Nothing stops you from mixing: e.g. **`ost_classic`** combat with **`eu_darksaber`** idle, or a **`strip_column`** BMP base from the main config catalog under any pack’s preset.
 
@@ -43,7 +44,7 @@ Packs stay **small on purpose** so you can lift pieces without reading thousands
 2. **Copy whole sections** from any pack or from `examples/config/blade_styles.ini`: from `[section_name]` through the last `layer =` line (blank line before the next `[...]`).
 3. **Rename sections** if you merge two packs that both define `[ost_classic]`—pick unique names (`[my_luke]`, `[my_darksaber]`) and point presets at them: `style = config my_luke base=green`.
 4. **Merge `presets.ini`**: copy `new_preset` … blocks; each preset only needs one main-blade `style = config …` (plus optional accent lines). Keep **`name =`** unique on the saber.
-5. **One `blades.ini`** for your hardware; packs share the same default wiring—you edit it once.
+5. **One `blades.ini`** for your hardware; packs share the same default wiring—you edit it once. Use **`bladePin`** / **`bladePowerPin*`** only — **never** `data_pin = 1` (see **`doc/pin_reference.md`**). Run **`scripts/check-blades-ini-pins.ps1`** before commit.
 6. **Mix layers across sections**: duplicate a section, delete or swap one `layer =` line (e.g. OST responsive combat under EU `darksaber_layer`), or change vars (`base=`, `pulse_ms=`) without touching firmware.
 
 You do **not** need every preset from every pack—keep five favorites and grow the ini as you experiment. The monolithic main example config is the reference when you want one more technique; packs are the **starter slices** you paste from.
@@ -63,7 +64,6 @@ Same idea without BMP: `solid_bend` + OS7 `*_layer` + crackle multiply + rainbow
 
 ## Ideas for future packs (not shipped yet)
 
-- **BMP gallery** — `strip_column` bases + one combat stack; swap only the `.bmp` path.
 - **Procedural playground** — sine/saw/noise/moire multiply masks over `solid_bend` (see main `[demo_*]` sections).
 - **Accent-forward** — preon/postoff/ignition_flash recipes with minimal main blade.
 - **Wild / non-canon** — see **`[wild_bmp_crackle_rainbow]`**, `chaos_inferno`, multi-mask stacks; label clearly as experimental.

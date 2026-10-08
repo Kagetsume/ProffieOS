@@ -46,6 +46,7 @@ function Test-ForkAllowedPath {
     '^scripts/measure-flash\.py$',
     '^scripts/measure-flash\.ps1$',
     '^scripts/check-fork-boundary\.ps1$',
+    '^scripts/check-blades-ini-pins\.ps1$',
     '^\.cursor/rules/.*'
   )
 

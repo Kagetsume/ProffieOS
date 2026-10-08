@@ -4,7 +4,7 @@ ProffieOS can load the **preset list** from a config file on the SD card instead
 
 ## Fork vs upstream (contributors / agents)
 
-SD **`config/`** work must stay in the **fork allowlist**. **If you need a core file, ask first** — do not edit upstream paths (e.g. `common/serial.h`, `common/errors.h`, `props/`) until the user approves that file and change. See **`.cursor/rules/sd-config-fork-boundary.mdc`**. Before commit: **`scripts/check-fork-boundary.ps1`**.
+SD **`config/`** work must stay in the **fork allowlist**. **If you need a core file, ask first** — do not edit upstream paths (e.g. `common/serial.h`, `common/errors.h`, `props/`) until the user approves that file and change. See **`.cursor/rules/sd-config-fork-boundary.mdc`**. Before commit: **`scripts/check-fork-boundary.ps1`** and **`scripts/check-blades-ini-pins.ps1`** (examples **`blades.ini`** must use **`bladePin`** / **`bladePowerPin*`**, not numeric GPIO — **`.cursor/rules/blades-ini-pin-names.mdc`**).
 
 ## Opt-in firmware support
 
