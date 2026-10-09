@@ -146,8 +146,15 @@ public:
     file_.Close();
     opened_ = false;
     header_ok_ = false;
+    open_ok_logged_ = false;
+    media_failed_ = false;
+    num_frames_ = 0;
     cache_.ClearAllSlots();
   }
+
+  // Card unmount between cycles leaves opened_ set on a dead handle.
+  // The next ignition drops that session and opens again from frame 0.
+  void DropSession() { CloseOpenFile(); }
 
   // SD handle only. Leaves opened_, header, and the RAM column cache so the
   // off transition does not blank the mask or rewind to frame 0.
@@ -247,7 +254,8 @@ public:
         file_.Open(path_);
         LOCK_SD(false);
       }
-      return true;
+      if (file_.IsOpen()) return true;
+      CloseOpenFile();
     }
 
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);

@@ -51,9 +51,10 @@ After the times, up to two optional words. Each word is one of **`spark`**, a co
 | **`explode`** | **`inverse`** | Same center band both ways. Extend grows out to the hilt and the tip. Retract starts at those ends and both edges draw into the center until the blade is dark. |
 | **`explode_spark`** | **`inverse_spark`**, or **`explode`** plus **`spark`** | Explode with a spark on both edges. |
 | **`sputter`** | | Each pixel has a fixed random time and fades in across the extend. Retract runs that pattern backward, so the pixels that appeared last go dark first. |
+| **`flame`** | **`fire`** | Bend base from the hilt. Bright motes whip ahead toward the tip and die when the base catches them. On retract the base shrinks toward the hilt and those motes tear off and fade on their way to the tip. Color tints the motes (default white): `flame 300 800 orange`. |
 | **`bmp`** | **`bitmap`** | Column-file opacity mask. See below. |
 
-**Direction** defaults to **`tip`**: extend runs hilt→tip, retract runs tip→hilt. **`hilt`** mirrors the blade, so retract runs hilt→tip. That mirror reverses **`bend`**, **`linear`**, **`spark`**, **`sparktip`**, and **`sputter`**. **`split`** and **`explode`** are symmetric, so the mirror does not change their shape. **`bmp`** does not take **`spark`**, a color, or **`hilt`**.
+**Direction** defaults to **`tip`**: extend runs hilt→tip, retract runs tip→hilt. **`hilt`** mirrors the blade, so retract runs hilt→tip. That mirror reverses **`bend`**, **`linear`**, **`spark`**, **`sparktip`**, **`sputter`**, and **`flame`**. **`split`** and **`explode`** are symmetric, so the mirror does not change their shape. **`bmp`** does not take **`spark`**, a color, or **`hilt`**.
 
 **`bmp`** form:
 

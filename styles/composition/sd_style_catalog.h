@@ -124,7 +124,7 @@ inline int ConfigParseMsToken(const char* s, int fallback) {
 // `transition = <behavior> <extend_ms> <retract_ms> [spark] [color] [hilt|tip]` sets both phases.
 // `transition_in` / `transition_out` are one phase: `<behavior> <ms> [spark] [color] [hilt|tip]`.
 // tip (default) retracts tip→hilt. hilt mirrors that same wipe so retract runs hilt→tip.
-// sparktip, split, and explode read an optional spark color (default white). Unknown names use bend.
+// sparktip, split, explode, and flame read an optional spark color (default white). Unknown names use bend.
 inline bool ConfigParseWipeDirection(const char* token, bool* from_hilt) {
   if (!token || !token[0] || !from_hilt) return false;
   if (FirstWord(token, "hilt") || FirstWord(token, "hilt_to_tip")) {
@@ -173,6 +173,9 @@ inline void ConfigParseTransitionSpec(const char* spec, uint8_t* curve, int* ext
     times = SkipWord(p);
   } else if (FirstWord(p, "sputter")) {
     *curve = CONFIG_INOUT_SPUTTER;
+    times = SkipWord(p);
+  } else if (FirstWord(p, "flame") || FirstWord(p, "fire")) {
+    *curve = CONFIG_INOUT_FLAME;
     times = SkipWord(p);
   } else if (FirstWord(p, "bmp") || FirstWord(p, "bitmap")) {
     *curve = CONFIG_INOUT_BMP;
@@ -263,7 +266,7 @@ inline void ConfigParseTransitionSpec(const char* spec, uint8_t* curve, int* ext
   }
   if (spark && curve &&
       (*curve == CONFIG_INOUT_SPARKTIP || *curve == CONFIG_INOUT_SPLIT_SPARK ||
-       *curve == CONFIG_INOUT_EXPLODE_SPARK)) {
+       *curve == CONFIG_INOUT_EXPLODE_SPARK || *curve == CONFIG_INOUT_FLAME)) {
     const char* color = nullptr;
     if (extra3 && extra3[0] && !extra3_dir && !extra3_spark) color = extra3;
     else if (extra4 && extra4[0] && !extra4_dir && !extra4_spark) color = extra4;
