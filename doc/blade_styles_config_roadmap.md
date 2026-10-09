@@ -79,7 +79,7 @@ A drawn BMP column is the **`bmp`** transition: row 0 through the last row on ex
 - **`split`:** `transition_in = split` grows from the middle toward both ends. `transition_out = split` opens a dark gap at the middle and both edges run out to the hilt and the tip. **`spark`** on that line lights the edges.
 - **`explode`:** the center band both ways. Extend grows out to the hilt and the tip. Retract starts at those ends and both edges draw into the center until the blade is dark. **`inverse`** is the same behavior. **`spark`** lights both edges.
 - **`sputter`:** each pixel has a fixed random time. Extend fades those points in. Retract is that pattern reversed, so the points that lit last go dark first.
-- **`flame`:** bend base from the hilt, plus motes that always run toward the tip. Extend catches them. Retract tears them off the shrinking edge and they fade on the way to the tip. `fire` is the same word. A color tints the motes.
+- **`flame`:** bend base from the hilt with a jagged lip. Streaks run toward the tip: hot head, dim tail back toward the flame. Extend catches the head. Retract peels the streaks off the shrinking edge and they fade on the way to the tip. `fire` is the same word. A color tints the streaks.
 - **`bmp`:** `transition = bmp masks/wipe.bmp 144 {{ext}} {{ret}}`. The column file is the opacity mask. Extend scrubs row 0 to the last row. Retract scrubs back to row 0. White is lit, black is covered.
 - **Drawn BMP mask:** implemented as **`transition = bmp`**. The shared column cache steps forward while the blade is on and backward during retract.
 
