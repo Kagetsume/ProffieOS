@@ -172,7 +172,7 @@ See **`examples/README.md`** for composable vs monolithic guidance.
 
 | Layer kind | `ext` / `ret` on that line? | Why |
 |------------|----------------------------|-----|
-| **`transition = bend {{ext}} {{ret}}`** | Times live on this line | Sets both phases. **`transition_in`** / **`transition_out`** override one. **`split`**, **`explode`**, **`sputter`**, and **`bmp`** (column file, forward on extend and backward on retract) are mask shapes. Add **`spark`** on split or explode |
+| **`transition`**, **`transition_in`**, **`transition_out`** | Times live on these lines | **`transition`** sets both phases. **`transition_in`** / **`transition_out`** override one. Behaviors: **`bend`**, **`linear`** (`in_out`), **`spark`**, **`sparktip`**, **`split`** (`middle`), **`explode`** (`inverse`), **`sputter`**, **`bmp`** (`bitmap`). After the times, up to two of **`spark`**, a color, and **`hilt`** / **`tip`**. Full grammar: **blade_styles_config.md** |
 | **`solid`**, **`solid_bend`** | Optional, only if `transition` is omitted | Color only. The mask wipes them and signals power-off when retract finishes |
 | Textures (`gradient_layer`, `stripes`, `audio_layer`, **`smoke_flow`**, …) | **No** | Drawn under the wipe |
 | **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, **`sparktip_layer`** | Only if that style’s own args include them (`ignition_flash`, `sparktip_layer`) | Drawn after the wipe. Preon/postoff/ignition still hold power |

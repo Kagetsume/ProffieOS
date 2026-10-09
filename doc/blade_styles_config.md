@@ -30,9 +30,42 @@ Each **`[section_name]`** is one **recipe**. Presets reference it with **`style 
 
 ### Extend/retract in layered recipes (one transition)
 
-A section may set **`transition = <behavior> <extend_ms> <retract_ms> [spark_color|spark] [hilt|tip]`**. That line sets both phases. **`transition_in`** and **`transition_out`** override one phase: **`<behavior> <ms> [spark] [color] [hilt|tip]`**. Behaviors: **`bend`** (default curve), **`linear`**, **`spark`** (linear edge, no colored band), **`sparktip`** (bend plus a four-LED spark on the moving edge), **`split`**, **`explode`** (same as **`inverse`**), **`sputter`**, **`bmp`**. On the way in, **`split`** and **`explode`** both grow a lit band from the middle toward the hilt and the tip. On the way out, **`split`** opens a dark gap at the middle and both edges run out to the ends. **`explode`** does the reverse of that: the edges start at the hilt and the tip and draw into the center until the blade is dark. **`sputter`** gives each pixel a fixed random time and fades it in across the extend. Retract runs that same pattern backward, so the pixels that appeared last go dark first. **`bmp`** is a column-file opacity mask: `bmp <path> [source_height] <extend_ms> <retract_ms>`. Row 0 through the last row is the extend; retract reads those rows backward. White is lit and black is covered. The same reader plays **`strip_column`** and **`strip_column_mask`** backward while the blade is retracting. Add **`spark`** on a split or explode line to light those edges: `transition = explode {{ext}} {{ret}} spark white`. Direction defaults to **`tip`**. **`hilt`** mirrors bend, linear, spark, and sparktip. Split and explode are centered, so that mirror does not change them. One mask, two phase clocks. **`-1`** matches the sound length. A phase that is not set stays on the **`transition`** line, or on the bend (or other) curve detected from the first base layer.
+Three lines control the stack wipe. **`transition`** is copied onto both phases. **`transition_in`** and **`transition_out`** then replace one phase. A missing behavior name is **`bend`**. A missing time is **300** on extend and **800** on retract. **`-1`** matches the ignition or retraction sound length.
 
-When none of those lines are set, the first base that still has extend/retract supplies both phases. **`solid`** and **`solid_bend`** are colors; that default is **bend**, and times still come from optional `extend_ms` / `retract_ms` on the solid line (or 300 / 800).
+```ini
+transition = <behavior> <extend_ms> <retract_ms> [option] [option]
+transition_in = <behavior> <extend_ms> [option] [option]
+transition_out = <behavior> <retract_ms> [option] [option]
+```
+
+After the times, up to two optional words. Each word is one of **`spark`**, a color (`white`, `cyan`, …), or a direction (**`tip`** / **`tip_to_hilt`**, or **`hilt`** / **`hilt_to_tip`**). A third word is ignored.
+
+| Behavior | Also written | What it does |
+|----------|----------------|--------------|
+| **`bend`** | | Default curve. Same bend **`solid_bend`** uses. |
+| **`linear`** | **`in_out`**, **`inout`** | Even wipe along the blade. |
+| **`spark`** | | Linear edge with no colored band. |
+| **`sparktip`** | | Bend plus a four-LED spark on the moving edge. Color defaults to white: `sparktip 300 800 cyan`. |
+| **`split`** | **`middle`** | Extend grows a lit band from the middle toward the hilt and the tip. Retract opens a dark gap at the middle and both edges run out to the ends. |
+| **`split_spark`** | **`middle_spark`**, or **`split`** plus **`spark`** | Split with a spark on both edges. `transition = split 300 800 spark white`. |
+| **`explode`** | **`inverse`** | Same center band both ways. Extend grows out to the hilt and the tip. Retract starts at those ends and both edges draw into the center until the blade is dark. |
+| **`explode_spark`** | **`inverse_spark`**, or **`explode`** plus **`spark`** | Explode with a spark on both edges. |
+| **`sputter`** | | Each pixel has a fixed random time and fades in across the extend. Retract runs that pattern backward, so the pixels that appeared last go dark first. |
+| **`bmp`** | **`bitmap`** | Column-file opacity mask. See below. |
+
+**Direction** defaults to **`tip`**: extend runs hilt→tip, retract runs tip→hilt. **`hilt`** mirrors the blade, so retract runs hilt→tip. That mirror reverses **`bend`**, **`linear`**, **`spark`**, **`sparktip`**, and **`sputter`**. **`split`** and **`explode`** are symmetric, so the mirror does not change their shape. **`bmp`** does not take **`spark`**, a color, or **`hilt`**.
+
+**`bmp`** form:
+
+```ini
+transition = bmp <path> [source_height] <extend_ms> <retract_ms>
+transition_in = bmp <path> [source_height] <extend_ms>
+transition_out = bmp <path> [source_height] <retract_ms>
+```
+
+`source_height` is the blade span in the file. Omit it and the blade length is used (`bmp masks/wipe.bmp 300 800`). Two numbers on a one-phase line are height then milliseconds (`bmp masks/wipe.bmp 144 300`). Row 0 through the last row is the extend. Retract reads those rows backward. White is lit and black is covered. **`strip_column`** and **`strip_column_mask`** use that same reader and play backward while the blade is retracting.
+
+A phase with no **`transition`** / **`transition_in`** / **`transition_out`** line keeps the curve and time of the first base layer that still has extend/retract. **`solid`** and **`solid_bend`** supply **bend**. If only one phase line is set and no base supplies a curve, the other phase is **bend** at 300 (extend) or 800 (retract). If nothing is set and no base supplies a curve, the stack has no wipe.
 
 **`ConfigLayersStyle`** paints that wipe once, after every texture and combat layer. When the retract has finished and the blade is off, the mask calls **`allow_disable`**. **`preon_*`**, **`postoff_*`**, and **`ignition_flash`** still hold power while they run.
 

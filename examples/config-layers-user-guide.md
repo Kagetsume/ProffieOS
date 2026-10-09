@@ -149,7 +149,7 @@ name = Strip Column Demo
 variation = 0
 ```
 
-The next `new_preset` starts another look. The file ends with a line that says `end`. You can store up to 64 presets.
+The next `new_preset` starts another look. The file ends with a line that says `end`. Boot indexes every preset in the file; changing presets loads that one block.
 
 `font` is the folder name under `Fonts/` (or at the card root, depending on how your card is laid out). Optional **`font_overlay`** is scanned before `font` so you can drop per-preset WAVs (such as `font.wav` under `names/Luke/`) without duplicating the whole soundfont. The example voice pack lives in `common/` at the card root. Leave `voice =` out to use `/common`.
 

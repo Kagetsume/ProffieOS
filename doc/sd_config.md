@@ -28,7 +28,7 @@ See **`common/sd_config_files.h`**.
 1. Create a folder named **`config`** in the **root** of your SD card (same level as `Fonts`, `tracks`, etc.).
 2. Inside `config`, create a file named **`presets.ini`**.
 
-The format is the same as the save-dir `presets.ini` used for saving state. Parsing is **whitespace-tolerant** (spaces, tabs, blank lines are ignored). **Malformed lines or parts are ignored** and do not cause a crash. String values (font, track, style, name) are capped at 512 characters per value to avoid unbounded allocation. Parsing stops after **SD_PRESETS_CONFIG_MAX_LINES** (2048) lines. Each preset is a block:
+The format is the same as the save-dir `presets.ini` used for saving state. Parsing is **whitespace-tolerant** (spaces, tabs, blank lines are ignored). **Malformed lines or parts are ignored** and do not cause a crash. String values (font, track, style, name) are capped at 512 characters per value to avoid unbounded allocation. At boot the firmware records a file offset for each `new_preset` and stops at `end` or the end of the file. The preset you are on is the only one whose strings are loaded. Each preset is a block:
 
 ```
 new_preset
@@ -68,7 +68,7 @@ Use the same style names and arguments as in the serial/editor:
 - **solid** – e.g. `solid cyan 300 800` (base, extension ms, retraction ms) — composable; stack `clash` / `blast` in layered recipes.
 - **standard** – e.g. `standard cyan white 300 800` (base, clash, extension ms, retraction ms).
 - **Extend/retract `-1`** – on styles with ms args, `-1` matches ignition/retraction soundfont length.
-- **Layered extend/retract** – `transition = bend {{ext}} {{ret}}` sets both phases of the one wipe (`bend`, `linear`, `spark`, `sparktip`, `split`, `explode`, `sputter`, or `bmp`). `transition_in` and `transition_out` override one phase. **`bmp <path> [source_height] <extend_ms> <retract_ms>`** scrubs a column file forward on extend and backward on retract (white lit, black covered). **`strip_column`** and **`strip_column_mask`** use that same reader and play backward during retract. **`solid`** / **`solid_bend`** are color only. When no transition line is set, those lines still supply times and the default curve is bend. **`smoke_flow`** and other textures do not take `ext`/`ret`. **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, and **`sparktip_layer`** draw after that wipe (see **blade_styles_config.md**).
+- **Layered extend/retract** – `transition = <behavior> <extend_ms> <retract_ms> [spark|color|hilt|tip] [spark|color|hilt|tip]` sets both phases. `transition_in` and `transition_out` override one phase (`<behavior> <ms>` plus the same two optional words). Behaviors: **`bend`**, **`linear`** (also `in_out` / `inout`), **`spark`**, **`sparktip`**, **`split`** (also `middle`; `split_spark` / `middle_spark`), **`explode`** (also `inverse`; `explode_spark` / `inverse_spark`), **`sputter`**, **`bmp`** (also `bitmap`). **`bmp <path> [source_height] <extend_ms> <retract_ms>`** scrubs a column file forward on extend and backward on retract (white lit, black covered). **`hilt`** / **`hilt_to_tip`** mirrors the wipe; **`tip`** / **`tip_to_hilt`** is the default. **`strip_column`** and **`strip_column_mask`** use that same reader and play backward during retract. **`solid`** / **`solid_bend`** are color only. When no transition line is set, those lines still supply times and the default curve is bend. **`smoke_flow`** and other textures do not take `ext`/`ret`. **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, and **`sparktip_layer`** draw after that wipe. Parameter table: **blade_styles_config.md**.
 - **fire** – e.g. `fire red yellow`.
 - **rainbow** – e.g. `rainbow 300 800`.
 - **gradient**, **audio**, **flicker**, **sparkle_blade**, **cylon**, **pulse_blade**.
@@ -88,24 +88,17 @@ You can build effects from **layers** in **`config/blade_styles.ini`** and refer
 
 ## Behavior
 
-- If **`config/presets.ini`** exists and parses correctly at boot, the firmware uses it as the preset list (up to 64 presets) and **SD config is active**.
+- If **`config/presets.ini`** exists and indexes at least one `new_preset` at boot, the firmware uses it as the preset list and **SD config is active**.
 - If the file is missing or invalid, the firmware uses the **compiled** presets from your config file as before.
 - Blade selection (resistor ID) and hardware still come from the compiled config; only the preset list is overridden from SD.
 
 ## Memory use (config/presets.ini)
 
-**config/presets.ini** is the only config that keeps a large amount of data in RAM:
+Boot stores one **4-byte file offset** per preset. Changing presets (saber off, aux) seeks to that offset and loads **one** preset: font, overlay, voice, track, name, variation, and one style string per blade (each string capped at 512 characters). The previous preset’s strings are dropped.
 
-- Each preset’s **font**, **track**, **name**, and each **style=** line are stored on the **heap** (up to 512 characters per value).
-- With **64 presets** and e.g. **3 blades**, worst case is 64 × (font + track + name + 3× style) ≈ 64 × 6 × 512 bytes ≈ **192 KB** of heap just for preset strings. On boards with limited RAM (e.g. 256 KB), that can cause instability or failures if you use many long preset names and style strings.
+The index grows with the file (8 entries, then 16, then 32, and so on) and is trimmed back to the number of presets actually found. If the offset table cannot grow, the rest of the file is left unindexed and a status line says so.
 
-**Recommendations:**
-
-- Use a **smaller preset list** (e.g. 16–32 presets) if you see freezes or odd behavior after loading.
-- Keep **font**, **track**, and **name** short where possible; long **style=** lines are the main cost per blade.
-- The limits **SD_MAX_PRESETS** (64) and **READ_STRING_MAX_LEN** (512 in `file_reader.h`) can be reduced in the source if you need to fit tighter memory.
-
-The other config files use very little RAM: **board.ini** / **features.ini** only a small struct; **blades.ini** a fixed array (~512 B). **`blade_styles.ini`** is **not** kept whole in RAM: at boot the firmware builds a **section header index** only (`[name]` → file offset). On **preset change**, it **prunes** and **warms** a **heap cache** of parsed **`layer =`** strings for that preset’s `config <section>` names (seek + parse; up to **16** sections × **16×384** bytes per cached section). Palettes load on demand when a section references **`palette=`**. See **sd_style_boot_order.md**.
+The other config files use very little RAM: **board.ini** / **features.ini** only a small struct; **blades.ini** a fixed array (~512 B). **`blade_styles.ini`** is **not** kept whole in RAM: at boot the firmware builds a **section header index** (`[name]` → file offset) that grows to the number of sections. On **preset change**, it **prunes** and **warms** a **heap cache** of parsed **`layer =`** strings for the sections that preset uses (one copy of a shared recipe; up to one per blade when they differ). Palettes load on demand when a section references **`palette=`**. See **sd_style_boot_order.md**.
 
 ## Example `config/presets.ini`
 
