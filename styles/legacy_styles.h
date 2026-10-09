@@ -1,7 +1,7 @@
 #ifndef STYLES_LEGACY_STYLES_H
 #define STYLES_LEGACY_STYLES_H
 
-#include "../functions/inout_ms.h"
+#include "../functions/composition/inout_ms.h"
 
 // This macro has a problem with commas, please don't use it.
 #define EASYBLADE(COLOR, CLASH_COLOR) \

@@ -1,7 +1,7 @@
 #ifndef MODE_STYLE_ARGUMENT_HELPERS
 #define MODE_STYLE_ARGUMENT_HELPERS
 
-#include "../styles/parse_color_arg.h"
+#include "../styles/composition/parse_color_arg.h"
 
 const char* GetStyle(int blade);
 void SetStyle(int blade, LSPtr<char> style);

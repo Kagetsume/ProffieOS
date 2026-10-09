@@ -38,7 +38,8 @@ Examples of **forbidden without explicit approval**:
 - `common/help_text.h`, `common/compiled_style_to_config.h`, `common/compiled_style_metadata.h`
 - `common/sd_blade_runtime.h`, `blades/runtime_simple_blade.h`
 - `config/config-files-config.h`
-- `styles/config_layers_style.h`
+- `styles/composition/**`
+- `functions/composition/**`
 - `styles/style_parser.h` — **only** SD-config catalog (`config` style, `NAMED_STYLE_DESC`, layer/composable entries, `ENABLE_CONFIG_FILE_HELP_TEXT`); no unrelated style work
 - `doc/**` for blade/SD config, `examples/config/**`, `examples/bladepacks/**`, `scripts/gate_named_style_desc.py`, `scripts/measure-flash.ps1`
 - `ProffieOS.ino` — **only** existing SD-config include/boot hooks; no broad refactors

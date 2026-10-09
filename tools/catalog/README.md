@@ -8,4 +8,4 @@ Canonical editor catalog: **LayerBlade** → `website/src/catalog/colors.json`. 
 node tools/generate-parse-color-names.js
 ```
 
-Commit the updated `styles/parse_color_arg_table.generated.h`.
+Commit the updated `styles/composition/parse_color_arg_table.generated.h`.

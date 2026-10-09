@@ -1,0 +1,226 @@
+#ifndef STYLES_TEXTURE_LAYERS_H
+#define STYLES_TEXTURE_LAYERS_H
+
+// Non-opaque-friendly texture overlays for config/blade_styles.ini layering.
+// Use over an opaque base (solid, solid_bend, standard, …) with multiply, screen, add, or hue.
+// ConfigLayersStyle automatically clips overlay layers (index >= 1) to lit pixels on the
+// base layer during extend/retract — no ext/ret args on texture lines needed.
+//
+// Examples:
+//   layer = standard blue white 300 800
+//   layer = multiply opacity 20000 fire_mask white white
+//   layer = multiply opacity 12000 stripes 800 -1500 black white
+//   layer = add opacity 6000 noise_flicker black cyan
+
+#include "../alpha.h"
+#include "../colors.h"
+#include "../cylon.h"
+#include "sparktip_layer.h"
+#include "darksaber.h"
+#include "fallen_order.h"
+#include "../fire.h"
+#include "../gradient.h"
+#include "kinetic_charge.h"
+#include "../mix.h"
+#include "power_wave.h"
+#include "pulse_stripes.h"
+#include "../rainbow.h"
+#include "responsive_flame.h"
+#include "rotating_pulse.h"
+#include "rotoscope.h"
+#include "shimmer_blade.h"
+#include "smoke_mask.h"
+#include "static_electricity.h"
+#include "random_bands.h"
+#include "waves_runtime.h"
+#include "procedural_runtime.h"
+#include "../stripes.h"
+#include "thunder_loop.h"
+#include "trickle_blade.h"
+#include "unstable_blades.h"
+#include "water_flow.h"
+#include "../../functions/int_arg.h"
+#include "../../functions/composition/inout_ms.h"
+#include "../../functions/scale.h"
+#include "../../functions/random.h"
+#include "../../functions/sound_level.h"
+#include "../../functions/composition/uniform_brightness_overlay.h"
+#include "strip_column_mask.h"
+// Rolling heat texture (StaticFire — no clash/lockup/off fire configs). Same color args as fire.
+template<class WARM, class HOT>
+using FireMaskLayer = StaticFire<WARM, HOT>;
+
+// Wide rolling smoke toward tip (hilt→tip). Slow heat, low rand — blobs not per-LED flicker.
+template<class WARM, class HOT>
+using SmokeUpLayer = StyleSmokeLuminance<
+  WARM, HOT, 0, 1,
+  FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>>;
+
+// Wide rolling smoke toward hilt (tip→hilt). Slightly stronger rand — drives upper-blade activity.
+template<class WARM, class HOT>
+using SmokeDownLayer = StyleSmokeLuminanceReverse<
+  WARM, HOT, 0, 1,
+  FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>>;
+
+// Opposing wide sine smoke rolls (offset dual bands, not fire merge).
+template<class WARM, class HOT, class ROLL_SPEED = Int<1>>
+using SmokeFlowLayer = StyleSmokeFlow<
+  WARM, HOT, 0, ROLL_SPEED,
+  FireConfig<0, 400, 1>, FireConfig<0, 550, 1>>;
+
+// Clip smoke to the lit blade during extend/retract. Uses AlphaL + inverted InOutHelperF
+// (NOT InOutHelperX — that pattern masks opaque bases with black and inverts on overlays).
+template<class WARM, class HOT, class EXT, class RET, class ROLL_SPEED = Int<1>>
+using SmokeFlowInOutLayer = AlphaL<
+  SmokeFlowLayer<WARM, HOT, ROLL_SPEED>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+
+template<class WARM, class HOT, class EXT, class RET>
+using SmokeUpInOutLayer = AlphaL<
+  SmokeUpLayer<WARM, HOT>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+
+template<class WARM, class HOT, class EXT, class RET>
+using SmokeDownInOutLayer = AlphaL<
+  SmokeDownLayer<WARM, HOT>,
+  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+
+// Moving soft stripes (width, speed, color1, color2).
+template<class WIDTH, class SPEED, class C1, class C2>
+using StripesLayer = StripesX<WIDTH, SPEED, C1, C2>;
+
+// Hard-edged stripes variant.
+template<class WIDTH, class SPEED, class C1, class C2>
+using HardStripesLayer = HardStripesX<WIDTH, SPEED, C1, C2>;
+
+// Irregular-width rolling bands with random gaps (gap default Black for multiply stacks).
+template<class SPEED, class BAND, class GAP, class SCALE>
+using RandomBandsLayer = RandomBandsX<SPEED, BAND, GAP, SCALE>;
+
+// sine_waves / saw_waves / hue_waves / sine_waves_swing: see waves_runtime.h (named styles only).
+
+// pulse_train, chirp, smoothstep_bands, value_noise, fbm_noise, moire_mask, blade_envelope:
+// see procedural_runtime.h (named styles only).
+
+// UnstableBlades stripe/noise band only (no full InOutHelper wrapper).
+template<class BASE>
+using UnstableStripesLayer = UnstableBladesStripesBase<BASE>;
+
+// Uniform whole-blade brightness overlay (multiply over layers below).
+// WAVE: 0–32768 driver (sine, random hold, …); DELTA: +/- brightness percent.
+template<class WAVE, class DELTA = Int<10>>
+using BrightnessOverlayLayer = Mix<
+  UniformBrightnessOverlayF<WAVE, DELTA>,
+  Black,
+  White>;
+
+// Random +/- flicker — delta_percent min_period_ms max_period_ms.
+template<class DELTA, class MIN_MS, class MAX_MS>
+using BaseFlickerOverlay = BrightnessOverlayLayer<
+  RandomHoldWaveF<MIN_MS, MAX_MS>,
+  DELTA>;
+
+// Smooth breathing pulse — pulse_ms; optional delta_percent (default 10).
+template<class PULSE_MS, class DELTA = Int<10>>
+using PulseLayerOverlay = BrightnessOverlayLayer<
+  PulsingF<PULSE_MS>, DELTA>;
+
+// Uniform swing brightening — idle = no change, harder swing = up to +delta% (multiply preserves hue).
+template<class DELTA = Int<10>, class THRESHOLD = Int<200>>
+using SwingLayerOverlay = Mix<
+  SwingBoostOverlayF<THRESHOLD, DELTA>,
+  Black,
+  White>;
+
+// Per-LED random brightness mask — multiply over layers below preserves underlying hue.
+using PerLedFlickerLayer = Mix<RandomPerLEDF, Black, White>;
+
+// Hum-reactive uniform brightness — same driver as AudioFlicker, as multiply mask.
+using AudioLayerOverlay = Mix<NoisySoundLevelCompat, Black, White>;
+
+// Hilt-to-tip color gradient — stack with normal blend; layer opacity sets mix vs base below.
+template<class HILT, class TIP>
+using GradientLayer = Gradient<HILT, TIP>;
+
+// Animated sin-table RGB rainbow — stack with normal blend; opacity tints base toward full rainbow.
+using RainbowLayer = Rainbow;
+
+// OS7 / interactive idle bases extracted for config layering (multiply/normal/add over solid_bend).
+template<class BASE_COLOR>
+using WaterFlowLayer = WaterFlowStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using DarkSaberLayer = DarkSaberFlickerBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using StaticElectricityLayer = StaticElectricityBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using PowerWaveLayer = PowerWaveStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using FallenOrderLayer = FallenOrderStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using ShimmerBladeLayer = ShimmerBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using RotoscopeLayer = RotoscopeBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using PulseStripesLayer = PulseStripesBladeBase<BASE_COLOR>;
+
+template<class BASE_COLOR, class KINETIC_COLOR>
+using KineticChargeLayer = KineticChargeBladeBase<BASE_COLOR, KINETIC_COLOR>;
+
+template<class BASE_COLOR>
+using RotatingPulseLayer = RotatingPulseStripesBase<BASE_COLOR>;
+
+template<class BASE_COLOR>
+using TrickleBladeLayer = TrickleBladeBase<BASE_COLOR>;
+
+// Cylon scanner band — stack with add over solid_bend (black sections add nothing).
+// Runtime percent/rpm; black base so add-blend over a solid paints only the band.
+template<class SCAN_COLOR,
+         class ON_PERCENT = IntArg<2, 25>,
+         class ON_RPM = IntArg<3, 200>>
+class CylonConfigL : private CylonBase {
+  Black off_c_;
+  Black base_c_;
+  SCAN_COLOR scan_color_;
+  ON_PERCENT on_percent_;
+  ON_RPM on_rpm_;
+
+public:
+  bool run(BladeBase* blade) {
+    off_c_.run(blade);
+    base_c_.run(blade);
+    scan_color_.run(blade);
+    on_percent_.run(blade);
+    on_rpm_.run(blade);
+    const int pct = on_percent_.getInteger(0);
+    const int rpm = on_rpm_.getInteger(0);
+    return CylonBase::run(blade, 0, 0, pct, rpm, 300, true);
+  }
+  auto getColor(int led) -> decltype(MixColors(
+      base_c_.getColor(0),
+      MixColors(off_c_.getColor(0), scan_color_.getColor(0), 1, 14),
+      1, 14)) {
+    Range led_range(led * 16384, led * 16384 + 16384);
+    const int black_mix = (Range(start_, end_) & led_range).size();
+    const auto scan_c = scan_color_.getColor(led);
+    return MixColors(
+        base_c_.getColor(led),
+        MixColors(off_c_.getColor(led), scan_c, fade_int_, 14),
+        black_mix, 14);
+  }
+};
+
+template<class SCAN_COLOR, class ON_PERCENT, class ON_RPM>
+using CylonLayer = CylonConfigL<SCAN_COLOR, ON_PERCENT, ON_RPM>;
+
+// SD column BMP grayscale mask (same file layout as strip_column; stack with multiply).
+template<class SOURCE_HEIGHT, class FPS>
+using StripColumnMaskLayer = StripColumnMaskL<SOURCE_HEIGHT, FPS>;
+
+#endif  // STYLES_TEXTURE_LAYERS_H

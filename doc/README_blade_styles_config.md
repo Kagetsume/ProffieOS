@@ -29,9 +29,9 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 
 Composable **`blade_styles.ini`** recipes use the **same style argument strings** as preset **`style = …`** lines. Most numbers you type are **author units** (milliseconds, percents, scroll rates). Firmware parses them into **fixed-point scales** used by styles at runtime. This table is for recipe authors and tool writers; you do not need to memorize the internals to build effects.
 
-**Implementation references:** color tokens → **`styles/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and duty/center args → **`OpacityScaleIntArg`** / **`ParseOpacityScaleToken`**; multiply-mask **min/max/strength** → **`Brightness65535ScaleIntArg`** / **`ParseBrightness65535Token`** (**`common/opacity_scale.h`**, **`functions/int_arg.h`**).
+**Implementation references:** color tokens → **`styles/composition/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and duty/center args → **`OpacityScaleIntArg`** / **`ParseOpacityScaleToken`**; multiply-mask **min/max/strength** → **`Brightness65535ScaleIntArg`** / **`ParseBrightness65535Token`** (**`common/opacity_scale.h`**, **`functions/int_arg.h`**).
 
-**Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/parse_color_arg_table.generated.h`** (from **`tools/catalog/colors.json`** / LayerBlade’s catalog plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
+**Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/composition/parse_color_arg_table.generated.h`** (from **`tools/catalog/colors.json`** / LayerBlade’s catalog plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
 
 | What you write in INI | Meaning for humans | Internal / notes | Legacy escape |
 |----------------------|--------------------|------------------|---------------|
@@ -43,10 +43,10 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | **`pulse_train` … duty**, **`blade_envelope` center**, **`real_clash` position**, **`accent_sound_on` threshold** | Percent along blade or strength | Same rules as **`opacity`** (**`50%`**, **`49%`**, …) | Raw **>100** without **`%`** = legacy **0–32768** |
 | **Multiply-mask `min` / `max`** (`sine_waves`, `chirp`, `pulse_train`, noise masks, …) | Darkest vs brightest band of the mask along the blade | **0–65535** internally (**0** = black / full darken, **65535** = white / no change for multiply). Write **`0%`–`100%`** (decimals OK) or raw **>100** without **`%`** | **`hue_waves` `min_hue`/`max_hue`** stay in RotateColorsX units, not percent |
 | **`hue_waves` `min_hue` / `max_hue`** | Hue offset at the trough and crest | **RotateColorsX** units: **0** = no shift, **8192** ≈ 90°, **16384** ≈ 180°, **32768** = 360°. Not brightness. Blend **`hue`** | `layer = hue opacity 100% hue_waves 2400 0 0 8192 -2000` |
-| **`extend_ms` / `retract_ms`** (base, **`smoke_flow`**, **`strip_column`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`) | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
+| **`extend_ms` / `retract_ms`** (base, **`strip_column`**, **`sparktip_layer`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`). Textures including **`smoke_flow`** omit these; the stack wipe follows the base | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
 | **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `hue_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
 | **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
-| **`smoke_flow` … speed** (5th arg after ext/ret) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** pairs |
+| **`smoke_flow` … speed** (optional 3rd arg) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** have no speed arg |
 | **`strip_column`** `path`, `source_height`, `fps`, optional axis, ext, ret | SD column animation base | **`source_height`**: blade pixels along the file’s blade axis (**width** for **`frames_y`**, **height** for **`frames_x`**); **`fps`**: target frame rate; **24-bit BMP** (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | Optional **`frames_y`** / **`frames_x`** (default **`frames_y`**) |
 | **`real_clash`** `color`, **`blade_position`** (e.g. **`49%`** or **`angle`**) | OS7 Real Clash overlay color and band placement | **0%**–**100%** = fixed center on blade (OS7 tilt-modulated band); **`angle`** = center tracks blade tilt (**ResponsiveClash**-style). Default **49%**. Strength path uses **`GetClashStrength`** | Monolithic OS7 compiled styles |
 
@@ -117,7 +117,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
 | **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
 | **fallen_order** | base, clash, extend ms, retract ms | `fallen_order silver white 300 800` |
-| **smoke_flow** | dark color, light color, extension ms, retraction ms | `smoke_flow black white {{ext}} {{ret}}` — **ext/ret must match base** (each multiply/screen line) |
+| **smoke_flow** | dark color, light color, optional speed | `smoke_flow black white` — wipe follows the base (each multiply/screen line) |
 | **gradient_layer** | hilt color, tip color | `gradient_layer red blue` — no ext/ret (compositor follows base) |
 | **rainbow_layer** | (no args) | `rainbow_layer` — animated rainbow tint; use **`normal`** blend + opacity |
 | **audio_layer** | (no args) | `audio_layer` — hum-reactive multiply mask; no ext/ret |
@@ -166,26 +166,29 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 **`examples/config/blade_styles.ini`**, or preset **`style = config composable_checklist`**.
 See **`examples/README.md`** for composable vs monolithic guidance.
 
-**Extend/retract auto timing:** On styles with extension/retraction ms args, use **`-1`** to match ignition or retraction soundfont length (e.g. `ext = -1`, `layer = solid {{base}} -1 -1`).
+**Extend/retract auto timing:** On styles with extension/retraction ms args, use **`-1`** to match ignition or retraction soundfont length. For solid stacks: `transition = bend -1 -1` and `layer = solid {{base}}`.
 
 ### Extend/retract in layered recipes
 
-| Layer kind | `ext` / `ret` on texture line? | Why |
-|------------|-------------------------------|-----|
-| **Base** (`solid`, `solid_bend`, …) | **Yes** — `layer = solid {{base}} {{ext}} {{ret}}` | Drives extend/retract for the stack |
-| **normal/add textures** (`gradient_layer`, `stripes` with add, …) | **No** | `ConfigLayersStyle` auto-clips to base lit pixels (follows base timing, including **`-1`**) |
-| **multiply/screen textures** (`audio_layer`, `pulse_layer`, `fire_mask`, …) | **No** | No internal InOut; compositor does not clip multiply (safe over black) |
-| **`smoke_flow`** (multiply + screen) | **Yes — must match base** | Own InOut alpha; pass **`{{ext}} {{ret}}`** on **each** `smoke_flow` line |
-| Full InOut styles as layers (`audio`, `flicker`, …) | **Yes — when args include ext/ret** | Not the same as composable **`audio_layer`** (no ext/ret) |
+| Layer kind | `ext` / `ret` on that line? | Why |
+|------------|----------------------------|-----|
+| **`transition = bend {{ext}} {{ret}}`** | Times live on this line | Sets both phases. **`transition_in`** / **`transition_out`** override one. **`split`**, **`explode`**, **`sputter`**, and **`bmp`** (column file, forward on extend and backward on retract) are mask shapes. Add **`spark`** on split or explode |
+| **`solid`**, **`solid_bend`** | Optional, only if `transition` is omitted | Color only. The mask wipes them and signals power-off when retract finishes |
+| Textures (`gradient_layer`, `stripes`, `audio_layer`, **`smoke_flow`**, …) | **No** | Drawn under the wipe |
+| **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, **`sparktip_layer`** | Only if that style’s own args include them (`ignition_flash`, `sparktip_layer`) | Drawn after the wipe. Preon/postoff/ignition still hold power |
+| **`standard_bend`**, **`strip_column`**, **`audio`**, **`flicker`**, **`gradient`**, **`sparkle_blade`**, **`cylon`**, **`pulse_blade`**, **`water_flow`**, and the other OS7 bend monoliths (`static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`, `shimmer_blade`, `rotoscope`, `pulse_stripes`, `kinetic_charge`, `rotating_pulse`, `trickle_blade`) | Times on the line are used only when `transition` is omitted | No wipe inside a config section. The section mask is the wipe. Linear styles default to **`linear`**; bend monoliths default to **`bend`** |
+| **`standard`**, **`rainbow`**, **`strobe`**, **`unstable`**, **`fire`**, **`cycle`**, **`advanced`** | Built into the style | These stock blades still wipe themselves. A `transition` line on a stack that uses one as the base wipes twice |
+| **`advanced`** | **Yes — when args include ext/ret** | This style still wipes itself. Leave `transition` off on a stack that uses it as the base |
 
 **Smoke recipe rule:** use **`smoke_flow` only** (not `smoke_up`/`smoke_down`). Example with sound sync:
 
 ```ini
 ext = -1
 ret = -1
-layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}
-layer = screen opacity 12% smoke_flow black {{base}} {{ext}} {{ret}}
+transition = bend {{ext}} {{ret}}
+layer = solid {{base}}
+layer = multiply opacity 73% smoke_flow black white
+layer = screen opacity 12% smoke_flow black {{base}}
 ```
 
 Full details: **blade_styles_config.md** (section *Extend/retract in layered recipes*).
@@ -324,15 +327,19 @@ layer = blast white
 
 ### Complex — fire + unstable-style flicker feel (two fire-like layers)
 
-Fire base with a second layer for more variation. You can also use **unstable** as a single layer for a more chaotic look.
+Fire look is a solid color plus `fire_mask`. A crackling blade is `unstable_layer` over that, then blast.
 
 ```ini
 [fire_double]
-layer = fire red yellow
-layer = fire orange red
+transition = bend 300 800
+layer = solid red
+layer = multiply opacity 73% fire_mask black yellow
+layer = screen opacity 40% fire_mask orange red
 
 [unstable_blast]
-layer = unstable red orange yellow 100 200
+transition = linear 300 800
+layer = solid red
+layer = normal opacity 100% unstable_layer red orange yellow yellow
 layer = blast white
 ```
 
@@ -468,7 +475,7 @@ ProffieOS runs on microcontrollers (e.g. STM32) with limited RAM. The limits are
 - **16 layers:** Each config-driven style holds a fixed array of 16 `BladeStyle*` pointers. When loading from the file, the parser uses a temporary buffer of **16×384** bytes (about **6.1 KB**) for the layer strings. Raising the cap would increase the size of every `ConfigLayersStyle` instance and the loading buffer.
 - **384 characters per line:** Each `layer = ...` value is stored in a fixed slot so long **advanced** / structured lines fit. The cap prevents buffer overrun.
 
-So the limits are a tradeoff: enough for complex, multi-layer effects while bounding RAM on embedded. If you need more layers or longer lines, the constants `STYLE_CONFIG_MAX_LAYERS` / `STYLE_CONFIG_LAYER_STR_LEN` in `common/style_config_file.h` and `CONFIG_LAYERS_MAX` in `styles/config_layers_style.h` can be increased at the cost of more memory.
+So the limits are a tradeoff: enough for complex, multi-layer effects while bounding RAM on embedded. If you need more layers or longer lines, the constants `STYLE_CONFIG_MAX_LAYERS` / `STYLE_CONFIG_LAYER_STR_LEN` in `common/style_config_file.h` and `CONFIG_LAYERS_MAX` in `styles/composition/config_layers_style.h` can be increased at the cost of more memory.
 
 ---
 

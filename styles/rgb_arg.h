@@ -2,7 +2,7 @@
 #define STYLES_RGB_ARG_H
 
 #include "../common/arg_parser.h"
-#include "parse_color_arg.h"
+#include "composition/parse_color_arg.h"
 
 // Usage: RgbArg<ARG, DEFAULT_COLOR>
 // ARG: a number

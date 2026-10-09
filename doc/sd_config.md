@@ -68,12 +68,12 @@ Use the same style names and arguments as in the serial/editor:
 - **solid** – e.g. `solid cyan 300 800` (base, extension ms, retraction ms) — composable; stack `clash` / `blast` in layered recipes.
 - **standard** – e.g. `standard cyan white 300 800` (base, clash, extension ms, retraction ms).
 - **Extend/retract `-1`** – on styles with ms args, `-1` matches ignition/retraction soundfont length.
-- **Layered extend/retract** – base layer sets timing; **`normal`/`add` textures** and composable **`*_layer`** textures follow without extra args; **`smoke_flow`** and other **own-InOut** styles must receive the **same `{{ext}}`/`{{ret}}` as the base** on each layer line (see **blade_styles_config.md**).
+- **Layered extend/retract** – `transition = bend {{ext}} {{ret}}` sets both phases of the one wipe (`bend`, `linear`, `spark`, `sparktip`, `split`, `explode`, `sputter`, or `bmp`). `transition_in` and `transition_out` override one phase. **`bmp <path> [source_height] <extend_ms> <retract_ms>`** scrubs a column file forward on extend and backward on retract (white lit, black covered). **`strip_column`** and **`strip_column_mask`** use that same reader and play backward during retract. **`solid`** / **`solid_bend`** are color only. When no transition line is set, those lines still supply times and the default curve is bend. **`smoke_flow`** and other textures do not take `ext`/`ret`. **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, and **`sparktip_layer`** draw after that wipe (see **blade_styles_config.md**).
 - **fire** – e.g. `fire red yellow`.
 - **rainbow** – e.g. `rainbow 300 800`.
-- **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
+- **gradient**, **audio**, **flicker**, **sparkle_blade**, **cylon**, **pulse_blade**.
 - **strobe**, **cycle**, **unstable**, **advanced**.
-- **Fett263 OS7** (firmware): monolith names **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`**, … take **`base clash extend retract`**. **DarkSaber:** use **`darksaber_layer`** + **`config composable_darksaber`** (monolith **`darksaber`** removed). Distinct from built-in **`unstable`**.
+- **Fett263 OS7** (firmware): monolith names **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`**, … take **`base clash extend retract`**. Inside a config section the **`transition`** mask does the wipe (default bend). **DarkSaber:** use **`darksaber_layer`** + **`config composable_darksaber`** (monolith **`darksaber`** removed). Distinct from built-in **`unstable`**.
 - **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.

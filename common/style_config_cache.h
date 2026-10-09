@@ -447,6 +447,7 @@ inline int StyleConfigParseSectionAtReader(
     line_count++;
   }
   StyleConfigFlushPendingStructuredLayer(st, layers, &count, max_layers);
+  StyleConfigPublishTransition(st, layers, &count, max_layers);
   return count;
 }
 

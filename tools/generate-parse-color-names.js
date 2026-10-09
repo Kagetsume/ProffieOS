@@ -8,7 +8,7 @@
  * with the LayerBlade website).
  *
  * Run from repo root: node tools/generate-parse-color-names.js
- * Output: styles/parse_color_arg_table.generated.h (committed; Arduino needs no Node).
+ * Output: styles/composition/parse_color_arg_table.generated.h (committed; Arduino needs no Node).
  *
  * colors.json source (first match):
  *   1. LAYERBLADE_COLORS_JSON — absolute path
@@ -52,7 +52,7 @@ function resolveCatalogJson() {
 const CATALOG_JSON = resolveCatalogJson();
 const COLORS_H = path.join(REPO_ROOT, 'styles', 'colors.h');
 const FETT263_SOURCE = path.join(REPO_ROOT, 'props', 'saber_fett263_buttons.h');
-const OUT_HEADER = path.join(REPO_ROOT, 'styles', 'parse_color_arg_table.generated.h');
+const OUT_HEADER = path.join(REPO_ROOT, 'styles', 'composition', 'parse_color_arg_table.generated.h');
 
 const RGB_TYPEDEF_RE = /typedef\s+Rgb<(\d+),\s*(\d+),\s*(\d+)>\s+(\w+);/g;
 

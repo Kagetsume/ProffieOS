@@ -31,7 +31,6 @@ Without an ELF, use the static tiers below.
 | `audio` | `AudioFlicker<…>` | inline |
 | `flicker` | `BrownNoiseFlicker<…>` | inline |
 | `cylon` | `Cylon<…>` | inline |
-| `sparktip` | `EasyBlade<…>` inside `InOutSparkTipX` | spark tip wrapper only differs |
 | `pulse_blade` | `PulsingX<…>` | could be `StyleNormalPtrX` (no savings alone) |
 
 **Flash issue:** Each distinct `base_color` type reinstantiates the **entire** clash/lockup/blast/audio-flicker tree inside `Style<…>` (same failure mode OS7 had with per-blade `Os7BladeWithBendInOut<YourBase>`).
@@ -50,7 +49,7 @@ Without an ELF, use the static tiers below.
 | Pair | Allocators |
 |------|------------|
 | `standard` / `standard_bend` | `StyleNormalPtrX` vs `StyleNormalBendPtrX` (`InOutTrBendAuto`) |
-| `solid` / `solid_bend` | `StyleSolidPtrX` vs `StyleSolidBendPtrX` |
+| `solid` / `solid_bend` | Color only (`SolidColorStyleFactory`). The stack transition mask is the wipe. `StyleSolidPtrX` / `StyleSolidBendPtrX` are no longer instantiated from the parser |
 
 **Flash issue:** Two full `Style<…>` trees differing mostly in extend/retract transition.
 
@@ -101,7 +100,7 @@ One flash instance **per overlay type** (not per preset). Aggregate cost is the 
 | Heavy | `blast_wave_random` | See Tier B |
 | Medium | `responsive_lockup`, `responsive_blast`, `responsive_clash`, `drag`, `melt`, `lb` | Same pattern as OS7 layers: mostly `RgbArg<1>` — candidate for **color-arg runtime factories** later |
 | Light | `clash`, `localized_clash`, `blast`, `sparkle`, `pulse`, `swing`, … | Small templates; factory overhead may eat gains |
-| Texture | `fire_mask`, `smoke_up/down/flow`, `stripes`, `hard_stripes`, `random_bands`, `noise_flicker`, `base_flicker`, `pulse_layer`, `swing_layer`, … | **Smoke trio** shares `AlphaL<Smoke*, InvertF<InOutHelperF<…>>>` — one shared in/out mask + 3 idle delegates (~0.5–1 KB) |
+| Texture | `fire_mask`, `smoke_up/down/flow`, `stripes`, `hard_stripes`, `random_bands`, `noise_flicker`, `base_flicker`, `pulse_layer`, `swing_layer`, … | Smoke is a plain texture. The stack wipe lives once in `ConfigLayersStyle`, not in each smoke `AlphaL` |
 
 **Example config usage (layer lines):** `real_clash` ~62, `blast_wave_random` ~49, `solid_bend` ~46 — optimizing overlays matters for your shipped ini more than unused monoliths like `cycle`.
 
