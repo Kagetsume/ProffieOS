@@ -153,11 +153,15 @@ enum ConfigInOutCurve : uint8_t {
 // The linear clock already runs backward on retract, so the file plays in reverse.
 class ConfigBmpWipe {
 public:
-  void Release() { source_.SetPlaybackHold(false); ready_ = false; }
+  void Release() {
+    source_.SetPlaybackHold(false);
+    source_.DropSession();
+    ready_ = false;
+  }
+  void DropSession() { source_.DropSession(); ready_ = false; }
   bool ready() const { return ready_; }
 
   void Scrub(BladeBase* blade, const char* path, int source_height, int progress) {
-    ready_ = false;
     if (!blade || !path || !path[0]) {
       Release();
       return;
@@ -258,8 +262,16 @@ public:
       return;
     }
     PollWav(blade);
-    const int out_ms = ResolveMs(extend_ms_, ign_ms_);
-    const int in_ms = ResolveMs(retract_ms_, ret_ms_);
+    // run() stops while the card is unmounted, so last_micros_ is stale and
+    // the next extend would jump to the last row in one frame.
+    const bool blade_now = blade->is_on();
+    if (blade_now && !on_) {
+      extension_ = 0;
+      last_micros_ = micros();
+      if (bmp_) bmp_->DropSession();
+    }
+    const int out_ms = ResolveMs(extend_ms_, ign_ms_, 300);
+    const int in_ms = ResolveMs(retract_ms_, ret_ms_, 800);
     const bool want_lin = UsesLinear(in_curve_) || UsesLinear(out_curve_);
     const bool want_bend = UsesBendClock(in_curve_) || UsesBendClock(out_curve_);
     if (want_lin) {
@@ -444,9 +456,12 @@ private:
   bool PhaseFromHilt() const { return on_ ? in_from_hilt_ : out_from_hilt_; }
   Color16 PhaseSpark() const { return on_ ? in_spark_ : out_spark_; }
 
-  static int ResolveMs(int configured, int wav_ms) {
-    if (configured < 1) return wav_ms;
-    return configured;
+  static int ResolveMs(int configured, int wav_ms, int fallback) {
+    if (configured >= 1) return configured;
+    if (wav_ms >= 1) return wav_ms;
+    // -1 means "use the wav". A 0 length is "not known yet", and treating
+    // that as a finished wipe skips every row of the transition image.
+    return fallback;
   }
 
   void PollWav(BladeBase* blade) {
