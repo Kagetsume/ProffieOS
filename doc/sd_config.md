@@ -2,6 +2,10 @@
 
 ProffieOS can load the **preset list** from a config file on the SD card instead of using the presets compiled into the firmware. This lets you change fonts, styles, and preset names without recompiling.
 
+## Fork vs upstream (contributors / agents)
+
+SD **`config/`** work must stay in the **fork allowlist**. **If you need a core file, ask first** — do not edit upstream paths (e.g. `common/serial.h`, `common/errors.h`, `props/`) until the user approves that file and change. See **`.cursor/rules/sd-config-fork-boundary.mdc`**. Before commit: **`scripts/check-fork-boundary.ps1`** and **`scripts/check-blades-ini-pins.ps1`** (examples **`blades.ini`** must use **`bladePin`** / **`bladePowerPin*`**, not numeric GPIO — **`.cursor/rules/blades-ini-pin-names.mdc`**).
+
 ## Opt-in firmware support
 
 SD **`config/`** INI loading is **not** always compiled in. Enable it in your **`CONFIG_FILE`** ( **`CONFIG_TOP`** section):
@@ -69,7 +73,7 @@ Use the same style names and arguments as in the serial/editor:
 - **rainbow** – e.g. `rainbow 300 800`.
 - **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**.
 - **strobe**, **cycle**, **unstable**, **advanced**.
-- **Fett263 OS7 base styles** (firmware): **`water_flow`**, **`darksaber`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`** — each takes **`base clash extend retract`** (e.g. `fallen_order cyan white 300 800`). Distinct from built-in **`unstable`**.
+- **Fett263 OS7** (firmware): monolith names **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`**, … take **`base clash extend retract`**. **DarkSaber:** use **`darksaber_layer`** + **`config composable_darksaber`** (monolith **`darksaber`** removed). Distinct from built-in **`unstable`**.
 - **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.

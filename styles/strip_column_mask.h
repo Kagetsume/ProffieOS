@@ -8,7 +8,8 @@
 //   (height 1 = a static mask). Row 0 = hilt.
 // Paint grayscale in GIMP/Photoshop; R=G=B per pixel. Color pixels use average luminance.
 //
-// If the file is missing or not a valid 24-bit BMP, the layer is fully transparent (no effect).
+// If the file is missing or invalid, shows the same scrolling strobe red danger pattern
+// (as strip_column base) instead of staying transparent.
 //
 // Named style: strip_column_mask
 //   strip_column_mask <sd_path> <source_height> <fps>
@@ -78,7 +79,14 @@ public:
     static const StripColumnOpenOptions kOpenOpts = {"strip_column_mask"};
     int sh = source_height_ > 0 ? source_height_ : 144;
     source_.EnsureOpen(kOpenOpts, sh, blade_);
-    if (!source_.IsOpen() || num_leds_ <= 0) return StripColumnLayerTransparent();
+    if (num_leds_ <= 0) return StripColumnLayerTransparent();
+    if (!source_.IsOpen()) {
+      if (source_.MissingMediaFallbackActive(blade_)) {
+        uint16_t f = StripColumnMissingMediaMaskFactor(led, num_leds_, millis());
+        return RGBA_um_nod(Color16(f, f, f), 32768);
+      }
+      return StripColumnLayerTransparent();
+    }
     uint16_t f = StripColumnMaskSampleFactorAtLed(
         source_.CurrentFrameData(), led, num_leds_, source_height_);
     return RGBA_um_nod(Color16(f, f, f), 32768);

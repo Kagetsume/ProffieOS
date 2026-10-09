@@ -2,6 +2,8 @@
 
 Same character presets and wiring as the **OST** pack, but idle brightness uses a **smooth whole-blade pulse** (`pulse_layer`) instead of **`base_flicker`** / **`noise_flicker`**.
 
+**Teaching point (with OST):** one **fundamental** OT stack—`solid_bend` + idle modifier + responsive combat. Presets only vary **`base=`**; the pulsing pack varies **one layer line** in the section, not six separate styles. See **[bladepacks README](../README.md)** (OST\* variables).
+
 ## Install on SD card
 
 Copy this folder’s **`config/`** (and **`font/`** overlays if you use them) to the SD card root — same layout as the OST pack README.
@@ -20,4 +22,4 @@ Tune idle: `style = config ost_pulsing base=green pulse_ms=4000` (slower) or `pu
 
 ## Presets, fonts, wiring
 
-Same table as the OST pack: LukeANH, ObiWan, Vader, LukeROTJ, Windu, TempleGuard; **`font = SmthJedi`**; **`font_overlay = font/<PresetName>`**; blade **data pin 1**, power **1–3**, **144** pixels default (`config/blades.ini`).
+Same table as the OST pack: LukeANH, ObiWan, Vader, LukeROTJ, Windu, TempleGuard; **`font = TeensySF`**; **`font_overlay = font/<PresetName>`**; **`bladePin`**, **`bladePowerPin1`–`3`**, **144** pixels default (`config/blades.ini`).

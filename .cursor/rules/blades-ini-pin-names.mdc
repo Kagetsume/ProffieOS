@@ -1,0 +1,34 @@
+---
+description: blades.ini must use board pin names (bladePin), never small numeric GPIO
+globs: "**/blades.ini"
+alwaysApply: true
+---
+
+# blades.ini pin names (mandatory)
+
+When creating or editing **`config/blades.ini`** under **`examples/`** or **`examples/bladepacks/`**:
+
+## Required
+
+- **`data_pin = bladePin`** (or `blade2Pin`, `blade5Pin`, … for extra blades) — not `data_pin = 1`.
+- **`power_pin1 = bladePowerPin1`** … **`bladePowerPin6`** — not `power_pin1 = 1`.
+- Accent / simple blades: **`pin1 = blade5Pin`** etc. — same rule.
+
+## Forbidden in examples and bladepacks
+
+- **Numeric pin values** on `data_pin`, `power_pin*`, or `pin*` lines (e.g. `1`, `2`, `20`) unless the user **explicitly** asks for raw MCU GPIO in that file.
+- Copying “tutorial” wiring that uses small integers — those are **GPIO indices**, not Proffieboard FET labels.
+
+`blade = 0` and `pixels = 144` **are** numeric and correct.
+
+## References
+
+- Canonical template: **`examples/config/blades.ini`**
+- **`doc/pin_reference.md`**, **`doc/blade_config.md`**
+- Before commit (when touching blades.ini): **`scripts/check-blades-ini-pins.ps1`**
+
+## Bladepack header (include in every pack `blades.ini`)
+
+```ini
+# Pin names only: bladePin, bladePowerPin1–3 (NOT numeric GPIO). See doc/pin_reference.md.
+```

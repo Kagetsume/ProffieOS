@@ -6,7 +6,7 @@ Board and feature config files on the SD card let you set **hardware** (buttons,
 
 | File | Purpose | Use for contests |
 |------|---------|------------------|
-| **config/blades.ini** | Blade wiring (data_pin, pixels, power_pin per blade) | Same hardware; rarely changed per contest. |
+| **config/blades.ini** | Blade wiring (`bladePin`, `bladePowerPin*`, pixels, accents) — **pin names**, not numeric GPIO | Same hardware; rarely changed per contest. |
 | **config/board.ini** | Board hardware: **buttons** (1/2/3), **oled** (on/off), **bluetooth** (on/off). May also contain gesture/twist (overridden by features.ini when present). | One file per board type; keep stable. |
 | **config/features.ini** | Feature toggles: **gesture**, **twist_on**, **twist_off**. Overwrites those from board.ini when present. | **Contest-specific:** drop in a features.ini per contest (e.g. gesture on, twist off) without touching board.ini. |
 | **config/blade_styles.ini** | Style layers ([section], layer = style string) for **config &lt;name&gt;** presets. | Contest-specific styles if needed. |
@@ -128,5 +128,6 @@ So the board config file and Fett263’s prop are aligned: use **config/board.in
 ## See also
 
 - **blade_config.md** — Blade hardware (config/blades.ini).
+- **pin_reference.md** — Proffieboard V3 (3.9) named pins (`SaberPins` + SD `blades.ini` tokens); pin card PDF via `examples/generate-pin-reference-card.js`.
 - **blade_styles_config.md** — Blade style layers (config/blade_styles.ini).
 - **saber_fett263_buttons.h** — Fett263 prop: 1/2/3 button controls, gesture/twist defines, saved_gesture_control.

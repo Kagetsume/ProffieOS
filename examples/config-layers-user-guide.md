@@ -116,6 +116,8 @@ config/blades.ini          (when you use the SD blade map)
 animations/cyan-gold-plasma.bmp   (only for the strip-column demo)
 ```
 
+**`blades.ini` pins:** Use **board pin names** from your Proffieboard config — **`bladePin`**, **`bladePowerPin1`–`3`**, **`blade5Pin`** … — not small integers like `1`/`2`/`3` (those are raw GPIO indices and do not mean “power FET slot 1”). Full V3 (3.9) tables: [`doc/pin_reference.md`](../doc/pin_reference.md) · printable pin card: `node examples/generate-pin-reference-card.js` then build **`config-layers-pin-card.pdf`** (see [`examples/README.md`](README.md)). See also [`doc/blade_config.md`](../doc/blade_config.md) and **`examples/bladepacks/*/config/blades.ini`**.
+
 Start from `examples/config/` in this repo. The folder on the card must be named `config`. Lines that begin with `#` or `;` are comments. Blank lines are fine.
 
 The shipped example assumes **four blades** (`NUM_BLADES` 4):
@@ -247,7 +249,7 @@ Two wipe shapes exist:
 | Base you write | Wipe shape |
 | --- | --- |
 | `solid`, `standard`, `rainbow`, and most older full blades | Straight timing. The lit edge moves evenly. Same `-1` means sound length. |
-| `solid_bend`, `standard_bend`, `strip_column`, and the Fett263 full blades (`water_flow`, `darksaber`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`, `shimmer_blade`, `rotoscope`, `pulse_stripes`, `kinetic_charge`, `rotating_pulse`, `trickle_blade`) | Curved wipe. Ignition starts fast and eases at the tip. Retraction starts slow and finishes fast. The fork wraps that curve so `-1` still tracks the WAV (`InOutTrBendAuto` using the same millisecond-or-WAV rule). |
+| `solid_bend`, `standard_bend`, `strip_column`, Fett263 monoliths (`water_flow`, `static_electricity`, …), and composable OS7 (`darksaber_layer` on `solid_bend`, etc.) | Curved wipe. Ignition starts fast and eases at the tip. Retraction starts slow and finishes fast. The fork wraps that curve so `-1` still tracks the WAV (`InOutTrBendAuto` using the same millisecond-or-WAV rule). |
 
 If a `strip_column` blade retracts and the retraction sound length is missing, the fallback time is 800 ms.
 
@@ -379,7 +381,7 @@ Fett263-style full blades in this fork. Each takes a curved wipe. Argument order
 | Style | Arguments | What you see |
 | --- | --- | --- |
 | `water_flow` | base, clash, extend, retract | Bands whose speed and direction follow the blade angle. A hard upward swing can reverse the flow. |
-| `darksaber` | base, clash, extend, retract | Metallic stripes, brown-noise grain, hum flicker, swing gleam toward white. Default base is a gray-silver. |
+| `darksaber_layer` | base color | DarkSaber idle texture; use **`config composable_darksaber`** (monolith **`darksaber`** removed). |
 | `static_electricity` | base, clash, extend, retract | Swing builds a charge; clash or lockup lets it go. Default base is deep sky blue. |
 | `power_wave` | base, clash, extend, retract | Wide stripes scrolling slowly in reverse. Default base silver. |
 | `unstable_blades` | base, clash, extend, retract | Crackling stripes whose speed wanders. Default base silver. The name `unstable` is the other, red crackle blade. |
@@ -507,7 +509,7 @@ Stack with `normal` or `multiply` over `solid_bend`. They are the moving part of
 | `darksaber_layer` | base color |
 | `static_electricity_layer` | base color |
 | `power_wave_layer` | base color |
-| `fallen_order_layer` | base color |
+| `drifting_bands_with_pulse_layer` | base color — wide drifting stripes + 800 ms pulsing mid-band (FallenOrder OS7 idle) |
 | `shimmer_blade_layer` | base color |
 | `rotoscope_layer` | base color |
 | `pulse_stripes_layer` | base color |
@@ -529,7 +531,7 @@ Add these above the base. Most stay invisible until the saber actually does that
 | Clash in one place | `localized_clash white` | A band at a random spot along the blade. |
 | Clash that follows the angle | `responsive_clash white` | A bump placed from the blade angle. |
 | Real Clash (OS7) | `real_clash white 49%` | Strength of the hit picks a bump, wave, spark, or fade. `49%` pins the band on the blade. `angle` lets the band follow tilt: `real_clash white angle`. This is what `[demo_strip_column]` uses. |
-| Lockup | `lockup white` or `responsive_lockup white` | While a lockup is held. The bump follows blade angle. Both names are the same effect. |
+| Lockup | `responsive_lockup white` | While a lockup is held. The bump follows blade angle. |
 | Blast, fixed wave | `blast white` | A blast event. Timing is fixed in the firmware (about 200 / 100 / 400 ms). Only the color is yours. `[fire_blast]` and `[smoke_laser]` use this. |
 | Blast, random wave | `blast_wave_random white` | An OS7-style wave whose size and place vary. `[demo_strip_column]` uses this. |
 | Blast that follows the angle | `responsive_blast white` | Wave placed from the blade angle. `[composable_checklist_responsive]` uses this. |
@@ -587,7 +589,7 @@ The file is a flipbook. Which way time runs depends on a word in the layer line.
 
 Color on disk is stored BGR; the loader turns it into RGB. The blade resamples the column to however many LEDs you actually have.
 
-The picture is opened **when the saber is on**, not during boot. A missing file or a BMP that is not 24-bit uncompressed logs a line on serial and that layer stays clear (the log text says the layer is transparent). Quote a path that contains spaces: `"animations/my file.bmp"`.
+The picture is opened **when the saber is on**, not during boot. A missing file or a BMP that is not 24-bit uncompressed logs on serial and shows a **danger fallback** on the blade: fast-strobing red bands that scroll **up twice, then down twice**, repeating (base layer and `strip_column_mask`). Quote a path that contains spaces: `"animations/my file.bmp"`.
 
 #### Arguments
 

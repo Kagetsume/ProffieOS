@@ -32,17 +32,8 @@
 #include "smoke_mask.h"
 #include "static_electricity.h"
 #include "random_bands.h"
-#include "sine_waves.h"
-#include "saw_waves.h"
-#include "hue_waves.h"
-#include "pulse_train.h"
-#include "chirp.h"
-#include "smoothstep_bands.h"
-#include "value_noise.h"
-#include "fbm_noise.h"
-#include "moire_mask.h"
-#include "blade_envelope.h"
-#include "sine_waves_swing.h"
+#include "waves_runtime.h"
+#include "procedural_runtime.h"
 #include "stripes.h"
 #include "thunder_loop.h"
 #include "trickle_blade.h"
@@ -105,83 +96,10 @@ using HardStripesLayer = HardStripesX<WIDTH, SPEED, C1, C2>;
 template<class SPEED, class BAND, class GAP, class SCALE>
 using RandomBandsLayer = RandomBandsX<SPEED, BAND, GAP, SCALE>;
 
-// Up to four sine brightness waves along the blade (multiply mask; period 0 = slot off).
-template<
-  class P1, class PH1, class MN1, class MX1, class SP1,
-  class P2, class PH2, class MN2, class MX2, class SP2,
-  class P3, class PH3, class MN3, class MX3, class SP3,
-  class P4, class PH4, class MN4, class MX4, class SP4,
-  class STRENGTH = Int<65535>>
-using SineWavesLayer = SineWavesX<
-  P1, PH1, MN1, MX1, SP1,
-  P2, PH2, MN2, MX2, SP2,
-  P3, PH3, MN3, MX3, SP3,
-  P4, PH4, MN4, MX4, SP4,
-  STRENGTH>;
+// sine_waves / saw_waves / hue_waves / sine_waves_swing: see waves_runtime.h (named styles only).
 
-// Triangle/saw linear-ramp waves (same slot model as sine_waves; no sin_table).
-template<
-  class P1, class PH1, class MN1, class MX1, class SP1,
-  class P2, class PH2, class MN2, class MX2, class SP2,
-  class P3, class PH3, class MN3, class MX3, class SP3,
-  class P4, class PH4, class MN4, class MX4, class SP4,
-  class STRENGTH = Int<65535>>
-using SawWavesLayer = SawWavesX<
-  P1, PH1, MN1, MX1, SP1,
-  P2, PH2, MN2, MX2, SP2,
-  P3, PH3, MN3, MX3, SP3,
-  P4, PH4, MN4, MX4, SP4,
-  STRENGTH>;
-
-// Up to four sine hue-offset waves (hue blend rotates pixels below; period 0 = slot off).
-template<
-  class P1, class PH1, class MN1, class MX1, class SP1,
-  class P2, class PH2, class MN2, class MX2, class SP2,
-  class P3, class PH3, class MN3, class MX3, class SP3,
-  class P4, class PH4, class MN4, class MX4, class SP4,
-  class STRENGTH = Int<65535>>
-using HueWavesLayer = HueWavesX<
-  P1, PH1, MN1, MX1, SP1,
-  P2, PH2, MN2, MX2, SP2,
-  P3, PH3, MN3, MX3, SP3,
-  P4, PH4, MN4, MX4, SP4,
-  STRENGTH>;
-
-template<class PERIOD, class SPEED, class MIN_B, class MAX_B, class DUTY>
-using PulseTrainLayer = PulseTrainX<PERIOD, SPEED, MIN_B, MAX_B, DUTY>;
-
-template<class PERIOD, class SPEED, class MIN_B, class MAX_B, class CHIRP>
-using ChirpLayer = ChirpX<PERIOD, SPEED, MIN_B, MAX_B, CHIRP>;
-
-template<class PERIOD, class SPEED, class MIN_B, class MAX_B, class EDGE>
-using SmoothstepBandsLayer = SmoothstepBandsX<PERIOD, SPEED, MIN_B, MAX_B, EDGE>;
-
-template<class SCALE, class SPEED, class MIN_B, class MAX_B, class SEED = Int<0>>
-using ValueNoiseLayer = ValueNoiseX<SCALE, SPEED, MIN_B, MAX_B, SEED>;
-
-template<class SCALE, class SPEED, class MIN_B, class MAX_B, class STRENGTH = Int<65535>>
-using FbmNoiseLayer = FbmNoiseX<SCALE, SPEED, MIN_B, MAX_B, STRENGTH>;
-
-template<class P1, class P2, class S1, class S2, class MIN_B, class MAX_B>
-using MoireMaskLayer = MoireMaskX<P1, P2, S1, S2, MIN_B, MAX_B>;
-
-template<class CENTER, class WIDTH, class MIN_B, class MAX_B, class SPEED = Int<0>>
-using BladeEnvelopeLayer = BladeEnvelopeX<CENTER, WIDTH, MIN_B, MAX_B, SPEED>;
-
-template<
-  class P1, class PH1, class MN1, class MX1, class SP1,
-  class P2, class PH2, class MN2, class MX2, class SP2,
-  class P3, class PH3, class MN3, class MX3, class SP3,
-  class P4, class PH4, class MN4, class MX4, class SP4,
-  class STRENGTH = Int<65535>,
-  class SWING_SCALE = Int<0>,
-  class TWIST_SCALE = Int<0>>
-using SineWavesSwingLayer = SineWavesSwingX<
-  P1, PH1, MN1, MX1, SP1,
-  P2, PH2, MN2, MX2, SP2,
-  P3, PH3, MN3, MX3, SP3,
-  P4, PH4, MN4, MX4, SP4,
-  STRENGTH, SWING_SCALE, TWIST_SCALE>;
+// pulse_train, chirp, smoothstep_bands, value_noise, fbm_noise, moire_mask, blade_envelope:
+// see procedural_runtime.h (named styles only).
 
 // UnstableBlades stripe/noise band only (no full InOutHelper wrapper).
 template<class BASE>

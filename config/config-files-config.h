@@ -47,6 +47,9 @@ const unsigned int maxLedsPerStrip = 144;
 
 // SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config_files.h.
 #define ENABLE_SD_CONFIG_FILES
+// Optional: named_styles[] English blurbs + serial describe_named_style prose (~15–25 KB flash).
+// Style parsing and list_named_styles work either way. Uncomment only if you want PC/serial docs in firmware:
+// #define ENABLE_CONFIG_FILE_HELP_TEXT
 // Bisect boot without editing SD: set to 1 and reflash — ignores config/presets.ini only (compiled presets).
 #ifndef SD_CONFIG_USE_COMPILED_PRESETS
 #define SD_CONFIG_USE_COMPILED_PRESETS 0

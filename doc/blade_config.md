@@ -30,11 +30,11 @@ LayerBlade wiring guide (separate repo): `website/BLADES.md`.
 INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank lines). **Malformed lines are ignored** and do not cause a crash.
 
 - **`blade=N`** – Start definition for blade index **N** (0-based). The following lines apply to this blade until the next `blade=M` or `end`.
-- **`data_pin=P`** – Data line (GPIO pin number or name) that drives this blade’s LED data.
+- **`data_pin=P`** – Data line that drives this blade’s LED data. **Use board pin names** (e.g. `bladePin`) — see **Pin values** below.
 - **`pixels=N`** – Number of LEDs (pixels) in this blade (1–65535). Not used for **simple** PWM blades.
 - **`type=ws2811`** – NeoPixel / WS2811 strip (default when `pixels=` is set).
 - **`type=simple`** – PWM LED star or single accent LED (uses `data_pin=` / `pin1=`…`pin4=` and `led=` / `led1=`…`led4=`; omit `pixels=`).
-- **`pin=P`** or **`pin1=P`** … **`pin4=P`** – PWM GPIO pin(s) for a **simple** blade. `data_pin=` can be used instead of `pin1=` for a single LED.
+- **`pin=P`** or **`pin1=P`** … **`pin4=P`** – PWM pin(s) for a **simple** blade (prefer names like `blade5Pin`). `data_pin=` can be used instead of `pin1=` for a single LED.
 - **`led=NAME`** or **`led1=NAME`** … **`led4=NAME`** – LED circuit type for each simple channel (see list below). Defaults to **CreeXPE2White** when a pin is set but `led=` is omitted.
 - **`active_state=high|low`** – On-state pin level for all simple pins (`high` = pin HIGH when on, for N-FET gates / GPIO→load→GND; `low` = inverted). Default **high**.
 - **`active_state1=high|low`** … **`active_state4=high|low`** – Per-pin on-state level. **`active_high=`** / **`active_high1=`**…**`active_high4=`** are accepted aliases.
@@ -42,10 +42,15 @@ INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank
 - **`power_pin1=P`** … **`power_pin6=P`** – Explicit FET/power pins 1–6 for this blade. Use -1 or omit for unused.
 - **`end`** – End of the file (optional; end of file also stops parsing).
 
-**Pin values** for `data_pin` and `power_pin` / `power_pin1`–`power_pin6` can be:
+**Pin values** for `data_pin`, `power_pin` / `power_pin1`–`power_pin6`, and simple-blade `pin1`–`pin4`:
 
-- **Numeric** – GPIO pin number (e.g. `20`, `21`).
-- **Text constants** – Board pin names from your config’s pin map, for easier mapping. Examples: `bladePin`, `blade2Pin`, `blade5Pin`, `bladePowerPin1`, `bladePowerPin2`, … `bladePowerPin11`, `bladeIdentifyPin`, `blade3Pin` … `blade9Pin`. Names are case-sensitive and must match the C enum names in your board config. Unknown names are ignored (no crash).
+- **Recommended: board pin names** – Match your Proffieboard **`CONFIG_FILE`** pin map so wiring tracks firmware when pins change between boards. Examples: **`bladePin`**, **`blade2Pin`** … **`blade9Pin`**, **`blade5Pin`** (Free/accent lines), **`bladePowerPin1`** … **`bladePowerPin11`**, **`bladeIdentifyPin`**. Names are case-sensitive and must match the C symbols in your board config. Unknown names fail to resolve (treated as invalid).
+
+- **Numeric (advanced only)** – A value like `1` or `20` is a **literal MCU GPIO index**, not “blade power FET #1”. Small integers (e.g. `power_pin1 = 1`) are almost never correct on Proffieboards. Use numbers only when you deliberately map to a custom board and know the exact GPIO from your schematic.
+
+All examples in this repo and in **`examples/bladepacks/`** use **pin names**, not numeric GPIO.
+
+**Full name list (Proffieboard V3 / 3.9):** [`pin_reference.md`](pin_reference.md) — every `SaberPins` symbol, GPIO, and which names work in **`blades.ini`**. Printable pin card (like the color card): run `node examples/generate-pin-reference-card.js`, then `npx md-to-pdf examples/config-layers-pin-card.md --config-file examples/config-layers-pin-card.config.js`.
 
 **Simple LED type names** for `led=` / `led1=`…`led4=` (must match exactly):
 
@@ -53,30 +58,29 @@ INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank
 
 ## Example `config/blades.ini`
 
-```ini
-# Blade 0: main blade on data pin 0, 144 LEDs, power on pin 20
-blade=0
-data_pin=0
-pixels=144
-power_pin=20
+**Recommended** (Proffieboard — matches [`examples/config/blades.ini`](../examples/config/blades.ini) and blade packs):
 
-# Blade 1: second strip on data pin 2, 60 LEDs, power on pins 21 and 22
-blade=1
-data_pin=2
-pixels=60
-power_pin1=21
-power_pin2=22
+```ini
+# Blade 0: main NeoPixel
+blade=0
+data_pin=bladePin
+pixels=144
+power_pin1=bladePowerPin1
+power_pin2=bladePowerPin2
+power_pin3=bladePowerPin3
 
 end
 ```
 
-Using **text constants** (same result, easier to read and match to your board):
+Second strip on the board data line, multiple FETs via repeated `power_pin=`:
 
 ```ini
 blade=0
 data_pin=bladePin
 pixels=144
 power_pin=bladePowerPin1
+power_pin=bladePowerPin2
+power_pin=bladePowerPin3
 
 blade=1
 data_pin=blade2Pin
@@ -87,22 +91,20 @@ power_pin2=bladePowerPin3
 end
 ```
 
-Or using repeated `power_pin=`:
+<details>
+<summary>Numeric GPIO (custom boards only — not used in repo examples)</summary>
 
 ```ini
 blade=0
-data_pin=0
-pixels=97
-power_pin=20
-power_pin=21
-
-blade=1
-data_pin=2
+data_pin=20
 pixels=144
-power_pin=22
-
-end
+power_pin1=21
+power_pin2=22
 ```
+
+Only use when your **`CONFIG_FILE`** does not define the usual `bladePin` / `bladePowerPin*` names and you know the MCU pin numbers from your hardware.
+
+</details>
 
 ### Simple PWM LED (accent or LED star)
 

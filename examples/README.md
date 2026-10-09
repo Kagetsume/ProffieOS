@@ -9,15 +9,17 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes).
+Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes). Proffieboard V3 pin names: [`doc/pin_reference.md`](../doc/pin_reference.md) and a printable [pin card](config-layers-pin-card.md) (from `config/proffieboard_v3_config.h`).
 
 Regenerate markdown and PDFs from the repo root:
 
 ```bash
 node tools/generate-parse-color-names.js
 node examples/generate-named-colors-appendix.js
+node examples/generate-pin-reference-card.js
 npx md-to-pdf examples/config-layers-user-guide.md --config-file examples/config-layers-user-guide.config.js
 npx md-to-pdf examples/config-layers-color-card.md --config-file examples/config-layers-color-card.config.js
+npx md-to-pdf examples/config-layers-pin-card.md --config-file examples/config-layers-pin-card.config.js
 ```
 
 The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
@@ -26,7 +28,7 @@ The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `bl
 |------|---------|
 | **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
 | **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
-| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, power pins) or simple PWM LED (`type=simple`, `data_pin`/`pin1`…`pin4`, `led`/`led1`…`led4`). Replaces compiled blade config when present (Proffieboard). **Guide:** LayerBlade `website/BLADES.md`. |
+| **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, `power_pin1`…) or simple PWM (`type=simple`, `pin1`…). **Use board pin names** (`bladePin`, `bladePowerPin1`–`3`, `blade5Pin`, …) — not numeric GPIO (numbers are literal MCU pins, not “FET #1”). Replaces compiled blade config when present (Proffieboard). **Guide:** [`doc/blade_config.md`](../doc/blade_config.md), LayerBlade `website/BLADES.md`. |
 | **blade_styles.ini** | Named style "recipes" as layers. **Guide:** LayerBlade `website/BLADE_STYLES.md`. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
 | **blade_styles/strobe_overlay.ini** | Example fragment merged by **`include =`** inside a **`[section]`**. |
@@ -71,7 +73,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 
 ### Layered accents (`config` on PWM blades)
 
-Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `lockup`, `real_clash`, `drag`, `melt`, …) and **composable texture** layers (`audio_layer`, `pulse_layer`, `fire_mask`, `hard_stripes`, `responsive_flame_layer`, …). On one PWM LED, textures modulate uniform brightness. See **`examples/config/blade_styles.ini`** — GPIO ACCENT RECIPES (`accent_reactive`, `accent_os7_combat`, `accent_composable_audio`, `accent_composable_crackle`, …).
+Simple accents can use **`style = config <section>`** the same way NeoPixel blades do. Stack **`accent_*`** bases with overlay layers (`clash`, `responsive_lockup`, `real_clash`, `drag`, `melt`, …) and **composable texture** layers (`audio_layer`, `pulse_layer`, `fire_mask`, `hard_stripes`, `responsive_flame_layer`, …). On one PWM LED, textures modulate uniform brightness. See **`examples/config/blade_styles.ini`** — GPIO ACCENT RECIPES (`accent_reactive`, `accent_os7_combat`, `accent_composable_audio`, `accent_composable_crackle`, …).
 
 Example preset line (Blade 5):
 
@@ -95,7 +97,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 
 | Style | Example | Notes |
 |-------|---------|-------|
-| `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / lockup overlays for composable recipes |
+| `solid` | `solid cyan 300 800` | Opaque base + extend/retract only — stack `clash` / `blast` / `responsive_lockup` overlays for composable recipes |
 | `solid_bend` | `solid_bend cyan 300 800` | Like `solid` with OS7 BendTimePow in/out |
 | `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column base (default **`frames_y`**: width = blade, height = frames). BMP opens **when saber is on** only (**sd_style_boot_order.md**). Ring-buffer prefetch + bulk row reads on SD — see **doc/README_blade_styles_config.md** and **config-layers-user-guide.md** (*Strip column*) |
 | `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
@@ -109,7 +111,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `cylon` | `cylon red white 300 800` | Scanner / KR effect |
 | `pulse_blade` | `pulse_blade black cyan 2000 300 800` | Whole blade pulses (monolithic) |
 | `water_flow` | `water_flow blue white 300 800` | Angle-reactive stripes (Fett263 WaterBlade base; firmware required) |
-| `darksaber` | `darksaber silver white 300 800` | Metallic stripes + noise + audio (Fett263 DarkSaber base) |
+| `darksaber_layer` | `normal opacity 100% darksaber_layer silver` | DarkSaber idle texture — use **`config composable_darksaber`** for full stack |
 | `static_electricity` | `static_electricity deepskyblue white 300 800` | Swing charge / clash dissipate (Fett263 StaticElectricity base) |
 | `power_wave` | `power_wave silver white 300 800` | Wide slow reverse stripes (Fett263 PowerWave base) |
 | `unstable_blades` | `unstable_blades silver white 300 800` | Crackling StripesX (Fett263 UnstableBlades — **not** `unstable`) |
@@ -137,7 +139,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `localized_clash` | `localized_clash white` | Positioned clash band (random position) |
 | `responsive_clash` | `responsive_clash white` | Blade-angle positioned clash bump |
 | `real_clash` | `real_clash white 49%` or `real_clash white angle` | OS7 Real Clash V1 (impact-based path; needs clash strength) |
-| `lockup` | `lockup cyan` | Lockup / drag / melt tint |
+| `responsive_lockup` | `responsive_lockup cyan` | Lockup / drag / melt tint (blade-angle bump) |
 | `sparkle` | `add opacity 24% sparkle white` | Random sparkles |
 | `pulse` | `multiply opacity 73% pulse white 3000` | Breathing brightness |
 | `swing` | `add opacity 37% swing white 200` | Brightens when swinging |
@@ -190,11 +192,11 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | Smoke laser (SD) | `smoke_laser` | Smoke Laser (preset 1) | Green base + **`smoke_flow`** + **`random_bands`** + classic clash/blast | Same gaps as SmokeBlade; band mask differs from **`smoke_blade`** |
 | Sine waves (SD) | `sine_waves_cyan` | Sine Waves Cyan (preset 0) | Four **`sine_waves`** multiply slots + OS7 combat | N/A (demo / builder recipe) |
 | [WaterBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#WaterBlade) | `composable_water_flow` or `water_blade` | Water Blade | **`water_flow_layer`** + `solid_bend` + OS7 overlays, or monolithic **`water_flow`** | Bump lockup absorb shapes |
-| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + composable combat, or monolithic **`darksaber`** | Bump lockup absorb shapes |
+| [DarkSaber](https://www.fett263.com/fett263-proffieOS7-style-library.html#DarkSaber) | `composable_darksaber` or `darksaber_blade` | Dark Saber | **`darksaber_layer`** + **`solid_bend`** + composable combat | Bump lockup absorb shapes |
 | [StaticElectricity](https://www.fett263.com/fett263-proffieOS7-style-library.html#StaticElectricity) | `composable_static_electricity` | Static Electricity | **`static_electricity_layer`** + composable combat | Bump lockup absorb shapes |
 | [PowerWave](https://www.fett263.com/fett263-proffieOS7-style-library.html#PowerWave) | `composable_power_wave` or `power_wave_blade` | Power Wave | **`power_wave_layer`** + composable combat, or monolithic **`power_wave`** | Bump lockup absorb shapes |
 | [UnstableBlades](https://www.fett263.com/fett263-proffieOS7-style-library.html#UnstableBlades) | `composable_unstable_blades` | Unstable Blades | **`unstable_stripes`** over `solid_bend` (~90%); or monolithic **`unstable_blades`** | **not** named style `unstable` |
-| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `composable_fallen_order` | Fallen Order | **`fallen_order_layer`** + composable combat | Bump lockup absorb shapes |
+| [FallenOrder](https://www.fett263.com/fett263-proffieOS7-style-library.html#FallenOrder) | `composable_fallen_order` | Fallen Order | **`drifting_bands_with_pulse_layer`** + composable combat | Bump lockup absorb shapes |
 | [EnergyBlade](https://www.fett263.com/fett263-proffieOS7-style-library.html#EnergyBlade) | `energy_blade` / `rotating_pulse_sd` / `energy_core` | Energy / Rotating / Core | **Surging:** SD stripes; **Rotating:** **`rotating_pulse`** firmware; **Core:** SD stripes + fire_mask + noise_flicker | Flickering core SD-only as `energy_core` (~70–80%) |
 | Rolling surge | `rolling_surge` | Rolling Surge | **Pure SD:** slow `stripes` 22000/-1400 + `audio` screen (~80–85%); [Fett263 OS7 Master Sol option](https://www.fett263.com/fett263-proffieOS7-style-library.html#Acolyte) | Five-band Mix stripe shading, exact AudioFlicker mix |
 | Pulse stripes | `composable_pulse_stripes` / `pulse_stripes_sd` | Pulse Stripes | **`pulse_stripes_layer`** + composable combat, or monolithic **`pulse_stripes`** | Full OS7 lockup absorb shapes |
@@ -221,7 +223,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | **Layer styles** | Full blades (`solid`, `solid_bend`, `standard`, `fire`, `rainbow`, `gradient`, `audio`, …) plus overlay layers (`blast`, `clash`, `pulse`, `sparkle`, `swing`, …). Composable recipes use **`solid`** + overlay `clash`/`blast`. |
 | **Preon/postoff** | `preon_glow`, `preon_wipe`, `preon_sputter`, `postoff_glow`, `postoff_wipe`, `postoff_sputter` -- transparent transition layers that play before ignition or after retraction, with duration and intensity driven by sound files. See section below. |
 | **Ignition flash** | `ignition_flash` -- full-blade color flash during `EFFECT_IGNITION` (SeismicCharge OS7). Args: `color extend_ms fade_ms`. |
-| **Bend in/out** | All Fett263 OS7 named bases (`water_flow`, `darksaber`, `fallen_order`, `thunder_loop`, `responsive_flame`, …) use BendTimePow in/out. Generic blades: **`standard_bend`**, **`solid_bend`** (linear **`standard`** / **`solid`** unchanged). |
+| **Bend in/out** | Composable OS7 recipes use **`solid_bend`**. Remaining monolithic OS7 names (`water_flow`, `fallen_order`, …) use BendTimePow via **`Os7BladeWithBendInOut`**; DarkSaber is **layer-only** (`darksaber_layer`). |
 | **Blend modes** | `normal`, `multiply`, `screen`, `add` -- control how layers combine. |
 | **Opacity** | `opacity <0-100%>` -- per-layer transparency control (raw >100 still accepted). |
 | **Variables** | `name = value` + `{{name}}` -- section-local variables with preset overrides (`config section key=value`). |

@@ -130,13 +130,7 @@ Monitoring monitor;
 #include "random_bands.h"
 #include "sine_waves.h"
 #include "saw_waves.h"
-#include "pulse_train.h"
-#include "chirp.h"
-#include "smoothstep_bands.h"
-#include "value_noise.h"
-#include "fbm_noise.h"
-#include "moire_mask.h"
-#include "blade_envelope.h"
+#include "procedural_runtime.h"
 #include "sine_waves_swing.h"
 #include "water_flow.h"
 #include "darksaber.h"
@@ -190,6 +184,7 @@ Monitoring monitor;
 #include "../transitions/extend.h"
 #include "strip_column.h"
 #include "strip_column_bmp.h"
+#include "strip_column_fallback.h"
 
 Color16 TestRgbArgColors[256];
 
@@ -351,14 +346,21 @@ void test_random_bands() {
   style.run(&mock_blade);
 }
 
+static void InitWaveValues(WaveKind kind, int values[23]) {
+  WaveFillDefaults(kind, values);
+}
+
+static void InitProceduralValues(ProceduralKind kind, int values[6]) {
+  ProceduralFillDefaults(kind, values);
+}
+
 void test_sine_waves() {
-  Style<SineWavesX<
-    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<65535>
-  >> style;
+  int values[23];
+  InitWaveValues(WAVES_SINE, values);
+  values[0] = 2400;
+  values[4] = -2000;
+  WavesBladeStyle style;
+  style.InitFromValues(WAVES_SINE, values);
   MockBlade mock_blade;
   mock_blade.num_leds = 48;
   mock_blade.colors.resize(48);
@@ -371,13 +373,10 @@ void test_sine_waves() {
     if (c.g > max_g) max_g = c.g;
   }
   CHECK(max_g > min_g + 1000);
-  Style<SineWavesX<
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<65535>
-  >> passthrough;
+  InitWaveValues(WAVES_SINE, values);
+  values[0] = 0;
+  WavesBladeStyle passthrough;
+  passthrough.InitFromValues(WAVES_SINE, values);
   passthrough.run(&mock_blade);
   Color16 p = mock_blade.colors[10];
   CHECK(p.r == 65535 && p.g == 65535 && p.b == 65535);
@@ -388,55 +387,82 @@ void test_composable_texture_masks() {
   mock_blade.num_leds = 48;
   mock_blade.colors.resize(48);
 
-  Style<SawWavesX<
-    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<65535>
-  >> saw;
+  int wave_values[23];
+  InitWaveValues(WAVES_SAW, wave_values);
+  wave_values[0] = 2400;
+  wave_values[4] = -2000;
+  WavesBladeStyle saw;
+  saw.InitFromValues(WAVES_SAW, wave_values);
   saw.run(&mock_blade);
   CHECK(mock_blade.colors[0].g != mock_blade.colors[24].g);
 
-  Style<SmoothstepBandsX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<400>> > bands;
+  int proc_values[6];
+  InitProceduralValues(PROC_SMOOTHSTEP_BANDS, proc_values);
+  proc_values[0] = 2400;
+  proc_values[1] = -2000;
+  ProceduralBladeStyle bands;
+  bands.InitFromValues(PROC_SMOOTHSTEP_BANDS, proc_values);
   bands.run(&mock_blade);
   CHECK(mock_blade.colors[10].g > 0);
 
-  Style<ValueNoiseX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<0>> > vnoise;
+  InitProceduralValues(PROC_VALUE_NOISE, proc_values);
+  proc_values[0] = 2400;
+  proc_values[1] = -2000;
+  ProceduralBladeStyle vnoise;
+  vnoise.InitFromValues(PROC_VALUE_NOISE, proc_values);
   vnoise.run(&mock_blade);
   CHECK(mock_blade.colors[5].g >= 0);
 
-  Style<FbmNoiseX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<65535>> > fbm;
+  InitProceduralValues(PROC_FBM_NOISE, proc_values);
+  proc_values[0] = 2400;
+  proc_values[1] = -2000;
+  ProceduralBladeStyle fbm;
+  fbm.InitFromValues(PROC_FBM_NOISE, proc_values);
   fbm.run(&mock_blade);
   CHECK(mock_blade.colors[7].g >= 0);
 
-  Style<MoireMaskX<Int<2400>, Int<2450>, Int<-2000>, Int<2100>, Int<0>, Int<65535>> > moire;
+  InitProceduralValues(PROC_MOIRE_MASK, proc_values);
+  ProceduralBladeStyle moire;
+  moire.InitFromValues(PROC_MOIRE_MASK, proc_values);
   moire.run(&mock_blade);
   CHECK(mock_blade.colors[12].g > 0);
 
-  Style<BladeEnvelopeX<Int<16384>, Int<6000>, Int<0>, Int<65535>, Int<0>> > env;
+  InitProceduralValues(PROC_BLADE_ENVELOPE, proc_values);
+  ProceduralBladeStyle env;
+  env.InitFromValues(PROC_BLADE_ENVELOPE, proc_values);
   env.run(&mock_blade);
   CHECK(mock_blade.colors[24].g > mock_blade.colors[0].g);
 
-  Style<SineWavesSwingX<
-    Int<2400>, Int<0>, Int<0>, Int<65535>, Int<-2000>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<0>, Int<0>, Int<0>, Int<65535>, Int<0>,
-    Int<65535>, Int<12000>, Int<8000>
-  >> swing_waves;
+  InitWaveValues(WAVES_SINE_SWING, wave_values);
+  wave_values[0] = 2400;
+  wave_values[4] = -2000;
+  wave_values[21] = 12000;
+  wave_values[22] = 8000;
+  WavesBladeStyle swing_waves;
+  swing_waves.InitFromValues(WAVES_SINE_SWING, wave_values);
   swing_waves.run(&mock_blade);
   CHECK(mock_blade.colors[8].g > 0);
 
-  Style<PulseTrainX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<16384>> > pulse;
+  InitProceduralValues(PROC_PULSE_TRAIN, proc_values);
+  proc_values[0] = 2400;
+  proc_values[1] = -2000;
+  ProceduralBladeStyle pulse;
+  pulse.InitFromValues(PROC_PULSE_TRAIN, proc_values);
   pulse.run(&mock_blade);
   CHECK(mock_blade.colors[0].g != mock_blade.colors[1].g);
 
-  Style<ChirpX<Int<2400>, Int<-2000>, Int<0>, Int<65535>, Int<64>> > chirp;
+  InitProceduralValues(PROC_CHIRP, proc_values);
+  proc_values[0] = 2400;
+  proc_values[1] = -2000;
+  ProceduralBladeStyle chirp;
+  chirp.InitFromValues(PROC_CHIRP, proc_values);
   chirp.run(&mock_blade);
   CHECK(mock_blade.colors[0].g != mock_blade.colors[40].g);
 
-  Style<PulseTrainX<Int<0>, Int<0>, Int<0>, Int<65535>, Int<16384>> > passthrough;
+  InitProceduralValues(PROC_PULSE_TRAIN, proc_values);
+  proc_values[0] = 0;
+  ProceduralBladeStyle passthrough;
+  passthrough.InitFromValues(PROC_PULSE_TRAIN, proc_values);
   passthrough.run(&mock_blade);
   CHECK(mock_blade.colors[0].g == 65535);
 }
@@ -1298,6 +1324,10 @@ void test_strip_column_bmp() {
 
 void test_strip_column() {
   test_strip_column_bmp();
+  Color16 c0 = StripColumnMissingMediaColor(0, 80, 1000);
+  Color16 c1 = StripColumnMissingMediaColor(40, 80, 1000);
+  CHECK(c0.r > 0 || c1.r > 0);
+  CHECK(c0.r != c1.r || c0.g != c1.g);
   int row = 0;
   int frac = 0;
   StripColumnMapLed(0, 144, 144, &row, &frac);
@@ -1427,7 +1457,67 @@ void test_get_max_arg() {
   delete style;
 }
 
+void test_transition_config_shared_styles() {
+  ArgParser ap("white");
+  CurrentArgParser = &ap;
+  BladeStyle* preon = preon_audio_glow_style->make();
+  BladeStyle* accent = preon_audio_glow_style->make();
+  if (!preon || !accent) {
+    fprintf(stderr, "transition_config_shared make() failed\n");
+    exit(1);
+  }
+  delete preon;
+  delete accent;
+  CurrentArgParser = nullptr;
+}
+
+void test_os7_monolith_factories() {
+  {
+    ArgParser ap("blue white 300 800");
+    CurrentArgParser = &ap;
+    BladeStyle* layer = water_flow_layer_factory.make();
+    BladeStyle* mono = water_flow_factory.make();
+    if (!layer || !mono) {
+      fprintf(stderr, "os7 water_flow factory make() failed\n");
+      exit(1);
+    }
+    MockBlade mock_blade;
+    mock_blade.colors.resize(48);
+    on_ = true;
+    layer->run(&mock_blade);
+    mono->run(&mock_blade);
+    CHECK(mock_blade.colors[10].g >= 0);
+    delete layer;
+    delete mono;
+    CurrentArgParser = nullptr;
+  }
+  {
+    ArgParser ap("silver");
+    CurrentArgParser = &ap;
+    BladeStyle* layer = darksaber_layer_factory.make();
+    if (!layer) {
+      fprintf(stderr, "os7 darksaber_layer factory make() failed\n");
+      exit(1);
+    }
+    delete layer;
+    CurrentArgParser = nullptr;
+  }
+  {
+    ArgParser ap("blue rgb1180194 white 300 800");
+    CurrentArgParser = &ap;
+    BladeStyle* mono = kinetic_charge_factory.make();
+    if (!mono) {
+      fprintf(stderr, "os7 kinetic_charge factory make() failed\n");
+      exit(1);
+    }
+    delete mono;
+    CurrentArgParser = nullptr;
+  }
+}
+
 int main() {
+  test_transition_config_shared_styles();
+  test_os7_monolith_factories();
   test_brightness65535_scale_token();
   test_opacity_scale_token();
   test_config_layer_line_parse();
