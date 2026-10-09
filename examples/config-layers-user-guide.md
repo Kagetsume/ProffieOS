@@ -242,9 +242,20 @@ In plain terms:
 - A value of **1 or more** is a fixed time in milliseconds.
 - A value **below 1** (the value you type is `-1`) means "use the WAV length" for that event. The fork calls this choice `InOutMsOrWavLen`. You do not write that name in the INI.
 
-#### Two wipe shapes
+#### Wipe shape
 
-Two wipe shapes exist:
+A `transition` line on the section picks the wipe for the whole stack. `transition = bend {{ext}} {{ret}}` is the curved default. Other behaviors are `linear`, `spark`, `sparktip`, `split`, `explode`, `sputter`, `flame`, and `bmp`. Full grammar: [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
+
+`flame` (also written `fire`) is that curved base with a jagged lip and streaks thrown toward the tip. Each streak is hot at the head and dimmer along the tail back toward the flame. On extend the base catches the head. On retract the streaks peel off the shrinking edge, keep going toward the tip, and fade. A color tints the streaks. White is the default.
+
+```ini
+ext = -1
+ret = -1
+transition = flame {{ext}} {{ret}} orange
+layer = solid {{base}}
+```
+
+If you leave `transition` off, the first base still supplies a wipe:
 
 | Base you write | Wipe shape |
 | --- | --- |
@@ -259,7 +270,7 @@ Which lines need `{{ext}}` and `{{ret}}`:
 
 | Kind of layer | Put ext/ret on that line? |
 | --- | --- |
-| The bottom base (`solid`, `solid_bend`, `strip_column`, a full named blade) | Yes. This line drives ignition and retraction for the stack. |
+| The bottom base (`solid`, `solid_bend`, `strip_column`, a full named blade) | Only when the section has no `transition` line. With `transition`, put `{{ext}}` and `{{ret}}` there. |
 | `normal` or `add` textures (`gradient_layer`, stripes used with `add`, and similar) | No. They are clipped to the pixels the base has already lit, so they follow the base, including `-1`. |
 | `multiply` or `screen` masks that have no timing of their own (`sine_waves`, `audio_layer`, `fire_mask`, `pulse_layer`, …) | No. A dark base already hides them during retract. |
 | `hue` (`hue_waves`) | No. A dark or unlit base has nothing to rotate, so the shift follows the base wipe. |
