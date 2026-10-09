@@ -127,17 +127,17 @@ Monitoring monitor;
 #include "edit_mode.h"
 #include "remap.h"
 #include "stripes.h"
-#include "random_bands.h"
-#include "sine_waves.h"
-#include "saw_waves.h"
-#include "procedural_runtime.h"
-#include "sine_waves_swing.h"
-#include "water_flow.h"
-#include "darksaber.h"
-#include "static_electricity.h"
-#include "power_wave.h"
-#include "unstable_blades.h"
-#include "fallen_order.h"
+#include "composition/random_bands.h"
+#include "composition/sine_waves.h"
+#include "composition/saw_waves.h"
+#include "composition/procedural_runtime.h"
+#include "composition/sine_waves_swing.h"
+#include "composition/water_flow.h"
+#include "composition/darksaber.h"
+#include "composition/static_electricity.h"
+#include "composition/power_wave.h"
+#include "composition/unstable_blades.h"
+#include "composition/fallen_order.h"
 #include "transition_loop.h"
 #include "sequence.h"
 #include "../transitions/base.h"
@@ -182,9 +182,9 @@ Monitoring monitor;
 #include "random_blink.h"
 #include "../functions/effect_increment.h"
 #include "../transitions/extend.h"
-#include "strip_column.h"
-#include "strip_column_bmp.h"
-#include "strip_column_fallback.h"
+#include "composition/strip_column.h"
+#include "composition/strip_column_bmp.h"
+#include "composition/strip_column_fallback.h"
 
 Color16 TestRgbArgColors[256];
 
@@ -1396,7 +1396,7 @@ void test_strip_column() {
   delete style;
 }
 
-#include "strip_column_mask.h"
+#include "composition/strip_column_mask.h"
 
 void test_strip_column_mask() {
   uint8_t column[] = { 0, 0, 0,  128, 128, 128,  255, 255, 255 };
@@ -1421,7 +1421,7 @@ void test_strip_column_mask() {
   delete style;
 }
 
-#include "real_clash.h"
+#include "composition/real_clash.h"
 
 void test_real_clash_position() {
   CHECK(RealClashUsesAnglePosition("angle"));

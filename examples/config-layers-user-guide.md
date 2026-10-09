@@ -149,7 +149,7 @@ name = Strip Column Demo
 variation = 0
 ```
 
-The next `new_preset` starts another look. The file ends with a line that says `end`. You can store up to 64 presets.
+The next `new_preset` starts another look. The file ends with a line that says `end`. Boot indexes every preset in the file; changing presets loads that one block.
 
 `font` is the folder name under `Fonts/` (or at the card root, depending on how your card is laid out). Optional **`font_overlay`** is scanned before `font` so you can drop per-preset WAVs (such as `font.wav` under `names/Luke/`) without duplicating the whole soundfont. The example voice pack lives in `common/` at the card root. Leave `voice =` out to use `/common`.
 
@@ -369,7 +369,6 @@ These are complete looks. Each one already includes its own clash behavior (and 
 | `gradient` | hilt, tip, clash, blast, lockup, extend ms, retract ms | Smooth hilt-to-tip gradient with the usual hits built in. |
 | `audio` | base, flicker, clash, extend ms, retract ms | The whole blade brightens with the hum. |
 | `flicker` | warm, hot, clash, extend ms, retract ms | Organic brown-noise flicker. |
-| `sparktip` | base, clash, extend ms, retract ms, spark tip color | Solid blade with a spark at the leading edge while extending. |
 | `sparkle_blade` | base, sparkle, blast, lockup, clash, extend ms, retract ms | Solid color plus random sparkles, with blast, lockup, and clash built in. |
 | `cylon` | scan color, clash, extend ms, retract ms | A scanning band (about a quarter of the blade lit). |
 | `pulse_blade` | off color, on color, pulse ms, extend ms, retract ms | The whole blade breathes between two colors. |
@@ -783,7 +782,7 @@ Very long preset lists with very long `style =` lines use RAM. If a board with a
 
 ProffieOS color names fall into **three scopes**, matching the LayerBlade editor catalog:
 
-- **SD and layer tokens** (`styles/parse_color_arg_table.generated.h`, merged catalog + Fett263) — names you can type in `blade_styles.ini`, `layer =` lines, and `{{placeholder}}` overrides. Firmware resolves them with `ParseColorName` in `styles/parse_color_arg.h`. Regenerate the table with `node tools/generate-parse-color-names.js`.
+- **SD and layer tokens** (`styles/composition/parse_color_arg_table.generated.h`, merged catalog + Fett263) — names you can type in `blade_styles.ini`, `layer =` lines, and `{{placeholder}}` overrides. Firmware resolves them with `ParseColorName` in `styles/composition/parse_color_arg.h`. Regenerate the table with `node tools/generate-parse-color-names.js`.
 - **Fett263 Edit Mode list** (`props/saber_fett263_buttons.h` `color_list_`) — the on-saber color picker when Fett263 props are enabled. Voice labels come from `ColorNumber` in `sound/sound_library.h`. Choosing a color **rewrites the preset as `r,g,b`**; many of the same colors also work as text names in Section A after you flash a build with the generated table.
 - **Editor catalog extras** (Section C, if any) — names in `colors.json` extended + vivid that are **not** in the firmware table. Use `r,g,b` or `#hex` in INI for those; when Section C is empty, every catalog name is already in Section A.
 
@@ -793,7 +792,7 @@ Generated **2026-10-04** · Section A: 76 · Section B: 27 · Section C: 0. Re-r
 
 ### Section A — SD and layer tokens
 
-Source: `styles/parse_color_arg_table.generated.h` (`ParseColorName`).
+Source: `styles/composition/parse_color_arg_table.generated.h` (`ParseColorName`).
 
 | Swatch | Name | Rgb (0–255) | Hex | Scope |
 | --- | --- | --- | --- | --- |

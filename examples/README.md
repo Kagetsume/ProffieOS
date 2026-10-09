@@ -9,7 +9,7 @@ These are **example config files** for the SD card. Copy the entire **`config`**
 
 You do **not** need to use every file. Only the files you put on the SD card are read. Omitted files are ignored and compile-time or default behavior is used.
 
-Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes). Proffieboard V3 pin names: [`doc/pin_reference.md`](../doc/pin_reference.md) and a printable [pin card](config-layers-pin-card.md) (from `config/proffieboard_v3_config.h`).
+Builder walkthrough: [config-layers-user-guide.md](config-layers-user-guide.md) (PDF next to it). Named-color swatch appendix and a compact [color card](config-layers-color-card.md) PDF are generated from `styles/composition/parse_color_arg_table.generated.h` (run `node tools/generate-parse-color-names.js` after catalog changes). Proffieboard V3 pin names: [`doc/pin_reference.md`](../doc/pin_reference.md) and a printable [pin card](config-layers-pin-card.md) (from `config/proffieboard_v3_config.h`).
 
 Regenerate markdown and PDFs from the repo root:
 
@@ -106,7 +106,6 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | `gradient` | `gradient red blue white white white 300 800` | Hilt, tip, blast, lockup, clash, extend, retract |
 | `audio` | `audio cyan white white 300 800` | Hum-reactive flicker base |
 | `flicker` | `flicker red orange white 300 800` | Brown-noise flicker base |
-| `sparktip` | `sparktip green white 300 800 white` | Spark tip on extension |
 | `sparkle_blade` | `sparkle_blade blue white white white white 300 800` | Base, sparkle, blast, lockup, clash, extend, retract |
 | `cylon` | `cylon red white 300 800` | Scanner / KR effect |
 | `pulse_blade` | `pulse_blade black cyan 2000 300 800` | Whole blade pulses (monolithic) |
@@ -208,7 +207,7 @@ These recipes approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieO
 | [ResponsiveFlame](https://www.fett263.com/fett263-proffieOS7-style-library.html#ResponsiveFlame) | `responsive_flame` / `responsive_flame_sd` | Responsive Flame | **`responsive_flame`** + BendTimePow in/out; optional **`real_clash`** + **`blast_wave_random`** | Full OS7 lockup absorb shapes, Remap-wrapped combat |
 | [Trickle blade](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ahsoka) | `composable_trickle_blade` / `trickle_blade_sd` | Trickle Blade | **`trickle_blade_layer`** + composable combat, or monolithic **`trickle_blade`** | Fett263 OS7 energy-trickle idle base |
 | Cylon scanner | `composable_cylon` | Cylon | **`cylon_layer`** add over `solid_bend` | Monolithic **`cylon`** includes built-in combat |
-| Spark tip | `composable_sparktip` | Spark tip | **`sparktip_layer`** + `solid_bend` + composable combat, or monolithic **`sparktip`** | InOutSparkTip at extension front |
+| Spark tip | `composable_sparktip` / `sparktip_green` | Spark tip | `transition = sparktip` on `solid` or `standard` | Four-LED spark on the moving edge |
 | Cycle / Advanced | — | — | No composable layer — use monolithic **`cycle`** / **`advanced`** | ColorCycle / OnSpark multi-gradient |
 | [Ghostbusters](https://www.fett263.com/fett263-proffieOS7-style-library.html#Ghostbusters) | `particle_beam` | Particle Beam | **Pure SD:** silver stripes + blue stream bands + fire scroll (~70–85%) | Nested Stripe mix, SmoothStep core weight, exact StaticFire tuning |
 

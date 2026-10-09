@@ -20,54 +20,75 @@ Each **`[section_name]`** is one **recipe**. Presets reference it with **`style 
 
 ### Named style catalog (firmware)
 
-**Full pixel blades** (opaque; typically the bottom `layer =` line): **`solid`**, **`solid_bend`** (composable base — extend/retract + color only; stack overlay `clash` / `blast` / `responsive_lockup` layers), `standard`, `fire`, `rainbow`, `gradient`, `audio`, `flicker`, `sparktip`, `sparkle_blade`, `cylon`, `pulse_blade`, `water_flow`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, **`thunder_loop`** (Fett263 ThunderStorm idle loop), **`responsive_flame`** (Fett263 ResponsiveFlame angle-responsive fire), **`shimmer_blade`** (Fett263 ShimmerBlade interactive swing shimmer), **`rotoscope`** (Fett263 Rotoscope hyper responsive OT rotoscope — SwingAcceleration + HoldPeakF), **`pulse_stripes`** (ignition/alt-sound HoldPeakF StripesX + Pulsing mid-band; Fett263 OS7 ignition-surge option), **`kinetic_charge`** (clash/lockup kinetic charge — `base` + `kinetic` colors; Fett263 BlackPanther OS7 idle base), **`rotating_pulse`** (Fett263 EnergyBlade Rotating Pulse — Saw-modulated StripesX), **`trickle_blade`** (energy trickle — StaticFire + angle StripesX + HoldPeakF swing; Fett263 OS7 idle base), plus `unstable`, `strobe`, `cycle`, `advanced`. Texture-only: **`thunder_loop_layer`**, **`responsive_flame_layer`** (stack with multiply/screen).
+**Full pixel blades** (opaque; typically the bottom `layer =` line): **`solid`**, **`solid_bend`** (color only — the section `transition` mask wipes them; stack overlay `clash` / `blast` / `responsive_lockup` layers), `standard`, `fire`, `rainbow`, `gradient`, `audio`, `flicker`, `sparkle_blade`, `cylon`, `pulse_blade`, `water_flow`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, **`thunder_loop`** (Fett263 ThunderStorm idle loop), **`responsive_flame`** (Fett263 ResponsiveFlame angle-responsive fire), **`shimmer_blade`** (Fett263 ShimmerBlade interactive swing shimmer), **`rotoscope`** (Fett263 Rotoscope hyper responsive OT rotoscope — SwingAcceleration + HoldPeakF), **`pulse_stripes`** (ignition/alt-sound HoldPeakF StripesX + Pulsing mid-band; Fett263 OS7 ignition-surge option), **`kinetic_charge`** (clash/lockup kinetic charge — `base` + `kinetic` colors; Fett263 BlackPanther OS7 idle base), **`rotating_pulse`** (Fett263 EnergyBlade Rotating Pulse — Saw-modulated StripesX), **`trickle_blade`** (energy trickle — StaticFire + angle StripesX + HoldPeakF swing; Fett263 OS7 idle base), plus `unstable`, `strobe`, `cycle`, `advanced`. Texture-only: **`thunder_loop_layer`**, **`responsive_flame_layer`** (stack with multiply/screen).
 
-**Overlay layers** (stack above a base; many are transparent until an event): `blast`, **`blast_wave_random`** (OS7-style random wave), **`responsive_blast`** (blade-angle wave), `clash`, `localized_clash`, **`responsive_clash`** (blade-angle bump), **`real_clash`** (OS7 Real Clash V1), **`responsive_lockup`**, `sparkle`, `pulse`, `swing`, `drag`, `melt`, `lb`, **`ignition_flash`** (full-blade flash during extension), all `preon_*` / `postoff_*` styles, **`force_glow`** (audio-reactive glow on `EFFECT_FORCE` while blade is on), and **texture masks** `fire_mask`, **`smoke_flow`** (offset dual-band smoke; **requires `{{ext}}`/`{{ret}}` on layer line** — see extend/retract section above), `stripes`, `hard_stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, `noise_flicker`, `unstable_stripes`, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, **`swing_layer`**, **`per_led_flicker`**, **`base_flicker`**, **`thunder_loop_layer`**, **`responsive_flame_layer`**, OS7 idle extractions **`water_flow_layer`**, **`darksaber_layer`**, **`static_electricity_layer`**, **`power_wave_layer`**, **`drifting_bands_with_pulse_layer`**, **`shimmer_blade_layer`**, **`rotoscope_layer`**, **`pulse_stripes_layer`**, **`kinetic_charge_layer`**, **`rotating_pulse_layer`**, **`trickle_blade_layer`**, **`cylon_layer`**, **`sparktip_layer`** (spark band during extend only — stack with **`add`** over base), `pixel_sequence`.
+**Overlay layers** (stack above a base; many are transparent until an event): `blast`, **`blast_wave_random`** (OS7-style random wave), **`responsive_blast`** (blade-angle wave), `clash`, `localized_clash`, **`responsive_clash`** (blade-angle bump), **`real_clash`** (OS7 Real Clash V1), **`responsive_lockup`**, `sparkle`, `pulse`, `swing`, `drag`, `melt`, `lb`, **`ignition_flash`** (full-blade flash during extension), all `preon_*` / `postoff_*` styles, **`force_glow`** (audio-reactive glow on `EFFECT_FORCE` while blade is on), and **texture masks** `fire_mask`, **`smoke_flow`** (offset dual-band smoke; extend/retract follows the base wipe — no ext/ret on the smoke line), `stripes`, `hard_stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, `noise_flicker`, `unstable_stripes`, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, **`swing_layer`**, **`per_led_flicker`**, **`base_flicker`**, **`thunder_loop_layer`**, **`responsive_flame_layer`**, OS7 idle extractions **`water_flow_layer`**, **`darksaber_layer`**, **`static_electricity_layer`**, **`power_wave_layer`**, **`drifting_bands_with_pulse_layer`**, **`shimmer_blade_layer`**, **`rotoscope_layer`**, **`pulse_stripes_layer`**, **`kinetic_charge_layer`**, **`rotating_pulse_layer`**, **`trickle_blade_layer`**, **`cylon_layer`**, **`sparktip_layer`** (spark band during extend only — stack with **`add`** over base), `pixel_sequence`.
 
-**In/out:** Fett263 OS7 monoliths (`water_flow`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`) use **BendTimePow** via **`Os7BladeWithBendInOut`**. **DarkSaber:** **`solid_bend`** + **`darksaber_layer`** (`composable_darksaber`; monolith removed). Generic linear in/out: **`standard`**, **`solid`**, **`rainbow`**, and other named styles with `extend_ms` / `retract_ms` args. Same with bend curves: **`standard_bend`**, **`solid_bend`**. Stack **`ignition_flash`** for SeismicCharge-style ignition overlay.
+**In/out:** Fett263 OS7 monoliths (`water_flow`, `static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`, `shimmer_blade`, `rotoscope`, `pulse_stripes`, `kinetic_charge`, `rotating_pulse`, `trickle_blade`) do not wipe inside a config section. The section **`transition`** mask does, and the default curve is **bend**. Times on the style line feed that mask when `transition` is omitted. **DarkSaber:** **`solid_bend`** + **`darksaber_layer`** (`composable_darksaber`; monolith removed). **`solid`** and **`solid_bend`** are color only; the section mask wipes them (default **bend**). **`audio`**, **`flicker`**, **`gradient`**, **`sparkle_blade`**, **`cylon`**, and **`pulse_blade`** use that mask with a linear default. **`standard_bend`** uses it with a bend default. Stock **`standard`**, **`rainbow`**, **`strobe`**, **`unstable`**, **`fire`**, and **`cycle`** still wipe themselves. **`advanced`** keeps its spark-tip wipe. A `transition` line on those stacks wipes twice, so config recipes use a compositor base instead. Stack **`ignition_flash`** for SeismicCharge-style ignition overlay.
 
-**Extend/retract auto timing:** On styles that take **`extend_ms`** and **`retract_ms`**, use **`-1`** to match the ignition or retraction soundfont length (`WavLen<EFFECT_IGNITION>` / `WavLen<EFFECT_RETRACTION>`). Example: `ext = -1`, `ret = -1`, or `layer = solid {{base}} -1 -1`.
+**Extend/retract auto timing:** On styles that take **`extend_ms`** and **`retract_ms`**, use **`-1`** to match the ignition or retraction soundfont length (`WavLen<EFFECT_IGNITION>` / `WavLen<EFFECT_RETRACTION>`). For a solid stack, put that on the transition: `transition = bend -1 -1`.
 
-### Extend/retract in layered recipes (compositor vs own InOut)
+### Extend/retract in layered recipes (one transition)
 
-When several **`layer =`** lines are stacked, **`ConfigLayersStyle`** reads **layer 0** (the base) per LED during extend/retract. Overlays with **`normal`** or **`add`** blend are **auto-clipped** to lit base pixels — they follow whatever timing the base uses, including **`-1`** sound sync. **No `ext`/`ret` on those texture lines.**
+Three lines control the stack wipe. **`transition`** is copied onto both phases. **`transition_in`** and **`transition_out`** then replace one phase. A missing behavior name is **`bend`**. A missing time is **300** on extend and **800** on retract. **`-1`** matches the ignition or retraction sound length.
 
-**Multiply/screen textures without internal InOut** (`audio_layer`, `pulse_layer`, `swing_layer`, `per_led_flicker`, `base_flicker`, `noise_flicker`, `fire_mask`, `stripes`, …) are **not** compositor-clipped (multiply over black during retract is harmless). They also **do not** take extend/retract args.
+```ini
+transition = <behavior> <extend_ms> <retract_ms> [option] [option]
+transition_in = <behavior> <extend_ms> [option] [option]
+transition_out = <behavior> <retract_ms> [option] [option]
+```
 
-**Textures with their own InOut wrapper** must receive the **same** **`extend_ms`** and **`retract_ms`** as the base — pass **`{{ext}}`** and **`{{ret}}`** on the layer line (or the same literals / **`-1`** values). This applies to:
+After the times, up to two optional words. Each word is one of **`spark`**, a color (`white`, `cyan`, …), or a direction (**`tip`** / **`tip_to_hilt`**, or **`hilt`** / **`hilt_to_tip`**). A third word is ignored.
 
-| Style | Pass on layer line |
-|-------|-------------------|
-| **`smoke_flow`** | `… smoke_flow black white {{ext}} {{ret}}` (both multiply and screen lines) |
-| **`smoke_up`** / **`smoke_down`** | Same pattern if used (legacy; prefer **`smoke_flow`** for smoke blades) |
+| Behavior | Also written | What it does |
+|----------|----------------|--------------|
+| **`bend`** | | Default curve. Same bend **`solid_bend`** uses. |
+| **`linear`** | **`in_out`**, **`inout`** | Even wipe along the blade. |
+| **`spark`** | | Linear edge with no colored band. |
+| **`sparktip`** | | Bend plus a four-LED spark on the moving edge. Color defaults to white: `sparktip 300 800 cyan`. |
+| **`split`** | **`middle`** | Extend grows a lit band from the middle toward the hilt and the tip. Retract opens a dark gap at the middle and both edges run out to the ends. |
+| **`split_spark`** | **`middle_spark`**, or **`split`** plus **`spark`** | Split with a spark on both edges. `transition = split 300 800 spark white`. |
+| **`explode`** | **`inverse`** | Same center band both ways. Extend grows out to the hilt and the tip. Retract starts at those ends and both edges draw into the center until the blade is dark. |
+| **`explode_spark`** | **`inverse_spark`**, or **`explode`** plus **`spark`** | Explode with a spark on both edges. |
+| **`sputter`** | | Each pixel has a fixed random time and fades in across the extend. Retract runs that pattern backward, so the pixels that appeared last go dark first. |
+| **`bmp`** | **`bitmap`** | Column-file opacity mask. See below. |
 
-**Full named styles with InOut** stacked as a layer (not composable **`*_layer`** textures) also need matching timing when their args include extend/retract — e.g. **`audio`** in **`[water_blade]`**: `screen opacity 24% audio {{base}} {{tip}} {{clash}} {{ext}} {{ret}}`. Composable **`audio_layer`** has no such args.
+**Direction** defaults to **`tip`**: extend runs hilt→tip, retract runs tip→hilt. **`hilt`** mirrors the blade, so retract runs hilt→tip. That mirror reverses **`bend`**, **`linear`**, **`spark`**, **`sparktip`**, and **`sputter`**. **`split`** and **`explode`** are symmetric, so the mirror does not change their shape. **`bmp`** does not take **`spark`**, a color, or **`hilt`**.
 
-Use **`smoke_flow`** for smoke blades (not separate up/down layers). If **`ext = -1`** / **`ret = -1`** in the section, expand the same **`{{ext}}`/`{{ret}}`** onto every **`smoke_flow`** line so base and smoke both use **`InOutFuncAuto`** / soundfont length.
+**`bmp`** form:
 
-**Full opaque named styles** used alone as a layer (`standard`, `water_flow`, `solid`, …) already include InOut in their own args — e.g. `layer = solid_bend {{base}} {{ext}} {{ret}}`.
+```ini
+transition = bmp <path> [source_height] <extend_ms> <retract_ms>
+transition_in = bmp <path> [source_height] <extend_ms>
+transition_out = bmp <path> [source_height] <retract_ms>
+```
 
-Example — composable gradient (base only) + smoke (matched InOut):
+`source_height` is the blade span in the file. Omit it and the blade length is used (`bmp masks/wipe.bmp 300 800`). Two numbers on a one-phase line are height then milliseconds (`bmp masks/wipe.bmp 144 300`). Row 0 through the last row is the extend. Retract reads those rows backward. White is lit and black is covered. **`strip_column`** and **`strip_column_mask`** use that same reader and play backward while the blade is retracting.
+
+A phase with no **`transition`** / **`transition_in`** / **`transition_out`** line keeps the curve and time of the first base layer that still has extend/retract. **`solid`** and **`solid_bend`** supply **bend**. If only one phase line is set and no base supplies a curve, the other phase is **bend** at 300 (extend) or 800 (retract). If nothing is set and no base supplies a curve, the stack has no wipe.
+
+**`ConfigLayersStyle`** paints that wipe once, after every texture and combat layer. When the retract has finished and the blade is off, the mask calls **`allow_disable`**. **`preon_*`**, **`postoff_*`**, and **`ignition_flash`** still hold power while they run.
+
+Textures do **not** take `ext`/`ret`. That includes **`smoke_flow`**, **`smoke_up`**, **`smoke_down`**, **`normal`/`add`** layers, and **multiply/screen** masks (`audio_layer`, `stripes`, `fire_mask`, …).
+
+These layers are drawn **after** the wipe, because they paint while the blade is off or past the lit tip: **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, **`sparktip_layer`**. **`sparktip_layer`** still has its own `extend_ms` / `retract_ms` so the spark sits on the leading edge.
+
+**`advanced`** still wipes inside the style. A `transition` line on that stack wipes twice. Composable **`audio_layer`** has no extend/retract args.
+
+**`strip_column`**, **`standard_bend`**, **`audio`**, **`flicker`**, **`gradient`**, **`sparkle_blade`**, **`cylon`**, **`pulse_blade`**, **`water_flow`**, and the other OS7 bend monoliths (`static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`, `shimmer_blade`, `rotoscope`, `pulse_stripes`, `kinetic_charge`, `rotating_pulse`, `trickle_blade`) do not wipe inside a config section. The section **`transition`** mask does. Stock **`standard`**, **`rainbow`**, **`strobe`**, **`unstable`**, **`fire`**, **`cycle`**, and **`advanced`** still wipe themselves.
+
+Example — smoke blade:
 
 ```ini
 ext = -1
 ret = -1
-layer = solid_bend {{base}} {{ext}} {{ret}}
-layer = normal opacity 100% gradient_layer {{hilt}} {{tip}}
-layer = multiply opacity 100% audio_layer
+transition = bend {{ext}} {{ret}}
+layer = solid {{base}}
+layer = multiply opacity 73% smoke_flow black white
+layer = screen opacity 12% smoke_flow black {{base}}
 ```
 
-Example — smoke blade (base + smoke must share times):
-
-```ini
-ext = -1
-ret = -1
-layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}
-layer = screen opacity 12% smoke_flow black {{base}} {{ext}} {{ret}}
-```
-
-Preset override: `style = config smoke_blade ext=-1 ret=-1` updates section vars so all **`{{ext}}`/`{{ret}}`** lines stay matched.
+Preset override: `style = config smoke_blade ext=-1 ret=-1` updates the transition through `{{ext}}` and `{{ret}}`. A preset token cannot contain spaces, so put the full `transition`, `transition_in`, and `transition_out` lines in the section.
 
 **Composable SD recipes:** Use **`solid`**, **`solid_bend`**, or **`strip_column`** (SD **24-bit BMP** column animation — export from GIMP/Photoshop; see **`strip_column_bmp.h`** and **README_blade_styles_config.md**) as the bottom layer, then stack texture masks (`fire_mask`, **`strip_column_mask`** (SD grayscale BMP multiply mask, same file layout as **`strip_column`**), `stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`** textures, …) and **overlay** layers (`clash`, `blast`, **`real_clash`**, **`blast_wave_random`**, or **`responsive_clash`**, **`responsive_blast`**, `responsive_lockup`, `drag`, `melt`, `lb`, **`force_glow`**). Clash/lockup/blast colors live on those overlay lines — not on the base. Pick **one** clash type and **one** blast type per recipe. Most textures need **no** extend/retract on their line (see table above); **`smoke_flow`** and **`sparktip_layer`** are exceptions (**`sparktip_layer`** needs matching **`{{ext}}`/`{{ret}}`**). Shipped examples: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`**, **`[composable_gradient]`**, **`[composable_checklist]`**, **`[composable_checklist_responsive]`**, **`[smoke_blade]`**, **`[greyscale_mercenary]`**, **`[solid_smoke]`** ( **`examples/config/presets.ini`** maps preset indices 0–2 and 12–22 to these).
 
@@ -87,10 +108,10 @@ Argument order and examples: **`examples/config/blade_styles.ini`** (header comm
 ## Format
 
 - **Sections:** Each effect has a section `[effect_name]`. The name is used in presets as the style **`config effect_name`**.
-- **Layers:** Inside a section, each line **`layer = <style string>`** adds one layer. Layers are drawn in order (first = base, next = on top). Same style strings as in presets (e.g. `rainbow 300 800`, `fire red yellow`, `strobe black white 15 1`).
+- **Layers:** Inside a section, each line **`layer = <style string>`** adds one layer. Layers are drawn in order (first = base, next = on top). A rainbow blade is a white base plus `normal opacity 100% rainbow_layer`, then whatever effects you want (`clash`, `blast`, `pulse`, …).
 - **Comments:** Lines starting with `#` or `;` are ignored.
 - **Whitespace:** Spaces, tabs, and blank lines are ignored. Spaces around `=` are allowed. Malformed lines are skipped; they do not cause a crash.
-- **Local variables (same section):** Lines **`name = value`** define names you can use in **`layer`** lines as **`{{name}}`**. Put variable lines before (or between) **`layer`** lines. Up to **16** keys; values up to **128** characters. Keys are letters, digits, and underscore. Example: `base = cyan`, `clash = white`, then `layer = standard {{base}} {{clash}} 300 800`. Duplicate **`name =`** lines in the same section override the previous value.
+- **Local variables (same section):** Lines **`name = value`** define names you can use in **`layer`** lines as **`{{name}}`**. Put variable lines before (or between) **`layer`** lines. Up to **16** keys; values up to **128** characters. Keys are letters, digits, and underscore. Example: `base = cyan`, `clash = white`, then `layer = solid {{base}}` and `layer = clash {{clash}}`. Duplicate **`name =`** lines in the same section override the previous value.
 - **Reserved `version`:** **`version = N`** (integer) may appear in an effect section, palette section, or include fragment. It is reserved for future format migrations and is **not** expanded as **`{{version}}`** (use another key name if you need a variable called `version`).
 - **Named palettes:** A section **`[palette_<id>]`** (for example **`[palette_default]`**) holds **`name = value`** lines like a variable block. In an effect section, **`palette = <id>`** merges those names: only keys **not** already set in the section are added, so put **`palette = ...`** after any per-effect overrides you want to keep, or before lines that should override the palette. **`palette`** is reserved (like **`layer`**) and is not stored as a **`{{name}}`**. Up to **8** palette sections are cached.
 
@@ -122,25 +143,26 @@ The **`examples/config/`** tree mirrors SD layout. **`examples/config/blade_styl
 The canonical annotated copy is **`examples/config/blade_styles.ini`** in the ProffieOS tree. Minimal illustration:
 
 ```ini
-# Simple: one style
+# Rainbow: white base, rainbow_layer at 100%, then effects
 [plain_rainbow]
-layer = rainbow 300 800
+transition = linear 300 800
+layer = solid white
+layer = normal opacity 100% rainbow_layer
+layer = clash white
 
-# Two layers: rainbow base with a strobe on top
+# Rainbow plus a pulse
 [rainbow_strobe]
-layer = rainbow 300 800
-layer = strobe black white 15 1 300 800
+transition = linear 300 800
+layer = solid white
+layer = normal opacity 100% rainbow_layer
+layer = add opacity 49% pulse white 150
 
-# Fire with a white blast overlay
+# Fire look: solid color, fire_mask, then blast
 [fire_blast]
-layer = fire red yellow
+transition = bend 300 800
+layer = solid red
+layer = multiply opacity 73% fire_mask black yellow
 layer = blast white
-
-# Multiple layers: base, then effects
-[complex]
-layer = rainbow 300 800
-layer = blast white
-layer = strobe black cyan 20 1 300 800
 
 # Shared palette + effect (palette id = name after "palette_")
 [palette_my_colors]
@@ -151,16 +173,9 @@ ret = 800
 
 [uses_palette]
 palette = my_colors
-layer = standard {{base}} {{clash}} {{ext}} {{ret}}
-
-# Nested: reuse another section as one layer (expands its layers)
-[base_only]
-layer = rainbow 300 800
-layer = blast white
-
-[stacked]
-layer = config base_only
-layer = strobe black white 15 1 300 800
+transition = linear {{ext}} {{ret}}
+layer = solid {{base}}
+layer = clash {{clash}}
 ```
 
 ## Using in presets
@@ -195,7 +210,7 @@ An **offline expander** (resolve **`include`**, **`palette`**, and **`{{name}}`*
 
 The config can compose **all** available blade styles. Any **named style** that the parser knows can be used in a `layer = ...` line:
 
-- **solid**, **solid_bend** (composable base — extend/retract + color; stack overlay **clash** / **blast** / **responsive_lockup**), **standard**, **standard_bend**, **rainbow**, **fire**, **gradient**, **audio**, **flicker**, **sparktip**, **sparkle_blade**, **cylon**, **pulse_blade**, **strobe**, **cycle**, **advanced**, **unstable**
+- **solid**, **solid_bend** (color only — stack `transition` wipes them; stack overlay **clash** / **blast** / **responsive_lockup**), **standard**, **standard_bend**, **rainbow**, **fire**, **gradient**, **audio**, **flicker**, **sparkle_blade**, **cylon**, **pulse_blade**, **strobe**, **cycle**, **advanced**, **unstable**
 - **water_flow**, **static_electricity**, **power_wave**, **unstable_blades**, **fallen_order** (Fett263 OS7 monolith bases); **darksaber_layer** + composable stack (no monolith)
 - **charging**, **pixel_sequence**
 - **blast**, **clash**, **lockup**, **sparkle**, **pulse**, **swing**, **drag**, **melt**, **lb**, **preon_***, **postoff_***
@@ -204,15 +219,14 @@ The config can compose **all** available blade styles. Any **named style** that 
 
 Use the same syntax as in a preset: style name followed by arguments (colors, times, etc.). For example:
 
-- `layer = rainbow 300 800` — extension/retraction times
-- `layer = fire red yellow` — warm and hot colors
-- `layer = strobe black white 15 1` — standby, flash, frequency, width
+- `layer = solid white` then `layer = normal opacity 100% rainbow_layer` — full rainbow; add clash, blast, or pulse after that
+- `layer = solid red` then `layer = multiply opacity 73% fire_mask black yellow` — fire look
+- `layer = add opacity 49% pulse white 150` — periodic flash over the layers below
 - `layer = blast white` — blast overlay (color only; fade timing is fixed in the template)
-- `layer = solid cyan 300 800` — composable base + extend/retract (add `layer = clash white` above)
-- `layer = standard cyan white 300 800` — monolithic base, clash, times
-- `layer = solid {{base}} -1 -1` — extend/retract synced to ignition/retraction soundfont length
+- `layer = solid cyan` — color only; default bend transition is 300/800 (add `layer = clash white` above)
+- `transition = bend -1 -1` and `layer = solid {{base}}` — bend wipe synced to sound length
 - `layer = normal opacity 100% gradient_layer red blue` — composable texture; no ext/ret (follows base)
-- `layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}` — **smoke_flow requires matching ext/ret on every line**
+- `layer = multiply opacity 73% smoke_flow black white` — smoke follows the base wipe (optional speed after the colors)
 
 Layers are composited in order (first = bottom, last = top), like the compile-time `Layers<>` template.
 
@@ -297,7 +311,7 @@ Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html
 
 **Fett263 base-style fidelity notes:** Monolith named styles **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, and **`fallen_order`** bake in OS7 base + wrapper (one firmware reflash). DarkSaber idle is **`darksaber_layer`** only. SD sections stack optional layers and lockup overlays. Still simpler than full OS7 for lockup/clash (no Real Clash V1 dual-path or Bump lockup zones). Each section documents an SD-only fallback if firmware is not updated yet.
 
-**`unstable_blades` vs `unstable`:** Fett263 **UnstableBlades** OS7 uses **`unstable_blades`** or **`unstable_stripes`**. Kylo / **`unstable`** composable stack: **`solid_bend`** + **`unstable_layer`** + **`on_spark_layer`** + **`unstable_lockup_layer`** + **`localized_clash`** + **`blast`** (+ drag/melt/lb). See **`[composable_classic_unstable]`** / **`fo_kylo_unstable`**. Monolith **`unstable`** remains one-line ( **`[chaos_inferno]`** ).
+**`unstable_blades` vs `unstable`:** Fett263 **UnstableBlades** OS7 uses **`unstable_blades`** or **`unstable_stripes`**. Kylo / stock **`unstable`** as a config stack: **`solid_bend`** + **`unstable_layer`** + **`on_spark_layer`** + **`unstable_lockup_layer`** + **`localized_clash`** + **`blast`** (+ drag/melt/lb). See **`[composable_classic_unstable]`**, **`[chaos_inferno]`**, and **`fo_kylo_unstable`**.
 
 **Usage in presets:** `style = config fallen_order_blade`, `style = fallen_order silver white 300 800`, `style = config unstable_blades`, `style = unstable_blades silver white 300 800`, etc. Colors: **`silver`** = Rgb&lt;100,100,150&gt;; **`deepskyblue`** = Rgb&lt;0,135,255&gt;.
 

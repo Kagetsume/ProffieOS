@@ -1396,7 +1396,7 @@ struct FETT263_MENU_SPEC : public DefaultMenuSpec<SPEC> {
 
 #ifdef FETT263_EDIT_MODE_MENU
 #include "../common/color.h"
-#include "../styles/parse_color_arg.h"
+#include "../styles/composition/parse_color_arg.h"
 #include "../styles/edit_mode.h"
 #endif
 

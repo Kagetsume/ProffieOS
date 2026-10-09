@@ -366,6 +366,81 @@ inline void StyleConfigExpandLocalVars(char* out, size_t out_max, const char* in
   else out[out_max - 1] = '\0';
 }
 
+// Transition keys are section settings, not blade layers. Publish them with
+// an @ prefix so the layer cache keeps them with the section.
+// Prepend order leaves [@transition, @transition_in, @transition_out, layers].
+inline bool StyleConfigLineIsTransition(const char* line) {
+  if (!line || !line[0]) return false;
+  return !strncmp(line, "@transition_in ", 15) ||
+         !strncmp(line, "@transition_out ", 16) ||
+         !strncmp(line, "@transition ", 12);
+}
+
+inline const char* StyleConfigLookupKey(StyleConfigSectionState* st, const char* key) {
+  if (!st || !key) return nullptr;
+  if (st->preset_override_count > 0 && st->preset_override_keys && st->preset_override_vals) {
+    int ix = StyleConfigFindVarKeyIndex(st->preset_override_keys, st->preset_override_count, key);
+    if (ix >= 0 && st->preset_override_vals[ix] && st->preset_override_vals[ix][0])
+      return st->preset_override_vals[ix];
+  }
+  int ix = StyleConfigFindVarKeyIndex(st->keys, st->var_count, key);
+  if (ix >= 0 && st->vals[ix] && st->vals[ix][0]) return st->vals[ix];
+  return nullptr;
+}
+
+inline void StyleConfigPrependLayer(char layers[][STYLE_CONFIG_LAYER_STR_LEN], int* count,
+                                    int max_layers, const char* text) {
+  if (!layers || !count || !text || !text[0] || max_layers <= 0) return;
+  if (*count < 0) *count = 0;
+  if (*count >= max_layers) (*count)--;
+  for (int i = *count; i > 0; --i)
+    memcpy(layers[i], layers[i - 1], STYLE_CONFIG_LAYER_STR_LEN);
+  size_t n = 0;
+  while (text[n] && n + 1 < STYLE_CONFIG_LAYER_STR_LEN) {
+    layers[0][n] = text[n];
+    n++;
+  }
+  layers[0][n] = '\0';
+  (*count)++;
+}
+
+inline void StyleConfigPublishOneTransition(StyleConfigSectionState* st,
+                                           char layers[][STYLE_CONFIG_LAYER_STR_LEN],
+                                           int* count, int max_layers,
+                                           const char* key, const char* prefix) {
+  const char* raw = StyleConfigLookupKey(st, key);
+  if (!raw) return;
+  char spec[STYLE_CONFIG_LAYER_STR_LEN];
+  StyleConfigExpandLocalVars(spec, sizeof(spec), raw, st->keys, st->vals, st->var_count,
+                             st->preset_override_count, st->preset_override_keys,
+                             st->preset_override_vals);
+  if (!spec[0]) return;
+  char line[STYLE_CONFIG_LAYER_STR_LEN];
+  size_t o = 0;
+  while (prefix && prefix[o] && o + 1 < STYLE_CONFIG_LAYER_STR_LEN) {
+    line[o] = prefix[o];
+    o++;
+  }
+  for (size_t s = 0; spec[s] && o + 1 < STYLE_CONFIG_LAYER_STR_LEN; s++)
+    line[o++] = spec[s];
+  line[o] = '\0';
+  StyleConfigPrependLayer(layers, count, max_layers, line);
+}
+
+inline void StyleConfigPublishTransition(StyleConfigSectionState* st,
+                                        char layers[][STYLE_CONFIG_LAYER_STR_LEN],
+                                        int* count, int max_layers) {
+  if (!st || !layers || !count || max_layers <= 0) return;
+  if (*count < 0) *count = 0;
+  if (*count > 0 && StyleConfigLineIsTransition(layers[0])) return;
+  StyleConfigPublishOneTransition(st, layers, count, max_layers,
+                                 "transition_out", "@transition_out ");
+  StyleConfigPublishOneTransition(st, layers, count, max_layers,
+                                 "transition_in", "@transition_in ");
+  StyleConfigPublishOneTransition(st, layers, count, max_layers,
+                                 "transition", "@transition ");
+}
+
 inline bool StyleConfigParseLayerDot(const char* variable, char* style_out, size_t style_max,
                                      char* slot_out, size_t slot_max) {
   if (!variable || !style_out || !slot_out || style_max == 0 || slot_max == 0) return false;
@@ -921,7 +996,10 @@ inline int LoadStyleConfigLayers(const char* section_name,
     f.skipline();
     line_count++;
     }
-    if (in_section) StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
+    if (in_section) {
+      StyleConfigFlushPendingStructuredLayer(&st, layers, &count, max_layers);
+      StyleConfigPublishTransition(&st, layers, &count, max_layers);
+    }
   }
   LOCK_SD(false);
   if (count > 0 && oc == 0) StyleConfigStoreLayersInCache(section_name, layers, count);

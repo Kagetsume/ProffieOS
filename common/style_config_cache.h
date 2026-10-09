@@ -9,13 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef STYLE_CONFIG_SECTION_INDEX_MAX
-#define STYLE_CONFIG_SECTION_INDEX_MAX 384
-#endif
-#ifndef STYLE_CONFIG_LAYERS_CACHE_MAX
-#define STYLE_CONFIG_LAYERS_CACHE_MAX 16
-#endif
-
 struct StyleConfigSectionIndexEntry {
   char name[64];
   uint32_t offset;  // file position of '[' starting a [section] header
@@ -27,12 +20,16 @@ struct StyleConfigLayersCacheEntry {
   char* layers;  // nlayers * STYLE_CONFIG_LAYER_STR_LEN bytes on heap
 };
 
-static StyleConfigSectionIndexEntry style_config_section_index[STYLE_CONFIG_SECTION_INDEX_MAX];
+// Grown to the number of [section] headers. Not a fixed table.
+static StyleConfigSectionIndexEntry* style_config_section_index = nullptr;
 static size_t style_config_section_index_count = 0;
+static size_t style_config_section_index_cap = 0;
 static bool style_config_section_index_ready = false;
 
-static StyleConfigLayersCacheEntry style_config_layers_cache[STYLE_CONFIG_LAYERS_CACHE_MAX];
+// Parsed layer text for the sections the active preset uses.
+static StyleConfigLayersCacheEntry* style_config_layers_cache = nullptr;
 static int style_config_layers_cache_count = 0;
+static int style_config_layers_cache_cap = 0;
 
 inline int StyleConfigLayersCacheCount() { return style_config_layers_cache_count; }
 
@@ -41,8 +38,43 @@ static int style_config_global_palette_ncache = 0;
 static bool style_config_global_palettes_loaded = false;
 
 inline void StyleConfigFreeSectionIndex() {
+  free(style_config_section_index);
+  style_config_section_index = nullptr;
   style_config_section_index_count = 0;
+  style_config_section_index_cap = 0;
   style_config_section_index_ready = false;
+}
+
+inline bool StyleConfigAppendSection(const char* name, uint32_t offset) {
+  if (!name || !name[0]) return true;
+  if (style_config_section_index_count == style_config_section_index_cap) {
+    size_t ncap = style_config_section_index_cap ? style_config_section_index_cap * 2 : 8;
+    StyleConfigSectionIndexEntry* n = (StyleConfigSectionIndexEntry*)realloc(
+        style_config_section_index, ncap * sizeof(StyleConfigSectionIndexEntry));
+    if (!n) return false;
+    style_config_section_index = n;
+    style_config_section_index_cap = ncap;
+  }
+  StyleConfigSectionIndexEntry* e =
+      &style_config_section_index[style_config_section_index_count++];
+  strncpy(e->name, name, sizeof(e->name) - 1);
+  e->name[sizeof(e->name) - 1] = '\0';
+  e->offset = offset;
+  return true;
+}
+
+inline void StyleConfigFitSectionIndex() {
+  if (style_config_section_index_count == 0) {
+    StyleConfigFreeSectionIndex();
+    return;
+  }
+  if (style_config_section_index_cap == style_config_section_index_count) return;
+  StyleConfigSectionIndexEntry* n = (StyleConfigSectionIndexEntry*)realloc(
+      style_config_section_index,
+      style_config_section_index_count * sizeof(StyleConfigSectionIndexEntry));
+  if (!n) return;
+  style_config_section_index = n;
+  style_config_section_index_cap = style_config_section_index_count;
 }
 
 inline void StyleConfigEnsurePalettesLoaded() {
@@ -128,12 +160,9 @@ inline void StyleConfigBuildSectionIndexFromSd() {
       StripIniTrailingLineEndings(name);
       const char* p = name;
       while (*p == ' ' || *p == '\t' || *p == '\r') p++;
-      if (p[0] && style_config_section_index_count < STYLE_CONFIG_SECTION_INDEX_MAX) {
-        StyleConfigSectionIndexEntry* e =
-            &style_config_section_index[style_config_section_index_count++];
-        strncpy(e->name, p, sizeof(e->name) - 1);
-        e->name[sizeof(e->name) - 1] = '\0';
-        e->offset = off;
+      if (p[0] && !StyleConfigAppendSection(p, off)) {
+        StyleConfigStatusPrintf("Style config: section index alloc failed, rest not indexed");
+        break;
       }
       line_count++;
       continue;
@@ -142,6 +171,7 @@ inline void StyleConfigBuildSectionIndexFromSd() {
     line_count++;
   }
   LOCK_SD(false);
+  StyleConfigFitSectionIndex();
   style_config_section_index_ready = style_config_section_index_count > 0;
   StyleConfigStatusPrintf("Style config: indexed %u sections",
                           (unsigned)style_config_section_index_count);
@@ -158,10 +188,42 @@ inline void StyleConfigFreeLayersCacheEntry(StyleConfigLayersCacheEntry* e) {
   e->section[0] = 0;
 }
 
+inline void StyleConfigFitLayersCache() {
+  if (style_config_layers_cache_count <= 0) {
+    free(style_config_layers_cache);
+    style_config_layers_cache = nullptr;
+    style_config_layers_cache_cap = 0;
+    style_config_layers_cache_count = 0;
+    return;
+  }
+  if (style_config_layers_cache_cap == style_config_layers_cache_count) return;
+  StyleConfigLayersCacheEntry* n = (StyleConfigLayersCacheEntry*)realloc(
+      style_config_layers_cache,
+      (size_t)style_config_layers_cache_count * sizeof(StyleConfigLayersCacheEntry));
+  if (!n) return;
+  style_config_layers_cache = n;
+  style_config_layers_cache_cap = style_config_layers_cache_count;
+}
+
+inline StyleConfigLayersCacheEntry* StyleConfigLayersCacheAppendSlot() {
+  if (style_config_layers_cache_count >= style_config_layers_cache_cap) {
+    int ncap = style_config_layers_cache_cap ? style_config_layers_cache_cap * 2 : 2;
+    StyleConfigLayersCacheEntry* n = (StyleConfigLayersCacheEntry*)realloc(
+        style_config_layers_cache, (size_t)ncap * sizeof(StyleConfigLayersCacheEntry));
+    if (!n) return nullptr;
+    style_config_layers_cache = n;
+    style_config_layers_cache_cap = ncap;
+  }
+  StyleConfigLayersCacheEntry* e = &style_config_layers_cache[style_config_layers_cache_count++];
+  memset(e, 0, sizeof(*e));
+  return e;
+}
+
 inline void StyleConfigClearLayersCache() {
   for (int i = 0; i < style_config_layers_cache_count; i++)
     StyleConfigFreeLayersCacheEntry(&style_config_layers_cache[i]);
   style_config_layers_cache_count = 0;
+  StyleConfigFitLayersCache();
 }
 
 inline int StyleConfigCopyLayersFromCache(const char* section_name,
@@ -204,14 +266,8 @@ inline void StyleConfigStoreLayersInCache(const char* section_name,
     }
   }
 
-  if (style_config_layers_cache_count >= STYLE_CONFIG_LAYERS_CACHE_MAX) {
-    StyleConfigFreeLayersCacheEntry(&style_config_layers_cache[0]);
-    memmove(&style_config_layers_cache[0], &style_config_layers_cache[1],
-            (size_t)(style_config_layers_cache_count - 1) * sizeof(StyleConfigLayersCacheEntry));
-    style_config_layers_cache_count--;
-  }
-  StyleConfigLayersCacheEntry* e = &style_config_layers_cache[style_config_layers_cache_count++];
-  memset(e, 0, sizeof(*e));
+  StyleConfigLayersCacheEntry* e = StyleConfigLayersCacheAppendSlot();
+  if (!e) return;
   strncpy(e->section, section_name, sizeof(e->section) - 1);
   e->section[sizeof(e->section) - 1] = '\0';
   e->nlayers = count;
@@ -247,6 +303,7 @@ inline int StyleConfigPruneLayersCacheExcept(const char sections[][64], int nsec
     }
   }
   style_config_layers_cache_count = w;
+  StyleConfigFitLayersCache();
   return before - w;
 }
 
@@ -447,6 +504,7 @@ inline int StyleConfigParseSectionAtReader(
     line_count++;
   }
   StyleConfigFlushPendingStructuredLayer(st, layers, &count, max_layers);
+  StyleConfigPublishTransition(st, layers, &count, max_layers);
   return count;
 }
 
