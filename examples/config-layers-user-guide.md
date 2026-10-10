@@ -244,7 +244,16 @@ In plain terms:
 
 #### Wipe shape
 
-A `transition` line on the section picks the wipe for the whole stack. `transition = bend {{ext}} {{ret}}` is the curved default. Other behaviors are `linear`, `spark`, `sparktip`, `split`, `explode`, `sputter`, `flame`, and `bmp`. Full grammar: [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
+A `transition` line on the section picks the wipe for the whole stack. `transition = bend {{ext}} {{ret}}` is the curved default. Other behaviors are `linear`, `spark`, `split`, `explode`, `sputter`, `flame`, and `bmp`. Full grammar: [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
+
+`spark` is one effect. The spark stays on the moving edge. Add `bend` for the curved timing; leave it off for an even edge. `sparktip` is that same line with `bend` already selected.
+
+`hilt` and `tip` name the end the blade extends from and retracts to. `hilt` (the default) extends from the hilt to the tip, then retracts from the tip back to the hilt. `tip` extends from the tip down to the hilt, then retracts from the hilt back to the tip.
+
+```ini
+transition = spark {{ext}} {{ret}} hilt
+transition = spark {{ext}} {{ret}} bend cyan tip
+```
 
 `flame` (also written `fire`) is that curved base with a jagged lip and streaks thrown toward the tip. Each streak is hot at the head and dimmer along the tail back toward the flame. On extend the base catches the head. On retract the streaks peel off the shrinking edge, keep going toward the tip, and fade. A color tints the streaks. White is the default.
 

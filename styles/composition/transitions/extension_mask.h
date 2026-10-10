@@ -30,10 +30,14 @@ enum ConfigInOutCurve : uint8_t {
 };
 
 // One wipe for the whole stack. Extend and retract are separate phases.
-// `transition = bend|linear|spark|sparktip|split|explode|sputter|flame|bmp ext ret ...`
+// `transition = bend|linear|spark|split|explode|sputter|flame|bmp ext ret ...`
+// spark is one effect. The word bend on that line selects the bend curve.
+// sparktip is spark with bend already selected.
 // sets both. `transition_in` / `transition_out` override one phase:
 // `behavior <ms> [spark] [color] [hilt|tip]`.
-// tip (default) retracts tip→hilt. hilt mirrors that wipe so retract runs hilt→tip.
+// The direction word is the end the blade extends from and retracts to.
+// hilt (default): extend hilt→tip, retract back to the hilt.
+// tip: extend tip→hilt, retract back to the tip. Spark stays on the moving edge.
 // split on the way in grows a lit center band out to hilt and tip.
 // split on the way out opens a dark gap at the middle and both edges run outward.
 // explode uses that same center band both ways: out to the ends, then back in until dark.
@@ -131,13 +135,14 @@ public:
 
   // 0 = full spark, 255 = blade color, 256 = no spark on this LED.
   // Four LEDs of spark on the lit side of the moving edge, then a one-LED fade.
-  // Extend and retract both carry it. The hilt token mirrors the edge, so a hilt
-  // retract walks the spark from hilt to tip.
+  // Extend and retract both carry it. hilt extends from the hilt and retracts
+  // back to the hilt. tip extends from the tip and retracts back to the tip.
   int SparkMix8(int led) const {
     uint8_t curve = PhaseCurve();
     if (curve == CONFIG_INOUT_SPLIT_SPARK) return SplitSparkMix(MapLed(led));
     if (curve == CONFIG_INOUT_EXPLODE_SPARK) return ExplodeSparkMix(MapLed(led));
     if (curve == CONFIG_INOUT_FLAME) return FlameSparkMix(MapLed(led));
+    if (curve == CONFIG_INOUT_SPARK) return LinearSparkMix(MapLed(led));
     if (curve != CONFIG_INOUT_SPARKTIP) return 256;
     int edge = -1;
     if (on_ && out_active_) edge = (int)out_fade_;
@@ -186,8 +191,8 @@ public:
   }
 
 private:
-  // Stock bend retracts tip→hilt (led 0 = hilt). The hilt token mirrors the index
-  // so the same cover and spark run the other way.
+  // LED 0 is the hilt. The tip word mirrors the index, so the same cover and
+  // spark extend from the tip and retract back to the tip.
   int MapLed(int led) const {
     if (!PhaseFromHilt() || num_leds_ <= 1) return led;
     if (led < 0) return 0;

@@ -433,7 +433,7 @@
   { "sparktip_layer",
     StylePtr<SparkTipLayer<RgbArg<1, White>, IntArg<2, 300>, IntArg<3, 800>> >(),
     NAMED_STYLE_DESC(    "Spark tip on the moving edge (four LEDs, extend and retract): spark_color extend_ms retract_ms. "
-    "Prefer transition = sparktip ext ret spark_color. Add hilt to run the retract from hilt to tip. "
+    "Prefer transition = spark ext ret bend spark_color. Omit bend for an even edge. hilt extends from the hilt and retracts back to the hilt. tip extends from the tip and retracts back to the tip. "
     "Stacking this layer as well paints a second band.")
   },
   // Simple accent: pulse while saber is on, off when retracted.

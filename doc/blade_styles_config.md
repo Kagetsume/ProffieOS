@@ -33,19 +33,18 @@ Each **`[section_name]`** is one **recipe**. Presets reference it with **`style 
 Three lines control the stack wipe. **`transition`** is copied onto both phases. **`transition_in`** and **`transition_out`** then replace one phase. A missing behavior name is **`bend`**. A missing time is **300** on extend and **800** on retract. **`-1`** matches the ignition or retraction sound length.
 
 ```ini
-transition = <behavior> <extend_ms> <retract_ms> [option] [option]
-transition_in = <behavior> <extend_ms> [option] [option]
-transition_out = <behavior> <retract_ms> [option] [option]
+transition = <behavior> <extend_ms> <retract_ms> [option] [option] [option]
+transition_in = <behavior> <extend_ms> [option] [option] [option]
+transition_out = <behavior> <retract_ms> [option] [option] [option]
 ```
 
-After the times, up to two optional words. Each word is one of **`spark`**, a color (`white`, `cyan`, …), or a direction (**`tip`** / **`tip_to_hilt`**, or **`hilt`** / **`hilt_to_tip`**). A third word is ignored.
+After the times, up to three optional words. Each word is one of **`spark`**, **`bend`**, **`linear`**, a color (`white`, `cyan`, …), or a direction (**`tip`** / **`tip_to_hilt`**, or **`hilt`** / **`hilt_to_tip`**). A fourth word is ignored.
 
 | Behavior | Also written | What it does |
 |----------|----------------|--------------|
 | **`bend`** | | Default curve. Same bend **`solid_bend`** uses. |
 | **`linear`** | **`in_out`**, **`inout`** | Even wipe along the blade. |
-| **`spark`** | | Linear edge with no colored band. |
-| **`sparktip`** | | Bend plus a four-LED spark on the moving edge. Color defaults to white: `sparktip 300 800 cyan`. |
+| **`spark`** | **`sparktip`** | One spark on the moving edge. Even timing unless the line also says **`bend`**. **`sparktip`** is the same effect with **`bend`** already selected. Color defaults to white. `spark 300 800 hilt`. `spark 300 800 bend cyan`. |
 | **`split`** | **`middle`** | Extend grows a lit band from the middle toward the hilt and the tip. Retract opens a dark gap at the middle and both edges run out to the ends. |
 | **`split_spark`** | **`middle_spark`**, or **`split`** plus **`spark`** | Split with a spark on both edges. `transition = split 300 800 spark white`. |
 | **`explode`** | **`inverse`** | Same center band both ways. Extend grows out to the hilt and the tip. Retract starts at those ends and both edges draw into the center until the blade is dark. |
@@ -54,7 +53,7 @@ After the times, up to two optional words. Each word is one of **`spark`**, a co
 | **`flame`** | **`fire`** | Bend base from the hilt with a jagged lip: short tongues ahead of the front, small bites back into the lit base. Streaks run toward the tip, hot at the head and dimmer along the tail back toward the flame. On extend the base catches each head and that streak goes out. On retract the base shrinks toward the hilt; streaks peel off that edge, keep running toward the tip, and fade. A color tints the streaks (default white): `flame {{ext}} {{ret}} orange`. |
 | **`bmp`** | **`bitmap`** | Column-file opacity mask. See below. |
 
-**Direction** defaults to **`tip`**: extend runs hilt→tip, retract runs tip→hilt. **`hilt`** mirrors the blade, so retract runs hilt→tip. That mirror reverses **`bend`**, **`linear`**, **`spark`**, **`sparktip`**, **`sputter`**, and **`flame`**. **`split`** and **`explode`** are symmetric, so the mirror does not change their shape. **`bmp`** does not take **`spark`**, a color, or **`hilt`**.
+**Direction** is the end the blade extends from and retracts to. The default is **`hilt`** (also **`hilt_to_tip`**): extend runs hilt→tip, retract runs back to the hilt. **`tip`** (also **`tip_to_hilt`**) extends from the tip down to the hilt, then retracts from the hilt back to the tip. On **`spark`** the spark stays on the moving edge both ways, whether or not the line says **`bend`**. That reversal applies to **`bend`**, **`linear`**, **`spark`**, **`sputter`**, and **`flame`**. **`split`** and **`explode`** are symmetric, so the word does not change their shape. **`bmp`** does not take **`spark`**, a color, or a direction.
 
 **`bmp`** form:
 
