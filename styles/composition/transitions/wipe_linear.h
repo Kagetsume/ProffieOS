@@ -37,9 +37,20 @@
   // InOutSparkTipX black_mix: 255 = lit, 0 = off color.
   uint16_t SparkCover(int led) const {
     if (num_leds_ <= 0) return 0;
-    int thres = (ext_value_ * (num_leds_ + 4)) >> 7;
+    int thres = SparkEdge();
     int black_mix = thres - led * 256;
     if (black_mix < 0) black_mix = 0;
     if (black_mix > 255) black_mix = 255;
     return (uint16_t)((255 - black_mix) * 32768 / 255);
+  }
+
+  // led is already mapped. Spark sits on the lit side of the moving edge.
+  int LinearSparkMix(int led) const {
+    if (num_leds_ <= 0) return 256;
+    if (extension_ <= 0.0f || extension_ >= 1.0f) return 256;
+    return BandMix(SparkEdge(), led << 8, true);
+  }
+
+  int SparkEdge() const {
+    return (ext_value_ * (num_leds_ + 4)) >> 7;
   }

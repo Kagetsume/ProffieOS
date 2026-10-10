@@ -121,18 +121,25 @@ inline int ConfigParseMsToken(const char* s, int fallback) {
   return (int)v;
 }
 
-// `transition = <behavior> <extend_ms> <retract_ms> [spark] [color] [hilt|tip]` sets both phases.
-// `transition_in` / `transition_out` are one phase: `<behavior> <ms> [spark] [color] [hilt|tip]`.
-// tip (default) retracts tip→hilt. hilt mirrors that same wipe so retract runs hilt→tip.
-// sparktip, split, explode, and flame read an optional spark color (default white). Unknown names use bend.
+// `transition = <behavior> <extend_ms> <retract_ms> [option] [option] [option]` sets both phases.
+// `transition_in` / `transition_out` are one phase: `<behavior> <ms>` plus the same options.
+// Options: spark, bend, linear, a color, hilt|tip. A fourth word is ignored.
+// The direction word is the end the blade extends from and retracts to.
+// hilt / hilt_to_tip (default): extend hilt→tip, retract tip→hilt.
+// tip / tip_to_hilt: extend tip→hilt, retract hilt→tip.
+// spark is one effect. bend on that line uses the solid_bend curve; linear (the default) is even.
+// sparktip is spark with bend already selected.
+// spark, split, explode, and flame read an optional spark color (default white).
+// Unknown behavior names use bend.
 inline bool ConfigParseWipeDirection(const char* token, bool* from_hilt) {
   if (!token || !token[0] || !from_hilt) return false;
+  // true mirrors LED 0 onto the physical tip, so the wipe extends from the tip.
   if (FirstWord(token, "hilt") || FirstWord(token, "hilt_to_tip")) {
-    *from_hilt = true;
+    *from_hilt = false;
     return true;
   }
   if (FirstWord(token, "tip") || FirstWord(token, "tip_to_hilt")) {
-    *from_hilt = false;
+    *from_hilt = true;
     return true;
   }
   return false;
@@ -252,25 +259,48 @@ inline void ConfigParseTransitionSpec(const char* spec, uint8_t* curve, int* ext
     *extend_ms = ConfigParseMsToken(ap.GetArg(1, "", ""), 300);
     *retract_ms = ConfigParseMsToken(ap.GetArg(2, "", ""), 800);
   }
-  const char* extra3 = ap.GetArg(extra_base, "", "");
-  const char* extra4 = ap.GetArg(extra_base + 1, "", "");
   bool dir = false;
-  bool extra3_dir = ConfigParseWipeDirection(extra3, &dir);
-  bool extra4_dir = ConfigParseWipeDirection(extra4, &dir);
-  if ((extra3_dir || extra4_dir) && from_hilt) *from_hilt = dir;
-  bool extra3_spark = extra3 && FirstWord(extra3, "spark");
-  bool extra4_spark = extra4 && FirstWord(extra4, "spark");
-  if ((extra3_spark || extra4_spark) && curve) {
+  bool saw_dir = false;
+  bool saw_spark = false;
+  int shape = 0;
+  const char* color = nullptr;
+  for (int i = 0; i < 3; i++) {
+    const char* word = ap.GetArg(extra_base + i, "", "");
+    if (!word || !word[0]) continue;
+    bool word_dir = false;
+    if (ConfigParseWipeDirection(word, &word_dir)) {
+      dir = word_dir;
+      saw_dir = true;
+      continue;
+    }
+    if (FirstWord(word, "spark")) {
+      saw_spark = true;
+      continue;
+    }
+    if (FirstWord(word, "bend")) {
+      shape = 2;
+      continue;
+    }
+    if (FirstWord(word, "linear") || FirstWord(word, "in_out") || FirstWord(word, "inout")) {
+      shape = 1;
+      continue;
+    }
+    if (!color) color = word;
+  }
+  if (saw_dir && from_hilt) *from_hilt = dir;
+  if (saw_spark && curve) {
     if (*curve == CONFIG_INOUT_SPLIT) *curve = CONFIG_INOUT_SPLIT_SPARK;
     else if (*curve == CONFIG_INOUT_EXPLODE) *curve = CONFIG_INOUT_EXPLODE_SPARK;
   }
-  if (spark && curve &&
-      (*curve == CONFIG_INOUT_SPARKTIP || *curve == CONFIG_INOUT_SPLIT_SPARK ||
+  if (curve && (*curve == CONFIG_INOUT_SPARK || *curve == CONFIG_INOUT_SPARKTIP)) {
+    if (shape == 2) *curve = CONFIG_INOUT_SPARKTIP;
+    else if (shape == 1) *curve = CONFIG_INOUT_SPARK;
+  }
+  if (spark && color && color[0] && curve &&
+      (*curve == CONFIG_INOUT_SPARK || *curve == CONFIG_INOUT_SPARKTIP ||
+       *curve == CONFIG_INOUT_SPLIT_SPARK ||
        *curve == CONFIG_INOUT_EXPLODE_SPARK || *curve == CONFIG_INOUT_FLAME)) {
-    const char* color = nullptr;
-    if (extra3 && extra3[0] && !extra3_dir && !extra3_spark) color = extra3;
-    else if (extra4 && extra4[0] && !extra4_dir && !extra4_spark) color = extra4;
-    if (color && color[0]) *spark = ParseColorArg(color);
+    *spark = ParseColorArg(color);
   }
 }
 
