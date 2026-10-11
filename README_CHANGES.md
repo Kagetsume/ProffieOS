@@ -30,7 +30,9 @@ Upstream behavior stays in place when `ENABLE_SD_CONFIG_FILES` is off. The shipp
 | `common/arg_parser.h` | `FirstWord`, `GetArg`, and `Shift` return safely on a null string, which happens when a nested style parse has no argument parser. `GetArgParser` copies into a caller-sized buffer. |
 | `sound/effect.h` | The first N font directories (the overlay) are optional. A missing overlay folder does not raise `font_directory_not_found`. |
 | `sound/hybrid_font.h` | Paired and volume save keys are built with `snprintf` into a 64-byte buffer. Effect names no longer write past the old 32-byte stack array. |
-| `common/lsfs.h`, `common/malloc_helper.h`, `common/string_piece.h` | Include `<string.h>` so `strlen` / `memcpy` used by the SD path are declared. |
+| `common/string_piece.h` | Bugfix. The header calls `strlen` and `memcpy`. Upstream compiled only when an earlier include had already brought in `<string.h>`. |
+| `common/lsfs.h` | Bugfix. The header calls `strlen`, `strcpy`, and `strcmp`, so it includes `<string.h>` itself. |
+| `common/malloc_helper.h` | Bugfix. The heap checks use `uint32_t`, so the header includes `<stdint.h>`. |
 | `common/tests.cpp` | Host checks for `font` + `font_overlay` + `voice` path composition (`/overlay;/font;/common`). |
 
 ### Blade drivers
@@ -50,7 +52,6 @@ Upstream behavior stays in place when `ENABLE_SD_CONFIG_FILES` is off. The shipp
 | `styles/blade_style.h` | Adds `runUpdate` (default: full `run`) and `getLayerColor` (default: the pixel color as straight-alpha `RGBA_um`). |
 | `styles/legacy_styles.h` | `StyleNormalPtrX` and `StyleRainbowPtrX` use `InOutFuncAuto`, so an extend/retract argument of `-1` follows the ignition or retraction WAV length. `StyleSolidPtrX` is the color-only extend/retract base behind the `solid` named style. |
 | `styles/rgb_arg.h` | `RgbArg` parses with `ParseColorArg` (color names and 0–255). Printed defaults are 0–255, matching what a preset author types. |
-| `styles/inout_helper.h` | Includes `saber_base.h` and documents the idle path (full base while on, off color while off) versus the active extend/retract mix. |
 | `styles/fire.h` | `getColor` returns black when the heat buffer was not allocated, instead of indexing it. |
 | `styles/show_color.h` | The color-menu preview saves and restores `CurrentArgParser` so it does not replace the parser the live style is using. |
 | `functions/int_arg.h` | `OpacityScaleIntArg` and `Brightness65535ScaleIntArg` accept `55%`, a raw 0–32768 / 0–65535 value, or a bare number ≤ 100 as a percent. Layer `opacity` and multiply-mask brightness use these. `IntArg` no-ops when there is no argument parser. |
