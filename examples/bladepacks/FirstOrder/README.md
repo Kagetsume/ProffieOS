@@ -19,7 +19,7 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, full named-style cat
 
 ## Style notes
 
-**`fo_kylo_unstable`** composes monolith **`unstable`**: **`unstable_layer`**, **`on_spark_layer`**, **`unstable_lockup_layer`**, **`localized_clash`**, **`blast`**, **`sparktip_layer`**, drag/melt/lb. Fett263 **UnstableBlades** uses **`unstable_stripes`** / **`unstable_blades`** (EU pack).
+**`fo_kylo_unstable`** composes monolith **`unstable`**: **`unstable_layer`**, **`on_spark_layer`**, **`unstable_lockup_layer`**, **`localized_clash`**, **`blast`**, drag/melt/lb. The spark on the moving edge is `transition = spark … bend`. Fett263 **UnstableBlades** uses **`unstable_stripes`** / **`unstable_blades`** (EU pack).
 
 Crossguard **quillons** need a second LED strip or accent config; this pack targets the **main** blade only.
 

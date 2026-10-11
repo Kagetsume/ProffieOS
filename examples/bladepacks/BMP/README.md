@@ -1,6 +1,6 @@
 # BMP blade pack
 
-Eight presets: **`strip_column`** flipbooks (three BMPs ship; three you add), **`solid_bend` + mask**, and **Crazy Blade** (plasma BMP + multi-`sine_waves` + 50% `rainbow_layer` + `random_bands`). Shared combat stack on each.
+Eight presets: **`strip_column`** flipbooks (three BMPs ship; three you add), **`solid` + mask**, and **Crazy Blade** (plasma BMP + multi-`sine_waves` + 50% `rainbow_layer` + `random_bands`). Shared combat stack on each.
 
 ## Install on SD card
 
@@ -22,7 +22,7 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, **`strip_column`** a
 | FireColumn | `bmp_gallery_fire` | `animations/fire-column-loop.bmp` | **You provide** |
 | LightningColumn | `bmp_gallery_lightning` | `animations/lightning-column.bmp` | **You provide** |
 | NebulaDrift | `bmp_gallery_nebula` | `animations/nebula-drift.bmp` | **You provide** |
-| CyanMaskOverlay | `bmp_gallery_cyan_mask` | `solid_bend` **cyan** + mask BMP (see section) | **Included** |
+| CyanMaskOverlay | `bmp_gallery_cyan_mask` | `solid` **cyan** + mask BMP (see section) | **Included** |
 | CrazyBlade | `bmp_gallery_crazy_blade` | `cyan-plasma.bmp` + procedural overlays | **Included** |
 
 Missing **`strip_column`** / mask BMPs show the **red/orange danger scroll** fallback until the file is on the card.
@@ -33,7 +33,7 @@ Layer stack: **`strip_column`** `cyan-plasma.bmp` → **four-slot `sine_waves`**
 
 ### Solid base + opacity map (`bmp_gallery_cyan_mask`)
 
-- **Layer 0:** `solid_bend {{base}}` — flat beam color, sound-length in/out.
+- **Layer 0:** `solid {{base}}` — flat beam color. The section `transition` line is the wipe.
 - **Layer 1:** `multiply opacity … strip_column_mask` — BMP drives **brightness** (white = full base, black = dark). RGB in the file is converted to grayscale; paint **R=G=B** for precise control.
 - **Shipped demo:** `base=cyan` + **`animations/plasma-opacity-mask.bmp`** (high-contrast grayscale mask). You can swap in **`cyan-plasma.bmp`** (luminance from color); use **true black** in mask art or the beam stays mostly flat.
 - **Override:** `style = config bmp_gallery_cyan_mask base=deepskyblue mask_opacity=65%`
@@ -73,7 +73,7 @@ Drop finished files in this pack’s `animations/` folder (and on SD under `anim
 ### 4. `plasma-opacity-mask.bmp` — mask for `bmp_gallery_cyan_mask` (included)
 
 - **Size:** **144 × 120** (or match your flipbook length).
-- **Format:** **24-bit** uncompressed BMP (same as other pack assets). **8-bit indexed BMPs are rejected** — the mask layer stays transparent and you only see flat `solid_bend`.
+- **Format:** **24-bit** uncompressed BMP (same as other pack assets). **8-bit indexed BMPs are rejected** — the mask layer stays transparent and you only see flat `solid`.
 - **Look:** **Grayscale only** — white filaments on **RGB 0,0,0** background. Gray “almost black” (~95) does **not** darken enough on a cyan base; paint real black.
 - **Use:** `strip_column_mask animations/plasma-opacity-mask.bmp 144 30` (already in `[bmp_gallery_cyan_mask]`).
 

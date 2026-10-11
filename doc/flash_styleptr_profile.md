@@ -42,14 +42,14 @@ Without an ELF, use the static tiers below.
 - Per-style factory: build `Style<IdleBase>` (layer equivalent), attach delegate, `make()` shared tree.
 - Refactor `gradient` / `audio` / `flicker` / `cylon` to factories first (biggest inline copies); optionally fold `standard` / `strobe` / `rainbow` into the same shared shell so they don’t each carry a full combat stack type.
 
-**Rough savings:** ~2–6 KB (fewer monoliths than OS7, but same per-tree cost). **Priority:** high if you still need flash; low user-config churn (examples mostly use `solid_bend` + layers, not these monoliths).
+**Rough savings:** ~2–6 KB (fewer monoliths than OS7, but same per-tree cost). **Priority:** high if you still need flash; low user-config churn (examples mostly use `solid` + layers, not these monoliths).
 
 ### A2. Bend vs linear in/out pairs
 
 | Pair | Allocators |
 |------|------------|
 | `standard` / `standard_bend` | `StyleNormalPtrX` vs `StyleNormalBendPtrX` (`InOutTrBendAuto`) |
-| `solid` / `solid_bend` | Color only (`SolidColorStyleFactory`). The stack transition mask is the wipe. `StyleSolidPtrX` / `StyleSolidBendPtrX` are no longer instantiated from the parser |
+| `solid` | Color only (`SolidColorStyleFactory`). The section `transition` line is the wipe. `StyleSolidPtrX` / `StyleSolidBendPtrX` are no longer instantiated from the parser |
 
 **Flash issue:** Two full `Style<…>` trees differing mostly in extend/retract transition.
 
@@ -102,7 +102,7 @@ One flash instance **per overlay type** (not per preset). Aggregate cost is the 
 | Light | `clash`, `localized_clash`, `blast`, `sparkle`, `pulse`, `swing`, … | Small templates; factory overhead may eat gains |
 | Texture | `fire_mask`, `smoke_up/down/flow`, `stripes`, `hard_stripes`, `random_bands`, `noise_flicker`, `base_flicker`, `pulse_layer`, `swing_layer`, … | Smoke is a plain texture. The stack wipe lives once in `ConfigLayersStyle`, not in each smoke `AlphaL` |
 
-**Example config usage (layer lines):** `real_clash` ~62, `blast_wave_random` ~49, `solid_bend` ~46 — optimizing overlays matters for your shipped ini more than unused monoliths like `cycle`.
+**Example config usage (layer lines):** `real_clash` ~62, `blast_wave_random` ~49, `solid` ~46 — optimizing overlays matters for your shipped ini more than unused monoliths like `cycle`.
 
 **Rough savings (overlay batch):** ~2–5 KB if you add runtime factories for the top 6–8 `*L` types + smoke mask; high engineering cost (like waves/procedural).
 

@@ -73,7 +73,7 @@ Same format works in the serial style editor and other places that accept a styl
 ## As a layer in `blade_styles.ini`
 
 **`pixel_sequence`** works as a composable texture layer in a config recipe — not only as a
-standalone preset style. Stack it over a **`solid`** or **`solid_bend`** base (or any opaque
+standalone preset style. Stack it over a **`solid`** base (or any opaque
 base). Use **`normal`** or **`add`** blend with optional **`opacity`**; the layer does **not**
 need extend/retract args on its line (the compositor follows the base timing).
 
@@ -82,7 +82,7 @@ need extend/retract args on its line (the compositor follows the base timing).
 base = black
 ext = 300
 ret = 800
-layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = solid {{base}} {{ext}} {{ret}}
 layer = add opacity 100% pixel_sequence 0,0,255,0,60,150|0,255,0,0,60,150|255,255,255,255,40,80
 layer = real_clash white 49%
 layer = blast white

@@ -28,7 +28,7 @@
 #include "ignition_effects.h"
 #include "transition_config_shared.h"
 
-// >0 while a config section is parsing a layer. solid / solid_bend return a
+// >0 while a config section is parsing a layer. solid returns a
 // plain color in that case. Top-level style = solid (depth 0) wraps the mask.
 static int config_layer_parse_depth_ = 0;
 
@@ -109,7 +109,6 @@ inline bool ConfigLayerDrawsPastInOut(const char* layer_line) {
   if (ConfigLayerNameStartsWith(p, "preon_")) return true;
   if (ConfigLayerNameStartsWith(p, "postoff_")) return true;
   if (FirstWord(p, "ignition_flash")) return true;
-  if (FirstWord(p, "sparktip_layer")) return true;
   return false;
 }
 
@@ -127,8 +126,7 @@ inline int ConfigParseMsToken(const char* s, int fallback) {
 // The direction word is the end the blade extends from and retracts to.
 // hilt / hilt_to_tip (default): extend hilt→tip, retract tip→hilt.
 // tip / tip_to_hilt: extend tip→hilt, retract hilt→tip.
-// spark is one effect. bend on that line uses the solid_bend curve; linear (the default) is even.
-// sparktip is spark with bend already selected.
+// spark is one effect. bend on that line uses the bend curve; linear (the default) is even.
 // spark, split, explode, and flame read an optional spark color (default white).
 // Unknown behavior names use bend.
 inline bool ConfigParseWipeDirection(const char* token, bool* from_hilt) {
@@ -162,9 +160,6 @@ inline void ConfigParseTransitionSpec(const char* spec, uint8_t* curve, int* ext
   const char* times = p;
   if (FirstWord(p, "linear") || FirstWord(p, "in_out") || FirstWord(p, "inout")) {
     *curve = CONFIG_INOUT_LINEAR;
-    times = SkipWord(p);
-  } else if (FirstWord(p, "sparktip")) {
-    *curve = CONFIG_INOUT_SPARKTIP;
     times = SkipWord(p);
   } else if (FirstWord(p, "split_spark") || FirstWord(p, "middle_spark")) {
     *curve = CONFIG_INOUT_SPLIT_SPARK;
@@ -357,8 +352,8 @@ inline void ConfigBaseInOutFromLayerLine(const char* layer_line, uint8_t* curve,
   int ret_arg = 3;
   int ext_def = 300;
   int ret_def = 800;
-  if (FirstWord(p, "solid") || FirstWord(p, "solid_bend")) {
-    // Color only. The stack mask wipes them. Default curve is bend (solid_bend).
+  if (FirstWord(p, "solid")) {
+    // Color only. The section transition line is the wipe. Default curve is bend.
     found = CONFIG_INOUT_BEND;
     ext_arg = 2;
     ret_arg = 3;
@@ -609,7 +604,7 @@ public:
 ConfigStyleFactory config_style_factory;
 
 // Color only. Inside a config section the section's transition mask does the wipe.
-// Top-level `style = solid` / `solid_bend` is a one-layer stack plus that mask.
+// Top-level `style = solid` is a one-layer stack plus that mask.
 class SolidColorStyleFactory : public StyleFactory {
 public:
   BladeStyle* make() override {
