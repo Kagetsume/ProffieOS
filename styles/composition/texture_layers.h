@@ -2,7 +2,7 @@
 #define STYLES_TEXTURE_LAYERS_H
 
 // Non-opaque-friendly texture overlays for config/blade_styles.ini layering.
-// Use over an opaque base (solid, solid_bend, standard, …) with multiply, screen, add, or hue.
+// Use over an opaque base (solid, standard, …) with multiply, screen, add, or hue.
 // ConfigLayersStyle automatically clips overlay layers (index >= 1) to lit pixels on the
 // base layer during extend/retract — no ext/ret args on texture lines needed.
 //
@@ -15,7 +15,6 @@
 #include "../alpha.h"
 #include "../colors.h"
 #include "../cylon.h"
-#include "sparktip_layer.h"
 #include "darksaber.h"
 #include "fallen_order.h"
 #include "../fire.h"
@@ -145,7 +144,7 @@ using GradientLayer = Gradient<HILT, TIP>;
 // Animated sin-table RGB rainbow — stack with normal blend; opacity tints base toward full rainbow.
 using RainbowLayer = Rainbow;
 
-// OS7 / interactive idle bases extracted for config layering (multiply/normal/add over solid_bend).
+// OS7 / interactive idle bases extracted for config layering (multiply/normal/add over solid).
 template<class BASE_COLOR>
 using WaterFlowLayer = WaterFlowStripesBase<BASE_COLOR>;
 
@@ -179,7 +178,7 @@ using RotatingPulseLayer = RotatingPulseStripesBase<BASE_COLOR>;
 template<class BASE_COLOR>
 using TrickleBladeLayer = TrickleBladeBase<BASE_COLOR>;
 
-// Cylon scanner band — stack with add over solid_bend (black sections add nothing).
+// Cylon scanner band — stack with add over solid (black sections add nothing).
 // Runtime percent/rpm; black base so add-blend over a solid paints only the band.
 template<class SCAN_COLOR,
          class ON_PERCENT = IntArg<2, 25>,

@@ -46,7 +46,7 @@ Empty overlay folders in this repo are placeholders; add WAVs as needed.
 
 All presets use **`style = config ost_classic base=<color>`** from `config/blade_styles.ini`:
 
-1. **`solid_bend`** base (sound-length in/out when `ext`/`ret` are `-1`)
+1. **`solid`** color (the section `transition` line is the wipe, sound-length when `ext`/`ret` are `-1`)
 2. **`base_flicker`** at **`multiply opacity 100%`** (uniform brightness pulse; optional **`noise_flicker`** if you want spatial crackle too)
 3. **`responsive_clash`**, **`responsive_blast`**, **`responsive_lockup`**, **`drag`**, **`melt`**, **`lb`**, **`swing`**
 

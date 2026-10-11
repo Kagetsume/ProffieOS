@@ -17,21 +17,21 @@ The **full layer laboratory** remains **`examples/config/blade_styles.ini`** (26
 
 | Pack | Intent | Typical stack |
 |------|--------|----------------|
-| **[OST](OST/)** | Original Trilogy–style **solid beam** + subtle flicker + responsive combat | `solid_bend`, `base_flicker`, `responsive_*` |
+| **[OST](OST/)** | Original Trilogy–style **solid beam** + subtle flicker + responsive combat | `solid`, `base_flicker`, `responsive_*` |
 | **[OST-Pulsing](OST-Pulsing/)** | Same OT combat path, **smooth pulse** instead of crackle flicker | `pulse_layer` |
 
 ### OST\* — one recipe, many characters (variables)
 
 **[OST](OST/)** and **[OST-Pulsing](OST-Pulsing/)** are deliberately parallel:
 
-- **Same skeleton:** `solid_bend` → idle texture layer → same **`responsive_*` / drag / melt / lb** (and swing on OST).
+- **Same skeleton:** `solid` → idle texture layer → same **`responsive_*` / drag / melt / lb** (and swing on OST).
 - **One section per pack** (`[ost_classic]` vs `[ost_pulsing]`): the *structure* is fixed; **character = preset overrides**.
 - Six presets differ almost only by **`style = config … base=<color>`** (and `font_overlay=`). That shows **`{{base}}`** / **`base=`** in action without six different ini sections.
 - **OST vs OST-Pulsing** swaps a **single idle layer line** (flicker vs pulse)—combat unchanged. Forkers learn: change one layer, keep the rest.
 
 Extended Universe uses the same idea with more idle variants (`eu_fallen_order`, `eu_darksaber`, …) but the same combat block and **`ext = -1` / `ret = -1`** vars everywhere.
 | **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo crackle) | `unstable_layer` + composable overlays |
-| **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid_bend` + `*_layer` + Real Clash stack |
+| **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid` + `*_layer` + Real Clash stack |
 | **[BMP](BMP/)** | **SD flipbook bases** — same combat, swap `strip_column` art (3 BMPs ship; 3 specs in README) | `strip_column` + Real Clash stack |
 
 Nothing stops you from mixing: e.g. **`ost_classic`** combat with **`eu_darksaber`** idle, or a **`strip_column`** BMP base from the main config catalog under any pack’s preset.
@@ -51,7 +51,7 @@ You do **not** need every preset from every pack—keep five favorites and grow 
 
 ## Go weird: stack order matters
 
-Layers composite **bottom → top**. Layer **0** drives in/out (`strip_column`, `solid_bend`, …). Example “crazy nuts” recipe:
+Layers composite **bottom → top**. The section `transition` line is the wipe. Layer **0** is the color or the BMP (`solid`, `strip_column`). Example “crazy nuts” recipe:
 
 1. **`strip_column`** — animated BMP is the whole look (motion lives in the file).
 2. **`multiply`** crackle — `per_led_flicker` + `noise_flicker` grit over the art (see EU **`eu_crackle`** layers).
@@ -60,11 +60,11 @@ Layers composite **bottom → top**. Layer **0** drives in/out (`strip_column`, 
 
 Shipped copy-paste section: **`[wild_bmp_crackle_rainbow]`** in **`examples/config/blade_styles.ini`**. Try `style = config wild_bmp_crackle_rainbow` after copying the sample BMP from **`examples/sd/animations/`** to SD. Tune `rainbow_mix = 8192` (~25%) or `opacity 15%` on the rainbow line.
 
-Same idea without BMP: `solid_bend` + OS7 `*_layer` + crackle multiply + rainbow tint—packs are starting points, not limits.
+Same idea without BMP: `solid` + OS7 `*_layer` + crackle multiply + rainbow tint—packs are starting points, not limits.
 
 ## Ideas for future packs (not shipped yet)
 
-- **Procedural playground** — sine/saw/noise/moire multiply masks over `solid_bend` (see main `[demo_*]` sections).
+- **Procedural playground** — sine/saw/noise/moire multiply masks over `solid` (see main `[demo_*]` sections).
 - **Accent-forward** — preon/postoff/ignition_flash recipes with minimal main blade.
 - **Wild / non-canon** — see **`[wild_bmp_crackle_rainbow]`**, `chaos_inferno`, multi-mask stacks; label clearly as experimental.
 
@@ -97,7 +97,7 @@ A hope for this layout: people **author and ship packs** the way the community s
 - **State dependencies** in README: “needs `darksaber_layer`”, “needs `strip_column`”, “works on any build with full parser”.
 - **Test on saber hardware** (SD load, missing-BMP fallback, `-1` ext/ret with your soundfont).
 
-**vs Fett263-style blades:** his OS7 styles are **compiled** named strings (`fallen_order blue white 300 800`)—powerful, fixed at flash time. **Composable packs** are **`style = config your_section`**—same expressive stack (often `solid_bend` + `*_layer` + overlays), editable layers, shareable as **text + assets**. Authors trade a little copy-paste for **user-friendly iteration**.
+**vs Fett263-style blades:** his OS7 styles are **compiled** named strings (`fallen_order blue white 300 800`)—powerful, fixed at flash time. **Composable packs** are **`style = config your_section`**—same expressive stack (often `solid` + `*_layer` + overlays), editable layers, shareable as **text + assets**. Authors trade a little copy-paste for **user-friendly iteration**.
 
 **Distribution:** repo subfolder under `examples/bladepacks/YourPack/`, personal GitHub, forum post, or Discord—same layout as OST / Extended Universe so adopters know where to copy files on the SD card.
 

@@ -2,7 +2,7 @@
 
 Same character presets and wiring as the **OST** pack, but idle brightness uses a **smooth whole-blade pulse** (`pulse_layer`) instead of **`base_flicker`** / **`noise_flicker`**.
 
-**Teaching point (with OST):** one **fundamental** OT stack—`solid_bend` + idle modifier + responsive combat. Presets only vary **`base=`**; the pulsing pack varies **one layer line** in the section, not six separate styles. See **[bladepacks README](../README.md)** (OST\* variables).
+**Teaching point (with OST):** one **fundamental** OT stack—`solid` + idle modifier + responsive combat. Presets only vary **`base=`**; the pulsing pack varies **one layer line** in the section, not six separate styles. See **[bladepacks README](../README.md)** (OST\* variables).
 
 ## Install on SD card
 
@@ -14,7 +14,7 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**.
 
 Presets use **`style = config ost_pulsing base=<color>`** from `config/blade_styles.ini`:
 
-1. **`solid_bend`** base (`ext`/`ret` **`-1`** = sound-length in/out)
+1. **`solid`** color (the section `transition` line is the wipe, sound-length when `ext`/`ret` are `-1`)
 2. **`pulse_layer`** at **`multiply opacity 100%`** — sine breathe lighter/darker on the full blade (`pulse_ms` **2000**, `pulse_delta` **20** ≈ ±20% brightness; full cycle ≈ **`pulse_ms`** ms). Use **`multiply opacity 100%`** — do not lower layer opacity. Needs firmware with optional **`pulse_layer ms delta`** (second arg); otherwise only **`pulse_layer ms`** (~10% swing).
 3. **`responsive_clash`**, **`responsive_blast`**, **`responsive_lockup`**, **`drag`**, **`melt`**, **`lb`**, **`swing`**
 

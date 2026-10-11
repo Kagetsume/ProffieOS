@@ -7,15 +7,9 @@
   { "solid",
     &solid_color_style_factory,
     NAMED_STYLE_DESC(    "Solid color (no built-in clash/lockup/blast or wipe): base_color [extend_ms retract_ms]. "
-    "Extend/retract is the stack transition mask, default bend like solid_bend. "
-    "Use -1 to match the ignition/retraction sound length. Inside a config section, "
-    "transition = bend {{ext}} {{ret}} sets the wipe; leftover times on this line are used when transition is omitted.")
-  },
-  { "solid_bend",
-    &solid_color_style_factory,
-    NAMED_STYLE_DESC(    "Same color base as solid. The name remains so existing recipes keep working. "
-    "Extend/retract is the stack transition mask (default bend), not a wipe inside this layer. "
-    "base_color [extend_ms retract_ms]. Use -1 to match sound length.")
+    "The section transition line is the wipe. Use -1 to match the ignition/retraction sound length. "
+    "Inside a config section, transition = bend {{ext}} {{ret}} sets the wipe. "
+    "Times left on this line are used only when that transition line is omitted.")
   },
   { "strip_column", &config_strip_column_factory,
     NAMED_STYLE_DESC(    "SD column animation base: file_path source_height fps [frames_x|frames_y] extend_ms retract_ms. "
@@ -328,7 +322,7 @@
   { "unstable_layer",
     StylePtr<ClassicUnstableIdleBase<RgbArg<1, Rgb<150, 0, 0>>, RgbArg<2, Red>, RgbArg<3, Rgb<255, 40, 0>>, RgbArg<4, Rgb<255, 255, 10>>> >(),
     NAMED_STYLE_DESC(    "Classic unstable idle (Kylo crackle): warm warmer hot sparks — BrownNoiseFlicker + Strobe + Sparkle "
-    "(same idle as monolith unstable). Stack normal opacity 100% over solid_bend.")
+    "(same idle as monolith unstable). Stack normal opacity 100% over solid.")
   },
   { "on_spark_layer",
     StylePtr<AlphaL<RgbArg<1, White>, OnSparkF<IntArg<2, 100>>> >(),
@@ -346,7 +340,7 @@
   { "unstable_stripes",
     StylePtr<UnstableStripesLayer<RgbArg<1, Rgb<100, 100, 150>>> >(),
     NAMED_STYLE_DESC(    "Crackling UnstableBlades stripe band texture; base_color (default silver). Fett263 OS7 idle band only — "
-    "not named style unstable (use unstable_layer for Kylo). Use multiply/add/normal over solid_bend.")
+    "not named style unstable (use unstable_layer for Kylo). Use multiply/add/normal over solid.")
   },
   { "per_led_flicker",
     StylePtr<PerLedFlickerLayer>(),
@@ -373,68 +367,62 @@
   { "water_flow_layer",
     &water_flow_layer_factory,
     NAMED_STYLE_DESC(    "WaterBlade idle texture (Fett263 OS7): angle-reactive stripes + swing flow reversal. "
-    "base_color (default blue). Stack normal/multiply over solid_bend; add composable clash/lockup overlays.")
+    "base_color (default blue). Stack normal/multiply over solid; add composable clash/lockup overlays.")
   },
   { "darksaber_layer",
     &darksaber_layer_factory,
     NAMED_STYLE_DESC(    "DarkSaber idle texture (Fett263 OS7): metallic stripes + brown-noise + audio flicker + swing gleam. "
-    "base_color (default silver). Stack over solid_bend.")
+    "base_color (default silver). Stack over solid.")
   },
   { "static_electricity_layer",
     &static_electricity_layer_factory,
     NAMED_STYLE_DESC(    "StaticElectricity idle/charge texture (Fett263 OS7): swing builds charge stripes/sparks; clash/lockup resets. "
-    "base_color (default deepskyblue). Stack normal over solid_bend.")
+    "base_color (default deepskyblue). Stack normal over solid.")
   },
   { "power_wave_layer",
     &power_wave_layer_factory,
     NAMED_STYLE_DESC(    "PowerWave idle texture (Fett263 OS7): wide slow reverse stripes. base_color (default silver). "
-    "Stack normal/multiply over solid_bend.")
+    "Stack normal/multiply over solid.")
   },
   { "drifting_bands_with_pulse_layer",
     &fallen_order_layer_factory,
     NAMED_STYLE_DESC(    "Wide drifting stripes with pulsing mid-band (800 ms). base_color (default silver). "
-    "Same idle band as Fett263 FallenOrder OS7 / monolith fallen_order. Stack normal over solid_bend.")
+    "Same idle band as Fett263 FallenOrder OS7 / monolith fallen_order. Stack normal over solid.")
   },
   { "shimmer_blade_layer",
     &shimmer_blade_layer_factory,
     NAMED_STYLE_DESC(    "ShimmerBlade idle texture (Fett263 OS7): HoldPeakF swing shimmer + RandomFlicker stripes. "
-    "base_color (default cyan). Stack normal over solid_bend.")
+    "base_color (default cyan). Stack normal over solid.")
   },
   { "rotoscope_layer",
     &rotoscope_layer_factory,
     NAMED_STYLE_DESC(    "Rotoscope idle texture (Fett263 OS7): SwingAcceleration-driven OT stripe bands. "
-    "base_color (default silver). Stack normal over solid_bend.")
+    "base_color (default silver). Stack normal over solid.")
   },
   { "pulse_stripes_layer",
     &pulse_stripes_layer_factory,
     NAMED_STYLE_DESC(    "PulseStripes idle texture (Fett263 OS7): ignition-surge stripe width/speed + pulsing mid-band. "
-    "base_color (default blue). Stack normal over solid_bend.")
+    "base_color (default blue). Stack normal over solid.")
   },
   { "kinetic_charge_layer",
     &kinetic_charge_layer_factory,
     NAMED_STYLE_DESC(    "KineticCharge idle/charge texture (Fett263 OS7): clash/lockup build kinetic stripes; swing decay releases. "
-    "base_color kinetic_color (default blue purple). Stack normal over solid_bend.")
+    "base_color kinetic_color (default blue purple). Stack normal over solid.")
   },
   { "rotating_pulse_layer",
     &rotating_pulse_layer_factory,
     NAMED_STYLE_DESC(    "RotatingPulse idle texture (Fett263 OS7 EnergyBlade): Saw-modulated stripe speed reverses direction. "
-    "base_color (default blue). Stack normal over solid_bend.")
+    "base_color (default blue). Stack normal over solid.")
   },
   { "trickle_blade_layer",
     &trickle_blade_layer_factory,
     NAMED_STYLE_DESC(    "TrickleBlade idle texture (Fett263 OS7): angle stripes + StaticFire tip trickle + swing bands. "
-    "base_color (default green). Stack normal over solid_bend.")
+    "base_color (default green). Stack normal over solid.")
   },
   { "cylon_layer",
     StylePtr<CylonLayer<RgbArg<1, Red>, IntArg<2, 25>, IntArg<3, 200>> >(),
     NAMED_STYLE_DESC(    "Cylon scanner band texture: scan_color on_percent on_rpm (default red 25 200). "
-    "Stack with add over solid_bend (black sections add nothing).")
-  },
-  { "sparktip_layer",
-    StylePtr<SparkTipLayer<RgbArg<1, White>, IntArg<2, 300>, IntArg<3, 800>> >(),
-    NAMED_STYLE_DESC(    "Spark tip on the moving edge (four LEDs, extend and retract): spark_color extend_ms retract_ms. "
-    "Prefer transition = spark ext ret bend spark_color. Omit bend for an even edge. hilt extends from the hilt and retracts back to the hilt. tip extends from the tip and retracts back to the tip. "
-    "Stacking this layer as well paints a second band.")
+    "Stack with add over solid (black sections add nothing).")
   },
   // Simple accent: pulse while saber is on, off when retracted.
   { "accent_pulse",

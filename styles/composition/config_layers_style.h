@@ -150,7 +150,7 @@ class ConfigLayersStyle : public BladeStyle {
 public:
   // alphas / blend_modes: optional per-layer (length num_layers); nullptr = opaque / normal blend.
   // past_mask: 1 = draw this layer after the shared extend/retract wipe (preon, postoff,
-  // ignition_flash, sparktip_layer). use_phases stores a separate extend and retract wipe.
+  // ignition_flash). use_phases stores a separate extend and retract wipe.
   ConfigLayersStyle(BladeStyle** layers, int num_layers, const uint16_t* alphas = nullptr,
                     const uint8_t* blend_modes = nullptr, const uint8_t* past_mask = nullptr,
                     uint8_t inout_curve = CONFIG_INOUT_NONE, int extend_ms = 300, int retract_ms = 800,
@@ -197,7 +197,7 @@ public:
   // Run sub-layers through a capture proxy so their individual allow_disable
   // calls don't reach the real blade directly. After all layers have run:
   //   - Forward allow_disable if ANY layer requested it, or if the transition
-  //     mask has finished retracting (solid / solid_bend no longer do this).
+  //     mask has finished retracting (solid no longer does this).
   //   - UNLESS config_disable_blocked_ was set by a TransitionEffectConfigL
   //     whose preon/postoff transition is actively running, in which case
   //     suppress allow_disable so the blade stays powered.

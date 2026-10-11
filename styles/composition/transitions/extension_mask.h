@@ -32,7 +32,6 @@ enum ConfigInOutCurve : uint8_t {
 // One wipe for the whole stack. Extend and retract are separate phases.
 // `transition = bend|linear|spark|split|explode|sputter|flame|bmp ext ret ...`
 // spark is one effect. The word bend on that line selects the bend curve.
-// sparktip is spark with bend already selected.
 // sets both. `transition_in` / `transition_out` override one phase:
 // `behavior <ms> [spark] [color] [hilt|tip]`.
 // The direction word is the end the blade extends from and retracts to.
@@ -46,9 +45,9 @@ enum ConfigInOutCurve : uint8_t {
 // bmp scrubs a column file: row 0 → last row on extend, last row → 0 on retract.
 // White in the file is lit. Black is covered. `spark` lights split and explode edges.
 // When no line is set, the first base that has extend/retract supplies both phases.
-// solid and solid_bend are colors; their default curve is bend.
+// solid is a color. It does not wipe. The transition line does.
 // Painted after every inside layer and before preon, postoff,
-// ignition_flash, and sparktip_layer. Textures do not carry their own InOut.
+// ignition_flash. Textures do not carry their own InOut.
 // Bend exponent matches BendInOutPower = Mult<Int<10992>, Int<98304>>.
 // When the wipe has finished and the blade is off, ready_to_power_off() is
 // the signal that the driver may cut power.

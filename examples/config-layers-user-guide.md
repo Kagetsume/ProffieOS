@@ -179,7 +179,7 @@ Open a section in `blade_styles.ini`. Every `layer =` line is one sheet. **The f
 layer = lb white                  ← top (only while lightning-blocking)
 layer = real_clash white 49%      ← flash while clashing
 layer = multiply opacity 55% sine_waves …
-layer = solid_bend cyan -1 -1     ← bottom: the blade itself
+layer = solid cyan -1 -1     ← bottom: the blade itself
 ```
 
 A transparent sheet leaves the sheets under it alone. Clash, blast, lockup, drag, melt, lightning block, preon, and postoff are transparent until that event happens. A full blade style such as `rainbow` or `strobe` is opaque. If you stack one of those with the default blend, it covers everything under it. Dim it with a blend and an opacity (next section), or keep opaque styles on the bottom.
@@ -222,7 +222,7 @@ Many bases take two times, in milliseconds:
 ```ini
 ext = 300
 ret = 800
-layer = solid_bend cyan {{ext}} {{ret}}
+layer = solid cyan {{ext}} {{ret}}
 ```
 
 **Use `-1` when the wipe should match the sound file.** Ignition follows the length of the ignition sound. Retraction follows the retraction sound.
@@ -230,7 +230,7 @@ layer = solid_bend cyan {{ext}} {{ret}}
 ```ini
 ext = -1
 ret = -1
-layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = solid {{base}} {{ext}} {{ret}}
 ```
 
 You can also type the `-1` straight on the layer line: `layer = solid cyan -1 -1`.
@@ -246,7 +246,7 @@ In plain terms:
 
 A `transition` line on the section picks the wipe for the whole stack. `transition = bend {{ext}} {{ret}}` is the curved default. Other behaviors are `linear`, `spark`, `split`, `explode`, `sputter`, `flame`, and `bmp`. Full grammar: [`doc/blade_styles_config.md`](../doc/blade_styles_config.md).
 
-`spark` is one effect. The spark stays on the moving edge. Add `bend` for the curved timing; leave it off for an even edge. `sparktip` is that same line with `bend` already selected.
+`spark` is one effect. The spark stays on the moving edge. Add `bend` for the curved timing; leave it off for an even edge.
 
 `hilt` and `tip` name the end the blade extends from and retracts to. `hilt` (the default) extends from the hilt to the tip, then retracts from the tip back to the hilt. `tip` extends from the tip down to the hilt, then retracts from the hilt back to the tip.
 
@@ -264,12 +264,15 @@ transition = flame {{ext}} {{ret}} orange
 layer = solid {{base}}
 ```
 
-If you leave `transition` off, the first base still supplies a wipe:
+`solid` is a flat color. It does not contain a wipe. Write the wipe on `transition`.
 
-| Base you write | Wipe shape |
+If you leave `transition` off, the section mask still runs. For `solid` that mask is bend, using the times on the color line. Stock blades that still wipe themselves are separate:
+
+| Base you write | Wipe |
 | --- | --- |
-| `solid`, `standard`, `rainbow`, and most older full blades | Straight timing. The lit edge moves evenly. Same `-1` means sound length. |
-| `solid_bend`, `standard_bend`, `strip_column`, Fett263 monoliths (`water_flow`, `static_electricity`, …), and composable OS7 (`darksaber_layer` on `solid_bend`, etc.) | Curved wipe. Ignition starts fast and eases at the tip. Retraction starts slow and finishes fast. The fork wraps that curve so `-1` still tracks the WAV (`InOutTrBendAuto` using the same millisecond-or-WAV rule). |
+| `solid` | No wipe in the style. The section mask uses bend when `transition` is omitted. |
+| `standard`, `rainbow`, and most older full blades | The style wipes itself, evenly. Same `-1` means sound length. A `transition` line on that stack wipes a second time. |
+| `standard_bend`, `strip_column`, Fett263 monoliths (`water_flow`, `static_electricity`, …) | No wipe inside the config section. The section mask uses the curved timing, and `-1` still tracks the WAV. |
 
 If a `strip_column` blade retracts and the retraction sound length is missing, the fallback time is 800 ms.
 
@@ -279,18 +282,18 @@ Which lines need `{{ext}}` and `{{ret}}`:
 
 | Kind of layer | Put ext/ret on that line? |
 | --- | --- |
-| The bottom base (`solid`, `solid_bend`, `strip_column`, a full named blade) | Only when the section has no `transition` line. With `transition`, put `{{ext}}` and `{{ret}}` there. |
+| The bottom base (`solid`, `strip_column`, a full named blade) | Only when the section has no `transition` line. With `transition`, put `{{ext}}` and `{{ret}}` there. |
 | `normal` or `add` textures (`gradient_layer`, stripes used with `add`, and similar) | No. They are clipped to the pixels the base has already lit, so they follow the base, including `-1`. |
 | `multiply` or `screen` masks that have no timing of their own (`sine_waves`, `audio_layer`, `fire_mask`, `pulse_layer`, …) | No. A dark base already hides them during retract. |
 | `hue` (`hue_waves`) | No. A dark or unlit base has nothing to rotate, so the shift follows the base wipe. |
-| `smoke_flow`, and `sparktip_layer` | Yes, on **every** such line, and the numbers must match the base. Smoke has its own in/out. |
+| `smoke_flow` | No. It follows the base wipe. |
 
 ```ini
 ext = -1
 ret = -1
 layer = solid {{base}} {{ext}} {{ret}}
-layer = multiply opacity 73% smoke_flow black white {{ext}} {{ret}}
-layer = screen opacity 12% smoke_flow black {{base}} {{ext}} {{ret}}
+layer = multiply opacity 73% smoke_flow black white
+layer = screen opacity 12% smoke_flow black {{base}}
 ```
 
 A preset can push sound-sync into every placeholder at once:
@@ -362,17 +365,16 @@ Use one of these as the **first** `layer =` line, or as the whole `style =` line
 
 #### Config bases
 
-These draw the blade and the in/out wipe, and they leave clash, lockup, and blast to layers you add above them. This is the usual bottom of a `blade_styles.ini` recipe.
+These draw the color or the BMP. They do not wipe. The section `transition` line is the wipe. Clash, lockup, and blast are layers you add above them. This is the usual bottom of a `blade_styles.ini` recipe.
 
 | Style | Arguments | What you see |
 | --- | --- | --- |
-| `solid` | base color, extend ms, retract ms | Flat color. Straight wipe. Example: `solid cyan 300 800`. |
-| `solid_bend` | base color, extend ms, retract ms | Same flat color with the curved OS7-style wipe. Example: `solid_bend cyan {{ext}} {{ret}}`. |
-| `strip_column` | SD path, source height, fps, optional `frames_y` or `frames_x`, extend ms, retract ms | A 24-bit BMP played along the blade. Curved wipe. Full write-up in the strip-column section. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30 {{ext}} {{ret}}`. |
+| `solid` | base color, optional extend ms, retract ms | Flat color. No wipe. Example: `layer = solid cyan` with `transition = bend {{ext}} {{ret}}`. |
+| `strip_column` | SD path, source width, fps, optional `frames_y` or `frames_x`, extend ms, retract ms | A 24-bit BMP played along the blade. The section `transition` wipes it. For `frames_y`, the width number is the blade length (144 in the demos). Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
 
 #### Full named blades
 
-These are complete looks. Each one already includes its own clash behavior (and usually lockup and blast). You can use them alone in `presets.ini`, or as the bottom of a stack. If you also add a `clash` or `blast` layer on top, you will get a second hit on top of the one built into the style. For a stack you plan to decorate yourself, prefer `solid` or `solid_bend`.
+These are complete looks. Each one already includes its own clash behavior (and usually lockup and blast). You can use them alone in `presets.ini`, or as the bottom of a stack. If you also add a `clash` or `blast` layer on top, you will get a second hit on top of the one built into the style. For a stack you plan to decorate yourself, prefer `solid`.
 
 #### Classic blades
 
@@ -416,7 +418,7 @@ Fett263-style full blades in this fork. Each takes a curved wipe. Argument order
 
 `charging` is the charge-indicator style (battery charging), listed so `list_named_styles` is not a surprise. It is not a blade recipe. `builtin` selects a style compiled into a ROM preset; SD recipes use `config` and the names above instead.
 
-Texture-only twins of the Fett263 blades (`water_flow_layer`, `darksaber_layer`, and the other `*_layer` names) are in the next section. They do not include clash or the wipe. Stack them on `solid_bend`.
+Texture-only twins of the Fett263 blades (`water_flow_layer`, `darksaber_layer`, and the other `*_layer` names) are in the next section. They do not include clash or the wipe. Stack them on `solid`.
 
 ### Texture and effect layers
 
@@ -503,7 +505,7 @@ Shipped recipe: `[demo_hue_waves]` in `blade_styles.ini` (cyan `solid` plus the 
 
 #### Brightness and color sheets
 
-These have no extend/retract arguments of their own (except `sparktip_layer`).
+These have no extend/retract arguments of their own.
 
 | Style | Arguments | What you see and how to stack it |
 | --- | --- | --- |
@@ -514,13 +516,12 @@ These have no extend/retract arguments of their own (except `sparktip_layer`).
 | `per_led_flicker` | none | Each LED crackles on its own. Multiply, often around `40%`. |
 | `gradient_layer` | hilt color, tip color | A hilt-to-tip wash. `normal` plus opacity: `100%` replaces the base, about `10%` is a tint. Clipped to the base wipe. |
 | `rainbow_layer` | none | An animated rainbow tint. Same `normal` plus opacity treatment. |
-| `sparktip_layer` | spark color, extend ms, retract ms | Spark at the extending tip only. Match ext/ret to the base. Stack with `add`. |
 | `cylon_layer` | scan color, on percent, RPM | Scanner band. Stack with `add` so the black part of the scan adds nothing. |
 | `pixel_sequence` | a step string | A timed chase. Step format is in `doc/pixel_sequencer.md`. |
 
 #### Fett263 idle textures
 
-Stack with `normal` or `multiply` over `solid_bend`. They are the moving part of the full blade of the same name, without clash, lockup, blast, or the wipe.
+Stack with `normal` or `multiply` over `solid`. They are the moving part of the full blade of the same name, without clash, lockup, blast, or the wipe.
 
 | Style | Arguments |
 | --- | --- |
@@ -587,7 +588,7 @@ layer = responsive_lockup {{lockup}}
 layer = lb {{lb}}
 ```
 
-`[smoke_laser]` uses the simpler `clash` and `blast` pair, plus drag, melt, and lightning block. `[composable_checklist]` is the long example: gradient tint, hum, sparkle, preon, postoff, spark tip, real clash, random blast, lockup, drag, melt, lightning block, and swing.
+`[smoke_laser]` uses the simpler `clash` and `blast` pair, plus drag, melt, and lightning block. `[composable_checklist]` is the long example: gradient tint, hum, sparkle, preon, postoff, a spark on the moving edge (`transition = spark … bend`), real clash, random blast, lockup, drag, melt, lightning block, and swing.
 
 ### Strip column animations
 
@@ -730,7 +731,7 @@ ret = -1
 clash = white
 lockup = white
 lb = white
-layer = solid_bend {{base}} {{ext}} {{ret}}
+layer = solid {{base}} {{ext}} {{ret}}
 layer = real_clash {{clash}} 49%
 layer = blast_wave_random {{clash}}
 layer = responsive_lockup {{lockup}}

@@ -43,7 +43,7 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | **`pulse_train` … duty**, **`blade_envelope` center**, **`real_clash` position**, **`accent_sound_on` threshold** | Percent along blade or strength | Same rules as **`opacity`** (**`50%`**, **`49%`**, …) | Raw **>100** without **`%`** = legacy **0–32768** |
 | **Multiply-mask `min` / `max`** (`sine_waves`, `chirp`, `pulse_train`, noise masks, …) | Darkest vs brightest band of the mask along the blade | **0–65535** internally (**0** = black / full darken, **65535** = white / no change for multiply). Write **`0%`–`100%`** (decimals OK) or raw **>100** without **`%`** | **`hue_waves` `min_hue`/`max_hue`** stay in RotateColorsX units, not percent |
 | **`hue_waves` `min_hue` / `max_hue`** | Hue offset at the trough and crest | **RotateColorsX** units: **0** = no shift, **8192** ≈ 90°, **16384** ≈ 180°, **32768** = 360°. Not brightness. Blend **`hue`** | `layer = hue opacity 100% hue_waves 2400 0 0 8192 -2000` |
-| **`extend_ms` / `retract_ms`** (base, **`strip_column`**, **`sparktip_layer`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`). Textures including **`smoke_flow`** omit these; the stack wipe follows the base | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
+| **`extend_ms` / `retract_ms`** (base, **`strip_column`**, **`transition`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`). Textures including **`smoke_flow`** omit these; the stack wipe follows the base | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
 | **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `hue_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
 | **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
 | **`smoke_flow` … speed** (optional 3rd arg) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** have no speed arg |
@@ -72,10 +72,9 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 | Style | Arguments (in order) | Example |
 |-------|----------------------|---------|
-| **solid** | base color, extension ms, retraction ms | `solid cyan 300 800` — composable base; stack `clash` / `blast` overlays |
-| **solid_bend** | base color, extension ms, retraction ms | `solid_bend cyan 300 800` — like **solid** with OS7 BendTimePow in/out |
-| **strip_column** | SD path, source height, fps, optional `frames_y`/`frames_x`, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD; RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
-| **strip_column_mask** | SD path, source height, fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column** (always **`frames_y`**); grayscale column = multiply brightness mask. Still mask: **height 1**, **`fps` 1**. Missing/invalid file: transparent (no effect) |
+| **solid** | base color, optional extension ms, retraction ms | `solid cyan` — flat color. No wipe in the style. The section `transition` line is the wipe |
+| **strip_column** | SD path, source width (`source_height`), fps, optional `frames_y`/`frames_x`, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD. **144** is the row width (blade length) for `frames_y`. RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
+| **strip_column_mask** | SD path, source width (`source_height`), fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column** (always **`frames_y`**); grayscale column = multiply brightness mask. A still mask is one frame in the file with **`fps` 1**. Missing/invalid file: transparent (no effect) |
 
 **strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (24-bit BI_RGB — not RLE, not palette). Layout is chosen by **`frames_y`** (default) or **`frames_x`** in the style line (see **`strip_column_bmp.h`**); firmware does **not** guess from width/height alone.
 
@@ -84,7 +83,7 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | **`frames_y`** (default). Aliases: `row`, `rows` | BMP **width** | BMP **height** | One horizontal **row** (hilt = top of image) |
 | **`frames_x`**. Aliases: `column`, `columns` | BMP **height** | BMP **width** | One vertical **column** (hilt = top) |
 
-**`source_height`** is the blade span in pixels (the blade axis above), not the frame count. Example (default layout): `144×120` → `144` blade pixels, **120** frames → `strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
+**`source_height`** is that blade length in pixels, not the frame count. For **`frames_y`** it is the BMP **width** (a 144-pixel blade is width 144). Example: `144×120` → **144** blade pixels, **120** frames → `strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
 
 1. **GIMP:** *File → Export As…* → `.bmp` → **24-bit**, **no** run-length compression.
 2. **Photoshop:** *Save As* → BMP → **24 Bit**, uncompressed Windows BMP.
@@ -112,7 +111,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **advanced** | hilt color, middle color, tip color, onspark color, onspark time, blast color, lockup color, clash color, extension ms, retraction ms, spark tip color | `advanced red blue green white 10 white magenta white 300 800 white` |
 | **unstable** | warm, warmer, hot, sparks, extension ms, retraction ms | `unstable red orange yellow 100 200` |
 | **water_flow** | base, clash, extend ms, retract ms | `water_flow blue white 300 800` |
-| **darksaber_layer** | base color | `darksaber_layer silver` — stack on **`solid_bend`** + combat overlays; use **`config composable_darksaber`** |
+| **darksaber_layer** | base color | `darksaber_layer silver` — stack on **`solid`** + combat overlays; use **`config composable_darksaber`** |
 | **static_electricity** | base, clash, extend ms, retract ms | `static_electricity deepskyblue white 300 800` |
 | **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
 | **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
@@ -137,7 +136,6 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **blade_envelope** | center, width, min, max, speed | Bump along blade (**center**: **0%** hilt, **100%** tip, e.g. **`50%`**) |
 | **sine_waves_swing** | sine_waves args + swing/twist scale | Motion shortens wavelength |
 | **pixel_sequence** | step config string | `pixel_sequence 0,255,0,0,100,200\|1,0,255,0,100,200` — see **pixel_sequencer.md** |
-| **sparktip_layer** | spark color, ext ms, ret ms | `sparktip_layer white {{ext}} {{ret}}` — spark band during extend only; stack with **`add`** |
 | **charging** | (no args) | `charging` |
 | **blast** | blast color only (overlay; timing fixed in template) | `blast white` |
 | **blast_wave_random** | blast color (optional) | OS7 random wave on blast |
@@ -172,10 +170,10 @@ See **`examples/README.md`** for composable vs monolithic guidance.
 
 | Layer kind | `ext` / `ret` on that line? | Why |
 |------------|----------------------------|-----|
-| **`transition`**, **`transition_in`**, **`transition_out`** | Times live on these lines | **`transition`** sets both phases. **`transition_in`** / **`transition_out`** override one. Behaviors: **`bend`**, **`linear`** (`in_out`), **`spark`** (add **`bend`** for the curve; **`sparktip`** is that alias), **`split`** (`middle`), **`explode`** (`inverse`), **`sputter`**, **`flame`** (`fire`), **`bmp`** (`bitmap`). After the times, up to three of **`spark`**, **`bend`**, **`linear`**, a color, and **`hilt`** / **`tip`**. **`hilt`** (default) extends from the hilt and retracts back to the hilt. **`tip`** extends from the tip and retracts back to the tip. Full grammar: **blade_styles_config.md** |
-| **`solid`**, **`solid_bend`** | Optional, only if `transition` is omitted | Color only. The mask wipes them and signals power-off when retract finishes |
+| **`transition`**, **`transition_in`**, **`transition_out`** | Times live on these lines | **`transition`** sets both phases. **`transition_in`** / **`transition_out`** override one. Behaviors: **`bend`**, **`linear`** (`in_out`), **`spark`** (add **`bend`** for the curve), **`split`** (`middle`), **`explode`** (`inverse`), **`sputter`**, **`flame`** (`fire`), **`bmp`** (`bitmap`). After the times, up to three of **`spark`**, **`bend`**, **`linear`**, a color, and **`hilt`** / **`tip`**. **`hilt`** (default) extends from the hilt and retracts back to the hilt. **`tip`** extends from the tip and retracts back to the tip. Full grammar: **blade_styles_config.md** |
+| **`solid`** | Optional, only if `transition` is omitted | Color only. The style does not wipe. The `transition` line does, and it signals power-off when retract finishes |
 | Textures (`gradient_layer`, `stripes`, `audio_layer`, **`smoke_flow`**, …) | **No** | Drawn under the wipe |
-| **`preon_*`**, **`postoff_*`**, **`ignition_flash`**, **`sparktip_layer`** | Only if that style’s own args include them (`ignition_flash`, `sparktip_layer`) | Drawn after the wipe. Preon/postoff/ignition still hold power |
+| **`preon_*`**, **`postoff_*`**, **`ignition_flash`** | Only if that style’s own args include them (`ignition_flash`) | Drawn after the wipe. Preon/postoff/ignition still hold power |
 | **`standard_bend`**, **`strip_column`**, **`audio`**, **`flicker`**, **`gradient`**, **`sparkle_blade`**, **`cylon`**, **`pulse_blade`**, **`water_flow`**, and the other OS7 bend monoliths (`static_electricity`, `power_wave`, `unstable_blades`, `fallen_order`, `thunder_loop`, `responsive_flame`, `shimmer_blade`, `rotoscope`, `pulse_stripes`, `kinetic_charge`, `rotating_pulse`, `trickle_blade`) | Times on the line are used only when `transition` is omitted | No wipe inside a config section. The section mask is the wipe. Linear styles default to **`linear`**; bend monoliths default to **`bend`** |
 | **`standard`**, **`rainbow`**, **`strobe`**, **`unstable`**, **`fire`**, **`cycle`**, **`advanced`** | Built into the style | These stock blades still wipe themselves. A `transition` line on a stack that uses one as the base wipes twice |
 | **`advanced`** | **Yes — when args include ext/ret** | This style still wipes itself. Leave `transition` off on a stack that uses it as the base |
@@ -499,10 +497,10 @@ Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 O
 |---------|----------------|-------|
 | `[smoke_blade]` | Smoke Blade (preset 11) | **`solid`** base + **`smoke_flow`** + **`stripes`** multiply + **`swing`** add + OS7 combat overlays |
 | `[smoke_laser]` | Smoke Laser (preset 1) | Same smoke stack; green **`{{base}}`** + **`random_bands`** (not **`stripes`**) + classic **`clash`** / **`blast`** |
-| `[sine_waves_cyan]` / `[smoke_sine_cyan]` | Sine Waves Cyan / Smoke Sine Cyan (presets 0 / 2) | **`sine_waves`** multiply masks + OS7 combat; **`[smoke_sine_cyan]`** adds **`smoke_flow`** on **`solid_bend`** |
+| `[sine_waves_cyan]` / `[smoke_sine_cyan]` | Sine Waves Cyan / Smoke Sine Cyan (presets 0 / 2) | **`sine_waves`** multiply masks + OS7 combat; **`[smoke_sine_cyan]`** adds **`smoke_flow`** on **`solid`** |
 | Texture demos | Presets 12–22 | **`[demo_saw_waves]`** … **`[demo_chirp]`** — one composable mask each (see **`examples/config/presets.ini`**) |
 | `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
-| `[composable_darksaber]` / `[darksaber_blade]` | Dark Saber | **`darksaber_layer`** + **`solid_bend`** + OS7 overlays (monolith **`darksaber`** removed) |
+| `[composable_darksaber]` / `[darksaber_blade]` | Dark Saber | **`darksaber_layer`** + **`solid`** + OS7 overlays (monolith **`darksaber`** removed) |
 | `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |
 | `[power_wave_blade]` | Power Wave | Needs **`power_wave`** in firmware |
 | `[unstable_blades]` | Unstable Blades | Needs **`unstable_blades`** (not **`unstable`**) |
@@ -518,7 +516,7 @@ Use **`style = config <section>`** or direct named styles. Override base color w
 full stack (base + textures + transitions + OS7 clash/blast + lockup suite). Use
 **`style = config composable_checklist`** in presets, or
 **`style = config composable_checklist_responsive`** for Fett263 **`responsive_clash`** /
-**`responsive_blast`**. Prefer composable **`solid_bend`** + overlay layers over
+**`responsive_blast`**. Prefer composable **`solid`** + overlay layers over
 monolithic **`standard`** / **`rainbow`** when you need independent control of clash,
 blast, and idle textures.
 

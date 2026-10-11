@@ -35,7 +35,7 @@ Same as OST: see `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pi
 
 ## Styles
 
-All OS7 sections follow the same composable pattern: **`solid_bend`** + **`*_layer`** (or **`unstable_stripes`**) + **real_clash** / **blast_wave_random** / **responsive_lockup** / **drag** / **melt** / **lb**.
+All OS7 sections follow the same composable pattern: **`solid`** + **`*_layer`** (or **`unstable_stripes`**) + **real_clash** / **blast_wave_random** / **responsive_lockup** / **drag** / **melt** / **lb**.
 
 - **`eu_crackle`** — no OS7 monolith; per-LED + noise flicker only.
 

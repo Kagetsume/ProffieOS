@@ -6,7 +6,7 @@
 // OS7.15 v3.44p
 //
 // Base Style: Clone Wars Darksaber (AudioFlicker + BrownNoiseFlicker + Stripes + SwingSpeed gleam).
-// Use named style darksaber_layer in config/blade_styles.ini over solid_bend + combat overlays.
+// Use named style darksaber_layer in config/blade_styles.ini over solid + combat overlays.
 // (Monolithic "darksaber" full-blade named style removed — layer stack only.)
 
 #include "../audio_flicker.h"
