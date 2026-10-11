@@ -103,9 +103,9 @@ A drawn BMP column is the **`bmp`** transition: row 0 through the last row on ex
 
 ## Examples (repository)
 
-- **`examples/config/blade_styles.ini`** — Annotated sections for locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add, and **`layer = config other_section`**.
-- **`examples/config/blade_styles/`** — **`palettes_extra.ini`**, **`strobe_overlay.ini`** (included from the main file).
-- **`examples/config/presets.ini`** — **`config <section>`**, single and multiple **`key=value`** overrides, nested style preset.
+- **`sd_config_examples/config/blade_styles.ini`** — Annotated sections for locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add, and **`layer = config other_section`**.
+- **`sd_config_examples/config/blade_styles/`** — **`palettes_extra.ini`**, **`strobe_overlay.ini`** (included from the main file).
+- **`sd_config_examples/config/presets.ini`** — **`config <section>`**, single and multiple **`key=value`** overrides, nested style preset.
 
 ---
 

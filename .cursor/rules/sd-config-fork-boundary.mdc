@@ -31,17 +31,12 @@ Examples of **forbidden without explicit approval**:
 
 ## Allowlist — edit freely for SD config / examples / docs
 
-- `common/sd_*.h`, `common/sd_config_files.h`
-- `common/blade_config_file*.h`, `common/blade_config_pin_names.h`, `common/blade_config_led_types.h`
-- `common/style_config*.h`, `common/sd_boot_style_warm.h`, `common/sd_style_hold.h`
-- `common/board_config_file*.h`, `common/features_config_file.h`
-- `common/help_text.h`, `common/compiled_style_to_config.h`, `common/compiled_style_metadata.h`
-- `common/sd_blade_runtime.h`, `blades/runtime_simple_blade.h`
+- `common/sd_config/**`, `blades/runtime_simple_blade.h`
 - `config/config-files-config.h`
 - `styles/composition/**`
 - `functions/composition/**`
 - `styles/style_parser.h` — **only** SD-config catalog (`config` style, `NAMED_STYLE_DESC`, layer/composable entries, `ENABLE_CONFIG_FILE_HELP_TEXT`); no unrelated style work
-- `doc/**` for blade/SD config, `examples/config/**`, `examples/bladepacks/**`, `scripts/gate_named_style_desc.py`, `scripts/measure-flash.ps1`
+- `doc/**` for blade/SD config, `sd_config_examples/**`, `scripts/gate_named_style_desc.py`, `scripts/measure-flash.ps1`
 - `ProffieOS.ino` — **only** existing SD-config include/boot hooks; no broad refactors
 
 ## Integrations already in core

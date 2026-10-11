@@ -3,7 +3,7 @@
 
 #include "abstract_blade.h"
 #include "pwm_pin.h"
-#include "../common/blade_config_led_types.h"
+#include "../common/sd_config/blade_config_led_types.h"
 
 class RuntimePWMPin : public PWMPinInterface {
 public:

@@ -48,9 +48,9 @@ INI-style: one variable per line, **whitespace is ignored** (spaces, tabs, blank
 
 - **Numeric (advanced only)** – A value like `1` or `20` is a **literal MCU GPIO index**, not “blade power FET #1”. Small integers (e.g. `power_pin1 = 1`) are almost never correct on Proffieboards. Use numbers only when you deliberately map to a custom board and know the exact GPIO from your schematic.
 
-All examples in this repo and in **`examples/bladepacks/`** use **pin names**, not numeric GPIO.
+All examples in this repo and in **`sd_config_examples/bladepacks/`** use **pin names**, not numeric GPIO.
 
-**Full name list (Proffieboard V3 / 3.9):** [`pin_reference.md`](pin_reference.md) — every `SaberPins` symbol, GPIO, and which names work in **`blades.ini`**. Printable pin card (like the color card): run `node examples/generate-pin-reference-card.js`, then `npx md-to-pdf examples/config-layers-pin-card.md --config-file examples/config-layers-pin-card.config.js`.
+**Full name list (Proffieboard V3 / 3.9):** [`pin_reference.md`](pin_reference.md) — every `SaberPins` symbol, GPIO, and which names work in **`blades.ini`**. Printable pin card (like the color card): run `node sd_config_examples/generate-pin-reference-card.js`, then `npx md-to-pdf sd_config_examples/config-layers-pin-card.md --config-file sd_config_examples/config-layers-pin-card.config.js`.
 
 **Simple LED type names** for `led=` / `led1=`…`led4=` (must match exactly):
 
@@ -58,7 +58,7 @@ All examples in this repo and in **`examples/bladepacks/`** use **pin names**, n
 
 ## Example `config/blades.ini`
 
-**Recommended** (Proffieboard — matches [`examples/config/blades.ini`](../examples/config/blades.ini) and blade packs):
+**Recommended** (Proffieboard — matches [`sd_config_examples/config/blades.ini`](../sd_config_examples/config/blades.ini) and blade packs):
 
 ```ini
 # Blade 0: main NeoPixel
@@ -131,7 +131,7 @@ pin3=bladePowerPin3
 led3=CreeXPE2Blue
 ```
 
-Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.g. `accent_sound_on`, `accent_on`, `accent_glow`, `accent_clash`, `accent_blast`, `accent_lockup`, `accent_swing`, `accent_drag`, `accent_melt`, `accent_blink`, `accent_sequence`, `accent_battery`, `accent_sparkle`, `accent_preon`, `accent_postoff`, …). Layered accents: **`style = config accent_combat`** from `blade_styles.ini`. See `examples/README.md` for a full list.
+Pair simple accents with **`accent_*`** named styles in `config/presets.ini` (e.g. `accent_sound_on`, `accent_on`, `accent_glow`, `accent_clash`, `accent_blast`, `accent_lockup`, `accent_swing`, `accent_drag`, `accent_melt`, `accent_blink`, `accent_sequence`, `accent_battery`, `accent_sparkle`, `accent_preon`, `accent_postoff`, …). Layered accents: **`style = config accent_combat`** from `blade_styles.ini`. See `sd_config_examples/README.md` for a full list.
 
 ## How it is used
 
@@ -176,7 +176,7 @@ power_pin = bladePowerPin1
 
 ## Four-blade example (NeoPixel + accents)
 
-Matches [`examples/config/blades.ini`](../examples/config/blades.ini) when `NUM_BLADES` is 4:
+Matches [`sd_config_examples/config/blades.ini`](../sd_config_examples/config/blades.ini) when `NUM_BLADES` is 4:
 
 ```ini
 blade = 0

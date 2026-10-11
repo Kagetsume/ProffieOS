@@ -8,7 +8,7 @@
 #include "../../common/arg_parser.h"
 #include "../../functions/svf.h"
 #include "../../common/math.h"
-#include "../../common/opacity_scale.h"
+#include "../../common/sd_config/opacity_scale.h"
 #include "../../common/sin_table.h"
 #include "../../functions/swing_speed.h"
 #include "../../functions/twist_angle.h"

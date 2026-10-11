@@ -4,8 +4,8 @@
 #include "preset.h"
 #include "file_reader.h"
 #include "blade_config.h"
-#include "sd_config.h"
-#include "font_search_path.h"
+#include "sd_config/sd_config.h"
+#include "sd_config/font_search_path.h"
 #include "arg_parser.h"
 
 class CurrentPreset {

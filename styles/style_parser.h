@@ -21,7 +21,7 @@ inline void StyleParserCopyArgBounded(char* output, size_t output_max, const cha
   memcpy(output, start, n);
   output[n] = '\0';
 }
-#include "../common/help_text.h"
+#include "../common/sd_config/help_text.h"
 #include "../functions/int_arg.h"
 #include "legacy_styles.h"
 #include "responsive_styles.h"

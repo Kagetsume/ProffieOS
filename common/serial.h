@@ -2,7 +2,7 @@
 #define COMMON_SERIAL_H
 
 #if defined(ENABLE_SD_CONFIG_FILES)
-#include "style_config_boot_log.h"
+#include "sd_config/style_config_boot_log.h"
 #endif
 
 class SerialAdapter {
@@ -20,7 +20,7 @@ public:
 
 #if defined(TEENSYDUINO) || SERIAL_INTERFACES_COUNT - 0 > 3
 #ifdef ENABLE_SERIAL
-#include "board_config_file.h"
+#include "sd_config/board_config_file.h"
 #endif
 class Serial3Adapter {
 public:

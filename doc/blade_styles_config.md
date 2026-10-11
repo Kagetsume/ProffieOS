@@ -90,15 +90,15 @@ layer = screen opacity 12% smoke_flow black {{base}}
 
 Preset override: `style = config smoke_blade ext=-1 ret=-1` updates the transition through `{{ext}}` and `{{ret}}`. A preset token cannot contain spaces, so put the full `transition`, `transition_in`, and `transition_out` lines in the section.
 
-**Composable SD recipes:** Use **`solid`** or **`strip_column`** (SD **24-bit BMP** column animation — export from GIMP/Photoshop; see **`strip_column_bmp.h`** and **README_blade_styles_config.md**) as the bottom layer, then stack texture masks (`fire_mask`, **`strip_column_mask`** (SD grayscale BMP multiply mask, same file layout as **`strip_column`**), `stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`** textures, …) and **overlay** layers (`clash`, `blast`, **`real_clash`**, **`blast_wave_random`**, or **`responsive_clash`**, **`responsive_blast`**, `responsive_lockup`, `drag`, `melt`, `lb`, **`force_glow`**). Clash/lockup/blast colors live on those overlay lines — not on the base. Pick **one** clash type and **one** blast type per recipe. Textures, including **`smoke_flow`**, do **not** take extend/retract on their line (see table above). Shipped examples: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`**, **`[composable_gradient]`**, **`[composable_checklist]`**, **`[composable_checklist_responsive]`**, **`[smoke_blade]`**, **`[greyscale_mercenary]`**, **`[solid_smoke]`** ( **`examples/config/presets.ini`** maps preset indices 0–2 and 12–22 to these).
+**Composable SD recipes:** Use **`solid`** or **`strip_column`** (SD **24-bit BMP** column animation — export from GIMP/Photoshop; see **`strip_column_bmp.h`** and **README_blade_styles_config.md**) as the bottom layer, then stack texture masks (`fire_mask`, **`strip_column_mask`** (SD grayscale BMP multiply mask, same file layout as **`strip_column`**), `stripes`, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, composable **`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`** textures, …) and **overlay** layers (`clash`, `blast`, **`real_clash`**, **`blast_wave_random`**, or **`responsive_clash`**, **`responsive_blast`**, `responsive_lockup`, `drag`, `melt`, `lb`, **`force_glow`**). Clash/lockup/blast colors live on those overlay lines — not on the base. Pick **one** clash type and **one** blast type per recipe. Textures, including **`smoke_flow`**, do **not** take extend/retract on their line (see table above). Shipped examples: **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_saw_waves]`** … **`[demo_chirp]`**, **`[composable_gradient]`**, **`[composable_checklist]`**, **`[composable_checklist_responsive]`**, **`[smoke_blade]`**, **`[greyscale_mercenary]`**, **`[solid_smoke]`** ( **`sd_config_examples/config/presets.ini`** maps preset indices 0–2 and 12–22 to these).
 
-**Layer catalog:** The comment block above **`[composable_checklist]`** in **`examples/config/blade_styles.ini`** lists every composable primitive by category (base, idle textures, transitions, clash/blast paths, lockup suite). Use **`style = config composable_checklist`** as a starting preset or copy individual layers from that section.
+**Layer catalog:** The comment block above **`[composable_checklist]`** in **`sd_config_examples/config/blade_styles.ini`** lists every composable primitive by category (base, idle textures, transitions, clash/blast paths, lockup suite). Use **`style = config composable_checklist`** as a starting preset or copy individual layers from that section.
 
-**Texture recipes** in **`examples/config/blade_styles.ini`**: `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]` — **`solid`** (or gradient) base + multiply/screen/add textures + composable **`clash`** / **`blast`** overlays.
+**Texture recipes** in **`sd_config_examples/config/blade_styles.ini`**: `[solid_smoke]`, `[solid_lava]`, `[solid_unstable]`, `[solid_shimmer]`, `[solid_chase]`, `[solid_water_shimmer]`, `[solid_barber]` — **`solid`** (or gradient) base + multiply/screen/add textures + composable **`clash`** / **`blast`** overlays.
 
-**GPIO accents** (simple PWM in `blades.ini`): `accent_sound_on`, `accent_on`, `accent_pulse`, `accent_color`, `accent_audio_flicker`, and other `accent_*` styles — see `examples/README.md`.
+**GPIO accents** (simple PWM in `blades.ini`): `accent_sound_on`, `accent_on`, `accent_pulse`, `accent_color`, `accent_audio_flicker`, and other `accent_*` styles — see `sd_config_examples/README.md`.
 
-Argument order and examples: **`examples/config/blade_styles.ini`** (header comments + sections such as `[rainbow_pulse]`, `[standard_swing_sparkle]`, and Fett263 recipes `[smoke_blade]`, `[water_blade]`, `[fallen_order_blade]`, etc.).
+Argument order and examples: **`sd_config_examples/config/blade_styles.ini`** (header comments + sections such as `[rainbow_pulse]`, `[standard_swing_sparkle]`, and Fett263 recipes `[smoke_blade]`, `[water_blade]`, `[fallen_order_blade]`, etc.).
 
 ## Location and name
 
@@ -136,11 +136,11 @@ With **`ENABLE_SD_CONFIG_FILES`**, **`config/blade_styles.ini`** is never loaded
 
 ## Shipped examples (repository)
 
-The **`examples/config/`** tree mirrors SD layout. **`examples/config/blade_styles.ini`** walks through one section per feature (locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add blends, **`layer = config other_section`** nesting). **`examples/config/blade_styles/`** has **`palettes_extra.ini`** and **`strobe_overlay.ini`**. **`examples/config/presets.ini`** shows **`config <section>`**, **`config <section> key=value`**, and **multiple overrides**.
+The **`sd_config_examples/config/`** tree mirrors SD layout. **`sd_config_examples/config/blade_styles.ini`** walks through one section per feature (locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add blends, **`layer = config other_section`** nesting). **`sd_config_examples/config/blade_styles/`** has **`palettes_extra.ini`** and **`strobe_overlay.ini`**. **`sd_config_examples/config/presets.ini`** shows **`config <section>`**, **`config <section> key=value`**, and **multiple overrides**.
 
 ## Example `config/blade_styles.ini`
 
-The canonical annotated copy is **`examples/config/blade_styles.ini`** in the ProffieOS tree. Minimal illustration:
+The canonical annotated copy is **`sd_config_examples/config/blade_styles.ini`** in the ProffieOS tree. Minimal illustration:
 
 ```ini
 # Rainbow: white base, rainbow_layer at 100%, then effects
@@ -288,7 +288,7 @@ Instead of a single **`layer = standard cyan white 300 800`** line, you can set 
 
 ## Fett263 OS7 compiled style approximations
 
-Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) styles are too complex for a single named style, but **most of the look** can be built from layered **`config/blade_styles.ini`** sections. Shipped recipes live in **`examples/config/blade_styles.ini`**; each section’s comments list what matches the OS7 original and what still needs compiled C++.
+Some [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) styles are too complex for a single named style, but **most of the look** can be built from layered **`config/blade_styles.ini`** sections. Shipped recipes live in **`sd_config_examples/config/blade_styles.ini`**; each section’s comments list what matches the OS7 original and what still needs compiled C++.
 
 | OS7 style | INI section | Key SD techniques |
 |-----------|-------------|-------------------|

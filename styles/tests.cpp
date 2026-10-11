@@ -96,8 +96,8 @@ struct MockDynamicMixer {
 MockDynamicMixer dynamic_mixer;
 
 #include "../common/common.h"
-#include "../common/opacity_scale.h"
-#include "../common/style_config_file.h"
+#include "../common/sd_config/opacity_scale.h"
+#include "../common/sd_config/style_config_file.h"
 #include "../common/math.h"
 #include "../common/stdout.h"
 Print default_printer;

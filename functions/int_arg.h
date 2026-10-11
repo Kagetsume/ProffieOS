@@ -2,7 +2,7 @@
 #define FUNCTIONS_INT_ARG_H
 
 #include "../common/arg_parser.h"
-#include "../common/opacity_scale.h"
+#include "../common/sd_config/opacity_scale.h"
 #include "svf.h"
 
 class IntArgBase {

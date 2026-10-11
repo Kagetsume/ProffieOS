@@ -4,7 +4,7 @@
 #include <algorithm>
 #include "../common/atomic.h"
 #include "../common/file_reader.h"
-#include "../common/font_search_path.h"
+#include "../common/sd_config/font_search_path.h"
 
 class Effect;
 Effect* all_effects = NULL;

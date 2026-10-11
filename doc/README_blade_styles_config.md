@@ -21,7 +21,7 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 | **Mask duty / center** (`pulse_train`, `blade_envelope`) | Prefer **percent** in editor; INI may use **`50%`** or implicit percent **≤100** | Raw **>100** without **`%`** = 0–32768 position/fraction scale. |
 | **Scroll speed** (bands, stripes, waves) | Signed integer (same units as preset styles) | Negative = toward hilt. |
 
-**Worked examples on disk:** **`examples/config/blade_styles.ini`** (one section per feature), **`examples/config/blade_styles/*.ini`** (included fragments), **`examples/config/presets.ini`** (**`config <section>`** and overrides). Implementation checklist: **blade_styles_config_roadmap.md**.
+**Worked examples on disk:** **`sd_config_examples/config/blade_styles.ini`** (one section per feature), **`sd_config_examples/config/blade_styles/*.ini`** (included fragments), **`sd_config_examples/config/presets.ini`** (**`config <section>`** and overrides). Implementation checklist: **blade_styles_config_roadmap.md**.
 
 ---
 
@@ -29,7 +29,7 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 
 Composable **`blade_styles.ini`** recipes use the **same style argument strings** as preset **`style = …`** lines. Most numbers you type are **author units** (milliseconds, percents, scroll rates). Firmware parses them into **fixed-point scales** used by styles at runtime. This table is for recipe authors and tool writers; you do not need to memorize the internals to build effects.
 
-**Implementation references:** color tokens → **`styles/composition/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and duty/center args → **`OpacityScaleIntArg`** / **`ParseOpacityScaleToken`**; multiply-mask **min/max/strength** → **`Brightness65535ScaleIntArg`** / **`ParseBrightness65535Token`** (**`common/opacity_scale.h`**, **`functions/int_arg.h`**).
+**Implementation references:** color tokens → **`styles/composition/parse_color_arg.h`** (`ParseColorArg`, `ParseColorName`); layer **`opacity`** and duty/center args → **`OpacityScaleIntArg`** / **`ParseOpacityScaleToken`**; multiply-mask **min/max/strength** → **`Brightness65535ScaleIntArg`** / **`ParseBrightness65535Token`** (**`common/sd_config/opacity_scale.h`**, **`functions/int_arg.h`**).
 
 **Named colors in INI:** **`ParseColorName`** resolves the merged catalog in **`styles/composition/parse_color_arg_table.generated.h`** (from **`tools/catalog/colors.json`** / LayerBlade’s catalog plus any Fett263 **`color_list_`** names not already in the catalog). Matching is case-insensitive. After editing **`colors.json`** or the Fett263 color list, run **`node tools/generate-parse-color-names.js`** and commit the updated generated header (Arduino builds do not require Node). Duplicate names keep the catalog entry; **`orange`** and **`indigo`** follow **`colors.json`**, not the slightly different Fett263 picker RGB.
 
@@ -161,8 +161,8 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 `thunder_loop_layer`, `responsive_flame_layer`.
 
 **Full layer inventory:** comment block above **`[composable_checklist]`** in
-**`examples/config/blade_styles.ini`**, or preset **`style = config composable_checklist`**.
-See **`examples/README.md`** for composable vs monolithic guidance.
+**`sd_config_examples/config/blade_styles.ini`**, or preset **`style = config composable_checklist`**.
+See **`sd_config_examples/README.md`** for composable vs monolithic guidance.
 
 **Extend/retract auto timing:** On styles with extension/retraction ms args, use **`-1`** to match ignition or retraction soundfont length. For solid stacks: `transition = bend -1 -1` and `layer = solid {{base}}`.
 
@@ -473,7 +473,7 @@ ProffieOS runs on microcontrollers (e.g. STM32) with limited RAM. The limits are
 - **16 layers:** Each config-driven style holds a fixed array of 16 `BladeStyle*` pointers. When loading from the file, the parser uses a temporary buffer of **16×384** bytes (about **6.1 KB**) for the layer strings. Raising the cap would increase the size of every `ConfigLayersStyle` instance and the loading buffer.
 - **384 characters per line:** Each `layer = ...` value is stored in a fixed slot so long **advanced** / structured lines fit. The cap prevents buffer overrun.
 
-So the limits are a tradeoff: enough for complex, multi-layer effects while bounding RAM on embedded. If you need more layers or longer lines, the constants `STYLE_CONFIG_MAX_LAYERS` / `STYLE_CONFIG_LAYER_STR_LEN` in `common/style_config_file.h` and `CONFIG_LAYERS_MAX` in `styles/composition/config_layers_style.h` can be increased at the cost of more memory.
+So the limits are a tradeoff: enough for complex, multi-layer effects while bounding RAM on embedded. If you need more layers or longer lines, the constants `STYLE_CONFIG_MAX_LAYERS` / `STYLE_CONFIG_LAYER_STR_LEN` in `common/sd_config/style_config_file.h` and `CONFIG_LAYERS_MAX` in `styles/composition/config_layers_style.h` can be increased at the cost of more memory.
 
 ---
 
@@ -491,14 +491,14 @@ The parser is tolerant and safe:
 
 ## Fett263 OS7 approximations
 
-Shipped recipes in **`examples/config/blade_styles.ini`** approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) compiled styles:
+Shipped recipes in **`sd_config_examples/config/blade_styles.ini`** approximate [Fett263 OS7](https://www.fett263.com/fett263-proffieOS7-style-library.html) compiled styles:
 
 | Section | Preset example | Notes |
 |---------|----------------|-------|
 | `[smoke_blade]` | Smoke Blade (preset 11) | **`solid`** base + **`smoke_flow`** + **`stripes`** multiply + **`swing`** add + OS7 combat overlays |
 | `[smoke_laser]` | Smoke Laser (preset 1) | Same smoke stack; green **`{{base}}`** + **`random_bands`** (not **`stripes`**) + classic **`clash`** / **`blast`** |
 | `[sine_waves_cyan]` / `[smoke_sine_cyan]` | Sine Waves Cyan / Smoke Sine Cyan (presets 0 / 2) | **`sine_waves`** multiply masks + OS7 combat; **`[smoke_sine_cyan]`** adds **`smoke_flow`** on **`solid`** |
-| Texture demos | Presets 12–22 | **`[demo_saw_waves]`** … **`[demo_chirp]`** — one composable mask each (see **`examples/config/presets.ini`**) |
+| Texture demos | Presets 12–22 | **`[demo_saw_waves]`** … **`[demo_chirp]`** — one composable mask each (see **`sd_config_examples/config/presets.ini`**) |
 | `[water_blade]` | Water Blade | Needs **`water_flow`** in firmware |
 | `[composable_darksaber]` / `[darksaber_blade]` | Dark Saber | **`darksaber_layer`** + **`solid`** + OS7 overlays (monolith **`darksaber`** removed) |
 | `[static_electricity_blade]` | Static Electricity | Needs **`static_electricity`** in firmware |
@@ -512,7 +512,7 @@ Use **`style = config <section>`** or direct named styles. Override base color w
 
 ## Composable capstone demo
 
-**`[composable_checklist]`** in **`examples/config/blade_styles.ini`** is a working
+**`[composable_checklist]`** in **`sd_config_examples/config/blade_styles.ini`** is a working
 full stack (base + textures + transitions + OS7 clash/blast + lockup suite). Use
 **`style = config composable_checklist`** in presets, or
 **`style = config composable_checklist_responsive`** for Fett263 **`responsive_clash`** /
@@ -535,7 +535,7 @@ There are **two places** style data can live:
 | **Direct named style** | Nothing extra | One line per blade, e.g. `style = standard cyan white 300 800` — the whole effect is in that string. |
 | **Config recipe** | `[section]` in **`blade_styles.ini`** (`layer = …`, `base = …`, palettes) | One line per blade: `style = config <section>` plus optional **`key=value`** overrides (e.g. `style = config with_vars base=magenta`). |
 
-At runtime, **`ConfigStyleFactory`** loads the section, parses each **`layer =`** into sub-styles, and **`ConfigLayersStyle`** composites them bottom → top. Overrides on the preset line replace section **`{{name}}`** values for that preset only (see **`[with_vars]`** in **`examples/config/blade_styles.ini`**). The INI file is **not** rewritten when you change presets — only **`presets.ini`** (or save-dir copy) holds per-preset overrides.
+At runtime, **`ConfigStyleFactory`** loads the section, parses each **`layer =`** into sub-styles, and **`ConfigLayersStyle`** composites them bottom → top. Overrides on the preset line replace section **`{{name}}`** values for that preset only (see **`[with_vars]`** in **`sd_config_examples/config/blade_styles.ini`**). The INI file is **not** rewritten when you change presets — only **`presets.ini`** (or save-dir copy) holds per-preset overrides.
 
 ### How Edit Mode works
 
@@ -548,7 +548,7 @@ Edit Mode does **not** open **`blade_styles.ini`**, does not pick a layer index,
 ### What works together today
 
 - **`style = config <section>`** with **no color overrides** — blade looks correct; Edit Mode may offer **little or nothing** useful (the preset string may only contain the section name).
-- **`style = config <section> base=red clash=white …`** — overrides are **words on the preset line**. You can change those values on the SD card or, in principle, via **`SetArgument`** on argument indices **after** `config` and the section name (same mechanism as **`base=magenta`** in **`examples/config/presets.ini`**).
+- **`style = config <section> base=red clash=white …`** — overrides are **words on the preset line**. You can change those values on the SD card or, in principle, via **`SetArgument`** on argument indices **after** `config` and the section name (same mechanism as **`base=magenta`** in **`sd_config_examples/config/presets.ini`**).
 - **Direct named styles** on the preset (`standard`, `fire`, `fallen_order`, …) — Edit Mode color menus match **positional args** in that string (Fett263 “Edit Mode color editing” styles). Saving updates **`presets.ini`** as builders expect.
 - **Twist / color-change** — if the **composed** blade style reports handled color change (or smooth/stepped variation applies), twist can still shift hue on some stacks; that is **not** the same as editing each layer’s colors in the INI.
 - **LayerBlade** — **Blade styles** (`#/styles`) is the **layer-aware** path: edit **`blade_styles.ini`**, export, copy to SD. Preset lines still choose **`config <section>`** and optional overrides.
@@ -574,9 +574,9 @@ Edit Mode does **not** open **`blade_styles.ini`**, does not pick a layer index,
 
 ## See also
 
-- **blade_styles_config.md** — Format, “what you can layer”, opacity/blend/structured syntax, Fett263 approximations, limits, and pointers to **`examples/config/`**.
+- **blade_styles_config.md** — Format, “what you can layer”, opacity/blend/structured syntax, Fett263 approximations, limits, and pointers to **`sd_config_examples/config/`**.
 - **pixel_sequencer.md** — **`pixel_sequence`** step format (usable as a composable layer).
 - **blade_config.md** — Blade hardware config (pins, blades) on the SD card.
-- **examples/README.md** — Full composable layer catalog and Fett263 approximation table.
-- **examples/config/** — Copy-ready SD layout; **`blade_styles.ini`** documents each feature inline.
+- **sd_config_examples/README.md** — Full composable layer catalog and Fett263 approximation table.
+- **sd_config_examples/config/** — Copy-ready SD layout; **`blade_styles.ini`** documents each feature inline.
 - **LayerBlade** — `website/BLADE_STYLES.md` user guide with functional examples and editor workflow.

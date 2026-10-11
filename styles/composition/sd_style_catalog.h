@@ -5,9 +5,9 @@
 // Included from styles/style_parser.h only when ENABLE_SD_CONFIG_FILES is set.
 // Stock includes (legacy_styles, lockup, audio_flicker, ...) are already in scope.
 
-#include "../../common/sd_config.h"
-#include "../../common/style_config_file.h"
-#include "../../common/opacity_scale.h"
+#include "../../common/sd_config/sd_config.h"
+#include "../../common/sd_config/style_config_file.h"
+#include "../../common/sd_config/opacity_scale.h"
 #include "parse_color_arg.h"
 #include "config_layers_style.h"
 #include "pixel_sequencer.h"

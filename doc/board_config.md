@@ -88,8 +88,8 @@ buttons = 2
 
 ## API
 
-- **LoadBoardConfigFile()** (common/board_config_file.h) — Loads `config/board.ini` if present (buttons, oled, and optionally gesture/twist). Called at startup before prop setup.
-- **LoadFeaturesConfigFile()** (common/features_config_file.h) — Loads `config/features.ini` if present and overwrites **gesture**, **twist_on**, **twist_off** in the same struct. Call after LoadBoardConfigFile().
+- **LoadBoardConfigFile()** (common/sd_config/board_config_file.h) — Loads `config/board.ini` if present (buttons, oled, and optionally gesture/twist). Called at startup before prop setup.
+- **LoadFeaturesConfigFile()** (common/sd_config/features_config_file.h) — Loads `config/features.ini` if present and overwrites **gesture**, **twist_on**, **twist_off** in the same struct. Call after LoadBoardConfigFile().
 - **UseBoardConfigFile()** — True if **board.ini** was found and loaded.
 - **BoardConfigGesture()**, **BoardConfigTwistOn()**, **BoardConfigTwistOff()**, **BoardConfigOled()**, **BoardConfigBluetooth()**, **BoardConfigButtons()** — Raw values: 1/0 for on/off, 1/2/3 for buttons, -1 = not set.
 - **BoardConfigGestureEnabled()**, **BoardConfigTwistOnEnabled()**, **BoardConfigTwistOffEnabled()**, **BoardConfigOledEnabled()** — True only when the file was found and the option is explicitly **on** (1).
@@ -128,6 +128,6 @@ So the board config file and Fett263’s prop are aligned: use **config/board.in
 ## See also
 
 - **blade_config.md** — Blade hardware (config/blades.ini).
-- **pin_reference.md** — Proffieboard V3 (3.9) named pins (`SaberPins` + SD `blades.ini` tokens); pin card PDF via `examples/generate-pin-reference-card.js`.
+- **pin_reference.md** — Proffieboard V3 (3.9) named pins (`SaberPins` + SD `blades.ini` tokens); pin card PDF via `sd_config_examples/generate-pin-reference-card.js`.
 - **blade_styles_config.md** — Blade style layers (config/blade_styles.ini).
 - **saber_fett263_buttons.h** — Fett263 prop: 1/2/3 button controls, gesture/twist defines, saved_gesture_control.

@@ -4,13 +4,13 @@
 // Update SPEC and sound_library_ defines before we use them.
 #include "../sound/sound_library.h"
 #ifdef ENABLE_SD
-#include "../common/blade_config_file.h"
+#include "../common/sd_config/blade_config_file.h"
 #if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
-#include "../common/sd_boot_style_warm.h"
+#include "../common/sd_config/sd_boot_style_warm.h"
 #endif
 #endif
-#include "../common/debug_preset_cycle_flash.h"
-#include "../common/font_search_path.h"
+#include "../common/sd_config/debug_preset_cycle_flash.h"
+#include "../common/sd_config/font_search_path.h"
 
 #ifndef PROP_INHERIT_PREFIX
 #define PROP_INHERIT_PREFIX

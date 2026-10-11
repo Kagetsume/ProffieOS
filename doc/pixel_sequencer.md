@@ -92,7 +92,7 @@ layer = blast white
 
 The step string is one argument on the **`layer =`** line (pipe-separated steps, no spaces
 required). Up to **16 steps** per sequence. For a full composable stack with clash, blast, and
-textures, see **`[composable_checklist]`** in **`examples/config/blade_styles.ini`**.
+textures, see **`[composable_checklist]`** in **`sd_config_examples/config/blade_styles.ini`**.
 
 **Website preview:** The SD Config Editor approximates **`pixel_sequence`** animation in the
 blade preview (not pixel-accurate vs firmware).

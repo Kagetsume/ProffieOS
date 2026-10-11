@@ -12,8 +12,8 @@ Named styles registered in **`style_parser.h`** can be stacked in **`config/blad
 headers are aggregated in **`texture_layers.h`**. User docs:
 
 * [`doc/blade_styles_config.md`](../doc/blade_styles_config.md) — layer catalog and grammar
-* [`examples/config/blade_styles.ini`](../examples/config/blade_styles.ini) — **`[composable_checklist]`** capstone demo
-* [`examples/README.md`](../examples/README.md) — composable vs monolithic guidance
+* [`sd_config_examples/config/blade_styles.ini`](../sd_config_examples/config/blade_styles.ini) — **`[composable_checklist]`** capstone demo
+* [`sd_config_examples/README.md`](../sd_config_examples/README.md) — composable vs monolithic guidance
 
 Each style template needs at least two functions:
 

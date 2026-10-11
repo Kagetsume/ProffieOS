@@ -1,8 +1,8 @@
 # Proffieboard V3 pin names (ProffieOS reference)
 
-**Proffieboard V3** hardware (including **V3.9**) uses the C symbols in `config/proffieboard_v3_config.h`. When you use SD **`config/blades.ini`**, only the **blade / power / identify** names listed in `common/blade_config_pin_names.h` are accepted as text tokens (not button, I2C, or audio pins).
+**Proffieboard V3** hardware (including **V3.9**) uses the C symbols in `config/proffieboard_v3_config.h`. When you use SD **`config/blades.ini`**, only the **blade / power / identify** names listed in `common/sd_config/blade_config_pin_names.h` are accepted as text tokens (not button, I2C, or audio pins).
 
-Generated **2026-10-06** from those headers. Re-run `node examples/generate-pin-reference-card.js` after pin-map changes. Compact PDF: [`examples/config-layers-pin-card.md`](../examples/config-layers-pin-card.md).
+Generated **2026-10-06** from those headers. Re-run `node sd_config_examples/generate-pin-reference-card.js` after pin-map changes. Compact PDF: [`sd_config_examples/config-layers-pin-card.md`](../sd_config_examples/config-layers-pin-card.md).
 
 ## Quick wiring ↔ SD names
 

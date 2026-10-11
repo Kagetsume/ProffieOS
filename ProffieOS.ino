@@ -448,16 +448,16 @@ const char* previous_current_directory(const char* dir) {
 #include "sound/sound.h"
 
 // After sound stack (LOCK_SD from audio_stream_work.h): SD INI loaders use LOCK_SD.
-#include "common/sd_config_files.h"
+#include "common/sd_config/sd_config_files.h"
 #ifdef ENABLE_SD_CONFIG_FILES
-#include "common/sd_config_defs.h"
-#include "common/blade_config_file_defs.h"
+#include "common/sd_config/sd_config_defs.h"
+#include "common/sd_config/blade_config_file_defs.h"
 #endif
-#include "common/board_config_file_defs.h"
-#include "common/features_config_file.h"
-#include "common/blade_config_pin_names.h"
+#include "common/sd_config/board_config_file_defs.h"
+#include "common/sd_config/features_config_file.h"
+#include "common/sd_config/blade_config_pin_names.h"
 #if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
-#include "common/sd_boot_style_warm.h"
+#include "common/sd_config/sd_boot_style_warm.h"
 #endif
 
 #include "common/battery_monitor.h"
@@ -701,7 +701,7 @@ ArgParserInterface* CurrentArgParser;
 #endif
 
 #ifdef ENABLE_SD
-#include "common/sd_blade_runtime.h"
+#include "common/sd_config/sd_blade_runtime.h"
 #endif
 
 PROP_TYPE prop;

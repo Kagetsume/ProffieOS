@@ -27,6 +27,6 @@ Edit blade effects on the SD card without recompiling:
 * **Quick reference:** [`doc/README_blade_styles_config.md`](doc/README_blade_styles_config.md)
 * **Presets:** [`doc/sd_config.md`](doc/sd_config.md) — `config/presets.ini`
 * **Blade wiring:** [`doc/blade_config.md`](doc/blade_config.md) — `config/blades.ini`
-* **Examples:** [`examples/config/`](examples/config/) — copy-ready SD layout; capstone demo **`composable_checklist`**
+* **Examples:** [`sd_config_examples/config/`](sd_config_examples/config/) — copy-ready SD layout; capstone demo **`composable_checklist`**
 * **LayerBlade editor** (separate repo) — browser/desktop app for SD config (`blade_styles.ini`, presets, wiring); see `website/README.md` and `website/BLADES.md` / `website/BLADE_STYLES.md` in LayerBlade
-* **Builder guide:** [`examples/config-layers-user-guide.md`](examples/config-layers-user-guide.md) — layer recipes, strip column BMPs, named colors (76 SD tokens)
+* **Builder guide:** [`sd_config_examples/config-layers-user-guide.md`](sd_config_examples/config-layers-user-guide.md) — layer recipes, strip column BMPs, named colors (76 SD tokens)

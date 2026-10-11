@@ -16,7 +16,7 @@ SD **`config/`** INI loading is **not** always compiled in. Enable it in your **
 
 The profile **`config/config-files-config.h`** defines this for the SD-config examples. Without it, firmware uses only compiled **`CONFIG_PRESETS`** / **`blades[]`**; files on SD under **`config/`** are ignored and the **`config`** named style is unavailable.
 
-See **`common/sd_config_files.h`**.
+See **`common/sd_config/sd_config_files.h`**.
 
 ## When it applies
 
@@ -74,7 +74,7 @@ Use the same style names and arguments as in the serial/editor:
 - **gradient**, **audio**, **flicker**, **sparkle_blade**, **cylon**, **pulse_blade**.
 - **strobe**, **cycle**, **unstable**, **advanced**.
 - **Fett263 OS7** (firmware): monolith names **`water_flow`**, **`static_electricity`**, **`power_wave`**, **`unstable_blades`**, **`fallen_order`**, … take **`base clash extend retract`**. Inside a config section the **`transition`** mask does the wipe (default bend). **DarkSaber:** use **`darksaber_layer`** + **`config composable_darksaber`** (monolith **`darksaber`** removed). Distinct from built-in **`unstable`**.
-- **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`examples/README.md`**.
+- **GPIO accents** (simple PWM blades): **`accent_glow`**, **`accent_blast`**, **`accent_clash`**, **`accent_preon`**, **`accent_postoff`**, **`accent_sequence`**, etc. — see **`sd_config_examples/README.md`**.
 
 Run `list_named_styles` over serial to see available styles and their arguments.
 
@@ -82,7 +82,7 @@ Run `list_named_styles` over serial to see available styles and their arguments.
 
 Boot and preset cache behavior (index at boot, seek-load on preset change): **sd_style_boot_order.md**.
 
-You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Use a composable **`solid`** base plus overlay **`clash`** / **`blast`** / **`responsive_clash`** / **`responsive_blast`** / **`real_clash`** / **`blast_wave_random`** layers, or monolithic bases like **`standard`**. Composable texture layers (**`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`**, **`pixel_sequence`**, …) and multiply masks **`fire_mask`**, **`stripes`**, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** / **normal** over an opaque base. Extend/retract can use **`-1`** to match ignition/retraction soundfont length. See **blade_styles_config.md**, **README_blade_styles_config.md**, and **examples/README.md**. Capstone demo: **`style = config composable_checklist`**. Shipped recipes include **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_sine_waves]`** … **`[demo_chirp]`**, **`[smoke_blade]`**, **`[composable_rainbow]`**, **`[solid_lava]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`examples/config/blade_styles.ini`**.
+You can build effects from **layers** in **`config/blade_styles.ini`** and reference them with **`style = config <section_name>`** (optional **`key=value`** tokens for **`{{name}}`** substitution, e.g. `style = config fallen_order_blade base=cyan`). Use a composable **`solid`** base plus overlay **`clash`** / **`blast`** / **`responsive_clash`** / **`responsive_blast`** / **`real_clash`** / **`blast_wave_random`** layers, or monolithic bases like **`standard`**. Composable texture layers (**`gradient_layer`**, **`rainbow_layer`**, **`audio_layer`**, **`pulse_layer`**, OS7 **`*_layer`**, **`pixel_sequence`**, …) and multiply masks **`fire_mask`**, **`stripes`**, **`random_bands`**, **`sine_waves`**, **`saw_waves`**, **`hue_waves`**, **`pulse_train`**, **`chirp`**, **`smoothstep_bands`**, **`value_noise`**, **`fbm_noise`**, **`moire_mask`**, **`blade_envelope`**, **`sine_waves_swing`**, **`noise_flicker`**, **`unstable_stripes`**, etc. stack with **multiply** / **screen** / **add** / **normal** over an opaque base. Extend/retract can use **`-1`** to match ignition/retraction soundfont length. See **blade_styles_config.md**, **README_blade_styles_config.md**, and **sd_config_examples/README.md**. Capstone demo: **`style = config composable_checklist`**. Shipped recipes include **`[sine_waves_cyan]`**, **`[smoke_laser]`**, **`[smoke_sine_cyan]`**, texture demos **`[demo_sine_waves]`** … **`[demo_chirp]`**, **`[smoke_blade]`**, **`[composable_rainbow]`**, **`[solid_lava]`**, Fett263 bases **`[water_blade]`**, **`[fallen_order_blade]`**, and others in **`sd_config_examples/config/blade_styles.ini`**.
 
 **Edit Mode vs layer stacks:** Fett263 Edit Mode and OS8 **`MENU_SPEC_TEMPLATE`** menus read and write **only each preset’s `style=` line** (via **`style_parser.SetArgument`**), then save **`presets.ini`**. They do **not** edit **`blade_styles.ini`** or individual **`layer =`** rows. **`style = config section base=magenta`** is the on-saber-friendly recolor path (override tokens); full layer editing is SD card or the LayerBlade editor. Full write-up: **README_blade_styles_config.md** (*Edit Mode and on-saber menus vs layer stacks*).
 
@@ -102,7 +102,7 @@ The other config files use very little RAM: **board.ini** / **features.ini** onl
 
 ## Example `config/presets.ini`
 
-Minimal excerpt ( **`NUM_BLADES` 4** in **`config/config-files-config.h`** — four `style=` lines per preset; see **`examples/config/presets.ini`** for the full list):
+Minimal excerpt ( **`NUM_BLADES` 4** in **`config/config-files-config.h`** — four `style=` lines per preset; see **`sd_config_examples/config/presets.ini`** for the full list):
 
 ```
 new_preset

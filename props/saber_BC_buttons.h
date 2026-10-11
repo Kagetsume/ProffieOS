@@ -1097,7 +1097,7 @@ push                    - force push
 #define PROPS_SABER_BC_BUTTONS_H
 
 #include "prop_base.h"
-#include "../common/board_config_file.h"
+#include "../common/sd_config/board_config_file.h"
 #include "../sound/hybrid_font.h"
 #include "../sound/sound_library.h"
 #include "../modes/select_cancel_mode.h"

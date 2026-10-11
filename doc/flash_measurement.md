@@ -57,4 +57,4 @@ Record baseline **Sketch uses** bytes, rebuild, compare (e.g. baseline 409480).
 
 ## Optional help text (`ENABLE_CONFIG_FILE_HELP_TEXT`)
 
-Named-style catalog blurbs and `describe_named_style` text are **off by default**. Define **`ENABLE_CONFIG_FILE_HELP_TEXT`** in **`CONFIG_TOP`** to compile them; see **`common/help_text.h`**. Compare sketch size before/after — expect on the order of **~15–25 KB** saved when off (profile-dependent).
+Named-style catalog blurbs and `describe_named_style` text are **off by default**. Define **`ENABLE_CONFIG_FILE_HELP_TEXT`** in **`CONFIG_TOP`** to compile them; see **`common/sd_config/help_text.h`**. Compare sketch size before/after — expect on the order of **~15–25 KB** saved when off (profile-dependent).

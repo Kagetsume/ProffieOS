@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "../../common/arg_parser.h"
 #include "../../common/math.h"
-#include "../../common/opacity_scale.h"
+#include "../../common/sd_config/opacity_scale.h"
 #include "../../common/sin_table.h"
 #include "../blade_style.h"
 #include "../style_ptr.h"

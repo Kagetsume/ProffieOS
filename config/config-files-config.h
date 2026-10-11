@@ -4,7 +4,7 @@
  * In ProffieOS.ino, use exactly one CONFIG_FILE line, for example:
  *   #define CONFIG_FILE "config/config-files-config.h"
  *
- * Copy the example INIs from examples/config/ on the repo to your SD card as:
+ * Copy the example INIs from sd_config_examples/config/ on the repo to your SD card as:
  *   config/presets.ini
  *   config/blades.ini
  *   config/board.ini
@@ -12,7 +12,7 @@
  *   config/blade_styles.ini
  *   (and config/blade_styles/*.ini if you use include = there)
  *
- * Behavior (requires ENABLE_SD_CONFIG_FILES in CONFIG_TOP — see common/sd_config_files.h):
+ * Behavior (requires ENABLE_SD_CONFIG_FILES in CONFIG_TOP — see common/sd_config/sd_config_files.h):
  * - If config/presets.ini is present and parses, it replaces the compiled preset list below.
  * - config/blades.ini, board.ini, features.ini, blade_styles.ini are read when present (see doc/).
  * - Hardware/pin map still comes from proffieboard_v3_config.h + this file's CONFIG_TOP.
@@ -26,7 +26,7 @@
  * Blade 2 — simple accent on Free1 (blade5Pin), accent_pulse 1500.
  * Blade 3 — simple accent on Free2 (blade6Pin), accent_sound_on (motor while audio plays).
  * Blade 4 — simple accent on Free3 (blade7Pin), accent_glow.
- * Simple accents can be defined in config/blades.ini with type=simple (see examples/config/blades.ini).
+ * Simple accents can be defined in config/blades.ini with type=simple (see sd_config_examples/config/blades.ini).
  */
 
 #ifdef CONFIG_TOP
@@ -45,7 +45,7 @@ const unsigned int maxLedsPerStrip = 144;
 #define MOUNT_SD_ALWAYS_ON
 #define ENABLE_SERIAL
 
-// SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config_files.h.
+// SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config/sd_config_files.h.
 #define ENABLE_SD_CONFIG_FILES
 // Optional: named_styles[] English blurbs + serial describe_named_style prose (~15–25 KB flash).
 // Style parsing and list_named_styles work either way. Uncomment only if you want PC/serial docs in firmware:

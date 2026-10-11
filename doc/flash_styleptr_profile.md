@@ -86,7 +86,7 @@ Uses `InOutHelperX<Layers<…, SimpleClashL, LockupL, BlastL>>` instead of neste
 2. **Wipe / sputter:** `preon_wipe`, `postoff_wipe`, `preon_sputter`, `postoff_sputter` — two transition templates × two effects.
 3. **Heavy one-offs:** `blast_wave_random`, `ignition_flash` — keep as `StylePtr` or separate factories.
 
-**Rough savings:** ~1–3 KB if glow cluster + wipe/sputter are shared. **Priority:** medium (examples: ~14 preon/ignition/force layer lines in `examples/config/blade_styles.ini`; glow cluster is the best ROI).
+**Rough savings:** ~1–3 KB if glow cluster + wipe/sputter are shared. **Priority:** medium (examples: ~14 preon/ignition/force layer lines in `sd_config_examples/config/blade_styles.ini`; glow cluster is the best ROI).
 
 ---
 

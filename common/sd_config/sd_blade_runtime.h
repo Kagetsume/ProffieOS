@@ -1,0 +1,152 @@
+#ifndef COMMON_SD_BLADE_RUNTIME_H
+#define COMMON_SD_BLADE_RUNTIME_H
+
+// SD blade config runtime: create BladeBase instances from config/blades.ini
+// and a BladeConfig that uses them. Include from ProffieOS.ino after CONFIG_PROP.
+// Full implementation on ENABLE_SD + ARDUINO_ARCH_STM32L4 (Proffieboard).
+
+#ifdef ENABLE_SD
+
+#if defined(ENABLE_SD_CONFIG_FILES) && defined(ARDUINO_ARCH_STM32L4)
+
+#include "blade_config_file.h"
+#include "../../blades/runtime_simple_blade.h"
+#include "../onceperblade.h"
+
+static BladeConfig sd_blade_config;
+static BladeBase* sd_blade_ptrs[SD_MAX_BLADE_DEFS];
+static bool sd_blade_config_has_blades = false;
+
+#ifdef ENABLE_WS2811
+#include "../../blades/sub_blade.h"
+static RuntimePowerPins sd_runtime_power[SD_MAX_BLADE_DEFS];
+alignas(WS2811PinBase<Color8::GRB>) static uint8_t sd_pin_storage[SD_MAX_BLADE_DEFS][sizeof(WS2811PinBase<Color8::GRB>)];
+alignas(WS2811_Blade) static uint8_t sd_blade_storage[SD_MAX_BLADE_DEFS][sizeof(WS2811_Blade)];
+#endif
+
+alignas(RuntimeSimple_Blade) static uint8_t sd_simple_blade_storage[SD_MAX_BLADE_DEFS][sizeof(RuntimeSimple_Blade)];
+
+static void SetSDBladeConfigBlade(int n, BladeBase* b) {
+#define SET_SD_BLADE(N) case N: sd_blade_config.blade##N = b; break;
+  switch (n) {
+    ONCEPERBLADE(SET_SD_BLADE);
+    default: break;
+  }
+#undef SET_SD_BLADE
+}
+
+static BladeBase* CreateSDSimpleBlade(int bi, SDBladeDef& d) {
+  FinalizeSDBladeDef(d);
+  int pins[SD_MAX_SIMPLE_PINS];
+  uint8_t leds[SD_MAX_SIMPLE_PINS];
+  bool active_high[SD_MAX_SIMPLE_PINS];
+  for (int i = 0; i < SD_MAX_SIMPLE_PINS; i++) {
+    pins[i] = d.simple_pin[i];
+    leds[i] = (uint8_t)d.simple_led[i];
+    active_high[i] = d.simple_active_high[i];
+  }
+  RuntimeSimple_Blade* blade = new (&sd_simple_blade_storage[bi]) RuntimeSimple_Blade();
+  if (!blade->Configure(pins, leds, active_high)) return nullptr;
+  return blade;
+}
+
+#ifdef ENABLE_WS2811
+static BladeBase* CreateSDWS2811Blade(int bi, const SDBladeDef& d) {
+  if (d.data_pin < 0 || d.pixels <= 0 || d.pixels > (int)maxLedsPerStrip) return nullptr;
+  int power_count = 0;
+  while (power_count < SD_MAX_POWER_PINS_PER_BLADE && d.power_pin[power_count] >= 0) power_count++;
+  sd_runtime_power[bi].SetPins(d.power_pin, power_count > 0 ? power_count : 0);
+  WS2811PinBase<Color8::GRB>* pin = new (&sd_pin_storage[bi]) WS2811PinBase<Color8::GRB>(
+      (int)d.pixels, (int8_t)d.data_pin, 800000, 300, 294, 892);
+  WS2811_Blade* blade = new (&sd_blade_storage[bi]) WS2811_Blade(
+      pin, &sd_runtime_power[bi], 3000);
+  BladeBase* result = blade;
+  if (d.sub_blade_count > 0) {
+    for (int j = 0; j < d.sub_blade_count; j++) {
+      int first = d.sub_blade_first[j];
+      int last = d.sub_blade_last[j];
+      if (first < 0 || last < first || last >= (int)d.pixels) continue;
+      result = SubBlade(first, last, (j == 0) ? result : nullptr);
+      if (!result) break;
+    }
+  }
+  return result;
+}
+#endif
+
+void InitSDBladeConfig() {
+  sd_blade_config_has_blades = false;
+  if (!UseBladeConfigFile() || sd_blade_def_count == 0) return;
+  for (size_t i = 0; i < SD_MAX_BLADE_DEFS; i++) sd_blade_ptrs[i] = nullptr;
+  for (int bi = 0; bi < (int)NUM_BLADES && bi < (int)SD_MAX_BLADE_DEFS; bi++) {
+    if (bi >= (int)sd_blade_def_count) continue;
+    SDBladeDef& d = sd_blade_defs[bi];
+    FinalizeSDBladeDef(d);
+    BladeBase* result = nullptr;
+    if (d.driver == SD_BLADE_DRIVER_SIMPLE) {
+      result = CreateSDSimpleBlade(bi, d);
+    }
+#ifdef ENABLE_WS2811
+    else {
+      result = CreateSDWS2811Blade(bi, d);
+    }
+#endif
+    if (result) {
+      sd_blade_ptrs[bi] = result;
+      sd_blade_config_has_blades = true;
+    }
+  }
+  // blades.ini must use blade=0 for the main strip. If index 0 is empty but index 1 is a
+  // NeoPixel strip (common 1-based copy mistake), shift drivers down so blade1 is not null
+  // and we do not also map compiled NeoPixel onto blade1 (same pins, dark/garbled strip).
+  if (!sd_blade_ptrs[0] && sd_blade_def_count > 1 &&
+      SDBladeDefIsPopulated(sd_blade_defs[1]) &&
+      sd_blade_defs[1].driver != SD_BLADE_DRIVER_SIMPLE) {
+    int dst = 0;
+    for (int src = 1; src < (int)SD_MAX_BLADE_DEFS && dst < (int)NUM_BLADES; src++) {
+      if (!sd_blade_ptrs[src]) continue;
+      if (dst != src) {
+        sd_blade_ptrs[dst] = sd_blade_ptrs[src];
+        sd_blade_ptrs[src] = nullptr;
+      }
+      dst++;
+    }
+    for (int clear = dst; clear < (int)SD_MAX_BLADE_DEFS; clear++)
+      sd_blade_ptrs[clear] = nullptr;
+    PVLOG_STATUS << "SD blade config: shifted 1-based blade indices to start at blade 0\n";
+  }
+  sd_blade_config.ohm = (NELEM(blades) > 0) ? blades[0].ohm : 0;
+  sd_blade_config.presets = (NELEM(blades) > 0) ? blades[0].presets : nullptr;
+  sd_blade_config.num_presets = (NELEM(blades) > 0) ? blades[0].num_presets : 0;
+  sd_blade_config.save_dir = (NELEM(blades) > 0) ? blades[0].save_dir : nullptr;
+  sd_blade_config_has_blades = false;
+  for (int nn = 1; nn <= NUM_BLADES; nn++) {
+    BladeBase* b = sd_blade_ptrs[nn - 1];
+#if NUM_BLADES > 0
+    // Omit a blade index from blades.ini to keep the compiled driver for that blade.
+    if (!b && NELEM(blades) > 0) {
+#define COMPILED_BLADE_FALLBACK(N) if (nn == N && blades[0].blade##N) b = blades[0].blade##N;
+      ONCEPERBLADE(COMPILED_BLADE_FALLBACK);
+#undef COMPILED_BLADE_FALLBACK
+    }
+#endif
+    SetSDBladeConfigBlade(nn, b);
+    if (b) sd_blade_config_has_blades = true;
+  }
+}
+
+BladeConfig* GetSDBladeConfig() {
+  if (!UseBladeConfigFile() || !sd_blade_config_has_blades) return nullptr;
+  // Main strip must be blade slot 1; otherwise use compiled blades[] (avoid null strip + mixed drivers).
+  if (!sd_blade_config.blade1) return nullptr;
+  return &sd_blade_config;
+}
+
+#else  // no SD config files and/or not STM32
+void InitSDBladeConfig() {}
+BladeConfig* GetSDBladeConfig() { return nullptr; }
+#endif
+
+#endif  // ENABLE_SD
+
+#endif  // COMMON_SD_BLADE_RUNTIME_H

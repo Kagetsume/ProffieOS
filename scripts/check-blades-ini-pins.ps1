@@ -12,7 +12,7 @@ $PinFieldPattern = '^(data_pin|power_pin\d*|pin\d+)\s*=\s*(\S+)\s*$'
 $NumericValuePattern = '^-?\d+$'
 
 $files = @(
-  Get-ChildItem -Path 'examples' -Recurse -Filter 'blades.ini' -File -ErrorAction SilentlyContinue
+  Get-ChildItem -Path 'sd_config_examples' -Recurse -Filter 'blades.ini' -File -ErrorAction SilentlyContinue
 ) | ForEach-Object { $_.FullName.Substring($Root.Length + 1) -replace '\\', '/' }
 
 $errors = @()
@@ -37,8 +37,8 @@ if ($errors.Count -eq 0) {
   exit 0
 }
 
-Write-Host 'ERROR: numeric pin values in blades.ini (forbidden in examples/bladepacks):' -ForegroundColor Red
+Write-Host 'ERROR: numeric pin values in blades.ini (forbidden in sd_config_examples/bladepacks):' -ForegroundColor Red
 $errors | ForEach-Object { Write-Host "  $_" }
 Write-Host ''
-Write-Host 'Use SaberPins names from common/blade_config_pin_names.h / doc/pin_reference.md.'
+Write-Host 'Use SaberPins names from common/sd_config/blade_config_pin_names.h / doc/pin_reference.md.'
 exit 1

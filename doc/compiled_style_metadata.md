@@ -18,7 +18,7 @@ From the comment block, the parser fills a **CompiledStyleMetadata** struct:
 - **multi_phase** — `true` if any line contains "Multi Phase".
 - **effects_section** — The block of text from "--Effects Included--" (or "Effects Included") to the end of the comment (effect names and descriptions, e.g. "Blast Effect: Blast Wave (Random) [Color: BlastColorArg]").
 
-## API (common/compiled_style_metadata.h)
+## API (common/sd_config/compiled_style_metadata.h)
 
 - **GetCompiledStyleComment(full_definition, comment_out, comment_max)**  
   Extracts the text between `/*` and `*/` into `comment_out`. Returns length or 0.
@@ -77,7 +77,7 @@ To **run** a style on the saber, use a preset style string (e.g. `rainbow 300 80
 
 ## Converter: compiled style → config/blade_styles.ini
 
-A separate header **`common/compiled_style_to_config.h`** converts the parsed comment metadata into the **config blade style** format (the same format as **`config/blade_styles.ini`**): `[section_name]` and `layer = <style string>` lines.
+A separate header **`common/sd_config/compiled_style_to_config.h`** converts the parsed comment metadata into the **config blade style** format (the same format as **`config/blade_styles.ini`**): `[section_name]` and `layer = <style string>` lines.
 
 - **ConvertCompiledStyleToConfigBladeStyle(meta, out_buf, out_max)**  
   Takes a filled **CompiledStyleMetadata** and writes an INI block into `out_buf` (e.g. `# Converted from compiled style\n[customblade]\nlayer = rainbow 300 800\nlayer = blast white\n`). Returns length written.
@@ -96,7 +96,7 @@ A separate header **`common/compiled_style_to_config.h`** converts the parsed co
 
 The C++ template is not parsed, so exact colors/timings are not available; the output is an approximation you can paste into **`config/blade_styles.ini`** and then edit. Use in presets as **`config <section_name>`** (e.g. `config customblade`).
 
-**Composable alternatives:** Converted output tends toward monolithic bases (`rainbow`, `standard`, `fire`). For finer control, replace the base with **`solid`** and add composable overlay layers (`real_clash`, `blast_wave_random`, `responsive_lockup`, …) and texture layers (`gradient_layer`, `audio_layer`, OS7 **`*_layer`**, …). See **`[composable_checklist]`** in **`examples/config/blade_styles.ini`** and **`examples/README.md`** for the current layer inventory.
+**Composable alternatives:** Converted output tends toward monolithic bases (`rainbow`, `standard`, `fire`). For finer control, replace the base with **`solid`** and add composable overlay layers (`real_clash`, `blast_wave_random`, `responsive_lockup`, …) and texture layers (`gradient_layer`, `audio_layer`, OS7 **`*_layer`**, …). See **`[composable_checklist]`** in **`sd_config_examples/config/blade_styles.ini`** and **`sd_config_examples/README.md`** for the current layer inventory.
 
 ## Hardening (malformed input)
 
