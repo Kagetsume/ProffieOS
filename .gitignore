@@ -1,21 +1,5 @@
 # ProffieOS — generated / local artifacts
 
-# Dependencies (npm) — LayerBlade lives in a separate repo; ignore stray local trees
-**/node_modules/
-website/
-desktop/
-
-# Tooling caches
-.vite/
-.vitest/
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
 # OS junk
 .DS_Store
 Thumbs.db
