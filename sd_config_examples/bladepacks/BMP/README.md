@@ -55,6 +55,7 @@ Layer stack: **`strip_column`** `cyan-plasma.bmp` → **four-slot `sine_waves`**
 - **Size:** **144 × 72** px (width × height) or **144 × 90** for a longer loop.
 - **Look:** Flames **travel toward the tip** each frame (loop seamlessly if you can). Dark/red core near hilt, orange/yellow mid, bright tips. High saturation reads well on NeoPixels.
 - **Motion:** ~2–3 s loop at **30 fps** → 60–90 frames.
+- **Wipe:** `transition = flame` with yellow streaks. The column is the lit blade. The flame shape is the ignition and retraction.
 
 ### 2. `lightning-column.bmp` — LightningColumn (included)
 

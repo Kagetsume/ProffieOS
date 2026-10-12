@@ -26,7 +26,7 @@ Same as OST: see `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pi
 | Starkiller | `eu_starkiller` | Force Unleashed: dodger blue with white lightning crackle |
 | CalKestis | `eu_fallen_order` | Fallen Order stripes; default **cyan** |
 | AhsokaPadawan | `eu_ahsoka_padawan` | Clone Wars green padawan saber; swing shimmer |
-| AhsokaWhite | `eu_ahsoka_white` | Later white blades (one NeoPixel showing that color); slow pulse |
+| AhsokaWhite | `eu_ahsoka_white` | Later white blades; brightness pulse of +/- 40% over 2.4 s |
 | MorganElsbeth | `eu_blade_of_talzin` | Blade of Talzin: green Nightsister fire over a black core |
 | BaylanSkoll | `eu_baylan_skoll` | Weathered **darkorange** saber from *Ahsoka* |
 | NomiSunrider | `eu_nomi_sunrider` | Teal **aquamarine** + drifting pulsing bands (Legends) |
@@ -34,7 +34,7 @@ Same as OST: see `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pi
 | RevanPurple | `eu_revan_purple` | KOTOR purple saber; **violentviolet** so it stays blue-violet |
 | RevanRed | `eu_revan_red` | Darth Revan's red saber |
 | UnstableBlades | `eu_unstable_blades` | OS7 stripe unstable (≠ Kylo `unstable`) |
-| PowerWave | `eu_power_wave` | Wide slow silver bands |
+| PowerWave | `eu_power_wave` | Wide slow green bands, Death Star beam |
 | StaticCharge | `eu_static_electricity` | Swing charge / clash reset |
 | WaterBlade | `eu_water_flow` | Angle-reactive flow |
 
@@ -48,7 +48,7 @@ All OS7 sections follow the same composable pattern: **`solid`** + **`*_layer`**
 - **`eu_starkiller`** — dodger-blue core. White lightning is screened over it, so the flashes add light instead of only darkening the blade.
 - **`eu_baylan_skoll`** — `darkorange` (255, 68, 0) with a light swing shimmer. Brighter `orange` (255, 128, 0) is the clean Jedi read.
 - **`eu_ahsoka_padawan`** — green, with swing shimmer.
-- **`eu_ahsoka_white`** — white, with a slow brightness pulse.
+- **`eu_ahsoka_white`** — white, with `pulse_layer 2400 40` so the blade dips and rises enough to see.
 - **`eu_blade_of_talzin`** — Morgan Elsbeth's green fire sword. `fire_mask` and `responsive_flame_layer` are screened over black.
 - **`eu_revan_purple`** — Revan's purple saber. `violentviolet` (55, 0, 255) keeps the red channel low so the blade stays purple.
 - **`eu_revan_red`** — Darth Revan's red saber. Same swing shimmer as the purple.

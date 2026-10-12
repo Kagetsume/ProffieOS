@@ -19,12 +19,15 @@
 #include "../../functions/swing_speed.h"
 #include "../../functions/int.h"
 
+// OS7 used widths of 10000–20000. On a 144-pixel blade that is about one
+// band, so the blade reads as a solid color. These stay in that angle
+// pattern at a quarter of the width, with darker gaps and a light crest.
 template<class BASE_COLOR>
 using WaterFlowStripesBase = StripesX<
   Scale<
     IsLessThan<BladeAngle<>, Int<16384>>,
-    Scale<BladeAngle<>, Int<20000>, Int<10000>>,
-    Scale<BladeAngle<>, Int<10000>, Int<20000>>
+    Scale<BladeAngle<>, Int<5000>, Int<2500>>,
+    Scale<BladeAngle<>, Int<2500>, Int<5000>>
   >,
   Scale<
     BladeAngle<>,
@@ -43,10 +46,10 @@ using WaterFlowStripesBase = StripesX<
     >
   >,
   BASE_COLOR,
-  Mix<Int<16384>, Black, BASE_COLOR>,
-  Mix<Int<10280>, Black, BASE_COLOR>,
-  Mix<Int<25700>, Black, BASE_COLOR>,
-  Mix<Int<7710>, Black, BASE_COLOR>
+  Mix<Int<2000>, Black, BASE_COLOR>,
+  Mix<Int<4500>, BASE_COLOR, White>,
+  Mix<Int<7000>, Black, BASE_COLOR>,
+  Mix<Int<1200>, Black, BASE_COLOR>
 >;
 
 #endif

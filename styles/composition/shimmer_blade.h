@@ -41,18 +41,24 @@ template<class BASE_COLOR>
 using ShimmerBladeStripes = StripesX<
   Int<16000>,
   ShimmerBladeStripeSpeed,
-  Mix<Int<24576>, Black, BASE_COLOR>,
+  Mix<Int<4096>, Black, BASE_COLOR>,
   BASE_COLOR,
-  Mix<Int<8192>, Black, BASE_COLOR>>;
+  Mix<Int<12288>, Black, BASE_COLOR>>;
 
 template<class BASE_COLOR>
 using ShimmerBladeShimmer = RandomFlicker<
   ShimmerBladeDimBase<BASE_COLOR>,
   ShimmerBladeStripes<BASE_COLOR>>;
 
+// Idle keeps half the stripe shimmer. A hard swing raises it to the full mix.
+using ShimmerBladeAmount = Scale<
+  ShimmerBladeSwingPeak,
+  Int<16384>,
+  Int<32768>>;
+
 template<class BASE_COLOR>
 using ShimmerBladeBase = Mix<
-  ShimmerBladeSwingPeak,
+  ShimmerBladeAmount,
   ShimmerBladeDimBase<BASE_COLOR>,
   ShimmerBladeShimmer<BASE_COLOR>>;
 
