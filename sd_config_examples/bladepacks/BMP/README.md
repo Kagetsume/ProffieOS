@@ -20,7 +20,7 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, **`strip_column`** a
 | CyanPlasma | `bmp_gallery_cyan_plasma` | `animations/cyan-plasma.bmp` | **Included** (+ sine multiply) |
 | TigerSwirl | `bmp_gallery_tiger` | `animations/tiger-swirl-darkorange.bmp` | **Included** |
 | FireColumn | `bmp_gallery_fire` | `animations/fire-column-loop.bmp` | **You provide** |
-| LightningColumn | `bmp_gallery_lightning` | `animations/lightning-column.bmp` | **You provide** |
+| LightningColumn | `bmp_gallery_lightning` | `animations/lightning-column.bmp` plus strike / drain wipes | **Included** |
 | NebulaDrift | `bmp_gallery_nebula` | `animations/nebula-drift.bmp` | **You provide** |
 | CyanMaskOverlay | `bmp_gallery_cyan_mask` | `solid` **cyan** + mask BMP (see section) | **Included** |
 | CrazyBlade | `bmp_gallery_crazy_blade` | `cyan-plasma.bmp` + procedural overlays | **Included** |
@@ -56,11 +56,11 @@ Layer stack: **`strip_column`** `cyan-plasma.bmp` → **four-slot `sine_waves`**
 - **Look:** Flames **travel toward the tip** each frame (loop seamlessly if you can). Dark/red core near hilt, orange/yellow mid, bright tips. High saturation reads well on NeoPixels.
 - **Motion:** ~2–3 s loop at **30 fps** → 60–90 frames.
 
-### 2. `lightning-column.bmp` — LightningColumn
+### 2. `lightning-column.bmp` — LightningColumn (included)
 
-- **Size:** **144 × 48** to **144 × 60**.
-- **Look:** **Dark blue–black** background; **white / cyan** bolt paths along the blade length. Frames should **jump or crawl** so motion feels electric, not smooth lava.
-- **Contrast:** Strong bright-on-dark (strip_column gamma helps; avoid mid-gray mush).
+- **Size:** **144 × 60**. Dark blue–black with white / cyan bolts.
+- **Ignition:** `animations/lightning-strike.bmp` (**144 × 40**). Grayscale mask. Row 0 is a short bolt at the hilt with a white trail behind it and forks ahead. The last row is solid white so the idle loop is fully visible once the blade is on.
+- **Retraction:** `animations/lightning-drain.bmp` (**144 × 40**). The firmware plays this file backward, so the last row is solid white and row 0 is solid black. The lit region is broken by black gaps, and sparks scatter well past the bolt toward the tip. About 20% of its pixels differ from the strike map.
 
 ### 3. `nebula-drift.bmp` — NebulaDrift
 

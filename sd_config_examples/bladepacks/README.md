@@ -33,6 +33,7 @@ Extended Universe uses the same idea with more idle variants (`eu_fallen_order`,
 | **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo crackle) | `unstable_layer` + composable overlays |
 | **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid` + `*_layer` + Real Clash stack |
 | **[BMP](BMP/)** | **SD flipbook bases** — same combat, swap `strip_column` art (3 BMPs ship; 3 specs in README) | `strip_column` + Real Clash stack |
+| **[Custom](Custom/)** | Non-canon behaviors: sputter, flame wipe, tip ignition, center burst, hum glow, gradient | `transition` words, `audio_layer`, `gradient_layer` |
 
 Nothing stops you from mixing: e.g. **`ost_classic`** combat with **`eu_darksaber`** idle, or a **`strip_column`** BMP base from the main config catalog under any pack’s preset.
 
@@ -65,7 +66,7 @@ Same idea without BMP: `solid` + OS7 `*_layer` + crackle multiply + rainbow tint
 ## Ideas for future packs (not shipped yet)
 
 - **Procedural playground** — sine/saw/noise/moire multiply masks over `solid` (see main `[demo_*]` sections).
-- **Accent-forward** — preon/postoff/ignition_flash recipes with minimal main blade.
+- **More preon/postoff** — `preon_glow`, `preon_wipe`, `postoff_glow`, and `postoff_wipe` are in the main catalog. **[Custom](Custom/)** ships the sputter pair.
 - **Wild / non-canon** — see **`[wild_bmp_crackle_rainbow]`**, `chaos_inferno`, multi-mask stacks; label clearly as experimental.
 
 When adding a pack, keep **sections short**, **comment the “why”**, and prefer **layer-first** recipes so flash stays in firmware once, creativity stays on SD.

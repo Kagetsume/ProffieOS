@@ -243,26 +243,45 @@ Sample card layouts, bladepacks, and the printed guides live in `sd_config_examp
 | `sd_config_examples/bladepacks/OST-Pulsing/font/TempleGuard/font.wav` | Short voice prompt. |
 | `sd_config_examples/bladepacks/OST-Pulsing/font/Vader/font.wav` | Short voice prompt. |
 | `sd_config_examples/bladepacks/OST-Pulsing/font/Windu/font.wav` | Short voice prompt. |
+| `sd_config_examples/bladepacks/Custom/README.md` | Worn aquamarine saber with preon and postoff sputter. |
+| `sd_config_examples/bladepacks/Custom/config/presets.ini` | Custom pack preset list. |
+| `sd_config_examples/bladepacks/Custom/config/blades.ini` | Custom pack blade wiring. |
+| `sd_config_examples/bladepacks/Custom/config/blade_styles.ini` | Worn aquamarine layer recipe. |
+| `sd_config_examples/bladepacks/Custom/font/README.md` | Expected soundfonts, including preon and pstoff. |
+| `sd_config_examples/bladepacks/Custom/font/CenterBurst/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/Custom/font/CrystalGradient/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/Custom/font/FlameWipe/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/Custom/font/HumGlow/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/Custom/font/TipIgnite/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/Custom/font/WornAquamarine/font.wav` | Short voice prompt for that font folder. |
 | `sd_config_examples/bladepacks/FirstOrder/README.md` | Kylo / unstable-layer pack. |
 | `sd_config_examples/bladepacks/FirstOrder/config/presets.ini` | First Order preset list. |
 | `sd_config_examples/bladepacks/FirstOrder/config/blades.ini` | First Order blade wiring. |
 | `sd_config_examples/bladepacks/FirstOrder/config/blade_styles.ini` | First Order layer recipe. |
 | `sd_config_examples/bladepacks/FirstOrder/font/README.md` | Expected soundfonts. |
-| `sd_config_examples/bladepacks/FirstOrder/font/KyloRen/.gitkeep` | Placeholder for the Kylo Ren font folder. |
+| `sd_config_examples/bladepacks/FirstOrder/font/KyloRen/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/FirstOrder/font/Rey/font.wav` | Short voice prompt for that font folder. |
 | `sd_config_examples/bladepacks/ExtendedUniverse/README.md` | Darksaber, water, static, power-wave, and related OS7 bases. |
 | `sd_config_examples/bladepacks/ExtendedUniverse/config/presets.ini` | Extended Universe preset list. |
 | `sd_config_examples/bladepacks/ExtendedUniverse/config/blades.ini` | Extended Universe blade wiring. |
 | `sd_config_examples/bladepacks/ExtendedUniverse/config/blade_styles.ini` | Extended Universe layer recipes. |
 | `sd_config_examples/bladepacks/ExtendedUniverse/font/README.md` | Expected soundfonts. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/CalKestis/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/DarkSaber/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/EUCrackle/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/MaraJade/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/NomiSunrider/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/PowerWave/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/StaticCharge/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/UnstableBlades/.gitkeep` | Placeholder font folder. |
-| `sd_config_examples/bladepacks/ExtendedUniverse/font/WaterBlade/.gitkeep` | Placeholder font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/AhsokaPadawan/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/AhsokaWhite/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/BaylanSkoll/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/CalKestis/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/DarkSaber/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/EUCrackle/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/MaraJade/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/MorganElsbeth/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/NomiSunrider/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/PowerWave/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/RevanPurple/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/RevanRed/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/Starkiller/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/StaticCharge/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/UnstableBlades/font.wav` | Short voice prompt for that font folder. |
+| `sd_config_examples/bladepacks/ExtendedUniverse/font/WaterBlade/font.wav` | Short voice prompt for that font folder. |
 | `sd_config_examples/bladepacks/BMP/README.md` | Strip-column and BMP-wipe pack. |
 | `sd_config_examples/bladepacks/BMP/config/presets.ini` | BMP-pack preset list. |
 | `sd_config_examples/bladepacks/BMP/config/blades.ini` | BMP-pack blade wiring. |
@@ -273,6 +292,8 @@ Sample card layouts, bladepacks, and the printed guides live in `sd_config_examp
 | `sd_config_examples/bladepacks/BMP/animations/fire-column.bmp` | Column animation. |
 | `sd_config_examples/bladepacks/BMP/animations/ignition-retraction-plasma-map.bmp` | BMP wipe map (white lit, black covered). |
 | `sd_config_examples/bladepacks/BMP/animations/lightning-column.bmp` | Column animation. |
+| `sd_config_examples/bladepacks/BMP/animations/lightning-drain.bmp` | Lightning retraction mask. Last row is lit; row 0 is black. Played backward. |
+| `sd_config_examples/bladepacks/BMP/animations/lightning-strike.bmp` | Lightning ignition mask. Bolt runs from the hilt to a fully open last row. |
 | `sd_config_examples/bladepacks/BMP/animations/nebula-drift.bmp` | Column animation. |
 | `sd_config_examples/bladepacks/BMP/animations/plasma-opacity-mask.bmp` | Grayscale multiply mask. |
 | `sd_config_examples/bladepacks/BMP/animations/plasma.bmp` | Column animation. |
