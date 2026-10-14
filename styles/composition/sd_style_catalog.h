@@ -56,6 +56,9 @@ inline bool TryParseConfigLayerLine(const char* layer_line,
   } else if (FirstWord(p, "hue")) {
     blend = CONFIG_LAYER_BLEND_HUE;
     p = SkipWord(p);
+  } else if (FirstWord(p, "warm")) {
+    blend = CONFIG_LAYER_BLEND_WARM;
+    p = SkipWord(p);
   }
   const char* parse_from = p;
   if (FirstWord(p, "opacity")) {
@@ -81,7 +84,7 @@ inline const char* ConfigLayerStyleText(const char* layer_line) {
   if (!layer_line) return layer_line;
   const char* p = layer_line;
   if (FirstWord(p, "multiply") || FirstWord(p, "screen") || FirstWord(p, "add") ||
-      FirstWord(p, "normal") || FirstWord(p, "hue")) {
+      FirstWord(p, "normal") || FirstWord(p, "hue") || FirstWord(p, "warm")) {
     p = SkipWord(p);
   }
   if (FirstWord(p, "opacity")) {
@@ -313,7 +316,7 @@ inline void ConfigStripLegacySmokeInOut(char* line) {
   if (!line || !line[0]) return;
   char* p = line;
   if (FirstWord(p, "multiply") || FirstWord(p, "screen") || FirstWord(p, "add") ||
-      FirstWord(p, "normal") || FirstWord(p, "hue")) {
+      FirstWord(p, "normal") || FirstWord(p, "hue") || FirstWord(p, "warm")) {
     p = (char*)SkipWord(p);
   }
   if (FirstWord(p, "opacity")) {

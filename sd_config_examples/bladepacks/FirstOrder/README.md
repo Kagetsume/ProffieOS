@@ -29,7 +29,7 @@ Crossguard **quillons** need a second LED strip or accent config; this pack targ
 
 ## Wiring
 
-See `config/blades.ini` — **`bladePin`**, **`bladePowerPin1`–`3`**, 144 pixels (same as OST / Extended Universe).
+See `config/blades.ini` — **`bladePin`**, **`bladePowerPin1`–`3`**, 132 pixels (same as OST / Extended Universe).
 
 ## Fonts
 

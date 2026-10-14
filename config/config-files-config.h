@@ -34,7 +34,10 @@
 #define NUM_BLADES 4
 #define NUM_BUTTONS 2
 #define VOLUME 1000
-const unsigned int maxLedsPerStrip = 144;
+// Ceiling for each pixel strip. blades.ini pixels must be <= this.
+// Sub-blades are ranges inside that one strip, so they do not add to the count.
+// Another data pin waits until this strip's frame has been sent.
+const unsigned int maxLedsPerStrip = 200;
 #define CLASH_THRESHOLD_G 1.0
 #define ENABLE_AUDIO
 #define ENABLE_MOTION
@@ -78,7 +81,7 @@ const unsigned int maxLedsPerStrip = 144;
 #define KEEP_SAVEFILES_WHEN_PROGRAMMING
 
 // Compiled blade wiring (blades[] below; WS2811 blades overridden by config/blades.ini on SD):
-//   Blade 1 — 144 px NeoPixel on bladePin, FET bladePowerPin1 + bladePowerPin2 + bladePowerPin3
+//   Blade 1 — NeoPixel on bladePin, length = maxLedsPerStrip, FET bladePowerPin1 + bladePowerPin2 + bladePowerPin3
 //   Blade 2 —  accent on blade5Pin (Free1 / PB3), SimpleBladePtr, accent_pulse 1500
 //   Blade 3 —  accent on blade6Pin (Free2 / PB10), SimpleBladePtr, accent_sound_on
 //   Blade 4 —  accent on blade7Pin (Free3 / PB11), SimpleBladePtr, accent_glow
@@ -170,7 +173,7 @@ Preset presets[] = {
 // Blade 1: NeoPixel strip. Blade 2–4: simple accents on Free1 / Free2 / Free3 (active-high FET gate).
 BladeConfig blades[] = {
  { 0,
-  WS281XBladePtr<144, bladePin, Color8::GRB, PowerPINS<bladePowerPin1, bladePowerPin2, bladePowerPin3> >(),  // blade 1
+  WS281XBladePtr<maxLedsPerStrip, bladePin, Color8::GRB, PowerPINS<bladePowerPin1, bladePowerPin2, bladePowerPin3> >(),  // blade 1
   SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade5Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 2 (Free1)
   SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade6Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 3 (Free2)
   SimpleBladePtr<CreeXPE2White, NoLED, NoLED, NoLED, ActiveHighPIN<blade7Pin>, SimplePin<-1>, SimplePin<-1>, SimplePin<-1> >(),   // blade 4 (Free3)

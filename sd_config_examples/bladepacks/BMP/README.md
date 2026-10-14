@@ -80,7 +80,7 @@ Drop finished files in this pack’s `animations/` folder (and on SD under `anim
 
 ## Wiring
 
-`config/blades.ini`: **`bladePin`**, **`bladePowerPin1`–`3`**, **144** pixels default (see `doc/pin_reference.md`).
+`config/blades.ini`: **`bladePin`**, **`bladePowerPin1`–`3`**, **132** pixels default (see `doc/pin_reference.md`).
 
 ## Forking
 

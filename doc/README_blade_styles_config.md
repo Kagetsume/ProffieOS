@@ -92,11 +92,11 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 **Runtime (firmware):** Layer strings load with the rest of **`blade_styles.ini`** (boot **index**, preset **heap cache** — **sd_style_boot_order.md**). The **`.bmp` file itself** is opened only while the saber is **on** (not at boot). Pixels are **BGR on disk → RGB in RAM**; paths may be **quoted** if they contain spaces. **`strip_column_mask`** shares open/parse/prefetch via **`strip_column_source.h`** and **`StripColumnColumnCache`** in **`strip_column.h`**.
 
-**Why a ring buffer:** SD reads run under **`LOCK_SD`** while styles tick. Blocking the card on every frame would hitch audio and the main loop. Firmware keeps a small **ring of decoded columns** (default **`STRIP_COLUMN_FRAME_RING_SIZE` 6**, **512 B** per slot ≈ **170** RGB pixels) so the playhead can advance while earlier ticks prefetch upcoming frames.
+**Why a ring buffer:** SD reads run under **`LOCK_SD`** while styles tick. Blocking the card on every frame would hitch audio and the main loop. Firmware keeps a small **ring of decoded columns** (default **`STRIP_COLUMN_FRAME_RING_SIZE` 8**, **512 B** per slot ≈ **170** RGB pixels) so the playhead can advance while earlier ticks prefetch upcoming frames.
 
 **Optimized SD reads:** Playback still advances **one BMP frame at a time** (no skipping when SD is slow — motion may lag **`fps`** but should not **jump** frames).
 
-- **`frames_y`:** When buffered-ahead count drops to **`STRIP_COLUMN_Y_AHEAD_WATERMARK`** (default **1**), one seek can load up to **`STRIP_COLUMN_BMP_Y_BULK_ROWS`** (default **4**) upcoming rows via **`StripColumnBmpLoadFramesAlongYBulk`**; non-contiguous rows (loop wrap) fall back to single-frame loads.
+- **`frames_y`:** When buffered-ahead count drops to **`STRIP_COLUMN_Y_AHEAD_WATERMARK`** (default **2**), one seek can load up to **`STRIP_COLUMN_BMP_Y_BULK_ROWS`** (default **4**) upcoming rows via **`StripColumnBmpLoadFramesAlongYBulk`**; non-contiguous rows (loop wrap) fall back to single-frame loads.
 - **`frames_x`:** Each tick loads the next vertical column in slices (**`STRIP_COLUMN_BMP_ROWS_PER_RUN`**, default **24** in **`strip_column.h`**).
 
 Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine **`speed`** to **`0`**, or try a low **`fps`** (e.g. **`2`**) before tuning texture speeds.

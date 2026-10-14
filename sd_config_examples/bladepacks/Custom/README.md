@@ -1,6 +1,6 @@
 # Custom blade pack
 
-Non-canon recipes that the character packs do not cover. Each preset isolates one behavior: a sputtering old crystal, a flame wipe, ignition from the tip, a burst from the middle, a hum-driven blade, and a two-color gradient.
+Non-canon recipes that the character packs do not cover. Each preset isolates one behavior: a worn aquamarine crystal, a flame wipe, ignition from the tip, a burst from the middle, a hum-driven blade, and a two-color gradient.
 
 ## Install on SD card
 
@@ -15,13 +15,13 @@ The sputter layers follow sound files in the font. **`preon_sputter`** tracks th
 
 ## Wiring
 
-See `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pixels default).
+See `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 132 pixels default).
 
 ## Presets
 
 | Name | Style section | Notes |
 |------|---------------|--------|
-| WornAquamarine | `custom_worn_aquamarine` | Aquamarine beam, idle flicker, preon and postoff sputter |
+| WornAquamarine | `custom_worn_aquamarine` | Aquamarine beam, idle flicker, unstable tip, lockup heat, clash scar, preon and postoff sputter |
 | FlameWipe | `custom_flame_wipe` | Dark-orange beam. `transition = flame` with yellow streaks |
 | TipIgnite | `custom_tip_ignite` | Deep-sky blue. `transition = bend … tip` extends from the tip |
 | CenterBurst | `custom_center_burst` | Violent violet. `transition = explode` with a white spark on both edges |
@@ -32,7 +32,7 @@ See `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 144 pixels default)
 
 ## Style
 
-**`custom_worn_aquamarine`** is **`solid`** aquamarine, then **`per_led_flicker`** and **`noise_flicker`**, then the usual clash, blast, lockup, drag, and melt layers. **`preon_sputter`** and **`postoff_sputter`** are drawn after the wipe. Loud audio pushes the sputter farther from the hilt. Quiet audio pulls it back.
+**`custom_worn_aquamarine`** is **`solid`** aquamarine, then **`per_led_flicker`** and **`noise_flicker`**. **`unstable_tip`** creeps the lit end and tints it white. **`lockup_heat`** shifts the hue toward orange while a lockup is held, up to 60 degrees over 1.2 seconds, then cools back. **`clash_scar`** leaves a white patch where the clash hit and fades it over a second. Then the usual clash, blast, lockup, drag, and melt layers. **`preon_sputter`** and **`postoff_sputter`** are drawn after the wipe. Loud audio pushes the sputter farther from the hilt. Quiet audio pulls it back.
 
 Override the cough color with `style = config custom_worn_aquamarine sputter=white`.
 

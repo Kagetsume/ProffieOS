@@ -30,7 +30,47 @@ enum ConfigLayerBlend : uint8_t {
   // Rotate hue of the straight base color. Overlay red is a RotateColorsX offset
   // (0 = none, 32768 = 360 degrees): angle = (r & 0x7fff) * 3, same as RotateColorsX.
   CONFIG_LAYER_BLEND_HUE = 4,
+  // Move the base hue toward orange by at most the overlay red channel
+  // (same units as hue: 16384 = 180 degrees). Alpha still blends the result.
+  CONFIG_LAYER_BLEND_WARM = 5,
 };
+
+// Hue angle in Color16::rotate units (16384 = 60 degrees, 98304 = 360).
+// Returns -1 when the color has no hue.
+inline int ConfigHueAngle(int r, int g, int b) {
+  int MAX = r;
+  if (g > MAX) MAX = g;
+  if (b > MAX) MAX = b;
+  int MIN = r;
+  if (g < MIN) MIN = g;
+  if (b < MIN) MIN = b;
+  int C = MAX - MIN;
+  if (C == 0) return -1;
+  int H;
+  if (r == MAX) H = 16384 * (g - b) / C;
+  else if (g == MAX) H = 16384 * (b - r) / C + 32768;
+  else H = 16384 * (r - g) / C + 65536;
+  const int FULL = 98304;
+  H %= FULL;
+  if (H < 0) H += FULL;
+  return H;
+}
+
+// Shortest rotation toward orange (30 degrees), capped, as a positive rotate() angle.
+inline int ConfigWarmRotateAngle(int r, int g, int b, int cap_angle) {
+  int H = ConfigHueAngle(r, g, b);
+  if (H < 0 || cap_angle <= 0) return 0;
+  const int FULL = 98304;
+  const int HALF = 49152;
+  const int TARGET = 8192;
+  int delta = TARGET - H;
+  if (delta > HALF) delta -= FULL;
+  if (delta < -HALF) delta += FULL;
+  if (delta > cap_angle) delta = cap_angle;
+  if (delta < -cap_angle) delta = -cap_angle;
+  if (delta < 0) delta += FULL;
+  return delta;
+}
 
 // Combine premultiplied base with straight overlay color using blend mode, then alpha-over (same as <<).
 // Fully transparent overlay must leave base unchanged: base << RGBA_um(alpha=0) still perturbs premultiplied
@@ -40,7 +80,7 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
   if (blend_mode == CONFIG_LAYER_BLEND_NORMAL) return base << over;
   // Hue rotate needs a visible base and a non-zero offset. Zero offset (or no base)
   // leaves the stack unchanged so a trough does not repaint or crush the color.
-  if (blend_mode == CONFIG_LAYER_BLEND_HUE) {
+  if (blend_mode == CONFIG_LAYER_BLEND_HUE || blend_mode == CONFIG_LAYER_BLEND_WARM) {
     if (!base.alpha || !(over.c.r & 0x7fff)) return base;
   }
   // Multiply/screen/hue need a visible base; alpha-over on transparent stack paints masks as
@@ -48,7 +88,8 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
   if (!base.alpha) {
     if (blend_mode == CONFIG_LAYER_BLEND_MULTIPLY ||
         blend_mode == CONFIG_LAYER_BLEND_SCREEN ||
-        blend_mode == CONFIG_LAYER_BLEND_HUE)
+        blend_mode == CONFIG_LAYER_BLEND_HUE ||
+        blend_mode == CONFIG_LAYER_BLEND_WARM)
       return base;
     return base << over;
   }
@@ -86,6 +127,15 @@ inline RGBA CompositeConfigLayer(RGBA base, RGBA_um over, ConfigLayerBlend blend
     case CONFIG_LAYER_BLEND_HUE: {
       // Same angle formula as RotateColorsX in styles/rotate_color.h.
       int angle = (int)((over.c.r & 0x7fff) * 3);
+      Color16 rotated = Color16((uint16_t)br, (uint16_t)bg, (uint16_t)bb).rotate(angle);
+      mr = rotated.r;
+      mg = rotated.g;
+      mb = rotated.b;
+      break;
+    }
+    case CONFIG_LAYER_BLEND_WARM: {
+      int cap = (int)((over.c.r & 0x7fff) * 3);
+      int angle = ConfigWarmRotateAngle((int)br, (int)bg, (int)bb, cap);
       Color16 rotated = Color16((uint16_t)br, (uint16_t)bg, (uint16_t)bb).rotate(angle);
       mr = rotated.r;
       mg = rotated.g;

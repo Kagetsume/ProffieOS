@@ -45,6 +45,7 @@
 #include "../../functions/sound_level.h"
 #include "../../functions/composition/uniform_brightness_overlay.h"
 #include "strip_column_mask.h"
+#include "mark_layers.h"
 // Rolling heat texture (StaticFire — no clash/lockup/off fire configs). Same color args as fire.
 template<class WARM, class HOT>
 using FireMaskLayer = StaticFire<WARM, HOT>;

@@ -58,7 +58,7 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #define STRIP_COLUMN_BMP_ROWS_PER_RUN 24
 #endif
 #ifndef STRIP_COLUMN_FRAME_RING_SIZE
-#define STRIP_COLUMN_FRAME_RING_SIZE 6
+#define STRIP_COLUMN_FRAME_RING_SIZE 8
 #endif
 #if STRIP_COLUMN_FRAME_RING_SIZE < 2
 #error STRIP_COLUMN_FRAME_RING_SIZE must be at least 2
@@ -68,9 +68,9 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #endif
 // frames_y: start the next multi-row read when this many frames, or fewer,
 // are already buffered strictly ahead of the displayed frame. Steady state
-// refills at 1, while the last frame of the previous block is still queued.
+// refills at 2, so one extra frame is still queued while the card read runs.
 #ifndef STRIP_COLUMN_Y_AHEAD_WATERMARK
-#define STRIP_COLUMN_Y_AHEAD_WATERMARK 1
+#define STRIP_COLUMN_Y_AHEAD_WATERMARK 2
 #endif
 // Only if EFFECT_RETRACTION sound_length is 0. Matches this style's default retract_ms.
 #ifndef STRIP_COLUMN_RETRACT_FALLBACK_MS

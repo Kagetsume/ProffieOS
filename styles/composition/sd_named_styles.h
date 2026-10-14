@@ -176,6 +176,26 @@
     StylePtr<ResponsiveLockupL<RgbArg<1, White>> >(),
     NAMED_STYLE_DESC(    "Responsive lockup overlay (localized bump, blade-angle reactive): lockup_color")
   },
+  { "lockup_heat",
+    StylePtr<LockupHeatLayer<IntArg<1, 5461>, IntArg<2, 1200>> >(),
+    NAMED_STYLE_DESC(    "Lockup heat: max_shift ramp_ms (default 5461 1200). While a normal lockup is held, "
+    "hue moves toward orange up to max_shift (16384 = 180 degrees, 32768 = 360) over ramp_ms, then holds. "
+    "Cools back over the same time when the lockup ends. "
+    "Stack: layer = warm opacity 100% lockup_heat 5461 1200")
+  },
+  { "clash_scar",
+    StylePtr<ClashScarLayer<RgbArg<1, White>, IntArg<2, 1000>, IntArg<3, 7000>> >(),
+    NAMED_STYLE_DESC(    "Clash scar: color fade_ms width (default white 1000 7000). "
+    "Bright patch at the clash point that fades. width is 0-32768 along the blade. "
+    "Stack: layer = screen opacity 100% clash_scar white 1000 7000")
+  },
+  { "unstable_tip",
+    StylePtr<UnstableTipLayer<RgbArg<1, White>, IntArg<2, 7000>, IntArg<3, 1100>> >(),
+    NAMED_STYLE_DESC(    "Unstable tip: hot_color depth cycle_ms (default white 7000 1100). "
+    "The lit tip creeps in and out over cycle_ms. The edge tints toward hot_color and pixels past it go dark. "
+    "depth is 0-32768 measured from the tip. "
+    "Stack: layer = normal opacity 100% unstable_tip white 7000 1100")
+  },
   { "sparkle",
     StylePtr<SparkleL<RgbArg<1, White>, 300, 1024> >(),
     NAMED_STYLE_DESC(    "Sparkle overlay layer: sparkle_color (use add/screen blend over a base layer)")

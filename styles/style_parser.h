@@ -172,7 +172,7 @@ NamedStyle named_styles[] = {
 #endif  // DISABLE_BASIC_PARSER_STYLES
 #ifdef ENABLE_SD_CONFIG_FILES
   { "config", &config_style_factory,
-    NAMED_STYLE_DESC(    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add), then optional opacity (55%, 55, or raw >100 up to 32768; 100 = full), then sub-style. Example: layer = multiply opacity 49% strobe black white 15 1 300 800")
+    NAMED_STYLE_DESC(    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add hue warm), then optional opacity (55%, 55, or raw >100 up to 32768; 100 = full), then sub-style. Example: layer = multiply opacity 49% strobe black white 15 1 300 800")
   },
 #endif
   { "builtin", &builtin_preset_allocator,
