@@ -6,17 +6,16 @@
 // Media is a normal 24-bit uncompressed Windows BMP on SD — the same export you get
 // from GIMP or Photoshop (BI_RGB, no RLE, no palette). No custom container format.
 // SD path relative to card root, e.g. animations/plasma.bmp (quote if the path has spaces)
-//   width  = number of animation frames (one vertical column per frame)
-//   height = blade length in pixels (top of image = hilt, bottom = tip)
+//   width  = blade length in pixels (left of a row = hilt)
+//   height = number of animation frames (one horizontal row per frame)
 //
-// source_height in the style args must match the BMP height; if it exceeds the file,
-// rows are clamped and a serial warning is logged. Blade LEDs resample the column
-// with linear RGB interpolation (hilt/tip aligned).
+// source_height in the style args is that width. If it exceeds the file, pixels are
+// clamped and a serial warning is logged. Blade LEDs resample the row with linear
+// RGB interpolation (hilt/tip aligned).
 //
 // Named style: strip_column
-//   strip_column <sd_path> <source_height> <fps> [frames_x|frames_y] [extend_ms] [retract_ms]
-//   frames_y (default): width = blade, height = frame count (e.g. 144×120).
-//   frames_x: width = frame count, height = blade (e.g. 27×144 plasma).
+//   strip_column <sd_path> <source_height> <fps> [frames_y] [extend_ms] [retract_ms]
+//   Optional frames_y / row / rows is accepted and ignored. frames_x is rejected.
 //   extend_ms / retract_ms: use -1 to match ignition / retraction sound length.
 // Example (config layer base):
 //   layer = strip_column animations/cyan-plasma.bmp 144 30 {{ext}} {{ret}}
@@ -54,9 +53,6 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #define LOCK_SD(X) do { (void)(X); } while(0)
 #endif
 
-#ifndef STRIP_COLUMN_BMP_ROWS_PER_RUN
-#define STRIP_COLUMN_BMP_ROWS_PER_RUN 24
-#endif
 #ifndef STRIP_COLUMN_FRAME_RING_SIZE
 #define STRIP_COLUMN_FRAME_RING_SIZE 8
 #endif
@@ -66,7 +62,7 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #ifndef STRIP_COLUMN_TICK_MAX_LOAD_SLICES
 #define STRIP_COLUMN_TICK_MAX_LOAD_SLICES 1
 #endif
-// frames_y: start the next multi-row read when this many frames, or fewer,
+// Start the next multi-row read when this many frames, or fewer,
 // are already buffered strictly ahead of the displayed frame. Steady state
 // refills at 2, so one extra frame is still queued while the card read runs.
 #ifndef STRIP_COLUMN_Y_AHEAD_WATERMARK
@@ -112,16 +108,12 @@ public:
     StripColumnExtractFirstFileArg(path ? path : "", path_, sizeof(path_));
   }
   static const char* Get() { return path_; }
-  static void SetFrameAxis(StripColumnBmpFrameAxis axis) { frame_axis_ = axis; }
-  static StripColumnBmpFrameAxis GetFrameAxis() { return frame_axis_; }
 
 private:
   static char path_[128];
-  static StripColumnBmpFrameAxis frame_axis_;
 };
 
 char StripColumnPath::path_[128] = "";
-StripColumnBmpFrameAxis StripColumnPath::frame_axis_ = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
 
 inline bool StripColumnShouldReleaseMedia(BladeBase* blade) {
   (void)blade;
@@ -218,18 +210,18 @@ public:
     rows_loaded_ = 0;
   }
 
-  bool LoadFrameSlice(FileReader* file, StripColumnBmpInfo* bmp, StripColumnBmpFrameAxis axis,
+  bool LoadFrameSlice(FileReader* file, StripColumnBmpInfo* bmp,
                       int source_height, int buf, uint32_t frame_index) {
-    return AdvanceBmpColumnLoad(file, bmp, axis, source_height, buf, frame_index);
+    return AdvanceBmpColumnLoad(file, bmp, source_height, buf, frame_index);
   }
 
   // Show one absolute frame. Used when a wipe scrubs the file instead of looping.
-  bool ShowFrame(FileReader* file, StripColumnBmpInfo* bmp, StripColumnBmpFrameAxis axis,
+  bool ShowFrame(FileReader* file, StripColumnBmpInfo* bmp,
                  int source_height, uint32_t frame_index) {
     if (!file || !bmp) return false;
     if (frames_[current_].frame == frame_index) return true;
     ClearAllSlots();
-    if (!LoadFrameSlice(file, bmp, axis, source_height, 0, frame_index)) return false;
+    if (!LoadFrameSlice(file, bmp, source_height, 0, frame_index)) return false;
     current_ = 0;
     last_swap_ms_ = millis();
     return frames_[0].frame == frame_index;
@@ -237,9 +229,8 @@ public:
 
   // One animation tick: swap when ready, then one SD load.
   // direction +1 walks rows 0 → n. direction -1 walks n → 0.
-  // frames_y: that load is one multi-row read once the ahead-watermark is hit.
-  // frames_x: that load is one column slice.
-  void Tick(FileReader* file, StripColumnBmpInfo* bmp, StripColumnBmpFrameAxis axis,
+  // That load is one multi-row read once the ahead-watermark is hit.
+  void Tick(FileReader* file, StripColumnBmpInfo* bmp,
             int source_height, int frame_ms, uint32_t num_frames, int direction = 1) {
     if (!file || !bmp || num_frames == 0) return;
     NoteDirection(direction);
@@ -259,25 +250,12 @@ public:
       }
 
       if (loading_buf_ >= 0) {
-        AdvanceBmpColumnLoad(file, bmp, axis, source_height, loading_buf_, loading_frame_);
+        AdvanceBmpColumnLoad(file, bmp, source_height, loading_buf_, loading_frame_);
         if (loading_buf_ >= 0) return;
         continue;
       }
 
-      if (axis == STRIP_COLUMN_FRAMES_ALONG_Y) {
-        PrefetchFramesAlongY(file, bmp, source_height, num_frames);
-        return;
-      }
-
-      display_frame = frames_[current_].frame;
-      for (int offset = 1; offset < STRIP_COLUMN_FRAME_RING_SIZE; offset++) {
-        uint32_t want = AheadFrame(display_frame, (uint32_t)offset, num_frames);
-        if (SlotHasCompleteFrame(want)) continue;
-        int slot = PickSlotForLoad(display_frame, num_frames);
-        if (slot < 0) continue;
-        AdvanceBmpColumnLoad(file, bmp, axis, source_height, slot, want);
-        return;
-      }
+      PrefetchFramesAlongY(file, bmp, source_height, num_frames);
       return;
     }
   }
@@ -312,7 +290,7 @@ private:
     return n;
   }
 
-  // frames_y tick load. Card stays idle while more than STRIP_COLUMN_Y_AHEAD_WATERMARK
+  // Tick load. Card stays idle while more than STRIP_COLUMN_Y_AHEAD_WATERMARK
   // frames are already buffered strictly ahead of the playhead. At the watermark
   // (and when nothing is queued yet), one seek reads up to STRIP_COLUMN_BMP_Y_BULK_ROWS
   // upcoming rows, or fewer when fewer ring slots are free.
@@ -352,8 +330,7 @@ private:
     }
 
     // Non-contiguous BMP rows (loop wrap) or a short bulk read: one frame only.
-    AdvanceBmpColumnLoad(file, bmp, STRIP_COLUMN_FRAMES_ALONG_Y, source_height,
-                         slots[0], wants[0]);
+    AdvanceBmpColumnLoad(file, bmp, source_height, slots[0], wants[0]);
   }
 
   bool FrameInPrefetchWindow(uint32_t display_frame, uint32_t num_frames,
@@ -399,49 +376,22 @@ private:
   }
 
   bool AdvanceBmpColumnLoad(FileReader* file, StripColumnBmpInfo* bmp,
-                            StripColumnBmpFrameAxis axis, int source_height, int buf,
-                            uint32_t frame_index) {
+                            int source_height, int buf, uint32_t frame_index) {
     if (!file->IsOpen()) return false;
-    if (loading_buf_ != buf || loading_frame_ != frame_index) {
-      loading_buf_ = buf;
-      loading_frame_ = frame_index;
-      rows_loaded_ = 0;
-      memset(frames_[buf].data, 0, sizeof(frames_[buf].data));
+    loading_buf_ = buf;
+    loading_frame_ = frame_index;
+    rows_loaded_ = 0;
+    memset(frames_[buf].data, 0, sizeof(frames_[buf].data));
+    frames_[buf].frame = ~0u;
+    if (!StripColumnBmpLoadFrameAlongY(file, bmp, frame_index, source_height,
+                                       frames_[buf].data, STRIP_COLUMN_RECORD_SIZE)) {
+      loading_buf_ = -1;
       frames_[buf].frame = ~0u;
-    }
-    int row_end = rows_loaded_ + STRIP_COLUMN_BMP_ROWS_PER_RUN;
-    if (row_end > source_height) row_end = source_height;
-    if (axis == STRIP_COLUMN_FRAMES_ALONG_Y) {
-      // One BMP row is the whole column. A leftover rows_loaded_ must not
-      // abort the load (that left opened_ false and the blade black).
-      rows_loaded_ = 0;
-      if (!StripColumnBmpLoadFrameAlongY(file, bmp, frame_index, source_height,
-                                         frames_[buf].data, STRIP_COLUMN_RECORD_SIZE)) {
-        loading_buf_ = -1;
-        rows_loaded_ = 0;
-        frames_[buf].frame = ~0u;
-        return false;
-      }
-      frames_[buf].frame = frame_index;
-      loading_buf_ = -1;
-      rows_loaded_ = 0;
-      return true;
-    }
-    if (!StripColumnBmpLoadFrameSlice(file, bmp, axis, frame_index, rows_loaded_, row_end,
-                                      source_height, frames_[buf].data,
-                                      STRIP_COLUMN_RECORD_SIZE)) {
-      loading_buf_ = -1;
-      rows_loaded_ = 0;
       return false;
     }
-    rows_loaded_ = row_end;
-    if (rows_loaded_ >= source_height) {
-      frames_[buf].frame = frame_index;
-      loading_buf_ = -1;
-      rows_loaded_ = 0;
-      return true;
-    }
-    return false;
+    frames_[buf].frame = frame_index;
+    loading_buf_ = -1;
+    return true;
   }
 
   StripColumnFrameSlot frames_[STRIP_COLUMN_FRAME_RING_SIZE];
@@ -467,11 +417,8 @@ public:
       strncpy(path_, pending, sizeof(path_) - 1);
       path_[sizeof(path_) - 1] = 0;
     }
-    frame_axis_ = StripColumnPath::GetFrameAxis();
     memset(&bmp_info_, 0, sizeof(bmp_info_));
   }
-
-  StripColumnBmpFrameAxis FrameAxis() const { return frame_axis_; }
 
   bool run(BladeBase* blade) {
     height_.run(blade);
@@ -546,17 +493,14 @@ public:
           LOCK_SD(false);
           return true;
         }
-        num_frames_ =
-            StripColumnBmpNumFrames(&bmp_info_, frame_axis_);
+        num_frames_ = StripColumnBmpNumFrames(&bmp_info_);
         if (num_frames_ == 0) num_frames_ = 1;
         WarnSourceHeightVsBmp();
         header_ok_ = true;
         if (!open_ok_logged_) {
           open_ok_logged_ = true;
-          STDOUT << "strip_column: opened " << path_ << " layout="
-                 << StripColumnFrameAxisName(frame_axis_)
-                 << " frames=" << num_frames_ << " bmp=" << bmp_info_.width << "x"
-                 << bmp_info_.height << "\n";
+          STDOUT << "strip_column: opened " << path_ << " frames=" << num_frames_
+                 << " bmp=" << bmp_info_.width << "x" << bmp_info_.height << "\n";
         }
       } else if (!file_.IsOpen()) {
         StripColumnOpenPath(&file_, path_);
@@ -564,8 +508,7 @@ public:
       if (header_ok_ && !opened_) {
         cache_.ClearAllSlots();
         if (file_.IsOpen() &&
-            cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
-                                  source_height_, 0, 0)) {
+            cache_.LoadFrameSlice(&file_, &bmp_info_, source_height_, 0, 0)) {
           opened_ = true;
           bmp_missing_ = false;
           cache_.OnFirstFrameReady();
@@ -587,7 +530,7 @@ public:
       LOCK_SD(false);
     }
 
-    cache_.Tick(&file_, &bmp_info_, frame_axis_, source_height_, frame_ms_,
+    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms_,
                 num_frames_, on ? 1 : -1);
     return true;
   }
@@ -623,8 +566,7 @@ private:
 
   void WarnSourceHeightVsBmp() {
     if (height_warned_) return;
-    uint32_t blade_px =
-        StripColumnBmpBladePixelsInFile(&bmp_info_, frame_axis_);
+    uint32_t blade_px = StripColumnBmpBladePixelsInFile(&bmp_info_);
     if ((uint32_t)source_height_ > blade_px) {
       height_warned_ = true;
       STDOUT << "strip_column: source_height " << source_height_
@@ -652,7 +594,6 @@ private:
   bool was_on_;
   bool retract_armed_;
   uint32_t retract_deadline_ms_;
-  StripColumnBmpFrameAxis frame_axis_;
 };
 
 template<class SOURCE_HEIGHT, class FPS, class EXTEND_MS, class RETRACT_MS>
@@ -670,11 +611,9 @@ public:
     const char* path = CurrentArgParser->GetArg(1, "FILE", "");
     StripColumnPath::Set(path);
     const char* arg4 = CurrentArgParser->GetArg(4, "ARG", "");
-    StripColumnBmpFrameAxis axis = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
-    const bool axis_in_arg4 = StripColumnParseFrameAxisToken(arg4, &axis);
-    if (!axis_in_arg4) axis = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
-    StripColumnPath::SetFrameAxis(axis);
-    if (axis_in_arg4) {
+    const bool layout_word = StripColumnLayoutWordSkipsArg(arg4);
+    StripColumnWarnIfColumnsLayout(arg4);
+    if (layout_word) {
       return StyleStripColumnBendPtrX<
         IntArg<2, 144>,
         IntArg<3, 30>,

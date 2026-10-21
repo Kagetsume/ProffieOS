@@ -26,8 +26,8 @@ The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `bl
 
 | File | Purpose |
 |------|---------|
-| **board.ini** | Board hardware: button count, OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
-| **features.ini** | Feature toggles: gesture, twist-on, twist-off. Loaded after board.ini; use for contest-specific overrides without changing hardware. |
+| **board.ini** | Board hardware: button count and which pad is power, aux, or aux2. OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
+| **features.ini** | Feature toggles: gesture (master), swing_on, thrust_on, stab_on, twist_on, twist_off. Loaded after board.ini. |
 | **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, `power_pin1`…) or simple PWM (`type=simple`, `pin1`…). **Use board pin names** (`bladePin`, `bladePowerPin1`–`3`, `blade5Pin`, …) — not numeric GPIO (numbers are literal MCU pins, not “FET #1”). Replaces compiled blade config when present (Proffieboard). **Guide:** [`doc/blade_config.md`](../doc/blade_config.md), LayerBlade `website/BLADES.md`. |
 | **blade_styles.ini** | Named style "recipes" as layers. **Guide:** LayerBlade `website/BLADE_STYLES.md`. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |

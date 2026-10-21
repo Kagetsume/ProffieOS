@@ -18,14 +18,24 @@
 
 // Runtime board config from config/board.ini. -1 or 0 = not set (use compile default).
 struct BoardConfigFile {
-  int gesture;      // 1=on, 0=off, -1=not set
+  int gesture;      // 1=on, 0=off, -1=not set (master for gesture ignition)
   int twist_on;     // 1=on, 0=off, -1=not set
   int twist_off;    // 1=on, 0=off, -1=not set
+  int swing_on;     // 1=on, 0=off, -1=not set
+  int thrust_on;    // 1=on, 0=off, -1=not set
+  int stab_on;      // 1=on, 0=off, -1=not set
   int oled;         // 1=on, 0=off, -1=not set
   int bluetooth;    // 1=on, 0=off, -1=not set (Serial3 / BT serial when ENABLE_SERIAL)
   int buttons;     // 1, 2, or 3; -1=not set
+  // Pin name from board.ini (powerButtonPin, auxPin, aux2Pin, …). Empty = compiled pin.
+  char power_pin_name[16];
+  char aux_pin_name[16];
+  char aux2_pin_name[16];
   bool file_found; // true if config/board.ini was present and parsed
 };
+
+// Set from the config's CONFIG_BUTTONS section. Null when that section has no buttons.
+extern void (*apply_board_buttons_hook)();
 
 extern BoardConfigFile board_config_file;
 
@@ -66,8 +76,24 @@ inline int ParseOnOffValue(FileReader& f) {
   return -1;
 }
 
+// Copy a pin name token (powerButtonPin, auxPin, 13, …). Stops at whitespace.
+inline void BoardConfigReadPinName(FileReader& f, char* out, int cap) {
+  if (!out || cap < 2) return;
+  int i = 0;
+  while (f.Available() && i < cap - 1) {
+    int c = f.Peek();
+    if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+        (c >= '0' && c <= '9') || c == '_' || c == '-') {
+      out[i++] = (char)f.Read();
+    } else {
+      break;
+    }
+  }
+  out[i] = 0;
+}
+
 // Load board config from SD config/board.ini if present.
-// Format: gesture=on|off, twist_on=on|off, twist_off=on|off, oled=on|off, bluetooth=on|off, buttons=1|2|3.
+// Format: buttons=1|2|3, power=/aux=/aux2= pin name, oled, bluetooth, gesture/twist.
 // Does not crash on malformed input; invalid lines are skipped.
 inline void LoadBoardConfigFile() {
 #ifndef ENABLE_SD_CONFIG_FILES
@@ -77,9 +103,15 @@ inline void LoadBoardConfigFile() {
   board_config_file.gesture = -1;
   board_config_file.twist_on = -1;
   board_config_file.twist_off = -1;
+  board_config_file.swing_on = -1;
+  board_config_file.thrust_on = -1;
+  board_config_file.stab_on = -1;
   board_config_file.oled = -1;
   board_config_file.bluetooth = -1;
   board_config_file.buttons = -1;
+  board_config_file.power_pin_name[0] = 0;
+  board_config_file.aux_pin_name[0] = 0;
+  board_config_file.aux2_pin_name[0] = 0;
   board_config_file.file_found = false;
 
   LOCK_SD(true);
@@ -115,6 +147,15 @@ inline void LoadBoardConfigFile() {
     } else if (!strcmp(variable, "twist_off")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.twist_off = v;
+    } else if (!strcmp(variable, "swing_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.swing_on = v;
+    } else if (!strcmp(variable, "thrust_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.thrust_on = v;
+    } else if (!strcmp(variable, "stab_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.stab_on = v;
     } else if (!strcmp(variable, "oled")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.oled = v;
@@ -129,6 +170,12 @@ inline void LoadBoardConfigFile() {
         f.Read();
         board_config_file.buttons = v;
       }
+    } else if (!strcmp(variable, "power")) {
+      BoardConfigReadPinName(f, board_config_file.power_pin_name, 16);
+    } else if (!strcmp(variable, "aux")) {
+      BoardConfigReadPinName(f, board_config_file.aux_pin_name, 16);
+    } else if (!strcmp(variable, "aux2")) {
+      BoardConfigReadPinName(f, board_config_file.aux2_pin_name, 16);
     }
     f.skipline();
     line_count++;
@@ -141,6 +188,9 @@ inline void LoadBoardConfigFile() {
 inline int BoardConfigGesture() { return board_config_file.gesture; }
 inline int BoardConfigTwistOn() { return board_config_file.twist_on; }
 inline int BoardConfigTwistOff() { return board_config_file.twist_off; }
+inline int BoardConfigSwingOn() { return board_config_file.swing_on; }
+inline int BoardConfigThrustOn() { return board_config_file.thrust_on; }
+inline int BoardConfigStabOn() { return board_config_file.stab_on; }
 inline int BoardConfigOled() { return board_config_file.oled; }
 inline int BoardConfigBluetooth() { return board_config_file.bluetooth; }
 inline int BoardConfigButtons() { return board_config_file.buttons; }
@@ -165,6 +215,11 @@ inline bool BoardConfigBluetoothEnabled() {
 // Effective button count: file value 1/2/3 if set, else -1 (use NUM_BUTTONS).
 inline int BoardConfigNumButtons() {
   return board_config_file.buttons;
+}
+
+// Runs the config's button hook after board.ini is loaded. No-op without CONFIG_BUTTONS.
+inline void ApplyBoardButtonConfig() {
+  if (apply_board_buttons_hook) apply_board_buttons_hook();
 }
 
 #endif  // COMMON_BOARD_CONFIG_FILE_H

@@ -1,9 +1,9 @@
 #ifndef COMMON_FEATURES_CONFIG_FILE_H
 #define COMMON_FEATURES_CONFIG_FILE_H
 
-// Feature toggles (gesture, twist on/off) for easier contest-specific management.
+// Feature toggles (gesture, swing, thrust, stab, twist on/off).
 // File: config/features.ini on SD card. Loaded after config/board.ini; values
-// overwrite gesture/twist from board.ini when present. Same struct (board_config_file).
+// overwrite the same keys from board.ini when present. Same struct (board_config_file).
 //
 // Hardened: same as board config (bounded reads, max lines, malformed skipped).
 
@@ -13,7 +13,7 @@
 #define SD_FEATURES_CONFIG_MAX_LINES 128
 
 // Load config/features.ini if present. Call after LoadBoardConfigFile().
-// Sets gesture, twist_on, twist_off in board_config_file (overwrites if present).
+// Sets gesture, swing_on, thrust_on, stab_on, twist_on, twist_off (overwrites if present).
 // Safe when SD disabled (no-op). Does not crash on malformed input.
 inline void LoadFeaturesConfigFile() {
 #ifndef ENABLE_SD_CONFIG_FILES
@@ -52,6 +52,15 @@ inline void LoadFeaturesConfigFile() {
     } else if (!strcmp(variable, "twist_off")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.twist_off = v;
+    } else if (!strcmp(variable, "swing_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.swing_on = v;
+    } else if (!strcmp(variable, "thrust_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.thrust_on = v;
+    } else if (!strcmp(variable, "stab_on")) {
+      int v = ParseOnOffValue(f);
+      if (v >= 0) board_config_file.stab_on = v;
     }
     f.skipline();
     line_count++;

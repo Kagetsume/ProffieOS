@@ -1,6 +1,6 @@
 # Custom blade pack
 
-Non-canon recipes that the character packs do not cover. Each preset isolates one behavior: a worn aquamarine crystal, a flame wipe, ignition from the tip, a burst from the middle, a hum-driven blade, and a two-color gradient.
+Non-canon recipes that the character packs do not cover. Each preset isolates one behavior: a worn aquamarine crystal, a flame wipe, ignition from the tip, a burst from the middle, a hum-driven blade, a two-color gradient, and the procedural textures the other packs skip (hue crawl, swing ripples, moiré, chirp, smoke, emitter bloom, gradient weather).
 
 ## Install on SD card
 
@@ -27,6 +27,13 @@ See `config/blades.ini` (`bladePin`, `bladePowerPin1`–`3`, 132 pixels default)
 | CenterBurst | `custom_center_burst` | Violent violet. `transition = explode` with a white spark on both edges |
 | HumGlow | `custom_hum_glow` | Amber. `audio_layer` multiplies brightness by the hum |
 | CrystalGradient | `custom_crystal_gradient` | Green at the hilt, deep-sky blue at the tip |
+| HueTide | `custom_hue_tide` | Cyan. `hue_waves` crawls the color; brightness stays put |
+| SwingRipple | `custom_swing_ripple` | Green. `sine_waves_swing` shortens its wavelength on a swing or twist |
+| MoireBeat | `custom_moire` | Magenta. Two close `moire_mask` periods beat against each other |
+| ChirpFocus | `custom_chirp` | Yellow. Wide bands at the hilt, fine ripples at the tip |
+| SmokeCore | `custom_smoke_core` | Silver. Dark `smoke_flow` multiply plus a thin screen of the same smoke |
+| EmitterBloom | `custom_emitter_bloom` | Blue. White pool at the hilt follows the smoothed hum |
+| CrystalWeather | `custom_crystal_weather` | The crystal gradient with `fbm_noise` in the ramp |
 
 `ext` / `ret` are **`-1`** so the main in/out track soundfont length. The sputter layers do not take those times.
 
@@ -45,3 +52,17 @@ Override the cough color with `style = config custom_worn_aquamarine sputter=whi
 **`custom_hum_glow`** multiplies an amber beam by `audio_layer`. Quiet hum dims the blade. Loud hum brings it back to full.
 
 **`custom_crystal_gradient`** paints `gradient_layer` from green at the hilt to deep-sky blue at the tip. The bend wipe is still the section `transition` line.
+
+**`custom_hue_tide`** is a cyan beam with `hue_waves` on the hue blend. The wave is slow (`8000`) and the shift is about 66 degrees (`6000`), so the color crawls and the brightness does not.
+
+**`custom_swing_ripple`** multiplies one `sine_waves_swing` over green. A swing or twist shortens that wave. The other layers do not change speed.
+
+**`custom_moire`** multiplies `moire_mask` at periods `2400` and `2450`. The visible swell is the beat between those two ramps.
+
+**`custom_chirp`** multiplies `chirp` with a negative rate, so the bands are wide at the hilt and fine at the tip, and they scroll outward.
+
+**`custom_smoke_core`** multiplies a slow `smoke_flow` to cut dark bands, then screens a thin copy of the same smoke in the base color.
+
+**`custom_emitter_bloom`** adds a white `blade_envelope` parked at the hilt. Its last argument follows the smoothed hum, so the pool lifts with the volume and the blue body stays steady. The pool stays partly lit on a quiet moment.
+
+**`custom_crystal_weather`** is the green-to-deep-sky-blue gradient with `fbm_noise` multiplied over it. `custom_crystal_gradient` stays a clean ramp.

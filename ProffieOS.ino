@@ -1707,6 +1707,7 @@ void setup() {
 #ifdef ENABLE_SD
   LoadBoardConfigFile();   // hardware (buttons, oled) and optionally gesture/twist
   LoadFeaturesConfigFile(); // feature toggles (gesture, twist_on, twist_off) override when present
+  ApplyBoardButtonConfig(); // buttons= and power/aux/aux2 pins from board.ini
 #endif
   Looper::DoSetup();
   PVLOG_DEBUG << "***************** Booting up! *******************\n";

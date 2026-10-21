@@ -50,40 +50,7 @@
 template<class WARM, class HOT>
 using FireMaskLayer = StaticFire<WARM, HOT>;
 
-// Wide rolling smoke toward tip (hilt→tip). Slow heat, low rand — blobs not per-LED flicker.
-template<class WARM, class HOT>
-using SmokeUpLayer = StyleSmokeLuminance<
-  WARM, HOT, 0, 1,
-  FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>, FireConfig<0, 400, 1>>;
-
-// Wide rolling smoke toward hilt (tip→hilt). Slightly stronger rand — drives upper-blade activity.
-template<class WARM, class HOT>
-using SmokeDownLayer = StyleSmokeLuminanceReverse<
-  WARM, HOT, 0, 1,
-  FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>, FireConfig<0, 550, 1>>;
-
-// Opposing wide sine smoke rolls (offset dual bands, not fire merge).
-template<class WARM, class HOT, class ROLL_SPEED = Int<1>>
-using SmokeFlowLayer = StyleSmokeFlow<
-  WARM, HOT, 0, ROLL_SPEED,
-  FireConfig<0, 400, 1>, FireConfig<0, 550, 1>>;
-
-// Clip smoke to the lit blade during extend/retract. Uses AlphaL + inverted InOutHelperF
-// (NOT InOutHelperX — that pattern masks opaque bases with black and inverts on overlays).
-template<class WARM, class HOT, class EXT, class RET, class ROLL_SPEED = Int<1>>
-using SmokeFlowInOutLayer = AlphaL<
-  SmokeFlowLayer<WARM, HOT, ROLL_SPEED>,
-  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
-
-template<class WARM, class HOT, class EXT, class RET>
-using SmokeUpInOutLayer = AlphaL<
-  SmokeUpLayer<WARM, HOT>,
-  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
-
-template<class WARM, class HOT, class EXT, class RET>
-using SmokeDownInOutLayer = AlphaL<
-  SmokeDownLayer<WARM, HOT>,
-  InvertF<InOutHelperF<InOutFuncAuto<EXT, RET>, 0>>>;
+// Smoke is one runtime style in smoke_mask.h (direction up / down / flow).
 
 // Moving soft stripes (width, speed, color1, color2).
 template<class WIDTH, class SPEED, class C1, class C2>

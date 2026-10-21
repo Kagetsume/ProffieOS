@@ -4,8 +4,7 @@
 // SD column BMP brightness mask for config layer stacking (multiply / screen / add).
 //
 // Same 24-bit BI_RGB BMP layout as strip_column (see strip_column_bmp.h).
-// frames_y (default): width = blade pixels, height = frame count
-//   (height 1 = a static mask). Row 0 = hilt.
+// Width = blade pixels, height = frame count (height 1 = a static mask). Row 0 = hilt.
 // Paint grayscale in GIMP/Photoshop; R=G=B per pixel. Color pixels use average luminance.
 //
 // If the file is missing or invalid, shows the same scrolling strobe red danger pattern
@@ -108,9 +107,6 @@ public:
     if (!CurrentArgParser) return nullptr;
     const char* path = CurrentArgParser->GetArg(1, "FILE", "");
     StripColumnPendingPath::Set(path);
-    // Mask args are path, source_height, fps — no frames_x token. Always
-    // publish frames_y so a previous strip_column frames_x does not stick.
-    StripColumnPath::SetFrameAxis(STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS);
     return StylePtr<StripColumnMaskL<
       IntArg<2, 144>,
       IntArg<3, 30>> >()->make();

@@ -1,140 +1,37 @@
 #ifndef STYLES_SMOKE_MASK_H
 #define STYLES_SMOKE_MASK_H
 
-// Composable smoke luminance textures for config/blade_styles.ini layering.
-// Built on the ProffieOS fire heat engine (fire.h) without modifying core StyleFire.
-//
-// smoke_up / smoke_down: fire-engine bands (pair as multiply layers for advanced use)
-// smoke_flow: wide bands rolling opposite directions; spatial width/phase warp for organic look
+// One smoke texture. Direction picks the motion:
+//   up   — heat injected at the hilt, drifts toward the tip (rand 400)
+//   down — heat injected at the tip, drifts toward the hilt (rand 550)
+//   flow — offset dual sine rolls; optional speed (1 = default)
+// smoke_up, smoke_down, and smoke_flow are the same style with the direction filled in.
+// The stack wipe follows the base. These lines do not take extend/retract.
 
+#include <stdlib.h>
+#include "../../common/arg_parser.h"
 #include "../../common/sin_table.h"
-#include "../../functions/int.h"
-#include "../../functions/svf.h"
+#include "../colors.h"
 #include "../fire.h"
+#include "../rgb_arg.h"
+#include "../style_ptr.h"
 
-// heat_[0] = tip. Injects at the tip and diffuses toward the hilt (opposite of StyleFireBase).
-template<int DELAY = 0, int SPEED = 2,
-  class NORM = FireConfig<0,2000,5>,
-  class CLASH = FireConfig<3000,0,0>,
-  class LOCK = FireConfig<0, 5000, 10>,
-  class OFF = FireConfig<0, 0, NORM::Cooling>>
-class StyleFireReverseBase {
-protected:
-  ~StyleFireReverseBase() {
-    delete[] heat_;
-  }
-  enum OnState {
-    STATE_OFF = 0,
-    STATE_ACTIVATING,
-    STATE_ON,
-  };
-  bool On(BladeBase* blade) {
-    if (!blade->is_on()) {
-      state_ = STATE_OFF;
-      return false;
-    }
-    switch (state_) {
-      default:
-         state_ = STATE_ACTIVATING;
-         on_time_ = millis();
-	 [[gnu::fallthrough]];
-      case STATE_ACTIVATING:
-         if (millis() - on_time_ < DELAY) return false;
-         state_ = STATE_ON;
-	 [[gnu::fallthrough]];
-      case STATE_ON:
-         return true;
-    }
-  }
-  bool run(BladeBase* blade) {
-    bool keep_running = true;
-    uint32_t m = millis();
-    num_leds_ = blade->num_leds();
-    if (!heat_) {
-      size_t N = num_leds_ + SPEED + 3;
-      heat_ = new unsigned short[N];
-      for (size_t i = 0; i < N; i++) heat_[i] = 0;
-    }
-    if (m - last_update_ >= 10) {
-      last_update_ = m;
-
-      FireConfiguration config = OFF::get();
-      if (clash_.Detect(blade)) {
-	config = CLASH::get();
-      } else if (On(blade)) {
-        if (SaberBase::LockupForBlade(blade->GetBladeNumber()) == SaberBase::LOCKUP_NONE) {
-          config = NORM::get();
-        } else {
-          config = LOCK::get();
-        }
-      }
-      for (int i = 0; i < SPEED; i++) {
-         heat_[i] = config.intensity_base +
-           random(random(random(config.intensity_rand)));
-      }
-      int zero = true;
-      for (int i = 1; i < num_leds_; i++) {
-         int ip1 = (i + 1 < num_leds_) ? i + 1 : i;
-         int x = (heat_[i-1] * 3 +
-                  heat_[i] * 10 +
-                  heat_[ip1] * 3) >> 4;
-         heat_[i] = clampi32(x - random(config.cooling), 0, 65535);
-	 if (heat_[i]) zero = false;
-      }
-      if (heat_[0]) zero = false;
-      if (zero) keep_running = false;
-    }
-    return keep_running;
-  }
-
-  OneshotEffectDetector<EFFECT_CLASH> clash_;
-  int num_leds_;
-  uint32_t last_update_;
-  unsigned short* heat_ = 0;
-  OnState state_ = STATE_OFF;
-  uint32_t on_time_;
+enum SmokeDir {
+  SMOKE_DIR_UP = 0,
+  SMOKE_DIR_DOWN = 1,
+  SMOKE_DIR_FLOW = 2,
 };
 
-template<class COLOR1, class COLOR2,
-  int DELAY = 0, int SPEED = 2,
-  class NORM = FireConfig<0,2000,5>,
-  class CLASH = FireConfig<3000,0,0>,
-  class LOCK = FireConfig<0, 5000, 10>,
-  class OFF = FireConfig<0, 0, NORM::Cooling>>
-class StyleFireReverse : StyleFireReverseBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF>{
-public:
-  StyleFireReverse() {}
-  bool run(BladeBase* blade) {
-    c1_.run(blade);
-    c2_.run(blade);
-    return StyleFireReverseBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF>::run(blade);
-  }
-
-  SimpleColor getColor(int led) {
-    if (!this->heat_) {
-      return SimpleColor(Color16());
-    }
-    int h = this->heat_[this->num_leds_ - 1 - led];
-    SimpleColor c;
-    if (h < 256) {
-      c.c = Color16().mix(c1_.getColor(led).c, h);
-    } else if (h < 512) {
-      c.c = c1_.getColor(led).c.mix(c2_.getColor(led).c, h - 256);
-    } else if (h < 768) {
-      c.c = c2_.getColor(led).c.mix(Color16(65535,65535,65535), h - 512);
-    } else {
-      c.c = Color16(65535, 65535, 65535);
-    }
-    return c;
-  }
-
-private:
-  COLOR1 c1_;
-  COLOR2 c2_;
+// How the INI line is laid out. The heat/sine code is one class either way.
+enum SmokeKind {
+  SMOKE_KIND_ARG = 0,  // smoke dark light direction [speed]
+  SMOKE_KIND_UP,       // smoke_up dark light
+  SMOKE_KIND_DOWN,     // smoke_down dark light
+  SMOKE_KIND_FLOW,     // smoke_flow dark light [speed]
 };
 
 namespace smoke_mask_detail {
-// Triangular spatial low-pass. Wider radius at injection ends → wide blobs that still roll.
+
 inline int SmoothHeatAt(const unsigned short* heat, int num_leds, int idx, int radius) {
   int sum = 0;
   int wsum = 0;
@@ -155,15 +52,8 @@ inline uint32_t HeatToLuminanceMix(int h, int clear_at) {
   return (uint32_t)h * 65535 / clear_at;
 }
 
-inline int ClearThresholdAt(int led, int num_leds) {
-  (void)led;
-  (void)num_leds;
-  return 248;
-}
-
 inline void UpdateTemporalSmooth(unsigned short*& smooth, int& smooth_len,
-                                 const unsigned short* heat, int num_leds,
-                                 bool responsive = false) {
+                                 const unsigned short* heat, int num_leds) {
   if (!heat || num_leds <= 0) return;
   if (!smooth || smooth_len != num_leds) {
     delete[] smooth;
@@ -173,11 +63,7 @@ inline void UpdateTemporalSmooth(unsigned short*& smooth, int& smooth_len,
   }
   for (int i = 0; i < smooth_len; i++) {
     int spatial = SmoothHeatAt(heat, smooth_len, i, 7);
-    if (responsive) {
-      smooth[i] = (smooth[i] * 11 + spatial * 5) >> 4;
-    } else {
-      smooth[i] = (smooth[i] * 13 + spatial * 3) >> 4;
-    }
+    smooth[i] = (smooth[i] * 13 + spatial * 3) >> 4;
   }
 }
 
@@ -215,21 +101,18 @@ inline int SinAtPhaseInterpolated(int phase, int wavelength) {
   return s0 + (int)((int64_t)(s1 - s0) * frac >> 10);
 }
 
-// Per-LED wavelength: slow time drift + two spatial scales so band width varies along blade.
 inline int FlowWavelength(int base, int pos, int band_seed, int time_idx) {
   int sp = ((pos >> 4) + band_seed) & 1023;
   int sp2 = ((pos >> 7) + band_seed * 13) & 1023;
   return base + (sin_table[sp] >> 2) + (sin_table[sp2] >> 3) + (sin_table[time_idx] >> 4);
 }
 
-// Local phase shear — breaks parallel sine ridges without a second min-combine pass.
 inline int FlowPhaseWarp(int pos, int seed) {
   int sp = ((pos >> 5) + seed) & 1023;
   int sp2 = ((pos >> 9) + seed * 17) & 1023;
   return (sin_table[sp] >> 3) + (sin_table[sp2] >> 4);
 }
 
-// One field: offset dual sine rolls summed (not min-combined — that causes yo-yo beats).
 inline uint32_t RollFlowMix(int pos, int scroll_up, int scroll_down,
                             uint32_t time_us, uint32_t time_us_down) {
   int t_up = (time_us >> 10) & 1023;
@@ -252,178 +135,174 @@ inline uint32_t RollFlowMix(int pos, int scroll_up, int scroll_down,
   return HeatToLuminanceMix(bright >> 8, 248);
 }
 
+inline int ParseSmokeSpeed(int arg_num) {
+  if (!CurrentArgParser) return 1;
+  const char* arg = CurrentArgParser->GetArg(arg_num, "INT", "1");
+  if (!arg || !arg[0]) return 1;
+  return (int)strtol(arg, NULL, 0);
+}
+
+inline SmokeDir ParseSmokeDir(int arg_num, SmokeDir fallback) {
+  const char* fallback_word = "flow";
+  if (fallback == SMOKE_DIR_UP) fallback_word = "up";
+  else if (fallback == SMOKE_DIR_DOWN) fallback_word = "down";
+  if (!CurrentArgParser) return fallback;
+  const char* arg = CurrentArgParser->GetArg(arg_num, "DIR", fallback_word);
+  if (!arg || !arg[0]) return fallback;
+  if (FirstWord(arg, "up")) return SMOKE_DIR_UP;
+  if (FirstWord(arg, "down")) return SMOKE_DIR_DOWN;
+  if (FirstWord(arg, "flow")) return SMOKE_DIR_FLOW;
+  return fallback;
+}
+
 }  // namespace smoke_mask_detail
 
-template<class COLOR1, class COLOR2,
-  int DELAY = 0, int SPEED = 1,
-  class NORM = FireConfig<0, 700, 1>,
-  class CLASH = NORM,
-  class LOCK = NORM,
-  class OFF = NORM>
-class StyleSmokeLuminance : StyleFireBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF> {
+// Shared smoke body. Up and down run one heat buffer; flow runs the sine rolls.
+class SmokeRuntime {
 public:
-  ~StyleSmokeLuminance() {
+  SmokeRuntime() = default;
+  ~SmokeRuntime() {
+    delete[] heat_;
     delete[] smooth_;
   }
 
-  bool RunHeat(BladeBase* blade) {
-    bool keep = true;
-    uint32_t m = millis();
-    if (m - tick_ >= 20) {
-      tick_ = m;
-      keep = StyleFireBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF>::run(blade);
-      if (this->heat_ && this->num_leds_ > 1) {
-        smoke_mask_detail::SpreadHeatTowardTip(this->heat_, this->num_leds_, 2);
-      }
+  void Init(SmokeKind kind) {
+    kind_ = kind;
+    if (kind == SMOKE_KIND_UP) {
+      dir_ = SMOKE_DIR_UP;
+    } else if (kind == SMOKE_KIND_DOWN) {
+      dir_ = SMOKE_DIR_DOWN;
+    } else if (kind == SMOKE_KIND_FLOW) {
+      dir_ = SMOKE_DIR_FLOW;
+      speed_ = smoke_mask_detail::ParseSmokeSpeed(3);
     } else {
-      this->num_leds_ = blade->num_leds();
+      dir_ = smoke_mask_detail::ParseSmokeDir(3, SMOKE_DIR_FLOW);
+      speed_ = smoke_mask_detail::ParseSmokeSpeed(4);
     }
-    smoke_mask_detail::UpdateTemporalSmooth(
-        smooth_, smooth_len_, this->heat_, this->num_leds_);
-    return keep;
+  }
+
+  int maxArg() const {
+    if (kind_ == SMOKE_KIND_ARG) return 4;
+    if (kind_ == SMOKE_KIND_FLOW) return 3;
+    return 2;
   }
 
   bool run(BladeBase* blade) {
     c1_.run(blade);
     c2_.run(blade);
-    RunHeat(blade);
-    return true;
-  }
-
-  int GetNumLeds() const { return this->num_leds_; }
-
-  uint32_t GetMixAtLed(int led) const {
-    if (!smooth_ || this->num_leds_ <= 0) return 65535u;
-    int idx = this->num_leds_ - 1 - led;
-    return smoke_mask_detail::HeatToLuminanceMix(
-        smooth_[idx], smoke_mask_detail::ClearThresholdAt(led, this->num_leds_));
-  }
-
-  SimpleColor getColor(int led) {
-    uint32_t mix = GetMixAtLed(led);
-    SimpleColor c;
-    c.c = c1_.getColor(led).c.mix(c2_.getColor(led).c, mix);
-    return c;
-  }
-
-private:
-  COLOR1 c1_;
-  COLOR2 c2_;
-  unsigned short* smooth_ = 0;
-  int smooth_len_ = 0;
-  uint32_t tick_ = 0;
-};
-
-template<class COLOR1, class COLOR2,
-  int DELAY = 0, int SPEED = 1,
-  class NORM = FireConfig<0, 900, 1>,
-  class CLASH = NORM,
-  class LOCK = NORM,
-  class OFF = NORM>
-class StyleSmokeLuminanceReverse : StyleFireReverseBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF> {
-public:
-  ~StyleSmokeLuminanceReverse() {
-    delete[] smooth_;
-  }
-
-  bool RunHeat(BladeBase* blade) {
-    bool keep = true;
-    uint32_t m = millis();
-    if (m - tick_ >= 20) {
-      tick_ = m;
-      keep = StyleFireReverseBase<DELAY, SPEED, NORM, CLASH, LOCK, OFF>::run(blade);
-      if (this->heat_ && this->num_leds_ > 1) {
-        smoke_mask_detail::SpreadHeatTowardHilt(this->heat_, this->num_leds_);
-      }
-    } else {
-      this->num_leds_ = blade->num_leds();
-    }
-    smoke_mask_detail::UpdateTemporalSmooth(
-        smooth_, smooth_len_, this->heat_, this->num_leds_);
-    return keep;
-  }
-
-  bool run(BladeBase* blade) {
-    c1_.run(blade);
-    c2_.run(blade);
-    RunHeat(blade);
-    return true;
-  }
-
-  uint32_t GetMixAtLed(int led) const {
-    if (!smooth_ || this->num_leds_ <= 0) return 65535u;
-    int idx = this->num_leds_ - 1 - led;
-    return smoke_mask_detail::HeatToLuminanceMix(
-        smooth_[idx], smoke_mask_detail::ClearThresholdAt(led, this->num_leds_));
-  }
-
-  SimpleColor getColor(int led) {
-    uint32_t mix = GetMixAtLed(led);
-    SimpleColor c;
-    c.c = c1_.getColor(led).c.mix(c2_.getColor(led).c, mix);
-    return c;
-  }
-
-private:
-  COLOR1 c1_;
-  COLOR2 c2_;
-  unsigned short* smooth_ = 0;
-  int smooth_len_ = 0;
-  uint32_t tick_ = 0;
-};
-
-// Opposing offset dual sine rolls; sizes drift slowly along the blade.
-template<class COLOR1, class COLOR2,
-  int DELAY = 0, class ROLL_SPEED = Int<1>,
-  class UP_NORM = FireConfig<0, 400, 1>,
-  class DOWN_NORM = FireConfig<0, 550, 1>>
-class StyleSmokeFlow {
-public:
-  bool run(BladeBase* blade) {
-    c1_.run(blade);
-    c2_.run(blade);
-    roll_speed_.run(blade);
     num_leds_ = blade->num_leds();
-    (void)DELAY;
-    (void)UP_NORM::get();
-    (void)DOWN_NORM::get();
-    // One time sample per frame — getColor must not call micros() per LED (unstable flicker).
-    time_us_ = micros();
-    time_us_down_ = time_us_ + 4800000u;
-    int speed = roll_speed_.calculate(blade);
-    scroll_up_ = (int)(((int64_t)time_us_ * 9 * speed) / 10000);
-    scroll_down_ = (int)(((int64_t)time_us_down_ * 5 * speed) / 14000);
+    if (dir_ == SMOKE_DIR_FLOW) {
+      time_us_ = micros();
+      time_us_down_ = time_us_ + 4800000u;
+      int speed = speed_;
+      scroll_up_ = (int)(((int64_t)time_us_ * 9 * speed) / 10000);
+      scroll_down_ = (int)(((int64_t)time_us_down_ * 5 * speed) / 14000);
+      return true;
+    }
+    uint32_t m = millis();
+    if (m - tick_ >= 20) {
+      tick_ = m;
+      StepHeat();
+    }
+    smoke_mask_detail::UpdateTemporalSmooth(smooth_, smooth_len_, heat_, num_leds_);
     return true;
   }
 
   SimpleColor getColor(int led) {
-    if (num_leds_ <= 0) {
-      return SimpleColor(Color16());
+    uint32_t mix = 65535u;
+    if (dir_ == SMOKE_DIR_FLOW) {
+      if (num_leds_ <= 0) return SimpleColor(Color16());
+      int pos = smoke_mask_detail::BladePos32768(led, num_leds_);
+      mix = smoke_mask_detail::RollFlowMix(
+          pos, scroll_up_, scroll_down_, time_us_, time_us_down_);
+    } else if (smooth_ && num_leds_ > 0) {
+      int idx = num_leds_ - 1 - led;
+      if (idx < 0) idx = 0;
+      if (idx >= num_leds_) idx = num_leds_ - 1;
+      mix = smoke_mask_detail::HeatToLuminanceMix(smooth_[idx], 248);
     }
-    int pos = smoke_mask_detail::BladePos32768(led, num_leds_);
-    uint32_t mix = smoke_mask_detail::RollFlowMix(
-        pos, scroll_up_, scroll_down_, time_us_, time_us_down_);
     SimpleColor c;
     c.c = c1_.getColor(led).c.mix(c2_.getColor(led).c, mix);
     return c;
   }
 
 private:
-  COLOR1 c1_;
-  COLOR2 c2_;
-  PONUA SVFWrapper<ROLL_SPEED> roll_speed_;
+  // heat_[0] is the tip end of the buffer. Up injects just past the hilt
+  // (index num_leds) and diffuses toward index 0. Down injects at index 0.
+  // SPEED is 1, cooling is 1, matching the old FireConfig specializations.
+  void StepHeat() {
+    if (num_leds_ <= 0) return;
+    if (!heat_) {
+      size_t N = (size_t)num_leds_ + 1 + 3;
+      heat_ = new unsigned short[N];
+      for (size_t i = 0; i < N; i++) heat_[i] = 0;
+    }
+    const int speed = 1;
+    const int cooling = 1;
+    if (dir_ == SMOKE_DIR_DOWN) {
+      const int rand_amp = 550;
+      for (int i = 0; i < speed; i++) {
+        heat_[i] = random(random(random(rand_amp)));
+      }
+      for (int i = 1; i < num_leds_; i++) {
+        int ip1 = (i + 1 < num_leds_) ? i + 1 : i;
+        int x = (heat_[i - 1] * 3 + heat_[i] * 10 + heat_[ip1] * 3) >> 4;
+        heat_[i] = clampi32(x - random(cooling), 0, 65535);
+      }
+      if (num_leds_ > 1) smoke_mask_detail::SpreadHeatTowardHilt(heat_, num_leds_, 2);
+    } else {
+      const int rand_amp = 400;
+      for (int i = 0; i < speed; i++) {
+        heat_[num_leds_ + i] = random(random(random(rand_amp)));
+      }
+      for (int i = 0; i < num_leds_; i++) {
+        int x = (heat_[i + speed - 1] * 3 +
+                 heat_[i + speed] * 10 +
+                 heat_[i + speed + 1] * 3) >> 4;
+        heat_[i] = clampi32(x - random(cooling), 0, 65535);
+      }
+      if (num_leds_ > 1) smoke_mask_detail::SpreadHeatTowardTip(heat_, num_leds_, 2);
+    }
+  }
+
+  SmokeKind kind_ = SMOKE_KIND_ARG;
+  SmokeDir dir_ = SMOKE_DIR_FLOW;
+  int speed_ = 1;
   int num_leds_ = 0;
   int scroll_up_ = 0;
   int scroll_down_ = 0;
   uint32_t time_us_ = 0;
   uint32_t time_us_down_ = 0;
+  uint32_t tick_ = 0;
+  unsigned short* heat_ = 0;
+  unsigned short* smooth_ = 0;
+  int smooth_len_ = 0;
+  RgbArg<1, Black> c1_;
+  RgbArg<2, White> c2_;
 };
 
-template<class COLOR1, class COLOR2, int DELAY=0, int SPEED=2, int BASE=0, int RAND=2000, int COOLING=5>
-using StaticFireReverse = StyleFireReverse<COLOR1, COLOR2, DELAY, SPEED,
-                FireConfig<BASE, RAND, COOLING>,
-                FireConfig<BASE, RAND, COOLING>,
-                FireConfig<BASE, RAND, COOLING>,
-                FireConfig<BASE, RAND, COOLING>>;
+class SmokeBladeStyle : public Style<SmokeRuntime> {
+public:
+  explicit SmokeBladeStyle(SmokeKind kind) { base_.Init(kind); }
+
+  int get_max_arg(int argument) override {
+    if (argument < 1 || argument > base_.maxArg()) return -1;
+    return 65535;
+  }
+};
+
+class SmokeStyleFactory : public StyleFactory {
+public:
+  explicit SmokeStyleFactory(SmokeKind kind) : kind_(kind) {}
+  BladeStyle* make() override { return new SmokeBladeStyle(kind_); }
+
+private:
+  SmokeKind kind_;
+};
+
+static SmokeStyleFactory smoke_factory(SMOKE_KIND_ARG);
+static SmokeStyleFactory smoke_up_factory(SMOKE_KIND_UP);
+static SmokeStyleFactory smoke_down_factory(SMOKE_KIND_DOWN);
+static SmokeStyleFactory smoke_flow_factory(SMOKE_KIND_FLOW);
 
 #endif  // STYLES_SMOKE_MASK_H

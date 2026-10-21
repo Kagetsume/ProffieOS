@@ -323,10 +323,14 @@ inline void ConfigStripLegacySmokeInOut(char* line) {
     p = (char*)SkipWord(p);
     p = (char*)SkipWord(p);
   }
-  if (!FirstWord(p, "smoke_flow") && !FirstWord(p, "smoke_up") && !FirstWord(p, "smoke_down")) return;
+  // "smoke" is the direction form. It does not match smoke_flow / smoke_up / smoke_down.
+  const bool unified = FirstWord(p, "smoke");
+  if (!unified && !FirstWord(p, "smoke_flow") && !FirstWord(p, "smoke_up") &&
+      !FirstWord(p, "smoke_down")) return;
   p = (char*)SkipWord(p);
   p = (char*)SkipWord(p);
   p = (char*)SkipWord(p);
+  if (unified) p = (char*)SkipWord(p);
   while (*p == ' ' || *p == '\t') p++;
   if (!*p) return;
   const char* third_end = SkipWord(p);
@@ -392,10 +396,9 @@ inline void ConfigBaseInOutFromLayerLine(const char* layer_line, uint8_t* curve,
   } else if (FirstWord(p, "strip_column")) {
     found = CONFIG_INOUT_BEND;
     ArgParser ap(SkipWord(p));
-    StripColumnBmpFrameAxis axis = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
-    const bool axis_in_arg4 = StripColumnParseFrameAxisToken(ap.GetArg(4, "", ""), &axis);
-    ext_arg = axis_in_arg4 ? 5 : 4;
-    ret_arg = axis_in_arg4 ? 6 : 5;
+    const bool layout_word = StripColumnLayoutWordSkipsArg(ap.GetArg(4, "", ""));
+    ext_arg = layout_word ? 5 : 4;
+    ret_arg = layout_word ? 6 : 5;
   }
   if (found == CONFIG_INOUT_NONE) return;
   ArgParser ap(SkipWord(p));
@@ -638,16 +641,14 @@ public:
     const char* path = CurrentArgParser->GetArg(1, "FILE", "");
     StripColumnPath::Set(path);
     const char* arg4 = CurrentArgParser->GetArg(4, "ARG", "");
-    StripColumnBmpFrameAxis axis = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
-    const bool axis_in_arg4 = StripColumnParseFrameAxisToken(arg4, &axis);
-    if (!axis_in_arg4) axis = STRIP_COLUMN_BMP_DEFAULT_FRAME_AXIS;
-    StripColumnPath::SetFrameAxis(axis);
+    const bool layout_word = StripColumnLayoutWordSkipsArg(arg4);
+    StripColumnWarnIfColumnsLayout(arg4);
     BladeStyle* column = StylePtr<StripColumnL<IntArg<2, 144>, IntArg<3, 30>>>()->make();
     if (!column) return nullptr;
     if (config_layer_parse_depth_ > 0) return column;
     int ext = 300;
     int ret = 800;
-    if (axis_in_arg4) {
+    if (layout_word) {
       ext = ConfigParseMsToken(CurrentArgParser->GetArg(5, "", ""), 300);
       ret = ConfigParseMsToken(CurrentArgParser->GetArg(6, "", ""), 800);
     } else {

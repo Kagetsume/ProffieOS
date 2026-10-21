@@ -46,8 +46,8 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | **`extend_ms` / `retract_ms`** (base, **`strip_column`**, **`transition`**, …) | Blade extension and retraction duration | Milliseconds; **`-1`** = match ignition / retraction **soundfont** length (`InOutFuncAuto`). Textures including **`smoke_flow`** omit these; the stack wipe follows the base | Fixed ms in monolithic **`standard`** / **`rainbow`** strings |
 | **`speed`** on scrolling textures (`stripes`, `hard_stripes`, `random_bands`, `sine_waves`, `saw_waves`, `hue_waves`, `pulse_train`, `chirp`, `value_noise`, `fbm_noise`, `moire_mask`, …) | How fast the pattern rolls along the blade | **Not milliseconds.** Sign = direction (**negative** ≈ toward tip, **positive** toward hilt, same family as stripes). Phase advances each frame by **`delta_micros * speed / 333`** (see **`styles/stripes.h`**, **`random_bands.h`**, etc.). Typical magnitudes ~**1500–3000** | Compiled templates embed the same integer speeds |
 | **`period`** (and band **`scale`** on **`random_bands`**) | Wavelength / band size along the blade | Internal spatial units in the **~2000–3000** range for visible bands (same “stripe width” family). **`period 0`** disables that wave slot or passthroughs the mask | — |
-| **`smoke_flow` … speed** (optional 3rd arg) | Smoke roll rate relative to default | Unitless multiplier; **`1`** = default roll, **`2`** = twice as fast (not the stripe **`speed`** scale) | Legacy **`smoke_up`** / **`smoke_down`** have no speed arg |
-| **`strip_column`** `path`, `source_height`, `fps`, optional axis, ext, ret | SD column animation base | **`source_height`**: blade pixels along the file’s blade axis (**width** for **`frames_y`**, **height** for **`frames_x`**); **`fps`**: target frame rate; **24-bit BMP** (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | Optional **`frames_y`** / **`frames_x`** (default **`frames_y`**) |
+| **`smoke` … direction / speed** | Which smoke motion, and the flow roll rate | **`up`**, **`down`**, or **`flow`**. **`speed`** applies to **`flow`** only: **`1`** = default roll, **`2`** = twice as fast | **`smoke_up`** / **`smoke_down`** / **`smoke_flow`** are the same style with the direction filled in |
+| **`strip_column`** `path`, `source_height`, `fps`, optional `frames_y`, ext, ret | SD column animation base | **`source_height`**: blade pixels, the BMP **width**. BMP **height** is the frame count. **`fps`**: target frame rate; **24-bit BMP** (**`strip_column_bmp.h`**). **`-1`** ext/ret = sound sync | Optional **`frames_y`** / **`row`** / **`rows`** is ignored. **`frames_x`** is rejected |
 | **`real_clash`** `color`, **`blade_position`** (e.g. **`49%`** or **`angle`**) | OS7 Real Clash overlay color and band placement | **0%**–**100%** = fixed center on blade (OS7 tilt-modulated band); **`angle`** = center tracks blade tilt (**ResponsiveClash**-style). Default **49%**. Strength path uses **`GetClashStrength`** | Monolithic OS7 compiled styles |
 
 **Quick examples:** `layer = multiply opacity 73% sine_waves 2400 0 12.5% 100% -2000` — layer opacity and mask min/max use percent; period **2400**; scroll **-2000**. `layer = multiply opacity 67% chirp 2400 -2000 12.5% 100% 80`. `layer = real_clash white 49%` — fixed band center ~upper blade; `layer = real_clash white angle` — band follows tilt.
@@ -73,17 +73,12 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 | Style | Arguments (in order) | Example |
 |-------|----------------------|---------|
 | **solid** | base color, optional extension ms, retraction ms | `solid cyan` — flat color. No wipe in the style. The section `transition` line is the wipe |
-| **strip_column** | SD path, source width (`source_height`), fps, optional `frames_y`/`frames_x`, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD. **144** is the row width (blade length) for `frames_y`. RGB column resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
+| **strip_column** | SD path, source width (`source_height`), fps, optional `frames_y`, extend ms, retract ms | `strip_column anim/foo.bmp 144 30 {{ext}} {{ret}}` — **24-bit BMP** on SD. **144** is the row width (blade length). One BMP row is one frame. RGB resampled with linear interpolation (see **strip_column_bmp.h**). Missing/invalid file: transparent (no effect) |
 | **strip_column_mask** | SD path, source width (`source_height`), fps | `multiply opacity 80% strip_column_mask masks/foo.bmp 144 1` — same BMP layout as **strip_column** (always **`frames_y`**); grayscale column = multiply brightness mask. A still mask is one frame in the file with **`fps` 1**. Missing/invalid file: transparent (no effect) |
 
-**strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (24-bit BI_RGB — not RLE, not palette). Layout is chosen by **`frames_y`** (default) or **`frames_x`** in the style line (see **`strip_column_bmp.h`**); firmware does **not** guess from width/height alone.
+**strip_column — animation file on a PC:** Use a **standard uncompressed `.bmp`** (24-bit BI_RGB — not RLE, not palette). Width is pixels along the blade. Height is the frame count. One horizontal row is one frame, and the top row is the hilt. An optional **`frames_y`** / **`row`** / **`rows`** word is accepted and ignored. **`frames_x`** / **`column`** / **`columns`** is rejected on serial; the file is still read as rows.
 
-| Axis | Blade pixels | Frame count | One frame in the file |
-|------|--------------|-------------|-------------------------|
-| **`frames_y`** (default). Aliases: `row`, `rows` | BMP **width** | BMP **height** | One horizontal **row** (hilt = top of image) |
-| **`frames_x`**. Aliases: `column`, `columns` | BMP **height** | BMP **width** | One vertical **column** (hilt = top) |
-
-**`source_height`** is that blade length in pixels, not the frame count. For **`frames_y`** it is the BMP **width** (a 144-pixel blade is width 144). Example: `144×120` → **144** blade pixels, **120** frames → `strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
+**`source_height`** is the blade length in pixels, the BMP **width** (a 144-pixel blade is width 144). Example: `144×120` → **144** blade pixels, **120** frames → `strip_column animations/plasma.bmp 144 30 {{ext}} {{ret}}`.
 
 1. **GIMP:** *File → Export As…* → `.bmp` → **24-bit**, **no** run-length compression.
 2. **Photoshop:** *Save As* → BMP → **24 Bit**, uncompressed Windows BMP.
@@ -96,8 +91,7 @@ Use these the same way as in a preset. Arguments are space-separated; colors can
 
 **Optimized SD reads:** Playback still advances **one BMP frame at a time** (no skipping when SD is slow — motion may lag **`fps`** but should not **jump** frames).
 
-- **`frames_y`:** When buffered-ahead count drops to **`STRIP_COLUMN_Y_AHEAD_WATERMARK`** (default **2**), one seek can load up to **`STRIP_COLUMN_BMP_Y_BULK_ROWS`** (default **4**) upcoming rows via **`StripColumnBmpLoadFramesAlongYBulk`**; non-contiguous rows (loop wrap) fall back to single-frame loads.
-- **`frames_x`:** Each tick loads the next vertical column in slices (**`STRIP_COLUMN_BMP_ROWS_PER_RUN`**, default **24** in **`strip_column.h`**).
+When the buffered-ahead count drops to **`STRIP_COLUMN_Y_AHEAD_WATERMARK`** (default **2**), one seek can load up to **`STRIP_COLUMN_BMP_Y_BULK_ROWS`** (default **4**) upcoming rows via **`StripColumnBmpLoadFramesAlongYBulk`**. Non-contiguous rows (loop wrap) fall back to single-frame loads.
 
 Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own timers and can dominate perceived motion. To isolate the flipbook, comment out multiply layers, set sine **`speed`** to **`0`**, or try a low **`fps`** (e.g. **`2`**) before tuning texture speeds.
 
@@ -116,7 +110,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **power_wave** | base, clash, extend ms, retract ms | `power_wave silver white 300 800` |
 | **unstable_blades** | base, clash, extend ms, retract ms | `unstable_blades silver white 300 800` (not **`unstable`**) |
 | **fallen_order** | base, clash, extend ms, retract ms | `fallen_order silver white 300 800` |
-| **smoke_flow** | dark color, light color, optional speed | `smoke_flow black white` — wipe follows the base (each multiply/screen line) |
+| **smoke** | dark color, light color, direction, optional speed | `smoke black white flow` — **`up`**, **`down`**, or **`flow`**. Wipe follows the base. **`smoke_flow`** is the same style |
 | **gradient_layer** | hilt color, tip color | `gradient_layer red blue` — no ext/ret (compositor follows base) |
 | **rainbow_layer** | (no args) | `rainbow_layer` — animated rainbow tint; use **`normal`** blend + opacity |
 | **audio_layer** | (no args) | `audio_layer` — hum-reactive multiply mask; no ext/ret |
@@ -133,7 +127,7 @@ Multiply textures (**`sine_waves`**, **`pulse_train`**, …) scroll on their own
 | **smoothstep_bands** | period, speed, min, max, edge_width | Soft rolling bands |
 | **value_noise** / **fbm_noise** | scale, speed, min, max, … | 1D hash noise / cheap FBM multiply masks |
 | **moire_mask** | period1, period2, speed1, speed2, min, max | Beating linear ramps |
-| **blade_envelope** | center, width, min, max, speed | Bump along blade (**center**: **0%** hilt, **100%** tip, e.g. **`50%`**) |
+| **blade_envelope** | center, width, min, max, speed, optional audio | Bump along blade (**center**: **0%** hilt, **100%** tip, e.g. **`50%`**). **`audio 100%`** follows the smoothed hum. |
 | **sine_waves_swing** | sine_waves args + swing/twist scale | Motion shortens wavelength |
 | **pixel_sequence** | step config string | `pixel_sequence 0,255,0,0,100,200\|1,0,255,0,100,200` — see **pixel_sequencer.md** |
 | **charging** | (no args) | `charging` |
@@ -178,7 +172,7 @@ See **`sd_config_examples/README.md`** for composable vs monolithic guidance.
 | **`standard`**, **`rainbow`**, **`strobe`**, **`unstable`**, **`fire`**, **`cycle`**, **`advanced`** | Built into the style | These stock blades still wipe themselves. A `transition` line on a stack that uses one as the base wipes twice |
 | **`advanced`** | **Yes — when args include ext/ret** | This style still wipes itself. Leave `transition` off on a stack that uses it as the base |
 
-**Smoke recipe rule:** use **`smoke_flow` only** (not `smoke_up`/`smoke_down`). Example with sound sync:
+**Smoke recipe rule:** `smoke black white flow` (or the **`smoke_flow`** alias). Example with sound sync:
 
 ```ini
 ext = -1

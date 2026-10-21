@@ -23,7 +23,8 @@ enum ProceduralKind {
 };
 
 inline int ProceduralMaxArg(ProceduralKind kind) {
-  return kind == PROC_MOIRE_MASK ? 6 : 5;
+  if (kind == PROC_MOIRE_MASK || kind == PROC_BLADE_ENVELOPE) return 6;
+  return 5;
 }
 
 inline bool ProceduralArgUsesBrightnessScale(ProceduralKind kind, int arg_num) {
@@ -46,7 +47,7 @@ inline bool ProceduralArgUsesBrightnessScale(ProceduralKind kind, int arg_num) {
 
 inline bool ProceduralArgUsesOpacityScale(ProceduralKind kind, int arg_num) {
   if (kind == PROC_PULSE_TRAIN && arg_num == 5) return true;
-  if (kind == PROC_BLADE_ENVELOPE && arg_num == 1) return true;
+  if (kind == PROC_BLADE_ENVELOPE && (arg_num == 1 || arg_num == 6)) return true;
   return false;
 }
 
@@ -114,6 +115,7 @@ inline int ProceduralDefaultArg(ProceduralKind kind, int arg_num) {
         case 3: return 0;
         case 4: return 65535;
         case 5: return 0;
+        case 6: return 0;
         default: return 0;
       }
     default:
@@ -519,10 +521,31 @@ private:
     min_run_ = a3_;
     max_run_ = a4_;
     speed_run_ = a5_;
+    audio_follow_ = a6_;
+    if (audio_follow_ < 0) audio_follow_ = 0;
+    if (audio_follow_ > 32768) audio_follow_ = 32768;
     procedural_runtime_detail::ClampMinMax(min_run_, max_run_);
     if (width_run_ <= 0) width_run_ = 4096;
     num_leds_ = base->num_leds();
     if (num_leds_ <= 0) num_leds_ = 1;
+    if (audio_follow_ > 0) {
+      int target = 32768;
+#ifdef ENABLE_AUDIO
+      target = clampi32((int)(sqrtf((float)dynamic_mixer.audio_volume()) * 20.0f), 0, 32768);
+#endif
+      uint32_t now = micros();
+      if (hum_micros_ == 0) {
+        hum_level_ = target;
+      } else {
+        int32_t dt = (int32_t)(now - hum_micros_);
+        if (dt < 0) dt = 0;
+        if (dt > 120000) dt = 120000;
+        hum_level_ += (int)(((int64_t)(target - hum_level_) * dt) / 120000);
+        if (hum_level_ < 0) hum_level_ = 0;
+        if (hum_level_ > 32768) hum_level_ = 32768;
+      }
+      hum_micros_ = now;
+    }
     if (speed_run_ != 0) {
       uint32_t now_micros = micros();
       int32_t delta_micros = now_micros - last_micros_;
@@ -549,6 +572,15 @@ private:
         min_run_ + (int)((int64_t)bump * (max_run_ - min_run_) >> 15),
         0,
         65535);
+    if (audio_follow_ > 0) {
+      // 45% floor, then up to full as the smoothed hum rises. Follow blends that in.
+      const int floor_g = 14746;
+      int lifted = floor_g + (int)(((int64_t)hum_level_ * (32768 - floor_g)) >> 15);
+      int gain = 32768 + (int)(((int64_t)(lifted - 32768) * audio_follow_) >> 15);
+      if (gain < 0) gain = 0;
+      if (gain > 32768) gain = 32768;
+      f = (uint32_t)(((uint64_t)f * (uint32_t)gain) >> 15);
+    }
     return procedural_runtime_detail::GrayFactor(f);
   }
 
@@ -588,6 +620,9 @@ private:
   int center_run_ = 16384;
   int width_run_ = 4096;
   int speed_run_ = 0;
+  int audio_follow_ = 0;
+  int hum_level_ = 32768;
+  uint32_t hum_micros_ = 0;
   int num_leds_ = 1;
 
   int last_period_ = -1;

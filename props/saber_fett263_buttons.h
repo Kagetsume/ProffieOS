@@ -2334,11 +2334,15 @@ SaberFett263Buttons() : PropBase() {}
 
   void Setup() override {
     RestoreGestureState();
-    if (UseBoardConfigFile()) {
-      if (board_config_file.gesture >= 0) saved_gesture_control.gestureon = (board_config_file.gesture == 1);
-      if (board_config_file.twist_on >= 0) saved_gesture_control.twiston = (board_config_file.twist_on == 1);
-      if (board_config_file.twist_off >= 0) saved_gesture_control.twistoff = (board_config_file.twist_off == 1);
-    }
+#ifdef ENABLE_SD_CONFIG_FILES
+    // features.ini / board.ini overwrite the gesture file. Unset keys stay -1.
+    if (board_config_file.gesture >= 0) saved_gesture_control.gestureon = (board_config_file.gesture == 1);
+    if (board_config_file.swing_on >= 0) saved_gesture_control.swingon = (board_config_file.swing_on == 1);
+    if (board_config_file.thrust_on >= 0) saved_gesture_control.thruston = (board_config_file.thrust_on == 1);
+    if (board_config_file.stab_on >= 0) saved_gesture_control.stabon = (board_config_file.stab_on == 1);
+    if (board_config_file.twist_on >= 0) saved_gesture_control.twiston = (board_config_file.twist_on == 1);
+    if (board_config_file.twist_off >= 0) saved_gesture_control.twistoff = (board_config_file.twist_off == 1);
+#endif
 #ifndef MENU_SPEC_TEMPLATE
 #ifdef MOUNT_SD_SETTING
    sound_library_v2.init();

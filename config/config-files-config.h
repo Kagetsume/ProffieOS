@@ -182,6 +182,34 @@ BladeConfig blades[] = {
 #endif
 
 #ifdef CONFIG_BUTTONS
-Button PowerButton(BUTTON_POWER, powerButtonPin, "pow");
-Button AuxButton(BUTTON_AUX, auxPin, "aux");
+#include "../common/sd_config/sd_config_button.h"
+SdConfigButton PowerButton(BUTTON_POWER, powerButtonPin, "pow");
+SdConfigButton AuxButton(BUTTON_AUX, auxPin, "aux");
+#if NUM_BUTTONS >= 3
+SdConfigButton Aux2Button(BUTTON_AUX2, aux2Pin, "aux2");
+#endif
+
+static void ApplyConfigFileButtons() {
+  int n = board_config_file.buttons;
+  if (n < 1) n = NUM_BUTTONS;
+  if (n > NUM_BUTTONS) n = NUM_BUTTONS;
+  int power_pin = ResolveBoardButtonPin(board_config_file.power_pin_name);
+  int aux_pin = ResolveBoardButtonPin(board_config_file.aux_pin_name);
+  if (power_pin >= 0) PowerButton.AssignPin(power_pin);
+  PowerButton.SetActive(n >= 1);
+#if NUM_BUTTONS >= 2
+  if (aux_pin >= 0) AuxButton.AssignPin(aux_pin);
+  AuxButton.SetActive(n >= 2);
+#endif
+#if NUM_BUTTONS >= 3
+  int aux2_pin = ResolveBoardButtonPin(board_config_file.aux2_pin_name);
+  if (aux2_pin >= 0) Aux2Button.AssignPin(aux2_pin);
+  Aux2Button.SetActive(n >= 3);
+#endif
+}
+
+struct RegisterConfigFileButtons {
+  RegisterConfigFileButtons() { apply_board_buttons_hook = ApplyConfigFileButtons; }
+};
+static RegisterConfigFileButtons register_config_file_buttons;
 #endif

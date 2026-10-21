@@ -100,7 +100,7 @@ One flash instance **per overlay type** (not per preset). Aggregate cost is the 
 | Heavy | `blast_wave_random` | See Tier B |
 | Medium | `responsive_lockup`, `responsive_blast`, `responsive_clash`, `drag`, `melt`, `lb` | Same pattern as OS7 layers: mostly `RgbArg<1>` — candidate for **color-arg runtime factories** later |
 | Light | `clash`, `localized_clash`, `blast`, `sparkle`, `pulse`, `swing`, … | Small templates; factory overhead may eat gains |
-| Texture | `fire_mask`, `smoke_up/down/flow`, `stripes`, `hard_stripes`, `random_bands`, `noise_flicker`, `base_flicker`, `pulse_layer`, `swing_layer`, … | Smoke is a plain texture. The stack wipe lives once in `ConfigLayersStyle`, not in each smoke `AlphaL` |
+| Texture | `fire_mask`, `smoke` (`up`/`down`/`flow`), `stripes`, `hard_stripes`, `random_bands`, `noise_flicker`, `base_flicker`, `pulse_layer`, `swing_layer`, … | Smoke is one runtime style. The stack wipe lives once in `ConfigLayersStyle` |
 
 **Example config usage (layer lines):** `real_clash` ~62, `blast_wave_random` ~49, `solid` ~46 — optimizing overlays matters for your shipped ini more than unused monoliths like `cycle`.
 

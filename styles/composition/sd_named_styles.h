@@ -12,14 +12,14 @@
     "Times left on this line are used only when that transition line is omitted.")
   },
   { "strip_column", &config_strip_column_factory,
-    NAMED_STYLE_DESC(    "SD column animation base: file_path source_height fps [frames_x|frames_y] extend_ms retract_ms. "
+    NAMED_STYLE_DESC(    "SD column animation base: file_path source_height fps [frames_y] extend_ms retract_ms. "
     "Normal 24-bit uncompressed .bmp on SD. No wipe of its own inside a config section; "
     "the section transition mask extends and retracts it. Times on this line feed that mask when transition is omitted. "
     "Use -1 for extend/retract to match sound length. Missing/invalid file: scrolling strobe red danger bands.")
   },
   { "strip_column_mask", &strip_column_mask_factory,
     NAMED_STYLE_DESC(    "SD column BMP multiply mask: file_path source_height fps. Same 24-bit BMP layout as "
-    "strip_column (always frames_y). Grayscale R=G=B; stack as multiply opacity … strip_column_mask. "
+    "strip_column (one BMP row per frame). Grayscale R=G=B; stack as multiply opacity … strip_column_mask. "
     "Missing/invalid file: danger fallback pattern while blade is on.")
   },
   // Full pixel blades (opaque; use alone or as bottom layer in config sections).
@@ -225,21 +225,27 @@
     StylePtr<FireMaskLayer<RgbArg<1, Black>, RgbArg<2, White>> >(),
     NAMED_STYLE_DESC(    "Rolling heat mask for layering; warm_color hot_color (default black white). Use multiply opacity ~20000 over a base")
   },
+  { "smoke",
+    &smoke_factory,
+    NAMED_STYLE_DESC(    "Smoke texture; dark light direction [speed]. "
+    "direction: up (hilt toward tip), down (tip toward hilt), or flow (both rolls). "
+    "speed applies to flow (1 = default, 2 = twice as fast). "
+    "No extend/retract — the stack mask follows the base. "
+    "multiply black white = dim smoke; screen black <base> = bright wisps. "
+    "Example: smoke black white flow")
+  },
   { "smoke_up",
-    StylePtr<SmokeUpLayer<RgbArg<1, Black>, RgbArg<2, White>> >(),
-    NAMED_STYLE_DESC(    "Slow organic smoke bands toward tip (hilt→tip); dark light. "
-    "Extend/retract comes from the stack mask on the base. multiply black white; screen black <base>")
+    &smoke_up_factory,
+    NAMED_STYLE_DESC(    "smoke dark light up. Heat drifts from hilt toward tip.")
   },
   { "smoke_down",
-    StylePtr<SmokeDownLayer<RgbArg<1, Black>, RgbArg<2, White>> >(),
-    NAMED_STYLE_DESC(    "Slow organic smoke bands toward hilt (tip→hilt); dark light. "
-    "Extend/retract comes from the stack mask on the base. multiply black white; screen black <base>")
+    &smoke_down_factory,
+    NAMED_STYLE_DESC(    "smoke dark light down. Heat drifts from tip toward hilt.")
   },
   { "smoke_flow",
-    StylePtr<SmokeFlowLayer<RgbArg<1, Black>, RgbArg<2, White>, IntArg<3, 1>> >(),
-    NAMED_STYLE_DESC(    "Wide rolling smoke (offset dual sine bands); dark light speed. "
-    "speed 1 = default roll; higher = faster. No extend/retract args — the stack mask follows the base. "
-    "multiply black white = dim smoke; screen black <base> = bright wisps")
+    &smoke_flow_factory,
+    NAMED_STYLE_DESC(    "smoke dark light flow [speed]. Offset dual sine bands. "
+    "speed 1 = default roll. Same style as smoke.")
   },
   { "stripes",
     StylePtr<StripesLayer<IntArg<1, 1000>, IntArg<2, -2000>, RgbArg<3, Blue>, RgbArg<4, Cyan>> >(),
@@ -304,7 +310,8 @@
   },
   { "blade_envelope",
     &procedural_blade_envelope_factory,
-    NAMED_STYLE_DESC(    "Bump along blade (center width min max [speed]); center 0=hilt 32768=tip. speed 0 = static. "
+    NAMED_STYLE_DESC(    "Bump along blade (center width min max [speed] [audio]); center 0=hilt 32768=tip. speed 0 = static. "
+    "audio 0 keeps the bump steady. audio 100% follows the smoothed hum and stays at least 45% lit. "
     "Example: blade_envelope 50% 6000 12.5% 100% 0")
   },
   { "sine_waves_swing",

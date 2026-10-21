@@ -286,7 +286,7 @@ Which lines need `{{ext}}` and `{{ret}}`:
 | `normal` or `add` textures (`gradient_layer`, stripes used with `add`, and similar) | No. They are clipped to the pixels the base has already lit, so they follow the base, including `-1`. |
 | `multiply` or `screen` masks that have no timing of their own (`sine_waves`, `audio_layer`, `fire_mask`, `pulse_layer`, …) | No. A dark base already hides them during retract. |
 | `hue` (`hue_waves`) | No. A dark or unlit base has nothing to rotate, so the shift follows the base wipe. |
-| `smoke_flow` | No. It follows the base wipe. |
+| `smoke`, `smoke_flow`, `smoke_up`, `smoke_down` | No. They follow the base wipe. |
 
 ```ini
 ext = -1
@@ -370,7 +370,7 @@ These draw the color or the BMP. They do not wipe. The section `transition` line
 | Style | Arguments | What you see |
 | --- | --- | --- |
 | `solid` | base color, optional extend ms, retract ms | Flat color. No wipe. Example: `layer = solid cyan` with `transition = bend {{ext}} {{ret}}`. |
-| `strip_column` | SD path, source width, fps, optional `frames_y` or `frames_x`, extend ms, retract ms | A 24-bit BMP played along the blade. The section `transition` wipes it. For `frames_y`, the width number is the blade length (144 in the demos). Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
+| `strip_column` | SD path, source width, fps, optional `frames_y`, extend ms, retract ms | A 24-bit BMP played along the blade. The section `transition` wipes it. The width number is the blade length (144 in the demos). One BMP row is one frame. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
 
 #### Full named blades
 
@@ -443,10 +443,10 @@ Shipped demos that are "one base plus one mask" live in `blade_styles.ini` as `[
 | `value_noise` | scale, speed, min, max, optional seed | Smooth 1D noise. Scale `0` disables it. |
 | `fbm_noise` | scale, speed, min, max, strength | A rougher three-octave noise. |
 | `moire_mask` | period1, period2, speed1, speed2, min, max | Two ramps that beat against each other. |
-| `blade_envelope` | center, width, min, max, optional speed | A bump along the blade. Center `0%` is the hilt, `100%` is the tip, `50%` is the middle. Speed `0` holds it still. |
+| `blade_envelope` | center, width, min, max, optional speed, optional audio | A bump along the blade. Center `0%` is the hilt, `100%` is the tip, `50%` is the middle. Speed `0` holds it still. `audio` `100%` makes the bump follow the smoothed hum. |
 | `fire_mask` | warm color, hot color | A scrolling heat pattern. `multiply` over a base reads as smoke or lava. |
-| `smoke_flow` | dark, light, extend ms, retract ms, optional speed | Wide dual smoke bands. **Ext and ret must match the base.** Speed `1` is the default roll; `2` is twice as fast. Multiply `black white` for shade; screen `black` plus the base color for bright wisps. |
-| `smoke_up` / `smoke_down` | dark, light, extend ms, retract ms | Older one-direction smoke. Shipped recipes use `smoke_flow` instead. |
+| `smoke` | dark, light, direction (`up`, `down`, or `flow`), optional speed | One smoke texture. `flow` is the wide dual roll (`speed` `1` is default, `2` is twice as fast). `up` drifts hilt toward tip. `down` drifts tip toward hilt. No extend/retract on the line. Multiply `black white` for shade; screen `black` plus the base color for bright wisps. |
+| `smoke_flow` / `smoke_up` / `smoke_down` | same colors; `smoke_flow` also takes optional speed | The same style with the direction already chosen. |
 | `noise_flicker` | base color, flicker color | Organic crackle. Multiply over a base. |
 | `unstable_stripes` | base color | The crackling stripe band from `unstable_blades`, without the rest of that blade. |
 | `strip_column_mask` | SD path, source height, fps | A BMP used as a brightness mask. Always the `frames_y` layout. See the strip-column section. |
@@ -598,14 +598,11 @@ layer = lb {{lb}}
 
 Export a **24-bit uncompressed BMP** (no RLE, no palette). GIMP: Export As `.bmp`, 24-bit, do not run-length encode. Photoshop: Save As BMP, 24-bit, Windows, uncompressed.
 
-The file is a flipbook. Which way time runs depends on a word in the layer line. **If you omit that word, the layout is `frames_y`.**
+The file is a flipbook. **Width** is pixels along the blade. **Height** is the number of frames. The top row is the hilt, the bottom row is the tip. One row is one moment in time. A 144 by 120 image is 144 blade pixels and 120 frames.
 
-| Word | How to paint the BMP | Example size |
-| --- | --- | --- |
-| `frames_y` (default). Aliases: `row`, `rows`. | **Width** is pixels along the blade. **Height** is the number of frames. The top row is the hilt, the bottom row is the tip. One row is one moment in time. | 144 wide by 120 tall means 144 blade pixels and 120 frames. |
-| `frames_x`. Aliases: `column`, `columns`. | **Width** is the number of frames. **Height** is pixels along the blade. One vertical column is one moment. The top of the image is the hilt. | 27 wide by 144 tall means 27 frames of a 144-pixel blade. |
+An optional `frames_y` word (aliases `row` and `rows`) is accepted and ignored. `frames_x`, `column`, and `columns` are rejected on serial. The file is still read as rows.
 
-`source_height` in the layer line is the **blade span in pixels** (the blade axis of the file, not the frame count). For `frames_y` that number is the BMP **width**. The shipped demo uses `144`. If you set `source_height` larger than the file's blade span, the firmware clamps it and prints a serial warning. The in-memory column holds at most 170 pixels.
+`source_height` in the layer line is the **blade span in pixels**, the BMP **width**. The shipped demo uses `144`. If you set `source_height` larger than the file's width, the firmware clamps it and prints a serial warning. The in-memory column holds at most 170 pixels.
 
 Color on disk is stored BGR; the loader turns it into RGB. The blade resamples the column to however many LEDs you actually have.
 
@@ -614,7 +611,7 @@ The picture is opened **when the saber is on**, not during boot. A missing file 
 #### Arguments
 
 ```text
-strip_column <path> <source_height> <fps> [frames_y|frames_x] <extend_ms> <retract_ms>
+strip_column <path> <source_height> <fps> [frames_y] <extend_ms> <retract_ms>
 strip_column_mask <path> <source_height> <fps>
 ```
 
@@ -622,16 +619,15 @@ strip_column_mask <path> <source_height> <fps>
 
 #### Ring buffer and SD reads (firmware)
 
-SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded columns** in RAM (default **6** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). While one frame displays, earlier ticks **prefetch** the next frames into free slots.
+SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded rows** in RAM (default **8** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). While one frame displays, earlier ticks **prefetch** the next frames into free slots.
 
-- **`frames_y` (default):** When only one frame is buffered ahead, the loader may read up to **four** upcoming BMP **rows** in one seek (bulk path in `strip_column_bmp.h`). If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
-- **`frames_x`:** Each animation tick loads the next vertical column in **slices** (several pixel rows of the column per tick).
+When two frames are still buffered ahead, the loader may read up to **four** upcoming BMP **rows** in one seek (bulk path in `strip_column_bmp.h`). If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
 
 Playback still never **skips** frames to catch up — under load you get slower motion, not jumps. Compile-time knobs include `STRIP_COLUMN_FRAME_RING_SIZE`, `STRIP_COLUMN_BMP_Y_BULK_ROWS`, and `STRIP_COLUMN_Y_AHEAD_WATERMARK` (see `strip_column.h` / `strip_column_bmp.h`).
 
 **LayerBlade:** On `#/styles`, upload a matching 24-bit BMP on a `strip_column` layer to preview the flipbook in the browser (path string must match what you export). This does not replace on-saber SD timing tests.
 
-`strip_column_mask` does not take an extend time or a frame-axis word. It always uses `frames_y`. A file that is one pixel tall is a still mask. Paint gray: under `multiply`, white leaves the blade alone and black darkens it. Colored pixels are averaged to gray. Requires firmware with the `strip_column_mask` named style (see `list_named_styles` over serial). In the shipped `[demo_strip_column]` the mask line is left commented.
+`strip_column_mask` does not take an extend time. A file that is one pixel tall is a still mask. Paint gray: under `multiply`, white leaves the blade alone and black darkens it. Colored pixels are averaged to gray. Requires firmware with the `strip_column_mask` named style (see `list_named_styles` over serial). In the shipped `[demo_strip_column]` the mask line is left commented.
 
 ```ini
 layer = multiply opacity 80% strip_column_mask masks/plasma_mask.bmp 144 30

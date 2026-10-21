@@ -69,7 +69,7 @@ A phase with no **`transition`** / **`transition_in`** / **`transition_out`** li
 
 **`ConfigLayersStyle`** paints that wipe once, after every texture and combat layer. When the retract has finished and the blade is off, the mask calls **`allow_disable`**. **`preon_*`**, **`postoff_*`**, and **`ignition_flash`** still hold power while they run.
 
-Textures do **not** take `ext`/`ret`. That includes **`smoke_flow`**, **`smoke_up`**, **`smoke_down`**, **`normal`/`add`** layers, and **multiply/screen** masks (`audio_layer`, `stripes`, `fire_mask`, …).
+Textures do **not** take `ext`/`ret`. That includes **`smoke`** (`up` / `down` / `flow`, and the **`smoke_flow`** / **`smoke_up`** / **`smoke_down`** aliases), **`normal`/`add`** layers, and **multiply/screen** masks (`audio_layer`, `stripes`, `fire_mask`, …).
 
 These layers are drawn **after** the wipe, because they paint while the blade is off or past the lit tip: **`preon_*`**, **`postoff_*`**, **`ignition_flash`**. The spark on the moving edge is the **`spark`** transition.
 

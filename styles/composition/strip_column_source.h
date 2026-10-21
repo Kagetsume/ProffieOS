@@ -14,10 +14,6 @@
 #include "../../common/arg_parser.h"
 #include <string.h>
 
-#ifndef STRIP_COLUMN_BMP_ROWS_PER_RUN
-#define STRIP_COLUMN_BMP_ROWS_PER_RUN 12
-#endif
-
 #ifdef ENABLE_AUDIO
 #include "../../sound/audio_stream_work.h"
 #else
@@ -93,7 +89,6 @@ class StripColumnFrameSource {
 public:
   StripColumnFrameSource() : open_ok_logged_(false) {
     Reset();
-    frame_axis_ = StripColumnPath::GetFrameAxis();
   }
   ~StripColumnFrameSource() { CloseOpenFile(); }
 
@@ -239,7 +234,7 @@ public:
       file_.Open(path_);
       LOCK_SD(false);
     }
-    return cache_.ShowFrame(&file_, &bmp_info_, frame_axis_, source_height_, frame);
+    return cache_.ShowFrame(&file_, &bmp_info_, source_height_, frame);
   }
 
   bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
@@ -279,7 +274,7 @@ public:
         LOCK_SD(false);
         return false;
       }
-      num_frames_ = StripColumnBmpNumFrames(&bmp_info_, frame_axis_);
+      num_frames_ = StripColumnBmpNumFrames(&bmp_info_);
       if (num_frames_ == 0) num_frames_ = 1;
       header_ok_ = true;
       LogOpenSuccessOnce(opts);
@@ -293,8 +288,7 @@ public:
         LOCK_SD(false);
       }
       if (file_.IsOpen() &&
-          cache_.LoadFrameSlice(&file_, &bmp_info_, frame_axis_,
-                                source_height_, 0, 0)) {
+          cache_.LoadFrameSlice(&file_, &bmp_info_, source_height_, 0, 0)) {
         opened_ = true;
         media_failed_ = false;
         cache_.OnFirstFrameReady();
@@ -307,8 +301,7 @@ public:
 
   void WarnSourceHeightVsBmp(int source_height, const char* style_name = "strip_column") {
     if (!header_ok_ || height_warned_) return;
-    uint32_t blade_px =
-        StripColumnBmpBladePixelsInFile(&bmp_info_, frame_axis_);
+    uint32_t blade_px = StripColumnBmpBladePixelsInFile(&bmp_info_);
     if ((uint32_t)source_height > blade_px) {
       height_warned_ = true;
       const char* tag = style_name ? style_name : "strip_column";
@@ -339,7 +332,7 @@ public:
       LOCK_SD(false);
     }
 
-    cache_.Tick(&file_, &bmp_info_, frame_axis_, source_height_, frame_ms,
+    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms,
                 num_frames_, direction);
   }
 
@@ -378,7 +371,6 @@ private:
   bool retract_armed_;
   bool playback_hold_;
   uint32_t retract_deadline_ms_;
-  StripColumnBmpFrameAxis frame_axis_;
 };
 
 #endif  // STYLES_STRIP_COLUMN_SOURCE_H

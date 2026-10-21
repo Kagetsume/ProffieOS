@@ -1299,27 +1299,26 @@ void test_strip_column_bmp() {
   CHECK_NEAR(info.pixel_offset, 54, 0);
 
   uint8_t col[512];
-  CHECK(StripColumnBmpLoadColumn(&f, &info, 0, 2, col, sizeof(col)));
+  CHECK_NEAR(StripColumnBmpNumFrames(&info), 2, 0);
+  CHECK_NEAR(StripColumnBmpBladePixelsInFile(&info), 2, 0);
+  CHECK(StripColumnBmpLoadFrameAlongY(&f, &info, 0, 2, col, sizeof(col)));
   CHECK_NEAR(col[0], 255, 0);
   CHECK_NEAR(col[1], 0, 0);
   CHECK_NEAR(col[2], 0, 0);
   CHECK_NEAR(col[3], 0, 0);
-  CHECK_NEAR(col[4], 0, 0);
-  CHECK_NEAR(col[5], 255, 0);
-
-  CHECK(StripColumnBmpLoadColumn(&f, &info, 1, 2, col, sizeof(col)));
+  CHECK_NEAR(col[4], 255, 0);
+  CHECK_NEAR(col[5], 0, 0);
+  CHECK(StripColumnBmpLoadFrameSlice(&f, &info, 1, 2, col, sizeof(col)));
   CHECK_NEAR(col[0], 0, 0);
-  CHECK_NEAR(col[1], 255, 0);
-  CHECK_NEAR(col[2], 0, 0);
+  CHECK_NEAR(col[1], 0, 0);
+  CHECK_NEAR(col[2], 255, 0);
+  CHECK_NEAR(col[3], 255, 0);
+  CHECK_NEAR(col[4], 255, 0);
   CHECK_NEAR(col[5], 255, 0);
-
-  CHECK_NEAR(StripColumnBmpNumFrames(&info, STRIP_COLUMN_FRAMES_ALONG_X), 2, 0);
-  CHECK_NEAR(StripColumnBmpNumFrames(&info, STRIP_COLUMN_FRAMES_ALONG_Y), 2, 0);
-  f.Seek(0);
-  CHECK(StripColumnBmpLoadFrameSlice(&f, &info, STRIP_COLUMN_FRAMES_ALONG_Y, 0, 0, 2, 2, col,
-                                     sizeof(col)));
-  CHECK(StripColumnBmpLoadFrameSlice(&f, &info, STRIP_COLUMN_FRAMES_ALONG_Y, 0, 1, 2, 2, col,
-                                     sizeof(col)));
+  CHECK(StripColumnClassifyLayoutWord("frames_y") == STRIP_COLUMN_LAYOUT_ROWS);
+  CHECK(StripColumnClassifyLayoutWord("frames_x") == STRIP_COLUMN_LAYOUT_COLUMNS_REMOVED);
+  CHECK(!StripColumnLayoutWordSkipsArg("300"));
+  CHECK(StripColumnLayoutWordSkipsArg("columns"));
 }
 
 void test_strip_column() {
@@ -1364,21 +1363,15 @@ void test_strip_column() {
 
   ArgParser ap("animations/test.bmp 144 30 300 800");
   CurrentArgParser = &ap;
-  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
   BladeStyle* style = strip_column_factory.make();
   CHECK(style != nullptr);
   CHECK(!strcmp(StripColumnPath::Get(), "animations/test.bmp"));
-  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_y("animations/test.bmp 144 30 frames_y 300 800");
   CurrentArgParser = &ap_y;
   style = strip_column_factory.make();
   CHECK(style != nullptr);
-  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
-  StripColumnL<IntArg<2, 144>, IntArg<3, 30>> frames_y_layer;
-  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
-  CHECK(frames_y_layer.FrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_quoted("\"animations/my plasma.bmp\" 144 30 300 800");
@@ -1404,13 +1397,11 @@ void test_strip_column_mask() {
   CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 1, 3, 3), 32896, 256);
   CHECK_NEAR(StripColumnMaskSampleFactorAtLed(column, 2, 3, 3), 65535, 0);
 
-  StripColumnPath::SetFrameAxis(STRIP_COLUMN_FRAMES_ALONG_X);
   ArgParser ap("masks/test.bmp 144 1");
   CurrentArgParser = &ap;
   BladeStyle* style = strip_column_mask_factory.make();
   CHECK(style != nullptr);
   CHECK(!strcmp(StripColumnPendingPath::Get(), "masks/test.bmp"));
-  CHECK(StripColumnPath::GetFrameAxis() == STRIP_COLUMN_FRAMES_ALONG_Y);
   delete style;
 
   ArgParser ap_quoted("\"masks/my mask.bmp\" 144 1");
