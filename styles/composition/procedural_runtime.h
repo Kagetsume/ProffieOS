@@ -11,6 +11,7 @@
 #include "../../common/sin_table.h"
 #include "../blade_style.h"
 #include "../style_ptr.h"
+#include "config_play_cue.h"
 
 enum ProceduralKind {
   PROC_PULSE_TRAIN = 0,
@@ -263,7 +264,18 @@ public:
     ApplyValues(values);
   }
 
+  void RestartClock() {
+    uint32_t now = micros();
+    last_micros_ = now;
+    hum_micros_ = 0;
+    m_ = 0;
+    m1_ = 0;
+    m2_ = 0;
+  }
+
   void run(BladeBase* base) {
+    int ignored = 0;
+    if (ConfigPlayCue::ConsumeRestart(&ignored)) RestartClock();
     switch (kind_) {
       case PROC_PULSE_TRAIN:
         runPulseTrain();

@@ -10,6 +10,7 @@
 #include "../../common/sd_config/opacity_scale.h"
 #include "parse_color_arg.h"
 #include "config_layers_style.h"
+#include "event_gate.h"
 #include "pixel_sequencer.h"
 #include "strip_column.h"
 #include "accent_blink.h"
@@ -41,6 +42,14 @@ inline bool TryParseConfigLayerLine(const char* layer_line,
   uint16_t alpha = CONFIG_LAYER_ALPHA_OPAQUE;
   uint8_t blend = CONFIG_LAYER_BLEND_NORMAL;
   const char* p = layer_line;
+  ConfigEventKind event_kind = ConfigEventKind::BLAST;
+  int event_ms = 0;
+  bool gated = false;
+  if (ConfigLayerWordIsEvent(p)) {
+    if (!ConfigParseEventPrefix(&p, &event_kind, &event_ms)) return false;
+    gated = true;
+    if (!p || !p[0]) return false;
+  }
   if (FirstWord(p, "multiply")) {
     blend = CONFIG_LAYER_BLEND_MULTIPLY;
     p = SkipWord(p);
@@ -73,6 +82,14 @@ inline bool TryParseConfigLayerLine(const char* layer_line,
   BladeStyle* s = ParseStyleStringForConfig(parse_from);
   config_layer_parse_depth_--;
   if (!s) return false;
+  if (gated) {
+    BladeStyle* gate = new EventGateStyle(s, event_kind, event_ms);
+    if (!gate) {
+      delete s;
+      return false;
+    }
+    s = gate;
+  }
   *out_style = s;
   if (out_alpha) *out_alpha = alpha;
   if (out_blend) *out_blend = blend;
@@ -83,6 +100,10 @@ inline bool TryParseConfigLayerLine(const char* layer_line,
 inline const char* ConfigLayerStyleText(const char* layer_line) {
   if (!layer_line) return layer_line;
   const char* p = layer_line;
+  if (ConfigLayerWordIsEvent(p)) {
+    p = SkipWord(p);
+    p = SkipWord(p);
+  }
   if (FirstWord(p, "multiply") || FirstWord(p, "screen") || FirstWord(p, "add") ||
       FirstWord(p, "normal") || FirstWord(p, "hue") || FirstWord(p, "warm")) {
     p = SkipWord(p);

@@ -74,6 +74,7 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #endif
 #include "../../functions/int_arg.h"
 #include <string.h>
+#include "config_play_cue.h"
 
 #define STRIP_COLUMN_RECORD_SIZE 512
 // In-RAM column cache size (not an on-disk format). Max RGB rows = 512 / 3.
@@ -175,26 +176,56 @@ struct StripColumnFrameSlot {
 class StripColumnColumnCache {
 public:
   StripColumnColumnCache()
-      : current_(0), loading_buf_(-1), rows_loaded_(0), loading_frame_(0), last_swap_ms_(0) {
+      : frames_(nullptr), current_(0), loading_buf_(-1), rows_loaded_(0),
+        loading_frame_(0), last_swap_ms_(0) {}
+
+  ~StripColumnColumnCache() { ReleaseStorage(); }
+
+  StripColumnColumnCache(const StripColumnColumnCache&) = delete;
+  StripColumnColumnCache& operator=(const StripColumnColumnCache&) = delete;
+
+  bool allocated() const { return frames_ != nullptr; }
+
+  // The ring exists only while a picture is playing.
+  bool EnsureStorage() {
+    if (frames_) return true;
+    frames_ = new StripColumnFrameSlot[STRIP_COLUMN_FRAME_RING_SIZE];
+    if (!frames_) return false;
+    current_ = 0;
     ClearAllSlots();
+    return true;
   }
 
-  void ClearAllSlots() {
-    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++)
-      frames_[i].frame = ~0u;
+  void ReleaseStorage() {
+    delete[] frames_;
+    frames_ = nullptr;
+    current_ = 0;
     loading_buf_ = -1;
     rows_loaded_ = 0;
     loading_frame_ = 0;
   }
 
+  void ClearAllSlots() {
+    loading_buf_ = -1;
+    rows_loaded_ = 0;
+    loading_frame_ = 0;
+    if (!frames_) return;
+    for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++)
+      frames_[i].frame = ~0u;
+  }
+
   void OnFirstFrameReady() {
+    if (!frames_) return;
     current_ = 0;
     last_swap_ms_ = millis();
     for (int i = 1; i < STRIP_COLUMN_FRAME_RING_SIZE; i++)
       frames_[i].frame = ~0u;
   }
 
-  const uint8_t* DisplayData() const { return frames_[current_].data; }
+  const uint8_t* DisplayData() const {
+    if (!frames_) return nullptr;
+    return frames_[current_].data;
+  }
 
   // +1 plays frame 0 toward the last row. -1 plays back toward row 0.
   // A direction change drops prefetched slots and keeps the frame on screen.
@@ -202,6 +233,11 @@ public:
     int d = direction < 0 ? -1 : 1;
     if (d == direction_) return;
     direction_ = d;
+    if (!frames_) {
+      loading_buf_ = -1;
+      rows_loaded_ = 0;
+      return;
+    }
     for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
       if (i == current_) continue;
       frames_[i].frame = ~0u;
@@ -212,13 +248,14 @@ public:
 
   bool LoadFrameSlice(FileReader* file, StripColumnBmpInfo* bmp,
                       int source_height, int buf, uint32_t frame_index) {
+    if (!EnsureStorage()) return false;
     return AdvanceBmpColumnLoad(file, bmp, source_height, buf, frame_index);
   }
 
   // Show one absolute frame. Used when a wipe scrubs the file instead of looping.
   bool ShowFrame(FileReader* file, StripColumnBmpInfo* bmp,
                  int source_height, uint32_t frame_index) {
-    if (!file || !bmp) return false;
+    if (!file || !bmp || !EnsureStorage()) return false;
     if (frames_[current_].frame == frame_index) return true;
     ClearAllSlots();
     if (!LoadFrameSlice(file, bmp, source_height, 0, frame_index)) return false;
@@ -231,8 +268,10 @@ public:
   // direction +1 walks rows 0 → n. direction -1 walks n → 0.
   // That load is one multi-row read once the ahead-watermark is hit.
   void Tick(FileReader* file, StripColumnBmpInfo* bmp,
-            int source_height, int frame_ms, uint32_t num_frames, int direction = 1) {
-    if (!file || !bmp || num_frames == 0) return;
+            int source_height, int frame_ms, uint32_t num_frames, int direction = 1,
+            bool fit_once = false) {
+    if (!file || !bmp || num_frames == 0 || !frames_) return;
+    fit_once_ = fit_once;
     NoteDirection(direction);
     if (frames_[current_].frame == ~0u) return;
 
@@ -240,6 +279,10 @@ public:
       uint32_t display_frame = frames_[current_].frame;
       uint32_t now = millis();
       uint32_t next_display = AheadFrame(display_frame, 1, num_frames);
+      // Fit-to-window holds the last row instead of looping back to row 0.
+      bool wrapped = direction_ >= 0 ? (next_display < display_frame)
+                                     : (next_display > display_frame);
+      if (fit_once && wrapped) return;
       for (int s = 0; s < STRIP_COLUMN_FRAME_RING_SIZE; s++) {
         if (frames_[s].frame == next_display &&
             (int32_t)(now - last_swap_ms_) >= (uint32_t)frame_ms) {
@@ -311,6 +354,8 @@ private:
       if ((uint32_t)offset > num_frames) break;
       uint32_t want = AheadFrame(display_frame, (uint32_t)offset, num_frames);
       if (want == display_frame) break;
+      if (fit_once_ && direction_ >= 0 && want <= display_frame) break;
+      if (fit_once_ && direction_ < 0 && want >= display_frame) break;
       if (SlotHasCompleteFrame(want)) break;
       int slot = PickSlotForLoad(display_frame, num_frames, slots, n);
       if (slot < 0) break;
@@ -394,13 +439,14 @@ private:
     return true;
   }
 
-  StripColumnFrameSlot frames_[STRIP_COLUMN_FRAME_RING_SIZE];
+  StripColumnFrameSlot* frames_;
   int current_;
   int loading_buf_;
   int rows_loaded_;
   uint32_t loading_frame_;
   uint32_t last_swap_ms_;
   int direction_ = 1;
+  bool fit_once_ = false;
 };
 
 template<class SOURCE_HEIGHT, class FPS>
@@ -409,8 +455,9 @@ public:
   StripColumnL() : opened_(false), bmp_missing_(false), show_missing_fallback_(false),
                    height_warned_(false), open_fail_logged_(false),
                    open_ok_logged_(false), num_frames_(0), num_leds_(0), source_height_(0),
-                   frame_ms_(33), header_ok_(false), was_on_(false), retract_armed_(false),
-                   retract_deadline_ms_(0) {
+                   frame_ms_(33), event_window_ms_(0), event_driven_(false), header_ok_(false),
+                   was_on_(false),
+                   retract_armed_(false), retract_deadline_ms_(0) {
     path_[0] = 0;
     const char* pending = StripColumnPath::Get();
     if (pending && pending[0]) {
@@ -420,7 +467,28 @@ public:
     memset(&bmp_info_, 0, sizeof(bmp_info_));
   }
 
+  void ReleasePlayback() {
+    if (file_.IsOpen()) file_.Close();
+    opened_ = false;
+    cache_.ReleaseStorage();
+    event_window_ms_ = 0;
+    show_missing_fallback_ = false;
+  }
+
   bool run(BladeBase* blade) {
+    int cue_window = 0;
+    if (ConfigPlayCue::ConsumeRelease()) {
+      event_driven_ = false;
+      ReleasePlayback();
+      return true;
+    }
+    if (ConfigPlayCue::ConsumeRestart(&cue_window)) {
+      event_driven_ = true;
+      event_window_ms_ = cue_window;
+      if (file_.IsOpen()) file_.Close();
+      opened_ = false;
+      cache_.ReleaseStorage();
+    }
     height_.run(blade);
     fps_.run(blade);
     num_leds_ = blade ? blade->num_leds() : 0;
@@ -447,10 +515,12 @@ public:
       retract_ticking = (int32_t)(retract_deadline_ms_ - millis()) > 0;
       if (!retract_ticking) retract_armed_ = false;
     }
-    show_missing_fallback_ = bmp_missing_ && (on || retract_ticking);
+    show_missing_fallback_ = bmp_missing_ && (event_driven_ || on || retract_ticking);
 
-    if (!(on || retract_ticking)) {
-      if (file_.IsOpen()) file_.Close();
+    // A base column frees its ring once the blade is fully off. An event
+    // overlay keeps playing for its window, including preon while IsOn() is false.
+    if (!event_driven_ && !(on || retract_ticking)) {
+      ReleasePlayback();
       return true;
     }
 
@@ -530,17 +600,23 @@ public:
       LOCK_SD(false);
     }
 
-    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms_,
-                num_frames_, on ? 1 : -1);
+    int use_ms = frame_ms_;
+    bool fit = event_window_ms_ > 0 && num_frames_ > 1;
+    if (fit) use_ms = clampi32(event_window_ms_ / (int)num_frames_, 1, 60000);
+    int direction = event_driven_ ? 1 : (on ? 1 : -1);
+    cache_.Tick(&file_, &bmp_info_, source_height_, use_ms,
+                num_frames_, direction, fit);
     return true;
   }
 
   SimpleColor getColor(int led) {
     if (opened_ && num_leds_ > 0 && source_height_ > 0) {
       const uint8_t* data = cache_.DisplayData();
-      uint8_t r, g, b;
-      StripColumnSampleAtLed(data, led, num_leds_, source_height_, &r, &g, &b);
-      return SimpleColor(Color16(sqr(r), sqr(g), sqr(b)));
+      if (data) {
+        uint8_t r, g, b;
+        StripColumnSampleAtLed(data, led, num_leds_, source_height_, &r, &g, &b);
+        return SimpleColor(Color16(sqr(r), sqr(g), sqr(b)));
+      }
     }
     if (show_missing_fallback_ && num_leds_ > 0) {
       return SimpleColor(StripColumnMissingMediaColor(led, num_leds_, millis()));
@@ -590,6 +666,8 @@ private:
   int num_leds_;
   int source_height_;
   int frame_ms_;
+  int event_window_ms_;
+  bool event_driven_;
   bool header_ok_;
   bool was_on_;
   bool retract_armed_;

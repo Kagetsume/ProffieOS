@@ -14,6 +14,7 @@
 #include "../../functions/int.h"
 #include "../../functions/svf.h"
 #include "../colors.h"
+#include "config_play_cue.h"
 
 namespace random_bands_detail {
 
@@ -75,6 +76,11 @@ public:
     if (scale <= 0) scale = 2400;
     mult_ = (50000 * 1024 / scale);
 
+    int ignored = 0;
+    if (ConfigPlayCue::ConsumeRestart(&ignored)) {
+      m = 0;
+      last_micros_ = micros();
+    }
     uint32_t now_micros = micros();
     int32_t delta_micros = now_micros - last_micros_;
     last_micros_ = now_micros;

@@ -14,6 +14,7 @@
 #include "../../functions/twist_angle.h"
 #include "../blade_style.h"
 #include "../style_ptr.h"
+#include "config_play_cue.h"
 
 enum WaveKind {
   WAVES_SINE = 0,
@@ -151,6 +152,11 @@ public:
     waveform_ = wf;
   }
 
+  void Restart(uint32_t now) {
+    m_ = 0;
+    last_micros_ = now;
+  }
+
   void BeginFrame(int swing, int twist, int swing_scale, int twist_scale, bool use_swing) {
     period_run_ = period_cfg_;
     phase_run_ = phase_cfg_;
@@ -242,6 +248,11 @@ public:
   }
 
   void run(BladeBase* base) {
+    int ignored = 0;
+    if (ConfigPlayCue::ConsumeRestart(&ignored)) {
+      uint32_t now = micros();
+      for (int i = 0; i < 4; i++) slots_[i].Restart(now);
+    }
     int swing = 0;
     int twist = 0;
     if (kind_ == WAVES_SINE_SWING) {
