@@ -239,7 +239,7 @@ public:
 
   bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
     InvalidateIfUnmounted();
-    if (!MediaPlaybackActive(blade)) {
+    if (!event_driven_ && !MediaPlaybackActive(blade)) {
       CloseFileKeepCache();
       return false;
     }
@@ -310,21 +310,42 @@ public:
     }
   }
 
+  bool EventDriven() const { return event_driven_; }
+
+  // Drops the SD handle and the frame ring. Next play starts at frame 0.
+  void ReleasePlaybackMemory() {
+    CloseFileKeepCache();
+    opened_ = false;
+    cache_.ReleaseStorage();
+    event_window_ms_ = 0;
+    event_driven_ = false;
+  }
+
+  void ArmEventWindow(int window_ms) {
+    event_driven_ = true;
+    event_window_ms_ = window_ms;
+    if (file_.IsOpen()) file_.Close();
+    opened_ = false;
+    cache_.ReleaseStorage();
+  }
+
   // Updates cached frame when open; no-op when closed or num_leds <= 0.
   // Keeps advancing while the saber is on (including the extend wipe) and
-  // through the retract deadline. Stops — and drops the SD handle — once
-  // that deadline passes, even if blade->is_powered() stays true.
+  // through the retract deadline. Stops — and drops the SD handle and the
+  // frame ring — once that deadline passes, even if blade->is_powered() stays true.
   void AdvanceAnimation(int source_height, int fps, int num_leds, BladeBase* blade,
                         int direction = 1) {
     InvalidateIfUnmounted();
-    if (!MediaPlaybackActive(blade)) {
-      CloseFileKeepCache();
+    if (!event_driven_ && !MediaPlaybackActive(blade)) {
+      ReleasePlaybackMemory();
       return;
     }
     if (!opened_ || num_leds <= 0) return;
     source_height_ = clampi32(source_height, 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
     fps = clampi32(fps, 1, 240);
     int frame_ms = clampi32(1000 / fps, 1, 60000);
+    bool fit = event_window_ms_ > 0 && num_frames_ > 1;
+    if (fit) frame_ms = clampi32(event_window_ms_ / (int)num_frames_, 1, 60000);
 
     if (!file_.IsOpen() && path_[0]) {
       LOCK_SD(true);
@@ -333,7 +354,7 @@ public:
     }
 
     cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms,
-                num_frames_, direction);
+                num_frames_, direction, fit);
   }
 
   const uint8_t* CurrentFrameData() const { return cache_.DisplayData(); }
@@ -365,6 +386,8 @@ private:
   bool open_ok_logged_;
   bool media_failed_;
   StripColumnBmpInfo bmp_info_;
+  int event_window_ms_ = 0;
+  bool event_driven_ = false;
   uint32_t num_frames_;
   int source_height_;
   bool was_on_;

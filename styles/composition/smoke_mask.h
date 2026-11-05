@@ -15,6 +15,7 @@
 #include "../fire.h"
 #include "../rgb_arg.h"
 #include "../style_ptr.h"
+#include "config_play_cue.h"
 
 enum SmokeDir {
   SMOKE_DIR_UP = 0,
@@ -191,8 +192,28 @@ public:
     c1_.run(blade);
     c2_.run(blade);
     num_leds_ = blade->num_leds();
+    if (ConfigPlayCue::ConsumeRelease()) {
+      delete[] heat_;
+      heat_ = nullptr;
+      delete[] smooth_;
+      smooth_ = nullptr;
+      smooth_len_ = 0;
+      return true;
+    }
+    int ignored = 0;
+    if (ConfigPlayCue::ConsumeRestart(&ignored)) {
+      use_flow_origin_ = true;
+      flow_origin_us_ = micros();
+      delete[] heat_;
+      heat_ = nullptr;
+      delete[] smooth_;
+      smooth_ = nullptr;
+      smooth_len_ = 0;
+      tick_ = 0;
+    }
     if (dir_ == SMOKE_DIR_FLOW) {
-      time_us_ = micros();
+      uint32_t now = micros();
+      time_us_ = use_flow_origin_ ? (now - flow_origin_us_) : now;
       time_us_down_ = time_us_ + 4800000u;
       int speed = speed_;
       scroll_up_ = (int)(((int64_t)time_us_ * 9 * speed) / 10000);
@@ -273,6 +294,8 @@ private:
   int scroll_down_ = 0;
   uint32_t time_us_ = 0;
   uint32_t time_us_down_ = 0;
+  uint32_t flow_origin_us_ = 0;
+  bool use_flow_origin_ = false;
   uint32_t tick_ = 0;
   unsigned short* heat_ = 0;
   unsigned short* smooth_ = 0;

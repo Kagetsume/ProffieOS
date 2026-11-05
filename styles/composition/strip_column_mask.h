@@ -67,11 +67,17 @@ public:
     source_height_ = clampi32(height_.getInteger(0), 1, STRIP_COLUMN_MAX_SOURCE_HEIGHT);
     int fps = clampi32(fps_.getInteger(0), 1, 240);
 
+    if (ConfigPlayCue::ConsumeRelease()) {
+      source_.ReleasePlaybackMemory();
+      return true;
+    }
+    int cue_window = 0;
+    if (ConfigPlayCue::ConsumeRestart(&cue_window)) source_.ArmEventWindow(cue_window);
     static const StripColumnOpenOptions kOpenOpts = {"strip_column_mask"};
     source_.EnsureOpen(kOpenOpts, source_height_, blade);
     source_.WarnSourceHeightVsBmp(source_height_, "strip_column_mask");
-    source_.AdvanceAnimation(source_height_, fps, num_leds_, blade,
-                             SaberBase::IsOn() ? 1 : -1);
+    int direction = (source_.EventDriven() || SaberBase::IsOn()) ? 1 : -1;
+    source_.AdvanceAnimation(source_height_, fps, num_leds_, blade, direction);
     return true;
   }
 
@@ -87,8 +93,10 @@ public:
       }
       return StripColumnLayerTransparent();
     }
+    const uint8_t* frame = source_.CurrentFrameData();
+    if (!frame) return StripColumnLayerTransparent();
     uint16_t f = StripColumnMaskSampleFactorAtLed(
-        source_.CurrentFrameData(), led, num_leds_, source_height_);
+        frame, led, num_leds_, source_height_);
     return RGBA_um_nod(Color16(f, f, f), 32768);
   }
 

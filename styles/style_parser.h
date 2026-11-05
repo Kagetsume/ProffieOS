@@ -172,7 +172,7 @@ NamedStyle named_styles[] = {
 #endif  // DISABLE_BASIC_PARSER_STYLES
 #ifdef ENABLE_SD_CONFIG_FILES
   { "config", &config_style_factory,
-    NAMED_STYLE_DESC(    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add hue warm), then optional opacity (55%, 55, or raw >100 up to 32768; 100 = full), then sub-style. Example: layer = multiply opacity 49% strobe black white 15 1 300 800")
+    NAMED_STYLE_DESC(    "Config-driven style: config <name> uses [name] from config/blade_styles.ini. Optional per layer: blend keyword (normal multiply screen add hue warm), then optional opacity (55%, 55, or raw >100 up to 32768; 100 = full), then sub-style. An event_ gate shows that layer only for the event: event_blast -1 or event_clash 400, then the blend and style. -1 follows the wav (lockup/drag/melt/lb stay up while held). Example: layer = event_blast -1 normal opacity 40% strip_column animations/overlay.bmp 144 30")
   },
 #endif
   { "builtin", &builtin_preset_allocator,

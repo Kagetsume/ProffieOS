@@ -564,6 +564,39 @@ Add these above the base. Most stay invisible until the saber actually does that
 | Ignition flash | `ignition_flash white 300 600` | A full-blade flash during the extension itself (after preon). Held for the extend time, then fades over the third number. |
 | Force | `add opacity 37% force_glow white` | While a Force effect plays and the blade is on. Brightness follows that sound. The font needs force sounds, and a button must be mapped to Force. |
 
+#### Show any layer only during an event
+
+Put `event_<name> <duration>` in front of a normal layer. The layer is invisible until that event, then it runs and is removed again. The blend and opacity after the duration work the same way they do on an always-on layer.
+
+```ini
+layer = event_blast -1 normal opacity 40% strip_column animations/overlay.bmp 144 30
+layer = event_clash -1 multiply opacity 67% sine_waves 2400 0 12.5% 100% -2000
+layer = event_clash 400 multiply strip_column_mask masks/clash_mask.bmp 144 30
+layer = event_lockup -1 add opacity 50% fire_mask
+```
+
+| Prefix | What starts it |
+| --- | --- |
+| `event_blast` | Blast |
+| `event_clash` | Clash or stab |
+| `event_swing` | Swing whoosh (`swng` / `swing`), not “while the blade is moving” |
+| `event_force` | Force |
+| `event_preon` | Preon |
+| `event_postoff` | Postoff |
+| `event_ignition` | Ignition |
+| `event_lockup` | Lockup, while it is held |
+| `event_drag` | Drag, while it is held |
+| `event_melt` | Melt, while it is held |
+| `event_lb` | Lightning block, while it is held |
+
+**Duration.** `-1` (or any number below 1) uses the wav that just played, in milliseconds. `event_blast 2000` is two seconds from the trigger, even if the wav is shorter or longer. A missing wav has length 0, so `-1` shows nothing. Lockup, drag, melt, and lightning block are different: their sound is a loop, so `-1` means “while the hold lasts.” A positive number on those ends when the timer runs out or the hold ends, whichever comes first.
+
+Textures such as `sine_waves`, `smoke`, and the procedural masks restart their clock when the event starts. A few core styles (`stripes`, `fire`, `rainbow`, `strobe`, and the OS7 `*_layer` sheets) do not; they keep the clock they already had.
+
+`normal` mixes the layer with the blade: `underlying * (1 - opacity) + layer * opacity`. Black in a full-color BMP mixes toward black. `screen` or `add` leaves black pixels alone, which is the blend to use when the picture is painted on black and should only flash the lit parts. `strip_column_mask` is grayscale: under `multiply`, white leaves the blade alone and black darkens it.
+
+A BMP behind an event gate starts at the first row. When the duration is a real length (the wav, or the milliseconds you wrote) and the file has more than one row, those rows are spread across that length and the last row is held. They do not loop. The `fps` number is still the rate when the duration is `-1` on a hold, or when the same file is used as an always-on base. The frame ring (8 slots, 512 bytes each) is allocated only while that picture is actually playing, and freed when the event ends or the blade is fully off. The next time a base column ignites, it starts again at the first row.
+
 #### Preon and postoff
 
 **Preon** plays after the button press and before the main blade ignites. **Postoff** plays after the blade has retracted, before the LEDs power down. Duration matches the sound file in the font (`preon/` and `pstoff/`). You only pass a color. Glow and sputter also follow how loud that sound is, so they fade as the file fades. They are transparent the rest of the time.
@@ -619,7 +652,7 @@ strip_column_mask <path> <source_height> <fps>
 
 #### Ring buffer and SD reads (firmware)
 
-SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded rows** in RAM (default **8** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). While one frame displays, earlier ticks **prefetch** the next frames into free slots.
+SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded rows** in RAM (default **8** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). That ring is allocated when playback starts and freed when the blade is fully off, or when an `event_` layer's window ends, so several event pictures are not all resident at once. While one frame displays, earlier ticks **prefetch** the next frames into free slots.
 
 When two frames are still buffered ahead, the loader may read up to **four** upcoming BMP **rows** in one seek (bulk path in `strip_column_bmp.h`). If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
 
