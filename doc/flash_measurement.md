@@ -53,7 +53,16 @@ For remaining `StylePtr` roots and dedup tiers, see **`doc/flash_styleptr_profil
 - **After:** `preon_audio_glow_style` shared by `preon_glow` + `accent_preon`; same for postoff; `force_audio_glow_style`; sputter pair shares one transition typedef per effect.
 - **Expect:** ~0–2 KB vs a build that still had duplicate accent glow `Style<>` instantiations (often **0** if the linker already merged identical templates — still worth keeping for maintainability).
 
-Record baseline **Sketch uses** bytes, rebuild, compare (e.g. baseline 409480).
+Record baseline **Sketch uses** bytes, rebuild, compare.
+
+## Recorded sketch sizes
+
+Same line the IDE prints: **Sketch uses N bytes**.
+
+| When | Sketch uses | What it is |
+| --- | --- | --- |
+| 5 Nov 2026, 4:11 PM ET | 403472 | Current compile of this tree, including event-gated layers. **6008 bytes under** the 409480 example below. |
+| Earlier example | 409480 | Example baseline kept from the Tier B glow note. |
 
 ## Optional help text (`ENABLE_CONFIG_FILE_HELP_TEXT`)
 
