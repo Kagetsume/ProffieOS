@@ -32,7 +32,7 @@ The **full layer laboratory** remains **`sd_config_examples/config/blade_styles.
 Extended Universe uses the same idea with more idle variants (`eu_fallen_order`, `eu_darksaber`, …) but the same combat block and **`ext = -1` / `ret = -1`** vars everywhere.
 | **[FirstOrder](FirstOrder/)** | Sequel **canon** (e.g. Kylo crackle) | `unstable_layer` + composable overlays |
 | **[ExtendedUniverse](ExtendedUniverse/)** | **Exotic / game / deep-lore** idles (DarkSaber, Fallen Order, OS7 `*_layer`, composable crackle) | `solid` + `*_layer` + Real Clash stack |
-| **[BMP](BMP/)** | **SD flipbook bases** — full-color columns, a recolorable crack mask, a BMP-only wipe, a comet over a dim solid, and one file played at two speeds | `strip_column`, `strip_column_mask`, `transition = bmp` |
+| **[BMP](BMP/)** | **SD flipbook bases** — full-color columns, a recolorable crack mask, a BMP-only wipe, a comet over a dim solid, one file played at two speeds, and flipbooks on clash, blast, swing, lockup, drag, melt, and lightning block | `strip_column`, `strip_column_mask`, `transition = bmp`, `event_clash`, `event_blast`, `event_swing`, `event_lockup`, `event_drag`, `event_melt`, `event_lb` |
 | **[Custom](Custom/)** | Non-canon behaviors: sputter, flame wipe, tip ignition, center burst, hum glow, gradient, and the procedural masks the other packs skip | `transition` words, `audio_layer`, `gradient_layer`, `hue_waves`, `sine_waves_swing`, `moire_mask`, `chirp`, `smoke_flow`, `blade_envelope`, `fbm_noise` |
 
 Nothing stops you from mixing: e.g. **`ost_classic`** combat with **`eu_darksaber`** idle, or a **`strip_column`** BMP base from the main config catalog under any pack’s preset.

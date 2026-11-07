@@ -1,6 +1,6 @@
 # BMP blade pack
 
-Twelve presets. Shared combat stack on each. Full-color **`strip_column`** flipbooks, **Crazy Blade**, a recolorable crack mask, a BMP that is only the wipe, a comet screened over a dim solid, and one fire column played at two speeds.
+Gallery presets plus event flipbooks. Shared combat stack on the gallery blades. Full-color **`strip_column`** flipbooks, **Crazy Blade**, a recolorable crack mask, a BMP that is only the wipe, a comet screened over a dim solid, one fire column played at two speeds, and BMPs gated with **`event_clash`**, **`event_blast`**, **`event_swing`**, **`event_lockup`**, **`event_drag`**, **`event_melt`**, and **`event_lb`**.
 
 ## Install on SD card
 
@@ -28,8 +28,20 @@ Firmware: **`NUM_BLADES` 1**, **`ENABLE_SD_CONFIG_FILES`**, **`strip_column`** a
 | InkBleed | `bmp_gallery_ink_bleed` | `animations/ink-bleed.bmp` is the wipe only | **Included** |
 | CometRun | `bmp_gallery_comet` | `animations/comet-run.bmp` screened on `steelblue` | **Included** |
 | GhostTrail | `bmp_gallery_ghost_trail` | `fire-column.bmp` at 30 fps and again at 8 fps | **Included** |
+| ClashBurst | `bmp_gallery_clash_burst` | `animations/clash-burst.bmp` on `event_clash -1` | **Included** |
+| BlastRing | `bmp_gallery_blast_ring` | `animations/blast-ring.bmp` on `event_blast -1` | **Included** |
+| SwingSweep | `bmp_gallery_swing_sweep` | `animations/swing-sweep.bmp` on `event_swing -1` | **Included** |
+| LockupCoil | `bmp_gallery_lockup_coil` | `animations/lockup-coil.bmp` on `event_lockup -1` | **Included** |
+| DragSparks | `bmp_gallery_drag_sparks` | `animations/drag-sparks.bmp` on `event_drag -1` | **Included** |
+| MeltDrip | `bmp_gallery_melt_drip` | `animations/melt-drip.bmp` on `event_melt -1` | **Included** |
+| BlockFork | `bmp_gallery_block_fork` | `animations/block-fork.bmp` on `event_lb -1` | **Included** |
+| EventReels | `bmp_gallery_event_reels` | all seven event BMPs on one blade | **Included** |
 
 Missing **`strip_column`** / mask BMPs show the **red/orange danger scroll** fallback until the file is on the card.
+
+### Event flipbooks
+
+`event_<name> -1` sits in front of `screen strip_column`. Black pixels stay off the solid body. Clash, blast, and swing play every row once across that wav, so the font needs `clash`, `blst`, and `swng` (or `swing`) files. A missing wav has length 0 and the picture stays hidden. Lockup, drag, melt, and lightning block stay up while the hold lasts and loop at 24 fps. Each picture is **144 × 16**, 24-bit, uncompressed. The left edge is the hilt. The top row is the first frame.
 
 ### Crazy Blade (`bmp_gallery_crazy_blade`)
 
