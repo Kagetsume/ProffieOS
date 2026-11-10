@@ -47,6 +47,7 @@ const unsigned int maxLedsPerStrip = 200;
 // After boot: SD Access ON without edit menu (PC export still needs saber off + firmware unmount).
 #define MOUNT_SD_ALWAYS_ON
 #define ENABLE_SERIAL
+#define ENABLE_SSD1306
 
 // SD config/ INI loaders (presets, blades, blade_styles, board, features). See common/sd_config/sd_config_files.h.
 #define ENABLE_SD_CONFIG_FILES
