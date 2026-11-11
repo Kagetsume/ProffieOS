@@ -13,7 +13,7 @@
 #define SD_FEATURES_CONFIG_MAX_LINES 128
 
 // Load config/features.ini if present. Call after LoadBoardConfigFile().
-// Sets gesture, swing_on, thrust_on, stab_on, twist_on, twist_off (overwrites if present).
+// Sets gesture, swing_on, thrust_on, stab_on, twist_on, twist_off, twist_deg (overwrites if present).
 // Safe when SD disabled (no-op). Does not crash on malformed input.
 inline void LoadFeaturesConfigFile() {
 #ifndef ENABLE_SD_CONFIG_FILES
@@ -52,6 +52,9 @@ inline void LoadFeaturesConfigFile() {
     } else if (!strcmp(variable, "twist_off")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.twist_off = v;
+    } else if (!strcmp(variable, "twist_deg")) {
+      int v = ParseTwistDegValue(f);
+      if (v > 0) board_config_file.twist_deg = v;
     } else if (!strcmp(variable, "swing_on")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.swing_on = v;

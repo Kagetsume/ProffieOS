@@ -32,6 +32,8 @@ struct BoardConfigFile {
   char aux_pin_name[16];
   char aux2_pin_name[16];
   bool file_found; // true if config/board.ini was present and parsed
+  // Twist roll rate in degrees per second. -1 = not set (use PROFFIE_TWIST_THRESHOLD).
+  int twist_deg;
 };
 
 // Set from the config's CONFIG_BUTTONS section. Null when that section has no buttons.
@@ -76,6 +78,17 @@ inline int ParseOnOffValue(FileReader& f) {
   return -1;
 }
 
+// Twist rate in degrees per second. At most 4 digits. Returns -1 if missing or zero.
+inline int ParseTwistDegValue(FileReader& f) {
+  f.skipwhite();
+  if (!f.Available() || f.Peek() < '0' || f.Peek() > '9') return -1;
+  int v = 0;
+  for (int d = 0; d < 4 && f.Available() && f.Peek() >= '0' && f.Peek() <= '9'; d++)
+    v = v * 10 + (f.Read() - '0');
+  if (v < 1) return -1;
+  return v;
+}
+
 // Copy a pin name token (powerButtonPin, auxPin, 13, …). Stops at whitespace.
 inline void BoardConfigReadPinName(FileReader& f, char* out, int cap) {
   if (!out || cap < 2) return;
@@ -113,6 +126,7 @@ inline void LoadBoardConfigFile() {
   board_config_file.aux_pin_name[0] = 0;
   board_config_file.aux2_pin_name[0] = 0;
   board_config_file.file_found = false;
+  board_config_file.twist_deg = -1;
 
   LOCK_SD(true);
   ScopedFileReader sf;
@@ -147,6 +161,9 @@ inline void LoadBoardConfigFile() {
     } else if (!strcmp(variable, "twist_off")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.twist_off = v;
+    } else if (!strcmp(variable, "twist_deg")) {
+      int v = ParseTwistDegValue(f);
+      if (v > 0) board_config_file.twist_deg = v;
     } else if (!strcmp(variable, "swing_on")) {
       int v = ParseOnOffValue(f);
       if (v >= 0) board_config_file.swing_on = v;

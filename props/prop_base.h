@@ -7,6 +7,7 @@
 #include "../common/sd_config/blade_config_file.h"
 #if defined(ENABLE_SD_CONFIG_FILES) && defined(ENABLE_SD)
 #include "../common/sd_config/sd_boot_style_warm.h"
+#include "../common/sd_config/board_config_file.h"
 #endif
 #endif
 #include "../common/sd_config/debug_preset_cycle_flash.h"
@@ -31,6 +32,12 @@
 #ifndef AUDIO_CLASH_SUPPRESSION_LEVEL
 // Account for Audio Volume in Clash Detection (range 1 ~ 50)
 #define AUDIO_CLASH_SUPPRESSION_LEVEL 10
+#endif
+
+// Twist roll rate in degrees per second. A config may #define this before the prop.
+// config/features.ini twist_deg overrides it at runtime when set.
+#ifndef PROFFIE_TWIST_THRESHOLD
+#define PROFFIE_TWIST_THRESHOLD 200
 #endif
 
 class SaveGlobalStateFile : public ConfigFile {
@@ -1036,7 +1043,12 @@ public:
 
   bool DetectTwistStrokes() {
     Vec3 gyro = fusor.gyro();
-    if (fabsf(gyro.x) > 200.0 &&
+    float twist_min = PROFFIE_TWIST_THRESHOLD;
+#if defined(ENABLE_SD) && defined(ENABLE_SD_CONFIG_FILES)
+    if (board_config_file.twist_deg > 0)
+      twist_min = (float)board_config_file.twist_deg;
+#endif
+    if (fabsf(gyro.x) > twist_min &&
         fabsf(gyro.x) > 3.0f * abs(gyro.y) &&
         fabsf(gyro.x) > 3.0f * abs(gyro.z)) {
       return DoGesture(gyro.x > 0 ? TWIST_RIGHT : TWIST_LEFT);

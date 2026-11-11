@@ -338,6 +338,7 @@ public:
 
   // Fill frame buffer and return how long to display it.
   int FillFrameBuffer(bool advance) override {
+    PollHostSdScreen();
     if (advance) {
       if (next_screen_ != SCREEN_UNSET) {
         screen_ = next_screen_;
@@ -348,6 +349,52 @@ public:
       }
     }
     return last_delay_ = FillFrameBuffer2(advance);
+  }
+
+  // True only while a computer has enumerated USB and SD access is allowed.
+  // The idle BMP is read from the card, so it can stay on screen until then.
+  bool HostWantsSdCard() {
+#if defined(MOUNT_SD_SETTING) && defined(USB_CLASS_MSC)
+    return LSFS::GetAllowMount() && USBD_Configured();
+#else
+    return false;
+#endif
+  }
+
+  static constexpr const char* SdAccessMessage() { return "    sd\n  access"; }
+
+  bool ShowingSdAccessMessage() {
+    return screen_ == SCREEN_MESSAGE && !strcmp(message_, SdAccessMessage());
+  }
+
+  void ShowSdAccessMessage() {
+    CloseFiles();
+    eof_ = true;
+    SetMessage(SdAccessMessage());
+    SetScreenNow(SCREEN_MESSAGE);
+  }
+
+  void ShowIdleImage() {
+    if (img_.IMG_idle && looped_idle_ != Tristate::False) {
+      SetFile(&img_.IMG_idle, 3600000.0);
+      SetScreenNow(SCREEN_IMAGE);
+    } else {
+      ShowDefault();
+    }
+  }
+
+  // Release the idle image only when a host is actually connected, so the
+  // card can unmount. Restore the image when the host goes away.
+  void PollHostSdScreen() {
+    if (SaberBase::IsOn() || screen_ == SCREEN_ERROR_MESSAGE) return;
+    if (HostWantsSdCard()) {
+      if (ShowingSdAccessMessage()) return;
+      if (screen_ == SCREEN_IMAGE && current_effect_ == &img_.IMG_idle) {
+        ShowSdAccessMessage();
+      }
+    } else if (ShowingSdAccessMessage()) {
+      ShowIdleImage();
+    }
   }
 
   virtual void ShowDefault(bool ignore_lockup = false) {
@@ -362,8 +409,8 @@ public:
     } else {
       // Off
       if (looped_idle_ != Tristate::False) {
-        if (AvoidIdleSDAccess()) {
-          SetMessage("    sd\n  access");
+        if (HostWantsSdCard()) {
+          ShowSdAccessMessage();
         } else {
           SetFile(&img_.IMG_idle, 3600000.0);
         }
@@ -431,7 +478,7 @@ public:
         } else {
           t = 3500;
         }
-        if (t_ >= t) {
+        if (t_ >= t && !(ShowingSdAccessMessage() && HostWantsSdCard())) {
           screen_ = SCREEN_DEFAULT;
           ShowDefault();
           return FillFrameBuffer2(advance);
@@ -650,8 +697,8 @@ public:
     } else if (img_.IMG_in) {
       ShowFileWithSoundLength(&img_.IMG_in, font_config.ProffieOSInImageDuration);
     } else if (img_.IMG_idle) {
-      if (AvoidIdleSDAccess()) {
-        SetMessage("    sd\n  access");
+      if (HostWantsSdCard()) {
+        ShowSdAccessMessage();
       } else {
         SetFile(&img_.IMG_idle, 3600000.0);
       }

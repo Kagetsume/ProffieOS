@@ -120,7 +120,7 @@ animations/cyan-gold-plasma.bmp   (only for the strip-column demo)
 
 Start from `sd_config_examples/config/` in this repo. The folder on the card must be named `config`. Lines that begin with `#` or `;` are comments. Blank lines are fine.
 
-The shipped example assumes **four blades** (`NUM_BLADES` 4):
+The shipped example assumes **five blades** (`NUM_BLADES` 5):
 
 | Blade index | Typical role in `presets.ini` |
 | --- | --- |
@@ -128,6 +128,7 @@ The shipped example assumes **four blades** (`NUM_BLADES` 4):
 | 1 | Simple PWM accent, for example `accent_pulse 1500`. |
 | 2 | Simple PWM accent, for example `accent_sound_on white 13%`. |
 | 3 | Simple PWM accent, for example `accent_glow`. |
+| 4 | Accessory FET on `bladePowerPin6`, `accent_always` (on while awake, FET off on idle-off). |
 
 One `style =` line per blade, in index order. A single-strip saber should be flashed with `NUM_BLADES` 1 and a single `style =` line per preset. Accent styles drive GPIO or PWM outputs. They are documented briefly at the end of this guide; the pixel-blade recipes are the `config` sections.
 
@@ -145,6 +146,7 @@ style = config demo_strip_column
 style = accent_pulse 1500
 style = accent_sound_on white 13%
 style = accent_glow
+style = accent_always
 name = Strip Column Demo
 variation = 0
 ```
@@ -687,7 +689,7 @@ Preset 0 in `sd_config_examples/config/presets.ini` is the pattern to copy.
 1. `config/presets.ini` and `config/blade_styles.ini` from `sd_config_examples/config/`.
 2. The BMP named by the recipe. The layer line loads `animations/cyan-gold-plasma.bmp`. The file in the repo is `sd_config_examples/sd/animations/cyan-gold-plasma.bmp`. Copy it to that animations path on the card. The section comment also points at `sd_config_examples/sd/animations/cyan-plasma.bmp` as a 144-by-120 `frames_y` sample (120 frames, 144 pixels along the blade). `source_height` in the recipe is 144, which matches that blade span.
 3. A font folder the preset names (`LiquidStatic`) and `tracks/hum.wav`, plus `common/` if you want voice prompts.
-4. Firmware flashed with `ENABLE_SD_CONFIG_FILES`, and `NUM_BLADES` matching the four `style =` lines (or edit the preset down to the blades you have).
+4. Firmware flashed with `ENABLE_SD_CONFIG_FILES`, and `NUM_BLADES` matching the five `style =` lines (or edit the preset down to the blades you have).
 
 **The preset**
 
@@ -699,11 +701,12 @@ style = config demo_strip_column
 style = accent_pulse 1500
 style = accent_sound_on white 13%
 style = accent_glow
+style = accent_always
 name = Strip Column Demo
 variation = 0
 ```
 
-Blade 0 loads the section below. Blades 1–3 are PWM accents, not part of the pixel stack.
+Blade 0 loads the section below. Blades 1–3 are PWM accents. Blade 4 is the accessory FET, not part of the pixel stack.
 
 **The recipe** (`[demo_strip_column]` in `blade_styles.ini`)
 

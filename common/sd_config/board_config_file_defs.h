@@ -6,7 +6,8 @@
 BoardConfigFile board_config_file = {
   -1, -1, -1, -1, -1, -1, -1, -1, -1,
   {0}, {0}, {0},
-  false
+  false,
+  -1
 };
 void (*apply_board_buttons_hook)() = nullptr;
 

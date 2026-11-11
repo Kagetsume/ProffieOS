@@ -22,12 +22,12 @@ npx md-to-pdf sd_config_examples/config-layers-color-card.md --config-file sd_co
 npx md-to-pdf sd_config_examples/config-layers-pin-card.md --config-file sd_config_examples/config-layers-pin-card.config.js
 ```
 
-The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), and **index 3** (Blade 4 / Free3 / `accent_glow`). `presets.ini` has **four** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
+The examples assume **`NUM_BLADES` 5** (see `config/config-files-config.h`): `blades.ini` defines one **144-LED NeoPixel** on **index 0** (power FETs `bladePowerPin1`–`3`), plus **simple PWM** accents on **index 1** (Blade 2 / Free1 / `accent_pulse 1500`), **index 2** (Blade 3 / Free2 / `accent_sound_on white 13%`), **index 3** (Blade 4 / Free3 / `accent_glow`), and an accessory FET on **index 4** (Blade 5 / `bladePowerPin6` / `accent_always`). `presets.ini` has **five** `style =` lines per preset (one per blade index). If you only have **one** physical strip, either set **`NUM_BLADES` 1** in your firmware config and use a **single-blade** `blades.ini` (blade 0 only) plus **one** `style =` per preset, or keep `NUM_BLADES` 2 and duplicate the same `style =` twice (the firmware maps the first working SD blade driver to the primary if blade 0 fails to init).
 
 | File | Purpose |
 |------|---------|
 | **board.ini** | Board hardware: button count and which pad is power, aux, or aux2. OLED on/off, Bluetooth serial on/off. Optionally gesture/twist (overridden by features.ini if present). |
-| **features.ini** | Feature toggles: gesture (master), swing_on, thrust_on, stab_on, twist_on, twist_off. Loaded after board.ini. |
+| **features.ini** | Feature toggles: gesture (master), swing_on, thrust_on, stab_on, twist_on, twist_off, twist_deg (roll speed, deg/s). Loaded after board.ini. |
 | **blades.ini** | Blade wiring: NeoPixel (`data_pin`, `pixels`, `power_pin1`…) or simple PWM (`type=simple`, `pin1`…). **Use board pin names** (`bladePin`, `bladePowerPin1`–`3`, `blade5Pin`, …) — not numeric GPIO (numbers are literal MCU pins, not “FET #1”). Replaces compiled blade config when present (Proffieboard). **Guide:** [`doc/blade_config.md`](../doc/blade_config.md), LayerBlade `website/BLADES.md`. |
 | **blade_styles.ini** | Named style "recipes" as layers. **Guide:** LayerBlade `website/BLADE_STYLES.md`. See table below for full feature list. |
 | **blade_styles/palettes_extra.ini** | Example **`[palette_alt]`** pulled in by **`include =`** from **`blade_styles.ini`**. |
@@ -36,12 +36,12 @@ The examples assume **`NUM_BLADES` 4** (see `config/config-files-config.h`): `bl
 
 ## GPIO accent named styles
 
-For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** styles on the matching `style =` line. All are off when the saber is retracted.
+For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** styles on the matching `style =` line. They are off when the saber is retracted, except **`accent_always`**, which stays on while the board is awake and drops the FET on idle-off.
 
 **SD config checklist (accents dark but main blades work):**
 
-1. **`config/blades.ini`** — define **every** accent blade index (`blade = 1` … `blade = 3` for Free1–Free3). Wiring alone is not enough; missing indices are not activated at boot.
-2. **`config/presets.ini`** — **four** `style =` lines per preset when `NUM_BLADES` is 4 (lines 2–4: `accent_pulse 1500`, `accent_sound_on white 13%`, `accent_glow`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
+1. **`config/blades.ini`** — define **every** accent blade index (`blade = 1` … `blade = 4`). Wiring alone is not enough; missing indices are not activated at boot.
+2. **`config/presets.ini`** — **five** `style =` lines per preset when `NUM_BLADES` is 5 (lines 2–5: `accent_pulse 1500`, `accent_sound_on white 13%`, `accent_glow`, `accent_always`). If accent lines are omitted, firmware fills accent defaults — do **not** rely on copying the main `config …` strip style onto PWM accents.
 3. **Firmware** — `accent_*` styles must exist in `named_styles[]` (reflash after adding them). Over serial, `list_named_styles` should list `accent_pulse`, `accent_sound_on`, etc. A failed parse logs `Blade N: failed to parse style "…"`.
 4. **Compiled fallback** — without `presets.ini`, accents use `builtin <preset> <blade>` from compiled `config-files-config.h` (always works after flash). With `presets.ini`, styles come from the SD strings above.
 
@@ -50,6 +50,7 @@ For **simple PWM** outputs (`type=simple` in `blades.ini`), use **`accent_*`** s
 | Style | Example | Notes |
 |-------|---------|-------|
 | `accent_on` | `style = accent_on` | Solid on while blade is out (motor / indicators) |
+| `accent_always` | `style = accent_always` | Full on while awake (saber on or off); FET off on idle-off |
 | `accent_sound_on` | `style = accent_sound_on white 13%` | Full on while audio above threshold; off when quiet (motors through postoff tail) |
 | `accent_pulse` | `style = accent_pulse 1500` | Smooth pulse; optional `pulse_ms` (default 3000) |
 | `accent_color` | `style = accent_color amber` | Solid color |

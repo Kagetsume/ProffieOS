@@ -8,7 +8,7 @@ Board and feature config files on the SD card let you set **hardware** (buttons,
 |------|---------|------------------|
 | **config/blades.ini** | Blade wiring (`bladePin`, `bladePowerPin*`, pixels, accents) — **pin names**, not numeric GPIO | Same hardware; rarely changed per contest. |
 | **config/board.ini** | Board hardware: **buttons** (1/2/3), **power** / **aux** / **aux2** pads, **oled**, **bluetooth**. May also contain gesture/twist (overridden by features.ini when present). | One file per board type; keep stable. |
-| **config/features.ini** | Feature toggles: **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, **twist_off**. Overwrites those from board.ini when present. | **Contest-specific:** drop in a features.ini per contest without touching board.ini. |
+| **config/features.ini** | Feature toggles: **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, **twist_off**, **twist_deg**. Overwrites those from board.ini when present. | **Contest-specific:** drop in a features.ini per contest without touching board.ini. |
 | **config/blade_styles.ini** | Style layers ([section], layer = style string) for **config &lt;name&gt;** presets. | Contest-specific styles if needed. |
 | **config/presets.ini** | Preset list (font, style, name, etc.) when using SD presets. | Contest-specific presets. |
 
@@ -22,7 +22,7 @@ Board and feature config files on the SD card let you set **hardware** (buttons,
 
 - Path: **`config/board.ini`** in the **root** of the SD card (same level as `Fonts`, `tracks`, `config/blades.ini`, `config/presets.ini`).
 - Create the **`config`** folder if it does not exist.
-- **board.ini** is loaded first; **config/features.ini** is loaded next and overwrites **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, and **twist_off** when present.
+- **board.ini** is loaded first; **config/features.ini** is loaded next and overwrites **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, **twist_off**, and **twist_deg** when present.
 
 ## Format
 
@@ -42,6 +42,7 @@ INI-style: one variable per line. **Whitespace** (spaces, tabs, blank lines) is 
 | **stab_on** | on, off, 1, 0, true, false | Stab to ignite. | board.ini or **features.ini** (overrides) |
 | **twist_on** | on, off, 1, 0, true, false | Twist to ignite. | board.ini or **features.ini** (overrides) |
 | **twist_off** | on, off, 1, 0, true, false | Twist to retract. | board.ini or **features.ini** (overrides) |
+| **twist_deg** | integer, 1–9999 | Roll speed for twist on and twist off, degrees per second. Higher is harder to trigger. Omit to use **PROFFIE_TWIST_THRESHOLD** (200 unless the config `#define`s it). | board.ini or **features.ini** (overrides) |
 
 Values are case-insensitive for **on** / **off** / **true** / **false**.
 
@@ -79,8 +80,8 @@ buttons = 2
 
 - Path: **`config/features.ini`** (same **config/** folder as board.ini).
 - **Load order:** **board.ini** is loaded first, then **features.ini**. Any gesture key in features.ini **overwrites** the same key from board.ini.
-- **Format:** Same as board.ini (variable=value, # and ; comments). Read keys are **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, and **twist_off**.
-- **gesture** is the master. **swing_on**, **thrust_on**, **stab_on**, and **twist_on** each control one way to ignite. **twist_off** controls twist retraction.
+- **Format:** Same as board.ini (variable=value, # and ; comments). Read keys are **gesture**, **swing_on**, **thrust_on**, **stab_on**, **twist_on**, **twist_off**, and **twist_deg**.
+- **gesture** is the master. **swing_on**, **thrust_on**, **stab_on**, and **twist_on** each control one way to ignite. **twist_off** controls twist retraction. **twist_deg** is the shared roll speed for twist on and twist off.
 - **Example:** Gestures stay available, swing ignition is off:
   ```ini
   gesture = on
@@ -102,7 +103,7 @@ buttons = 2
 ## API
 
 - **LoadBoardConfigFile()** (common/sd_config/board_config_file.h) — Loads `config/board.ini` if present (buttons, oled, and optionally gesture/twist). Called at startup before prop setup.
-- **LoadFeaturesConfigFile()** (common/sd_config/features_config_file.h) — Loads `config/features.ini` if present and overwrites **gesture**, **twist_on**, **twist_off** in the same struct. Call after LoadBoardConfigFile().
+- **LoadFeaturesConfigFile()** (common/sd_config/features_config_file.h) — Loads `config/features.ini` if present and overwrites **gesture**, **twist_on**, **twist_off**, and **twist_deg** in the same struct. Call after LoadBoardConfigFile().
 - **UseBoardConfigFile()** — True if **board.ini** was found and loaded.
 - **BoardConfigGesture()**, **BoardConfigTwistOn()**, **BoardConfigTwistOff()**, **BoardConfigOled()**, **BoardConfigBluetooth()**, **BoardConfigButtons()** — Raw values: 1/0 for on/off, 1/2/3 for buttons, -1 = not set.
 - **BoardConfigGestureEnabled()**, **BoardConfigTwistOnEnabled()**, **BoardConfigTwistOffEnabled()**, **BoardConfigOledEnabled()** — True only when the file was found and the option is explicitly **on** (1).

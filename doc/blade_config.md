@@ -174,9 +174,9 @@ power_pin = bladePowerPin1
 - When any `sub_blade` lines are present, the blade is built as a SubBlade chain. Ranges must be within `0` … `pixels - 1`.
 - When no sub_blade lines are given, the full strip is used as one logical blade.
 
-## Four-blade example (NeoPixel + accents)
+## Five-blade example (NeoPixel + accents + accessory)
 
-Matches [`sd_config_examples/config/blades.ini`](../sd_config_examples/config/blades.ini) when `NUM_BLADES` is 4:
+Matches [`sd_config_examples/config/blades.ini`](../sd_config_examples/config/blades.ini) when `NUM_BLADES` is 5:
 
 ```ini
 blade = 0
@@ -204,10 +204,16 @@ data_pin = blade7Pin
 led = CreeXPE2White
 active_state = high
 
+blade = 4
+type = simple
+data_pin = bladePowerPin6
+led = CH3LED
+active_state = high
+
 end
 ```
 
-Indices 1–3 are **simple PWM** accents on Free1–Free3. Pair with `accent_pulse`, `accent_sound_on`, `accent_glow`, etc. in `presets.ini` (four `style =` lines per preset).
+Indices 1–3 are **simple PWM** accents on Free1–Free3. Index 4 is an accessory FET on `bladePowerPin6` (`accent_always`: on while the board is awake, FET off on idle-off). Pair with five `style =` lines per preset.
 
 ## Limits
 

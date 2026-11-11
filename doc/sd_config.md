@@ -102,7 +102,7 @@ The other config files use very little RAM: **board.ini** / **features.ini** onl
 
 ## Example `config/presets.ini`
 
-Minimal excerpt ( **`NUM_BLADES` 4** in **`config/config-files-config.h`** — four `style=` lines per preset; see **`sd_config_examples/config/presets.ini`** for the full list):
+Minimal excerpt ( **`NUM_BLADES` 5** in **`config/config-files-config.h`** — five `style=` lines per preset; see **`sd_config_examples/config/presets.ini`** for the full list):
 
 ```
 new_preset
@@ -112,6 +112,7 @@ style=config sine_waves_cyan
 style=accent_pulse 1500
 style=accent_sound_on white 13%
 style=accent_glow
+style=accent_always
 name=Sine Waves Cyan
 variation=0
 new_preset
@@ -121,6 +122,7 @@ style=config smoke_laser
 style=accent_pulse 1500
 style=accent_sound_on white 13%
 style=accent_glow
+style=accent_always
 name=Smoke Laser
 variation=0
 new_preset
@@ -130,6 +132,7 @@ style=standard red white 300 800
 style=accent_pulse 1500
 style=accent_sound_on white 13%
 style=accent_glow
+style=accent_always
 name=Red
 variation=0
 end

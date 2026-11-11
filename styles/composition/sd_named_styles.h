@@ -460,6 +460,12 @@
     StylePtr<InOutHelper<WHITE, 0, 0> >(),
     NAMED_STYLE_DESC(    "GPIO accent: solid on when saber is on, off when saber is off (no arguments)")
   },
+  { "accent_always",
+    StylePtr<WHITE>(),
+    NAMED_STYLE_DESC(    "Accessory output: full on while the board is awake, saber on or off. "
+    "Idle-off releases the pin so the FET turns off. No arguments. "
+    "CH3LED follows the blue channel; white drives it fully.")
+  },
   { "accent_sound_on",
     StylePtr<AlphaL<RgbArg<1, White>, IsGreaterThan<SmoothSoundLevel, OpacityScaleIntArg<2, 4096>>> >(),
     NAMED_STYLE_DESC(    "GPIO accent: full on while audio above threshold, off when quiet (not blade-state gated); "
