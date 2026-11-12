@@ -13,13 +13,14 @@
   },
   { "strip_column", &config_strip_column_factory,
     NAMED_STYLE_DESC(    "SD column animation base: file_path source_height fps [frames_y] extend_ms retract_ms. "
-    "Normal 24-bit uncompressed .bmp on SD. No wipe of its own inside a config section; "
+    "24-bit uncompressed BMP (alpha 255, fully opaque) or uncompressed true-color TGA (32-bit opacity blends). "
+    "Header detects the format. Blade width is capped at 192. No wipe of its own inside a config section; "
     "the section transition mask extends and retracts it. Times on this line feed that mask when transition is omitted. "
     "Use -1 for extend/retract to match sound length. Missing/invalid file: scrolling strobe red danger bands.")
   },
   { "strip_column_mask", &strip_column_mask_factory,
-    NAMED_STYLE_DESC(    "SD column BMP multiply mask: file_path source_height fps. Same 24-bit BMP layout as "
-    "strip_column (one BMP row per frame). Grayscale R=G=B; stack as multiply opacity … strip_column_mask. "
+    NAMED_STYLE_DESC(    "SD column multiply mask: file_path source_height fps. Same BMP or uncompressed TGA as "
+    "strip_column. Grayscale; TGA opacity blends the mask. Blade width capped at 192. "
     "Missing/invalid file: danger fallback pattern while blade is on.")
   },
   // Full pixel blades (opaque; use alone or as bottom layer in config sections).

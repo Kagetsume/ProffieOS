@@ -99,7 +99,7 @@ Use directly in `presets.ini` (`style = rainbow 300 800`) or as **`layer =`** li
 | Style | Example | Notes |
 |-------|---------|-------|
 | `solid` | `solid cyan` | Flat color. No wipe. The section `transition` line is the wipe. Stack `clash` / `blast` / `responsive_lockup` for composable recipes |
-| `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** column base (default **`frames_y`**: width = blade, height = frames). BMP opens **when saber is on** only (**sd_style_boot_order.md**). Ring-buffer prefetch + bulk row reads on SD — see **doc/README_blade_styles_config.md** and **config-layers-user-guide.md** (*Strip column*) |
+| `strip_column` | `strip_column animations/plasma.bmp 144 30 300 800` | **24-bit BMP** or **uncompressed TGA** column base (width = blade, max 192, height = frames). Opens **when saber is on** only (**sd_style_boot_order.md**). BMP is opaque. TGA opacity blends. Ring slots are 192×4 bytes — see **doc/README_blade_styles_config.md** and **config-layers-user-guide.md** (*Strip column*) |
 | `standard` | `standard cyan white 300 800 white white` | Base, clash, extend, retract, lockup, blast (monolithic) |
 | `fire` | `fire red yellow` | Rolling flame (no extend/retract animation) |
 | `rainbow` | `rainbow 300 800 white white` | Extend, retract, clash, lockup |

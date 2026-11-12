@@ -5,6 +5,8 @@
 //
 // One BMP row is one animation frame. Width is blade pixels, height is the frame count
 // (e.g. 144×120 = 120 frames). Row 0 of the image is the hilt.
+//
+// The stored row is normalized RGBA8. BMP has no opacity byte, so alpha is 255.
 
 #include "../../common/file_reader.h"
 #include "../../common/looper.h"
@@ -17,8 +19,13 @@
 #include <stdint.h>
 #include <string.h>
 
+// Blade-axis cap shared with TGA. A wider image is rejected before any row is read.
+#ifndef STRIP_COLUMN_BLADE_PIXEL_CAP
+#define STRIP_COLUMN_BLADE_PIXEL_CAP 192
+#endif
+// 24-bit BMP rows are padded to 4 bytes. 192 pixels fit in 576.
 #ifndef STRIP_COLUMN_BMP_MAX_ROW_READ
-#define STRIP_COLUMN_BMP_MAX_ROW_READ 512
+#define STRIP_COLUMN_BMP_MAX_ROW_READ ((((STRIP_COLUMN_BLADE_PIXEL_CAP) * 3 + 3) / 4) * 4)
 #endif
 // One tick reads at most this many BMP rows (one seek + one read).
 #ifndef STRIP_COLUMN_BMP_Y_BULK_ROWS
@@ -124,19 +131,22 @@ inline uint32_t StripColumnBmpFrameFileRow(const StripColumnBmpInfo* info,
   return info->top_down ? frame_index : (info->height - 1u - frame_index);
 }
 
-// One BMP row (BGR, pixel 0 at the start of the row) into an RGB column.
-// Bytes past width*3 are row padding and are not copied.
+// One BMP row (BGR, pixel 0 at the start of the row) into a normalized RGBA row.
+// Alpha is 255: a BMP pixel composites as fully opaque. Padding past width*3 is not copied.
 inline bool StripColumnBmpStoreFrameRow(const uint8_t* row_bgr, int source_height,
                                        uint8_t* out_buf, size_t out_buf_size) {
   if (!row_bgr || !out_buf || out_buf_size == 0) return false;
   memset(out_buf, 0, out_buf_size);
+  // Unwritten pixels stay opaque black, matching a 24-bit BMP with no alpha.
+  for (size_t i = 3; i < out_buf_size; i += 4) out_buf[i] = 255;
   for (int i = 0; i < source_height; i++) {
-    if ((size_t)(i + 1) * 3u > out_buf_size) return false;
+    if ((size_t)(i + 1) * 4u > out_buf_size) return false;
     uint32_t off = (uint32_t)i * 3u;
-    uint8_t* px = out_buf + (size_t)i * 3;
+    uint8_t* px = out_buf + (size_t)i * 4;
     px[0] = row_bgr[off + 2];
     px[1] = row_bgr[off + 1];
     px[2] = row_bgr[off];
+    px[3] = 255;
   }
   return true;
 }
@@ -206,12 +216,12 @@ inline bool StripColumnBmpLoadFramesAlongYBulk(FileReader* f, const StripColumnB
 
   if (source_height < 0) source_height = 0;
   if (source_height > (int)info->width) source_height = (int)info->width;
-  if (source_height > 0 && (size_t)source_height * 3u > out_buf_size) return false;
+  if (source_height > 0 && (size_t)source_height * 4u > out_buf_size) return false;
 
   const uint32_t nbytes = info->row_stride * (uint32_t)n;
   if (nbytes / info->row_stride != (uint32_t)n) return false;
 
-  // Static: up to 4 * 512 bytes. Must not live on the style-loop stack (L452).
+  // Static: up to 4 * 576 bytes. Must not live on the style-loop stack (L452).
   static uint8_t bulk[STRIP_COLUMN_BMP_MAX_ROW_READ * STRIP_COLUMN_BMP_Y_BULK_ROWS];
   if (nbytes > sizeof(bulk)) return false;
 

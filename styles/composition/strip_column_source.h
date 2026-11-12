@@ -4,7 +4,7 @@
 // Shared SD column loader + ring-buffered frame prefetch for strip_column / strip_column_mask.
 
 #include "strip_column.h"
-#include "strip_column_bmp.h"
+#include "strip_column_image.h"
 #include "strip_column_fallback.h"
 #include "../../common/file_reader.h"
 #include "../../common/math.h"
@@ -19,9 +19,6 @@
 #else
 #define LOCK_SD(X) do { (void)(X); } while(0)
 #endif
-
-#define STRIP_COLUMN_RECORD_SIZE 512
-#define STRIP_COLUMN_MAX_SOURCE_HEIGHT 170
 
 inline void StripColumnSanitizePath(char* path, size_t path_max) {
   if (!path || path_max == 0) return;
@@ -133,8 +130,9 @@ public:
     if (open_ok_logged_) return;
     open_ok_logged_ = true;
     const char* tag = opts.style_name ? opts.style_name : "strip_column";
+    const char* kind = image_.kind == STRIP_COLUMN_IMAGE_TGA ? "tga" : "bmp";
     STDERR << tag << ": opened " << path_ << " frames=" << num_frames_
-           << " bmp=" << bmp_info_.width << "x" << bmp_info_.height << "\n";
+           << " " << kind << "=" << image_.width << "x" << image_.height << "\n";
   }
 
   void CloseOpenFile() {
@@ -234,10 +232,11 @@ public:
       file_.Open(path_);
       LOCK_SD(false);
     }
-    return cache_.ShowFrame(&file_, &bmp_info_, source_height_, frame);
+    return cache_.ShowFrame(&file_, &image_, source_height_, frame);
   }
 
   bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
+    cache_.UseEventPool(event_driven_);
     InvalidateIfUnmounted();
     if (!event_driven_ && !MediaPlaybackActive(blade)) {
       CloseFileKeepCache();
@@ -268,13 +267,18 @@ public:
         return false;
       }
       file_.Seek(0);
-      if (!StripColumnBmpParseHeader(&file_, &bmp_info_)) {
-        LogOpenFailureOnce(opts, "need 24-bit uncompressed BMP");
+      StripColumnImageStatus image_status = StripColumnReadImageHeader(&file_, &image_);
+      if (image_status != STRIP_COLUMN_IMAGE_OK) {
+        if (image_status == STRIP_COLUMN_IMAGE_TOO_LONG) {
+          LogBladeTooLong(opts);
+        } else {
+          LogOpenFailureOnce(opts, "need 24-bit uncompressed BMP or uncompressed true-color TGA");
+        }
         file_.Close();
         LOCK_SD(false);
         return false;
       }
-      num_frames_ = StripColumnBmpNumFrames(&bmp_info_);
+      num_frames_ = StripColumnImageNumFrames(&image_);
       if (num_frames_ == 0) num_frames_ = 1;
       header_ok_ = true;
       LogOpenSuccessOnce(opts);
@@ -288,7 +292,7 @@ public:
         LOCK_SD(false);
       }
       if (file_.IsOpen() &&
-          cache_.LoadFrameSlice(&file_, &bmp_info_, source_height_, 0, 0)) {
+          cache_.LoadFrameSlice(&file_, &image_, source_height_, 0, 0)) {
         opened_ = true;
         media_failed_ = false;
         cache_.OnFirstFrameReady();
@@ -301,32 +305,37 @@ public:
 
   void WarnSourceHeightVsBmp(int source_height, const char* style_name = "strip_column") {
     if (!header_ok_ || height_warned_) return;
-    uint32_t blade_px = StripColumnBmpBladePixelsInFile(&bmp_info_);
+    uint32_t blade_px = StripColumnImageBladePixels(&image_);
     if ((uint32_t)source_height > blade_px) {
       height_warned_ = true;
       const char* tag = style_name ? style_name : "strip_column";
-      STDERR << tag << ": source_height " << source_height << " exceeds BMP blade span "
+      STDERR << tag << ": source_height " << source_height << " exceeds image blade span "
              << blade_px << " (clamping)\n";
     }
   }
 
   bool EventDriven() const { return event_driven_; }
 
-  // Drops the SD handle and the frame ring. Next play starts at frame 0.
+  // Drops the SD handle. A private ring is deleted. An event ring returns to
+  // the pool and stays allocated until it has been idle for 2 seconds.
   void ReleasePlaybackMemory() {
     CloseFileKeepCache();
     opened_ = false;
     cache_.ReleaseStorage();
     event_window_ms_ = 0;
     event_driven_ = false;
+    cache_.UseEventPool(false);
   }
 
   void ArmEventWindow(int window_ms) {
     event_driven_ = true;
     event_window_ms_ = window_ms;
+    cache_.UseEventPool(true);
     if (file_.IsOpen()) file_.Close();
     opened_ = false;
-    cache_.ReleaseStorage();
+    // A retrigger, including a hold that is already up, keeps its ring.
+    if (cache_.HoldingEventRing()) cache_.ClearAllSlots();
+    else cache_.ReleaseStorage();
   }
 
   // Updates cached frame when open; no-op when closed or num_leds <= 0.
@@ -335,6 +344,7 @@ public:
   // frame ring — once that deadline passes, even if blade->is_powered() stays true.
   void AdvanceAnimation(int source_height, int fps, int num_leds, BladeBase* blade,
                         int direction = 1) {
+    cache_.UseEventPool(event_driven_);
     InvalidateIfUnmounted();
     if (!event_driven_ && !MediaPlaybackActive(blade)) {
       ReleasePlaybackMemory();
@@ -353,7 +363,7 @@ public:
       LOCK_SD(false);
     }
 
-    cache_.Tick(&file_, &bmp_info_, source_height_, frame_ms,
+    cache_.Tick(&file_, &image_, source_height_, frame_ms,
                 num_frames_, direction, fit);
   }
 
@@ -373,7 +383,16 @@ private:
     retract_armed_ = false;
     retract_deadline_ms_ = 0;
     playback_hold_ = false;
-    memset(&bmp_info_, 0, sizeof(bmp_info_));
+    memset(&image_, 0, sizeof(image_));
+  }
+
+  void LogBladeTooLong(const StripColumnOpenOptions& opts) {
+    if (open_warned_) return;
+    open_warned_ = true;
+    media_failed_ = true;
+    const char* tag = opts.style_name ? opts.style_name : "strip_column";
+    STDERR << tag << ": blade length " << image_.width << " exceeds "
+           << STRIP_COLUMN_BLADE_PIXEL_CAP << " (ignoring image)\n";
   }
 
   char path_[128];
@@ -385,7 +404,7 @@ private:
   bool open_warned_;
   bool open_ok_logged_;
   bool media_failed_;
-  StripColumnBmpInfo bmp_info_;
+  StripColumnImageInfo image_;
   int event_window_ms_ = 0;
   bool event_driven_ = false;
   uint32_t num_frames_;

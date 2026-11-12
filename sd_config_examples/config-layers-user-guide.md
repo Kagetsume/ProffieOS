@@ -372,7 +372,7 @@ These draw the color or the BMP. They do not wipe. The section `transition` line
 | Style | Arguments | What you see |
 | --- | --- | --- |
 | `solid` | base color, optional extend ms, retract ms | Flat color. No wipe. Example: `layer = solid cyan` with `transition = bend {{ext}} {{ret}}`. |
-| `strip_column` | SD path, source width, fps, optional `frames_y`, extend ms, retract ms | A 24-bit BMP played along the blade. The section `transition` wipes it. The width number is the blade length (144 in the demos). One BMP row is one frame. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
+| `strip_column` | SD path, source width, fps, optional `frames_y`, extend ms, retract ms | A 24-bit BMP or uncompressed TGA played along the blade. The section `transition` wipes it. The width number is the blade length (144 in the demos, 192 maximum). One row is one frame. BMP pixels are fully opaque. TGA’s opacity byte blends. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
 
 #### Full named blades
 
@@ -451,7 +451,7 @@ Shipped demos that are "one base plus one mask" live in `blade_styles.ini` as `[
 | `smoke_flow` / `smoke_up` / `smoke_down` | same colors; `smoke_flow` also takes optional speed | The same style with the direction already chosen. |
 | `noise_flicker` | base color, flicker color | Organic crackle. Multiply over a base. |
 | `unstable_stripes` | base color | The crackling stripe band from `unstable_blades`, without the rest of that blade. |
-| `strip_column_mask` | SD path, source height, fps | A BMP used as a brightness mask. Always the `frames_y` layout. See the strip-column section. |
+| `strip_column_mask` | SD path, source height, fps | A BMP or uncompressed TGA used as a brightness mask. Always the `frames_y` layout. TGA opacity blends the mask. See the strip-column section. |
 
 #### Hue waves
 
@@ -595,9 +595,9 @@ layer = event_lockup -1 add opacity 50% fire_mask
 
 Textures such as `sine_waves`, `smoke`, and the procedural masks restart their clock when the event starts. A few core styles (`stripes`, `fire`, `rainbow`, `strobe`, and the OS7 `*_layer` sheets) do not; they keep the clock they already had.
 
-`normal` mixes the layer with the blade: `underlying * (1 - opacity) + layer * opacity`. Black in a full-color BMP mixes toward black. `screen` or `add` leaves black pixels alone, which is the blend to use when the picture is painted on black and should only flash the lit parts. `strip_column_mask` is grayscale: under `multiply`, white leaves the blade alone and black darkens it.
+`normal` mixes the layer with the blade: `underlying * (1 - opacity) + layer * opacity`. A 24-bit BMP has no per-pixel alpha, so every pixel is fully opaque and black mixes toward black. `screen` or `add` leaves those black pixels alone. An uncompressed 32-bit TGA does have an opacity byte: 0 leaves the blade alone and 255 covers it, under the same blend. `strip_column_mask` is grayscale: under `multiply`, white leaves the blade alone and black darkens it. TGA opacity blends that mask as well.
 
-A BMP behind an event gate starts at the first row. When the duration is a real length (the wav, or the milliseconds you wrote) and the file has more than one row, those rows are spread across that length and the last row is held. They do not loop. The `fps` number is still the rate when the duration is `-1` on a hold, or when the same file is used as an always-on base. The frame ring (8 slots, 512 bytes each) is allocated only while that picture is actually playing, and freed when the event ends or the blade is fully off. The next time a base column ignites, it starts again at the first row.
+A picture behind an event gate starts at the first row. When the duration is a real length (the wav, or the milliseconds you wrote) and the file has more than one row, those rows are spread across that length and the last row is held. They do not loop. The `fps` number is still the rate when the duration is `-1` on a hold, or when the same file is used as an always-on base. A base column's frame ring (8 slots, 768 bytes each, 192 RGBA pixels) is allocated while that picture is playing and freed when the blade is fully off. Event images share one pool. A free ring is reused, and if every ring is in use the pool adds another, so a hold plus blast, clash, and swing can be up together without dropping a picture. A ring stays checked out for the whole event, including a hold, and is freed only after 2 seconds with no user. The next time a base column ignites, it starts again at the first row. A later event reuses a pool ring instead of allocating again.
 
 #### Preon and postoff
 
@@ -627,21 +627,25 @@ layer = lb {{lb}}
 
 ### Strip column animations
 
-`strip_column` is a **base**. It plays a normal Windows BMP from the SD card along the blade, with the curved ignition and retraction wipe. `strip_column_mask` is a **texture**: the same kind of file, turned into a gray mask you multiply over some other base.
+`strip_column` is a **base**. It plays a normal Windows BMP or an uncompressed TGA from the SD card along the blade, with the curved ignition and retraction wipe. `strip_column_mask` is a **texture**: the same kind of file, turned into a gray mask you multiply over some other base.
 
 #### The picture file
 
-Export a **24-bit uncompressed BMP** (no RLE, no palette). GIMP: Export As `.bmp`, 24-bit, do not run-length encode. Photoshop: Save As BMP, 24-bit, Windows, uncompressed.
+Export a **24-bit uncompressed BMP** (no RLE, no palette) or an **uncompressed true-color TGA**. The saber reads the header. Renaming the file does not change the format.
 
-The file is a flipbook. **Width** is pixels along the blade. **Height** is the number of frames. The top row is the hilt, the bottom row is the tip. One row is one moment in time. A 144 by 120 image is 144 blade pixels and 120 frames.
+BMP, GIMP: Export As `.bmp`, 24-bit, do not run-length encode. Photoshop: Save As BMP, 24-bit, Windows, uncompressed. Every BMP pixel is stored with alpha 255, so it composites as fully opaque.
+
+TGA, when you need real opacity: 32-bit, uncompressed, left to right. GIMP: Export As `.tga` and turn RLE off. Photoshop: Targa, 32 bits/pixel, uncompressed. The opacity byte is the pixel’s blend alpha: 255 covers, 0 leaves whatever is underneath alone. A 24-bit TGA has no opacity byte and is fully opaque, same as a BMP. RLE, color-mapped, right-to-left, and interleaved files are rejected.
+
+The file is a flipbook. **Width** is pixels along the blade. **Height** is the number of frames. The top row is the hilt, the bottom row is the tip. One row is one moment in time. A 144 by 120 image is 144 blade pixels and 120 frames. Width above **192** is ignored and logged, for BMP and TGA. That cap is what sizes the frame buffer.
 
 An optional `frames_y` word (aliases `row` and `rows`) is accepted and ignored. `frames_x`, `column`, and `columns` are rejected on serial. The file is still read as rows.
 
-`source_height` in the layer line is the **blade span in pixels**, the BMP **width**. The shipped demo uses `144`. If you set `source_height` larger than the file's width, the firmware clamps it and prints a serial warning. The in-memory column holds at most 170 pixels.
+`source_height` in the layer line is the **blade span in pixels**, the image **width**. The shipped demo uses `144`. If you set `source_height` larger than the file's width, the firmware clamps it and prints a serial warning.
 
-Color on disk is stored BGR; the loader turns it into RGB. The blade resamples the column to however many LEDs you actually have.
+Both readers write the same RGBA row. After that, the blade resamples it the same way, including the alpha byte, onto however many LEDs you actually have.
 
-The picture is opened **when the saber is on**, not during boot. A missing file or a BMP that is not 24-bit uncompressed logs on serial and shows a **danger fallback** on the blade: fast-strobing red bands that scroll **up twice, then down twice**, repeating (base layer and `strip_column_mask`). Quote a path that contains spaces: `"animations/my file.bmp"`.
+The picture is opened **when the saber is on**, not during boot. A missing file, a BMP that is not 24-bit uncompressed, or a TGA that is not uncompressed true-color logs on serial and shows a **danger fallback** on the blade: fast-strobing red bands that scroll **up twice, then down twice**, repeating (base layer and `strip_column_mask`). Quote a path that contains spaces: `"animations/my file.bmp"`.
 
 #### Arguments
 
@@ -654,9 +658,9 @@ strip_column_mask <path> <source_height> <fps>
 
 #### Ring buffer and SD reads (firmware)
 
-SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded rows** in RAM (default **8** slots, **512 bytes** each — enough for about **170** RGB pixels along the blade). That ring is allocated when playback starts and freed when the blade is fully off, or when an `event_` layer's window ends, so several event pictures are not all resident at once. While one frame displays, earlier ticks **prefetch** the next frames into free slots.
+SD access runs while the blade style loop ticks and must share the card with audio (`LOCK_SD`). To avoid hitching every frame, ProffieOS keeps a **ring of decoded rows** in RAM (default **8** slots, **768 bytes** each — **192** RGBA pixels along the blade). That size is fixed by the 192-pixel cap. It does not grow to match a bigger file. A base picture allocates its ring when playback starts and frees it when the blade is fully off. An `event_` picture checks a ring out of a shared pool and returns it when the event ends. The pool reuses a free ring, and adds one when none is free. The pool frees that ring only after 2 seconds with nobody using it, so a fast repeat does not allocate again. A hold keeps its ring until the hold ends. While one frame displays, earlier ticks **prefetch** the next frames into free slots.
 
-When two frames are still buffered ahead, the loader may read up to **four** upcoming BMP **rows** in one seek (bulk path in `strip_column_bmp.h`). If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
+When two frames are still buffered ahead, the loader may read up to **four** upcoming **rows** in one seek. A TGA row is decoded straight into its slot. If the flipbook loops and those rows are not contiguous in the file, it falls back to loading one frame at a time.
 
 Playback still never **skips** frames to catch up — under load you get slower motion, not jumps. Compile-time knobs include `STRIP_COLUMN_FRAME_RING_SIZE`, `STRIP_COLUMN_BMP_Y_BULK_ROWS`, and `STRIP_COLUMN_Y_AHEAD_WATERMARK` (see `strip_column.h` / `strip_column_bmp.h`).
 

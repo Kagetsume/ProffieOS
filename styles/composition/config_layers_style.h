@@ -253,6 +253,8 @@ public:
   //     suppress allow_disable so the blade stays powered.
   // The blocked flag propagates from nested ConfigLayersStyles via OR.
   void runUpdate(BladeBase* blade) override {
+    // Ages event-image rings. A base layer's own ring is not in this pool.
+    StripColumnEventPoolSweep();
     AllowDisableCapture capture(blade);
     mask_.run(blade);
     bool saved_blocked = config_disable_blocked_;
