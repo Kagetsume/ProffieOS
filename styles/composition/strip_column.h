@@ -510,6 +510,8 @@ public:
                    was_on_(false),
                    retract_armed_(false), retract_deadline_ms_(0) {
     path_[0] = 0;
+    // Capture this layer's file now. StripColumnPath is shared, and run()
+    // must not replace a non-empty path_ from it later.
     const char* pending = StripColumnPath::Get();
     if (pending && pending[0]) {
       strncpy(path_, pending, sizeof(path_) - 1);
@@ -586,10 +588,17 @@ public:
     // Do not touch SD until the saber is on — opening/reading here blocks the whole
     // Looper (buttons dead) while accent PWM may already be running.
     if (!opened_) {
-      const char* p = StripColumnPath::Get();
-      if (p && p[0]) {
-        strncpy(path_, p, sizeof(path_) - 1);
-        path_[sizeof(path_) - 1] = 0;
+      // path_ was copied from StripColumnPath in the constructor. That buffer
+      // is one static string, so after the style is built it is only the last
+      // column's file. Keep a path this layer already holds across open,
+      // retract, and the next ignition. Fill from the static buffer only when
+      // this layer never captured one.
+      if (!path_[0]) {
+        const char* p = StripColumnPath::Get();
+        if (p && p[0]) {
+          strncpy(path_, p, sizeof(path_) - 1);
+          path_[sizeof(path_) - 1] = 0;
+        }
       }
       if (!path_[0]) {
         bmp_missing_ = true;
