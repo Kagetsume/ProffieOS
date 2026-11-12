@@ -3,12 +3,13 @@
 
 // Event-image frame rings. One ring per picture that is actually up.
 // Lockup, drag, melt, and lightning block share this pool with blast, clash,
-// and swing. A hold keeps its ring until the hold ends. The ring is not freed
-// on the way out. It is freed only after it has had no user for 2 seconds.
+// and swing. The pool is not a fixed size: a new picture reuses a ring nobody
+// is holding, and if every ring is in use the pool adds one. A hold keeps its
+// ring until the hold ends. The ring is not freed on the way out. It is freed
+// only after it has had no holder for 2 seconds.
 // Base strip_column, masks, and other non-event layers do not use this pool.
 
 #include "strip_column_image.h"
-#include "../../common/stdout.h"
 
 #ifndef STRIP_COLUMN_FRAME_RING_SIZE
 #define STRIP_COLUMN_FRAME_RING_SIZE 8
@@ -23,10 +24,6 @@
 #define STRIP_COLUMN_MAX_SOURCE_HEIGHT STRIP_COLUMN_BLADE_PIXEL_CAP
 #endif
 
-// One hold (those four holds never overlap) plus blast, clash, and swing.
-#ifndef STRIP_COLUMN_EVENT_POOL_SIZE
-#define STRIP_COLUMN_EVENT_POOL_SIZE 4
-#endif
 #ifndef STRIP_COLUMN_EVENT_POOL_IDLE_MS
 #define STRIP_COLUMN_EVENT_POOL_IDLE_MS 2000
 #endif
@@ -41,11 +38,12 @@ struct StripColumnEventPoolEntry {
   uint8_t holders;
   uint32_t idle_since_ms;
   uint32_t epoch;
+  StripColumnEventPoolEntry* next;
 };
 
-inline StripColumnEventPoolEntry* StripColumnEventPoolTable() {
-  static StripColumnEventPoolEntry table[STRIP_COLUMN_EVENT_POOL_SIZE];
-  return table;
+inline StripColumnEventPoolEntry*& StripColumnEventPoolHead() {
+  static StripColumnEventPoolEntry* head = nullptr;
+  return head;
 }
 
 inline uint32_t& StripColumnEventPoolEpochCounter() {
@@ -53,24 +51,40 @@ inline uint32_t& StripColumnEventPoolEpochCounter() {
   return next_epoch;
 }
 
-// Null the pool slot, then delete. A holder count above zero means another
-// event still owns the ring, so it is left alone. frames may already be null.
-inline void StripColumnEventPoolFreeEntry(StripColumnEventPoolEntry& e) {
-  if (e.holders != 0 || !e.frames) return;
-  StripColumnFrameSlot* dying = e.frames;
-  e.frames = nullptr;
-  e.epoch = 0;
+inline uint32_t StripColumnEventPoolNextEpoch() {
+  uint32_t epoch = StripColumnEventPoolEpochCounter()++;
+  if (epoch == 0) epoch = StripColumnEventPoolEpochCounter()++;
+  return epoch;
+}
+
+// Unlink, null the ring pointer, then delete. holders > 0 means another
+// event still owns the ring, so it is left alone.
+inline void StripColumnEventPoolFreeEntry(StripColumnEventPoolEntry** link) {
+  if (!link || !*link) return;
+  StripColumnEventPoolEntry* e = *link;
+  if (e->holders != 0 || !e->frames) return;
+  StripColumnFrameSlot* dying = e->frames;
+  e->frames = nullptr;
+  e->epoch = 0;
+  *link = e->next;
+  e->next = nullptr;
   delete[] dying;
+  delete e;
 }
 
 inline void StripColumnEventPoolSweep() {
   uint32_t now = millis();
-  StripColumnEventPoolEntry* table = StripColumnEventPoolTable();
-  for (int i = 0; i < STRIP_COLUMN_EVENT_POOL_SIZE; i++) {
-    StripColumnEventPoolEntry& e = table[i];
-    if (e.holders != 0 || !e.frames) continue;
-    if ((int32_t)(now - e.idle_since_ms) >= (int32_t)STRIP_COLUMN_EVENT_POOL_IDLE_MS)
-      StripColumnEventPoolFreeEntry(e);
+  StripColumnEventPoolEntry** link = &StripColumnEventPoolHead();
+  while (*link) {
+    StripColumnEventPoolEntry* e = *link;
+    if (e->holders != 0 || !e->frames) {
+      link = &e->next;
+      continue;
+    }
+    if ((int32_t)(now - e->idle_since_ms) >= (int32_t)STRIP_COLUMN_EVENT_POOL_IDLE_MS)
+      StripColumnEventPoolFreeEntry(link);
+    else
+      link = &e->next;
   }
 }
 
@@ -82,56 +96,47 @@ inline void StripColumnEventPoolReclaimIdle() {
 }
 
 // epoch_out receives the checkout id. Release ignores a stale id.
-// A failed new[] leaves the slot unused and returns null.
+// A free ring is reused. If none is free, one ring is added.
+// A failed new leaves the list unchanged and returns null.
 inline StripColumnFrameSlot* StripColumnEventPoolAcquire(uint32_t* epoch_out) {
   if (epoch_out) *epoch_out = 0;
-  StripColumnEventPoolEntry* table = StripColumnEventPoolTable();
-  int idle = -1;
-  int empty = -1;
-  for (int i = 0; i < STRIP_COLUMN_EVENT_POOL_SIZE; i++) {
-    if (table[i].holders != 0) continue;
-    if (table[i].frames) {
-      if (idle < 0) idle = i;
-    } else if (empty < 0) {
-      empty = i;
-    }
+  for (StripColumnEventPoolEntry* e = StripColumnEventPoolHead(); e; e = e->next) {
+    if (e->holders != 0 || !e->frames) continue;
+    uint32_t epoch = StripColumnEventPoolNextEpoch();
+    e->holders = 1;
+    e->epoch = epoch;
+    if (epoch_out) *epoch_out = epoch;
+    return e->frames;
   }
-  int slot = idle >= 0 ? idle : empty;
-  if (slot < 0) {
-    static bool logged = false;
-    if (!logged) {
-      logged = true;
-      STDOUT << "strip_column: event image pool full ("
-             << STRIP_COLUMN_EVENT_POOL_SIZE << ")\n";
-    }
+
+  StripColumnFrameSlot* born = new StripColumnFrameSlot[STRIP_COLUMN_FRAME_RING_SIZE];
+  if (!born) return nullptr;
+  StripColumnEventPoolEntry* node = new StripColumnEventPoolEntry;
+  if (!node) {
+    delete[] born;
     return nullptr;
   }
-  if (!table[slot].frames) {
-    StripColumnFrameSlot* born = new StripColumnFrameSlot[STRIP_COLUMN_FRAME_RING_SIZE];
-    if (!born) return nullptr;
-    table[slot].frames = born;
-  }
-  if (!table[slot].frames || table[slot].holders != 0) return nullptr;
-  uint32_t epoch = StripColumnEventPoolEpochCounter()++;
-  if (epoch == 0) epoch = StripColumnEventPoolEpochCounter()++;
-  table[slot].holders = 1;
-  table[slot].epoch = epoch;
+  uint32_t epoch = StripColumnEventPoolNextEpoch();
+  node->frames = born;
+  node->holders = 1;
+  node->idle_since_ms = 0;
+  node->epoch = epoch;
+  node->next = StripColumnEventPoolHead();
+  StripColumnEventPoolHead() = node;
   if (epoch_out) *epoch_out = epoch;
-  return table[slot].frames;
+  return born;
 }
 
 // Drops one checkout. Does not delete. A second release, or a release whose
 // epoch is not the live checkout, does not change a ring someone else holds.
 inline void StripColumnEventPoolRelease(StripColumnFrameSlot* frames, uint32_t epoch) {
   if (!frames || epoch == 0) return;
-  StripColumnEventPoolEntry* table = StripColumnEventPoolTable();
   uint32_t now = millis();
-  for (int i = 0; i < STRIP_COLUMN_EVENT_POOL_SIZE; i++) {
-    StripColumnEventPoolEntry& e = table[i];
-    if (e.frames != frames) continue;
-    if (e.holders == 0 || e.epoch != epoch) return;
-    e.holders--;
-    if (e.holders == 0) e.idle_since_ms = now;
+  for (StripColumnEventPoolEntry* e = StripColumnEventPoolHead(); e; e = e->next) {
+    if (e->frames != frames) continue;
+    if (e->holders == 0 || e->epoch != epoch) return;
+    e->holders--;
+    if (e->holders == 0) e->idle_since_ms = now;
     return;
   }
 }
