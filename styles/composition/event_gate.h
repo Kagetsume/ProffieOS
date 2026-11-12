@@ -15,6 +15,7 @@
 #include "../../common/saber_base.h"
 #include "../blade_style.h"
 #include "config_play_cue.h"
+#include "strip_column_pool.h"
 
 enum class ConfigEventKind : uint8_t {
   BLAST = 0,
@@ -111,9 +112,16 @@ class EventGateStyle : public BladeStyle {
       : child_(child), kind_(kind), duration_ms_(duration_ms), active_(false),
         end_ms_(0), last_effect_micros_(0xffffffffu), hold_latched_(false) {}
 
-  ~EventGateStyle() override { delete child_; }
+  ~EventGateStyle() override {
+    delete child_;
+    child_ = nullptr;
+    StripColumnEventPoolReclaimIdle();
+  }
 
   void runUpdate(BladeBase* blade) override {
+    // Idle event rings are freed 2 seconds after their last user. A hold's
+    // ring stays checked out, so this does not allocate or free it.
+    StripColumnEventPoolSweep();
     if (!child_ || !blade) return;
     if (ConfigEventIsHold(kind_)) {
       UpdateHold(blade);

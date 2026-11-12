@@ -236,6 +236,7 @@ public:
   }
 
   bool EnsureOpen(const StripColumnOpenOptions& opts, int source_height, BladeBase* blade) {
+    cache_.UseEventPool(event_driven_);
     InvalidateIfUnmounted();
     if (!event_driven_ && !MediaPlaybackActive(blade)) {
       CloseFileKeepCache();
@@ -315,21 +316,26 @@ public:
 
   bool EventDriven() const { return event_driven_; }
 
-  // Drops the SD handle and the frame ring. Next play starts at frame 0.
+  // Drops the SD handle. A private ring is deleted. An event ring returns to
+  // the pool and stays allocated until it has been idle for 2 seconds.
   void ReleasePlaybackMemory() {
     CloseFileKeepCache();
     opened_ = false;
     cache_.ReleaseStorage();
     event_window_ms_ = 0;
     event_driven_ = false;
+    cache_.UseEventPool(false);
   }
 
   void ArmEventWindow(int window_ms) {
     event_driven_ = true;
     event_window_ms_ = window_ms;
+    cache_.UseEventPool(true);
     if (file_.IsOpen()) file_.Close();
     opened_ = false;
-    cache_.ReleaseStorage();
+    // A retrigger, including a hold that is already up, keeps its ring.
+    if (cache_.HoldingEventRing()) cache_.ClearAllSlots();
+    else cache_.ReleaseStorage();
   }
 
   // Updates cached frame when open; no-op when closed or num_leds <= 0.
@@ -338,6 +344,7 @@ public:
   // frame ring — once that deadline passes, even if blade->is_powered() stays true.
   void AdvanceAnimation(int source_height, int fps, int num_leds, BladeBase* blade,
                         int direction = 1) {
+    cache_.UseEventPool(event_driven_);
     InvalidateIfUnmounted();
     if (!event_driven_ && !MediaPlaybackActive(blade)) {
       ReleasePlaybackMemory();

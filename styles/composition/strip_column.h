@@ -79,11 +79,7 @@ inline bool StripColumnOpenPath(FileReader* file, const char* path) {
 #include "../../functions/int_arg.h"
 #include <string.h>
 #include "config_play_cue.h"
-
-// Fixed RGBA8 slot. 192 * 4 bytes. Does not grow with the file.
-#define STRIP_COLUMN_PIXEL_BYTES 4
-#define STRIP_COLUMN_RECORD_SIZE (STRIP_COLUMN_BLADE_PIXEL_CAP * STRIP_COLUMN_PIXEL_BYTES)
-#define STRIP_COLUMN_MAX_SOURCE_HEIGHT STRIP_COLUMN_BLADE_PIXEL_CAP
+#include "strip_column_pool.h"
 
 // First FILE arg from strip_column / strip_column_mask style args (supports quoted paths).
 inline size_t StripColumnExtractFirstFileArg(const char* args, char* dest, size_t dest_max) {
@@ -188,17 +184,14 @@ inline void StripColumnSampleAtLed(const uint8_t* data, int led, int num_leds, i
 }
 
 // Multi-slot column cache: display one frame, prefetch up to RING_SIZE-1 ahead.
-// Each slot is a fixed 192*4 RGBA8 row, allocated only while a picture is playing.
-struct StripColumnFrameSlot {
-  uint32_t frame;
-  uint8_t data[STRIP_COLUMN_RECORD_SIZE];
-};
-
+// Each slot is a fixed 192*4 RGBA8 row. A base picture owns a private ring.
+// An event picture checks a ring out of the shared pool.
 class StripColumnColumnCache {
 public:
   StripColumnColumnCache()
       : frames_(nullptr), current_(0), loading_buf_(-1), rows_loaded_(0),
-        loading_frame_(0), last_swap_ms_(0) {}
+        loading_frame_(0), last_swap_ms_(0), pool_epoch_(0), ring_from_pool_(false),
+        use_event_pool_(false) {}
 
   ~StripColumnColumnCache() { ReleaseStorage(); }
 
@@ -207,23 +200,49 @@ public:
 
   bool allocated() const { return frames_ != nullptr; }
 
-  // The ring exists only while a picture is playing.
+  // Event images check out a pool ring. Base images keep a private ring.
+  void UseEventPool(bool on) { use_event_pool_ = on; }
+  bool HoldingEventRing() const { return ring_from_pool_ && frames_ != nullptr; }
+
   bool EnsureStorage() {
-    if (frames_) return true;
-    frames_ = new StripColumnFrameSlot[STRIP_COLUMN_FRAME_RING_SIZE];
-    if (!frames_) return false;
+    if (frames_ && ring_from_pool_ == use_event_pool_) return true;
+    if (frames_) ReleaseStorage();
+    StripColumnFrameSlot* born = nullptr;
+    uint32_t epoch = 0;
+    bool from_pool = false;
+    if (use_event_pool_) {
+      born = StripColumnEventPoolAcquire(&epoch);
+      if (!born) return false;
+      from_pool = true;
+    } else {
+      born = new StripColumnFrameSlot[STRIP_COLUMN_FRAME_RING_SIZE];
+      if (!born) return false;
+    }
+    frames_ = born;
+    pool_epoch_ = epoch;
+    ring_from_pool_ = from_pool;
     current_ = 0;
     ClearAllSlots();
     return true;
   }
 
+  // Null this cache before the ring is released or deleted, so later reads
+  // and writes in this layer see no buffer. Event rings stay allocated in
+  // the pool until 2 seconds after the last holder drops them.
   void ReleaseStorage() {
-    delete[] frames_;
+    StripColumnFrameSlot* dying = frames_;
+    bool from_pool = ring_from_pool_;
+    uint32_t epoch = pool_epoch_;
     frames_ = nullptr;
+    ring_from_pool_ = false;
+    pool_epoch_ = 0;
     current_ = 0;
     loading_buf_ = -1;
     rows_loaded_ = 0;
     loading_frame_ = 0;
+    if (!dying) return;
+    if (from_pool) StripColumnEventPoolRelease(dying, epoch);
+    else delete[] dying;
   }
 
   void ClearAllSlots() {
@@ -276,10 +295,11 @@ public:
   // Show one absolute frame. Used when a wipe scrubs the file instead of looping.
   bool ShowFrame(FileReader* file, const StripColumnImageInfo* image,
                  int source_height, uint32_t frame_index) {
-    if (!file || !image || !EnsureStorage()) return false;
+    if (!file || !image || !EnsureStorage() || !frames_) return false;
+    if (current_ < 0 || current_ >= STRIP_COLUMN_FRAME_RING_SIZE) current_ = 0;
     if (frames_[current_].frame == frame_index) return true;
     ClearAllSlots();
-    if (!LoadFrameSlice(file, image, source_height, 0, frame_index)) return false;
+    if (!LoadFrameSlice(file, image, source_height, 0, frame_index) || !frames_) return false;
     current_ = 0;
     last_swap_ms_ = millis();
     return frames_[0].frame == frame_index;
@@ -292,6 +312,7 @@ public:
             int source_height, int frame_ms, uint32_t num_frames, int direction = 1,
             bool fit_once = false) {
     if (!file || !image || num_frames == 0 || !frames_) return;
+    if (current_ < 0 || current_ >= STRIP_COLUMN_FRAME_RING_SIZE) return;
     fit_once_ = fit_once;
     NoteDirection(direction);
     if (frames_[current_].frame == ~0u) return;
@@ -335,6 +356,7 @@ private:
   }
 
   bool SlotHasCompleteFrame(uint32_t frame_index) const {
+    if (!frames_) return false;
     for (int i = 0; i < STRIP_COLUMN_FRAME_RING_SIZE; i++) {
       if (frames_[i].frame == frame_index) return true;
     }
@@ -360,6 +382,7 @@ private:
   // upcoming rows, or fewer when fewer ring slots are free.
   void PrefetchFramesAlongY(FileReader* file, const StripColumnImageInfo* image,
                             int source_height, uint32_t num_frames) {
+    if (!frames_) return;
     uint32_t display_frame = frames_[current_].frame;
     int ahead = CountBufferedAhead(display_frame, num_frames);
     if (ahead > STRIP_COLUMN_Y_AHEAD_WATERMARK) return;
@@ -443,7 +466,11 @@ private:
 
   bool AdvanceColumnLoad(FileReader* file, const StripColumnImageInfo* image,
                         int source_height, int buf, uint32_t frame_index) {
-    if (!file->IsOpen()) return false;
+    if (!frames_ || !file->IsOpen()) return false;
+    if (buf < 0 || buf >= STRIP_COLUMN_FRAME_RING_SIZE) {
+      loading_buf_ = -1;
+      return false;
+    }
     loading_buf_ = buf;
     loading_frame_ = frame_index;
     rows_loaded_ = 0;
@@ -468,6 +495,9 @@ private:
   uint32_t last_swap_ms_;
   int direction_ = 1;
   bool fit_once_ = false;
+  uint32_t pool_epoch_;
+  bool ring_from_pool_;
+  bool use_event_pool_;
 };
 
 template<class SOURCE_HEIGHT, class FPS>
@@ -497,19 +527,27 @@ public:
   }
 
   bool run(BladeBase* blade) {
+    // Idle event rings free 2 seconds after their last holder drops them.
+    // This picture's private ring is not in that pool.
+    StripColumnEventPoolSweep();
     int cue_window = 0;
     if (ConfigPlayCue::ConsumeRelease()) {
-      event_driven_ = false;
       ReleasePlayback();
+      event_driven_ = false;
+      cache_.UseEventPool(false);
       return true;
     }
     if (ConfigPlayCue::ConsumeRestart(&cue_window)) {
       event_driven_ = true;
       event_window_ms_ = cue_window;
+      cache_.UseEventPool(true);
       if (file_.IsOpen()) file_.Close();
       opened_ = false;
-      cache_.ReleaseStorage();
+      // A retrigger keeps the ring this picture already holds.
+      if (cache_.HoldingEventRing()) cache_.ClearAllSlots();
+      else cache_.ReleaseStorage();
     }
+    cache_.UseEventPool(event_driven_);
     height_.run(blade);
     fps_.run(blade);
     num_leds_ = blade ? blade->num_leds() : 0;
@@ -538,8 +576,8 @@ public:
     }
     show_missing_fallback_ = bmp_missing_ && (event_driven_ || on || retract_ticking);
 
-    // A base column frees its ring once the blade is fully off. An event
-    // overlay keeps playing for its window, including preon while IsOn() is false.
+    // A base column frees its private ring once the blade is fully off. An event
+    // overlay keeps its pool ring for the window, including preon while IsOn() is false.
     if (!event_driven_ && !(on || retract_ticking)) {
       ReleasePlayback();
       return true;
