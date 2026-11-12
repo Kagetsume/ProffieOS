@@ -1,11 +1,12 @@
 #ifndef STYLES_STRIP_COLUMN_MASK_H
 #define STYLES_STRIP_COLUMN_MASK_H
 
-// SD column BMP brightness mask for config layer stacking (multiply / screen / add).
+// SD column brightness mask for config layer stacking (multiply / screen / add).
 //
-// Same 24-bit BI_RGB BMP layout as strip_column (see strip_column_bmp.h).
-// Width = blade pixels, height = frame count (height 1 = a static mask). Row 0 = hilt.
-// Paint grayscale in GIMP/Photoshop; R=G=B per pixel. Color pixels use average luminance.
+// Same files as strip_column: 24-bit uncompressed BMP, or uncompressed true-color TGA.
+// Width = blade pixels (capped at 192), height = frame count (height 1 = a static mask).
+// Row 0 = hilt. Paint grayscale; color pixels use average luminance.
+// BMP rows are fully opaque. A TGA opacity byte blends the mask over the blade.
 //
 // If the file is missing or invalid, shows the same scrolling strobe red danger pattern
 // (as strip_column base) instead of staying transparent.
@@ -29,27 +30,12 @@ inline uint16_t StripColumnMaskGray8ToFactor(uint8_t gray) {
   return (uint16_t)gray * 257u;
 }
 
-inline uint16_t StripColumnMaskLerpFactor(uint8_t a, uint8_t b, int frac15) {
-  int la = (int)a * 257;
-  int lb = (int)b * 257;
-  return (uint16_t)(la + (((lb - la) * frac15) >> 15));
-}
-
 inline uint16_t StripColumnMaskSampleFactorAtLed(const uint8_t* data, int led, int num_leds,
                                                  int source_height) {
-  int row_low = 0;
-  int frac15 = 0;
-  StripColumnMapLed(led, num_leds, source_height, &row_low, &frac15);
-  int idx0 = row_low * 3;
-  if (idx0 + 2 >= source_height * 3) return 0;
-  if (frac15 == 0 || row_low >= source_height - 1) {
-    return StripColumnMaskGray8ToFactor(
-        StripColumnMaskLuminance8(data[idx0], data[idx0 + 1], data[idx0 + 2]));
-  }
-  int idx1 = idx0 + 3;
-  uint8_t g0 = StripColumnMaskLuminance8(data[idx0], data[idx0 + 1], data[idx0 + 2]);
-  uint8_t g1 = StripColumnMaskLuminance8(data[idx1], data[idx1 + 1], data[idx1 + 2]);
-  return StripColumnMaskLerpFactor(g0, g1, frac15);
+  uint8_t r = 0, g = 0, b = 0, a = 0;
+  StripColumnSampleAtLed(data, led, num_leds, source_height, &r, &g, &b, &a);
+  (void)a;
+  return StripColumnMaskGray8ToFactor(StripColumnMaskLuminance8(r, g, b));
 }
 
 template<class SOURCE_HEIGHT, class FPS>
@@ -95,9 +81,10 @@ public:
     }
     const uint8_t* frame = source_.CurrentFrameData();
     if (!frame) return StripColumnLayerTransparent();
-    uint16_t f = StripColumnMaskSampleFactorAtLed(
-        frame, led, num_leds_, source_height_);
-    return RGBA_um_nod(Color16(f, f, f), 32768);
+    uint8_t r = 0, g = 0, b = 0, a = 0;
+    StripColumnSampleAtLed(frame, led, num_leds_, source_height_, &r, &g, &b, &a);
+    uint16_t f = StripColumnMaskGray8ToFactor(StripColumnMaskLuminance8(r, g, b));
+    return RGBA_um_nod(Color16(f, f, f), StripColumnAlpha8To15(a));
   }
 
 private:
