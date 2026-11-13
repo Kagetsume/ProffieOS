@@ -14,7 +14,7 @@ Build blade effects from **layers** of styles (rainbow, fire, strobe, blast, etc
 
 | Kind | Write in INI | Firmware notes |
 |------|----------------|----------------|
-| **Colors** | Name (`cyan`, `red`) or **`r,g,b`** with **0–255** per channel (e.g. **`0,24,0`**) | Scaled to 16-bit internally (×257). Legacy: any channel **>255** is treated as raw 16-bit. |
+| **Colors** | Name (`cyan`, `red`), **`r,g,b`** (**0–255**), **`#RGB`** / **`#RRGGBB`**, optional alpha **`#RRGGBBAA`** or **`rgba(r, g, b, a)`** | RGB scaled ×257. Alpha **0–255** maps to the layer composite (**255** = opaque) and multiplies with layer **`opacity`**. Names, **`r,g,b`**, **`#RGB`**, and **`#RRGGBB`** stay opaque. Legacy: a comma channel **>255** is raw 16-bit. |
 | **Layer opacity** | **`55%`** or **`55`** ( **`100%`** = full ) | Raw **>100** without **`%`** still accepted (legacy **0–32768** scale). |
 | **extend_ms / retract_ms** | Milliseconds; **`-1`** = match ignition/retraction sound | Same as preset styles. |
 | **Mask min / max** (waves, noise, moire, …) | **`12.5%`**, **`100%`**, or raw **>100** (e.g. **8192**) | Same rules as opacity but mapped to **0–65535** multiply-mask brightness (**100%** = full). Decimals OK (**12.5%** ≈ **8192**). Not used for **`hue_waves`** hue offsets. |
@@ -36,7 +36,9 @@ Composable **`blade_styles.ini`** recipes use the **same style argument strings*
 | What you write in INI | Meaning for humans | Internal / notes | Legacy escape |
 |----------------------|--------------------|------------------|---------------|
 | **Named color** (`cyan`, `deepskyblue`, …) | Catalog sRGB swatch | **`Color16`**: 8-bit table entry × **257** per channel (65535-scale RGB) | Preset strings may use **`Rgb(r,g,b)`** wrapper |
-| **`#RRGGBB`**, **`#RGB`** shorthand, or **`rrggbb`** (editor) | 24-bit sRGB hex | **`ParseColorArg`** accepts **`#`** + 6 hex digits (or 3-digit CSS shorthand); same × **257** as **`r,g,b`**. Website / SD Config Editor also accept bare **`rrggbb`**; export often normalizes to **`r,g,b`** | — |
+| **`#RRGGBB`**, **`#RGB`** shorthand, or **`rrggbb`** (editor) | 24-bit sRGB hex | **`ParseColorArg`** accepts **`#`** + 6 hex digits (or 3-digit CSS shorthand); same × **257** as **`r,g,b`**. Fully opaque. Website / SD Config Editor also accept bare **`rrggbb`**; export often normalizes to **`r,g,b`** | — |
+| **`#RRGGBBAA`** | Hex color plus alpha | Last byte is alpha **00–FF**. **FF** is opaque and behaves like **`#RRGGBB`**. Lower values blend in the layer composite. Optional. | — |
+| **`rgba(r, g, b, a)`** | 8-bit color plus alpha | Each channel **0–255**, including **a**. **`a` 255** is opaque. Multiplies with a layer **`opacity`** on the same line. **`r,g,b`** (no **`rgba`**) stays opaque. | — |
 | **`r,g,b`** with all channels **0–255** | 8-bit sRGB | Treated as 8-bit: each channel × **257** → **`Color16`** (same as named colors) | — |
 | **`r,g,b`** with any channel **> 255** | Direct wide RGB | Stored as **`Color16(r,g,b)`** without ×257 (Proffie 16-bit color args) | Matches old compiled-style numeric colors |
 | **Layer `opacity`** (`multiply opacity 73% …`) | How strongly this layer blends over layers below | Parsed to **0–32768** alpha scale (**32768** = opaque). Trailing **`%`**: percent 0–100. No **`%`**: integer **≤100** = percent (**`100`** = full); **>100** = raw **0–32768** | Compile-time styles use **`AlphaL<…, Int<18000>>`** directly |
