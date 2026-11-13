@@ -347,7 +347,7 @@ A worked contrast from the shipped file: `[rainbow_strobe]` puts an opaque strob
 
 ### Colors and a few numbers
 
-Colors can be a **named string** (`cyan`, `masterswordblue`, `purple`), three channels `0,255,255` in the range 0–255, or `#RRGGBB` / `#RGB` hex. Names are case-insensitive. The **SD and layer token** names in [Section A of the appendix](#section-a--sd-and-layer-tokens) (76 catalog swatches from `parse_color_arg_table.generated.h`) are parsed from INI by firmware. [Section B](#section-b--fett263-edit-mode-color-list) is the on-saber Fett263 picker (saved as `r,g,b`); hex and `r,g,b` always work.
+Colors can be a **named string** (`cyan`, `masterswordblue`, `purple`), three channels `0,255,255` in the range 0–255, or `#RRGGBB` / `#RGB` hex. Names are case-insensitive and fully opaque. Optional alpha is `#RRGGBBAA` (last byte `00`–`FF`) or `rgba(r, g, b, a)` with every channel 0–255. `FF` / `255` is opaque, same as leaving alpha off. That alpha belongs to the color: `clash = #FF000080` still blends on `layer = clash {{clash}}`, and it multiplies with `opacity` on the layer line. `r,g,b` stays opaque. The **SD and layer token** names in [Section A of the appendix](#section-a--sd-and-layer-tokens) (76 catalog swatches from `parse_color_arg_table.generated.h`) are parsed from INI by firmware. [Section B](#section-b--fett263-edit-mode-color-list) is the on-saber Fett263 picker (saved as `r,g,b`); hex and `r,g,b` always work.
 
 Mask **min** and **max** (on waves, noise, and similar) are brightness from **0** (black) to **65535** (full white). They are not percents. A multiply wave with min `8192` and max `65535` dims the blade in the trough and leaves it alone at the crest.
 
@@ -843,7 +843,7 @@ ProffieOS color names fall into **three scopes**, matching the LayerBlade editor
 - **Fett263 Edit Mode list** (`props/saber_fett263_buttons.h` `color_list_`) — the on-saber color picker when Fett263 props are enabled. Voice labels come from `ColorNumber` in `sound/sound_library.h`. Choosing a color **rewrites the preset as `r,g,b`**; many of the same colors also work as text names in Section A after you flash a build with the generated table.
 - **Editor catalog extras** (Section C, if any) — names in `colors.json` extended + vivid that are **not** in the firmware table. Use `r,g,b` or `#hex` in INI for those; when Section C is empty, every catalog name is already in Section A.
 
-You can always use `r,g,b` (channels **0–255**) or `#RRGGBB` / `#RGB` hex anywhere a color argument is accepted. Matching for SD names is **case-insensitive**.
+You can always use `r,g,b` (channels **0–255**) or `#RRGGBB` / `#RGB` hex anywhere a color argument is accepted. Matching for SD names is **case-insensitive**. Names, `r,g,b`, and `#RRGGBB` / `#RGB` are fully opaque. Optional alpha is `#RRGGBBAA` or `rgba(r, g, b, a)` (each channel 0–255, 255 = opaque) and multiplies with layer `opacity`.
 
 Generated **2026-10-04** · Section A: 76 · Section B: 27 · Section C: 0. Re-run `node sd_config_examples/generate-named-colors-appendix.js` and rebuild the PDFs after firmware or catalog changes.
 

@@ -642,9 +642,19 @@ public:
 
 StyleParser style_parser;
 
+#ifdef ENABLE_SD_CONFIG_FILES
+#include "composition/color_alpha.h"
+#endif
+
 inline BladeStyle* ParseStyleStringForConfig(const char* str) {
   if (!str) return nullptr;
+#ifdef ENABLE_SD_CONFIG_FILES
+  ConfigColorAlphaScope scope;
+  BladeStyle* s = style_parser.Parse(str);
+  return scope.Wrap(s);
+#else
   return style_parser.Parse(str);
+#endif
 }
 
 #endif  // STYLES_STYLE_PARSER_H

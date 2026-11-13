@@ -6,7 +6,7 @@ ProffieOS color names fall into **three scopes**, matching the LayerBlade editor
 - **Fett263 Edit Mode list** (`props/saber_fett263_buttons.h` `color_list_`) — the on-saber color picker when Fett263 props are enabled. Voice labels come from `ColorNumber` in `sound/sound_library.h`. Choosing a color **rewrites the preset as `r,g,b`**; many of the same colors also work as text names in Section A after you flash a build with the generated table.
 - **Editor catalog extras** (Section C, if any) — names in `colors.json` extended + vivid that are **not** in the firmware table. Use `r,g,b` or `#hex` in INI for those; when Section C is empty, every catalog name is already in Section A.
 
-You can always use `r,g,b` (channels **0–255**) or `#RRGGBB` / `#RGB` hex anywhere a color argument is accepted. Matching for SD names is **case-insensitive**.
+You can always use `r,g,b` (channels **0–255**) or `#RRGGBB` / `#RGB` hex anywhere a color argument is accepted. Matching for SD names is **case-insensitive**. Names, `r,g,b`, and `#RRGGBB` / `#RGB` are fully opaque. Optional alpha is `#RRGGBBAA` or `rgba(r, g, b, a)` (each channel 0–255, 255 = opaque) and multiplies with layer `opacity`.
 
 Generated **2026-10-04** · Section A: 76 · Section B: 27 · Section C: 0. Re-run `node sd_config_examples/generate-named-colors-appendix.js` and rebuild the PDFs after firmware or catalog changes.
 

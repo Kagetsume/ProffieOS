@@ -172,6 +172,8 @@ inline void ConfigParseTransitionSpec(const char* spec, uint8_t* curve, int* ext
                                      bool one_phase = false, int default_ms = 300,
                                      char* bmp_path = nullptr, size_t bmp_path_max = 0,
                                      int* bmp_height = nullptr) {
+  // Spark color is stored as Color16 on the wipe. Its alpha is not a layer color.
+  ConfigColorAlphaNotePause pause_color_alpha;
   if (curve) *curve = CONFIG_INOUT_BEND;
   if (extend_ms) *extend_ms = 300;
   if (retract_ms) *retract_ms = 800;
