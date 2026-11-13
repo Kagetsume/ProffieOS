@@ -31,6 +31,15 @@
     "Clipped at the blade ends. Span or file width above 192 is ignored. No extend/retract; the event gate sets the duration. "
     "Example: event_blast -1 strip_span animations/clash-hit.tga 36 24")
   },
+  { "angle_span", &angle_span_factory,
+    NAMED_STYLE_DESC(    "Short SD image that follows the blade angle: file_path span_px fps. "
+    "Use under event_lockup. span_px is how many LEDs the picture covers. The window is centered on the live "
+    "blade angle (0 straight down at the hilt, 32768 straight up at the tip) and moves as the angle changes. "
+    "Frames loop for the whole hold. One row is one frame. BMP pixels are opaque. 32-bit TGA alpha blends. "
+    "LEDs outside the window are transparent. Clipped at the blade ends. Span or file width above 192 is ignored. "
+    "No extend/retract; event_lockup -1 keeps it up while the lockup is held. "
+    "Example: event_lockup -1 angle_span animations/lockup-hit.tga 47 30")
+  },
   // Full pixel blades (opaque; use alone or as bottom layer in config sections).
   { "gradient",
     &config_gradient_factory,

@@ -42,7 +42,7 @@ Serial (SetPreset), summary line plus one line per unique section:
 
 `LoadStyleConfigLayers` returns immediately on **cache hit** (no overrides). With preset `key=value` overrides, cache is bypassed and the section is parsed again with overrides merged.
 
-## Media layers (`strip_column` / `strip_column_mask` / `strip_span`)
+## Media layers (`strip_column` / `strip_column_mask` / `strip_span` / `angle_span`)
 
 These are **not** loaded by `LoadStyleConfigLayers`. The INI only stores the style argument string (SD path, height, fps, …).
 
@@ -54,5 +54,6 @@ These are **not** loaded by `LoadStyleConfigLayers`. The INI only stores the sty
 - **How frames load:** One BMP **row** is one animation frame (width = blade pixels, height = frame count). Firmware advances **one frame at a time** (no skipping when SD is slow) and keeps a ring of decoded rows (default **`STRIP_COLUMN_FRAME_RING_SIZE` 8**). A refill reads up to four upcoming rows in one seek. The style **`fps`** arg sets the target advance rate. Tune **`fps`** down (demo presets often use **`8`**–**`10`**, not **`30`**) and A/B without multiply layers if motion feels too fast or uneven.
 - **Mask parity:** **`strip_column_mask`** uses the same reader and the shared **`StripColumnFrameSource`** in **`strip_column_source.h`** (grayscale → multiply luminance). TGA opacity is that layer’s alpha.
 - **Hit window:** **`strip_span`** uses the same header sniff and the event-image ring pool. `span_px` is a subset of the blade. `event_blast` centers it on the blast location; `event_clash` centers it on the clash location. LEDs outside that window are transparent. BMP alpha is 255. 32-bit TGA alpha is kept. The file is opened while the event gate is running the layer, not as a full-blade base.
+- **Lockup window:** **`angle_span`** uses that same sniff, cap, alpha, and event-image ring. `event_lockup -1` loops the frames for the whole hold. The window is centered on the live blade angle (0 straight down at the hilt, 32768 straight up at the tip) and moves as the angle changes. Blast and clash stay on **`strip_span`**.
 
 Open/fail lines on serial (`strip_column: opened …`, missing file, invalid BMP) are intentional; they are separate from **`Style config:`** boot/preset cache logs.

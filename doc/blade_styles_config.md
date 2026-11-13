@@ -137,6 +137,8 @@ With **`ENABLE_SD_CONFIG_FILES`**, **`config/blade_styles.ini`** is never loaded
 
 **`strip_span`** is that same picture, drawn on `span_px` LEDs instead of the whole blade. Use it under **`event_blast`** or **`event_clash`**. The gate supplies the duration and which hit to follow: the blast’s 0–32768 location, or the clash location. The window is centered on that location, clipped at the blade ends, and transparent everywhere else. A 32-bit TGA’s per-pixel alpha blends. A span or a file wider than **192** along the blade is ignored. Example: `layer = event_clash -1 strip_span animations/clash-hit.tga 36 24`.
 
+**`angle_span`** is that same short window for a lockup. Use it under **`event_lockup`**. `-1` means while the lockup is held, and the frames loop at `fps` for the whole hold. The window is centered on the live blade angle (0 straight down at the hilt, 32768 straight up at the tip) and slides as the angle changes. Blast and clash stay on **`strip_span`** at the hit. Example: `layer = event_lockup -1 angle_span animations/lockup-hit.tga 47 30`.
+
 ## Shipped examples (repository)
 
 The **`sd_config_examples/config/`** tree mirrors SD layout. **`sd_config_examples/config/blade_styles.ini`** walks through one section per feature (locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add blends, **`layer = config other_section`** nesting). **`sd_config_examples/config/blade_styles/`** has **`palettes_extra.ini`** and **`strobe_overlay.ini`**. **`sd_config_examples/config/presets.ini`** shows **`config <section>`**, **`config <section> key=value`**, and **multiple overrides**.
