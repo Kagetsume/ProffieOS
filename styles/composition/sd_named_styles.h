@@ -23,6 +23,14 @@
     "strip_column. Grayscale; TGA opacity blends the mask. Blade width capped at 192. "
     "Missing/invalid file: danger fallback pattern while blade is on.")
   },
+  { "strip_span", &strip_span_factory,
+    NAMED_STYLE_DESC(    "Short SD image on the gating event's hit: file_path span_px fps. "
+    "Use under event_blast or event_clash. span_px is how many LEDs the picture covers, centered on that event's "
+    "0-32768 location (blast under event_blast, clash under event_clash). The file's blade-axis is sampled onto the span. "
+    "One row is one frame. BMP pixels are opaque. 32-bit TGA alpha blends. LEDs outside the window are transparent. "
+    "Clipped at the blade ends. Span or file width above 192 is ignored. No extend/retract; the event gate sets the duration. "
+    "Example: event_blast -1 strip_span animations/clash-hit.tga 36 24")
+  },
   // Full pixel blades (opaque; use alone or as bottom layer in config sections).
   { "gradient",
     &config_gradient_factory,
