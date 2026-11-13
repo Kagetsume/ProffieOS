@@ -89,7 +89,11 @@ public:
   }
   ~StripColumnFrameSource() { CloseOpenFile(); }
 
+  // Copies the factory pending path once. StripColumnPendingPath is one static
+  // buffer, so after every mask is built it holds only the last file. A path
+  // already stored here stays through open, retract, and the next ignition.
   void CapturePendingPath() {
+    if (path_[0]) return;
     const char* p = nullptr;
     if (CurrentArgParser) {
       p = CurrentArgParser->GetArg(1, "FILE", "");
