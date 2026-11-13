@@ -111,6 +111,8 @@ public:
   }
 
   bool IsOpen() const { return opened_; }
+  const char* Path() const { return path_; }
+  uint32_t BladePixels() const { return header_ok_ ? image_.width : 0; }
 
   void LogOpenFailureOnce(const StripColumnOpenOptions& opts, const char* reason) {
     if (open_warned_) return;

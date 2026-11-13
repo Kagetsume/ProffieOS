@@ -373,6 +373,7 @@ These draw the color or the BMP. They do not wipe. The section `transition` line
 | --- | --- | --- |
 | `solid` | base color, optional extend ms, retract ms | Flat color. No wipe. Example: `layer = solid cyan` with `transition = bend {{ext}} {{ret}}`. |
 | `strip_column` | SD path, source width, fps, optional `frames_y`, extend ms, retract ms | A 24-bit BMP or uncompressed TGA played along the blade. The section `transition` wipes it. The width number is the blade length (144 in the demos, 192 maximum). One row is one frame. BMP pixels are fully opaque. TGA’s opacity byte blends. Example: `strip_column animations/cyan-gold-plasma.bmp 144 30`. |
+| `strip_span` | SD path, span in LEDs, fps | A short BMP or TGA sitting on the hit, not the whole blade. Put it under `event_blast` or `event_clash`. The span is how many LEDs the picture covers. That window is centered on the event’s location (blast under `event_blast`, clash under `event_clash`) and moves if that location moves. BMP pixels are opaque. A 32-bit TGA keeps each pixel’s alpha. LEDs outside the window are transparent. Example: `event_blast -1 strip_span animations/clash-hit.tga 36 24`. |
 
 #### Full named blades
 
@@ -575,7 +576,11 @@ layer = event_blast -1 normal opacity 40% strip_column animations/overlay.bmp 14
 layer = event_clash -1 multiply opacity 67% sine_waves 2400 0 12.5% 100% -2000
 layer = event_clash 400 multiply strip_column_mask masks/clash_mask.bmp 144 30
 layer = event_lockup -1 add opacity 50% fire_mask
+layer = event_blast -1 strip_span animations/clash-hit.tga 36 24
+layer = event_clash -1 strip_span animations/clash-hit.tga 36 24
 ```
+
+`strip_span` is built for those two gates. The same file works for either event. The gate chooses the location: the blast hit under `event_blast`, the clash hit under `event_clash`. The span covers only that many LEDs, centered on the hit. LEDs outside the span stay transparent.
 
 | Prefix | What starts it |
 | --- | --- |
@@ -652,6 +657,14 @@ The picture is opened **when the saber is on**, not during boot. A missing file,
 ```text
 strip_column <path> <source_height> <fps> [frames_y] <extend_ms> <retract_ms>
 strip_column_mask <path> <source_height> <fps>
+strip_span <path> <span_px> <fps>
+```
+
+`strip_span` is the same kind of file, drawn on a short run of LEDs instead of the whole blade. `span_px` is that run (36 in the example), not the blade length. The picture’s width is sampled onto those LEDs. The event gate places the window: `event_blast` uses the blast’s 0–32768 location, `event_clash` uses the clash location. If that location moves during the event, the window moves with it. The window stops at the first and last LED. Pixels outside it are transparent, so the blade underneath stays visible. A 24-bit BMP is fully opaque. A 32-bit TGA keeps its per-pixel alpha. There is no extend or retract time on this layer; `-1` or a millisecond count on the `event_` gate is the duration. One row is still one frame. `frames_y` is ignored. `frames_x` is rejected. A span or a file wider than 192 along the blade is ignored and logged. The picture is held only while the event runs.
+
+```ini
+layer = event_blast -1 strip_span animations/clash-hit.tga 36 24
+layer = event_clash -1 strip_span animations/clash-hit.tga 36 24
 ```
 
 `fps` is how fast you *want* the frames to advance. The firmware steps one frame at a time. If the card is slow it will lag rather than skip ahead, so the motion can run slower than the number you wrote. Masks such as `sine_waves` scroll on their own clock and can look faster than the flipbook. To see the BMP alone, comment the multiply line out, or try a low `fps` such as `2`.

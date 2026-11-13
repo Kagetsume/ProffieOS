@@ -135,6 +135,8 @@ With **`ENABLE_SD_CONFIG_FILES`**, **`config/blade_styles.ini`** is never loaded
 
 **`strip_column`** / **`strip_column_mask`** only store the path and args in those layer strings. **24-bit uncompressed BMP** and **uncompressed true-color TGA** files on SD are opened **after ignition**. The header picks the reader. Each row is normalized to **RGBA8** (BMP alpha is 255; TGA uses the opacity byte) and then rendered the same way. Width along the blade above **192** is ignored. **`strip_column_mask`** uses the same **`strip_column_source.h`** loader as **`strip_column`**. See **README_blade_styles_config.md** (*strip_column* table).
 
+**`strip_span`** is that same picture, drawn on `span_px` LEDs instead of the whole blade. Use it under **`event_blast`** or **`event_clash`**. The gate supplies the duration and which hit to follow: the blast’s 0–32768 location, or the clash location. The window is centered on that location, clipped at the blade ends, and transparent everywhere else. A 32-bit TGA’s per-pixel alpha blends. A span or a file wider than **192** along the blade is ignored. Example: `layer = event_clash -1 strip_span animations/clash-hit.tga 36 24`.
+
 ## Shipped examples (repository)
 
 The **`sd_config_examples/config/`** tree mirrors SD layout. **`sd_config_examples/config/blade_styles.ini`** walks through one section per feature (locals, palettes, includes, structured `layer.<style>.<slot>`, opacity, multiply/screen/add blends, **`layer = config other_section`** nesting). **`sd_config_examples/config/blade_styles/`** has **`palettes_extra.ini`** and **`strobe_overlay.ini`**. **`sd_config_examples/config/presets.ini`** shows **`config <section>`**, **`config <section> key=value`**, and **multiple overrides**.

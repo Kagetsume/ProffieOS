@@ -13,6 +13,7 @@
 #include "event_gate.h"
 #include "pixel_sequencer.h"
 #include "strip_column.h"
+#include "strip_span.h"
 #include "accent_blink.h"
 #include "texture_layers.h"
 #include "real_clash.h"

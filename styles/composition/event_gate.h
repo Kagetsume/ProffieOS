@@ -106,6 +106,30 @@ inline bool ConfigParseEventPrefix(const char** io, ConfigEventKind* kind, int* 
   return true;
 }
 
+// Which event is running the child right now. A positioned image reads this
+// during run() so event_blast follows the blast location and event_clash
+// follows the clash location. Cleared before run() returns; the child keeps
+// the location it just read.
+struct ConfigEventGateCue {
+  static void Set(ConfigEventKind kind) {
+    ActiveSlot() = true;
+    KindSlot() = kind;
+  }
+  static void Clear() { ActiveSlot() = false; }
+  static bool Active() { return ActiveSlot(); }
+  static ConfigEventKind Kind() { return KindSlot(); }
+
+ private:
+  static bool& ActiveSlot() {
+    static bool active = false;
+    return active;
+  }
+  static ConfigEventKind& KindSlot() {
+    static ConfigEventKind kind = ConfigEventKind::BLAST;
+    return kind;
+  }
+};
+
 class EventGateStyle : public BladeStyle {
  public:
   EventGateStyle(BladeStyle* child, ConfigEventKind kind, int duration_ms)
@@ -144,10 +168,17 @@ class EventGateStyle : public BladeStyle {
   bool active() const { return active_; }
 
  private:
+  void RunChild(BladeBase* blade) {
+    if (!child_ || !blade) return;
+    ConfigEventGateCue::Set(kind_);
+    child_->runUpdate(blade);
+    ConfigEventGateCue::Clear();
+  }
+
   void Begin(BladeBase* blade, int window_ms) {
     active_ = true;
     ConfigPlayCue::ArmRestart(window_ms);
-    child_->runUpdate(blade);
+    RunChild(blade);
     ConfigPlayCue::Clear();
   }
 
@@ -155,7 +186,7 @@ class EventGateStyle : public BladeStyle {
     if (!active_) return;
     active_ = false;
     ConfigPlayCue::ArmRelease();
-    child_->runUpdate(blade);
+    RunChild(blade);
     ConfigPlayCue::Clear();
   }
 
@@ -168,7 +199,7 @@ class EventGateStyle : public BladeStyle {
     if (duration_ms_ < 1) {
       if (held && !active_) Begin(blade, 0);
       else if (!held && active_) End(blade);
-      else if (active_) child_->runUpdate(blade);
+      else if (active_) RunChild(blade);
       return;
     }
     if (held && !hold_latched_) {
@@ -182,7 +213,7 @@ class EventGateStyle : public BladeStyle {
       End(blade);
       return;
     }
-    if (active_) child_->runUpdate(blade);
+    if (active_) RunChild(blade);
   }
 
   BladeEffect* NewestEffect(BladeBase* blade) {
@@ -219,7 +250,7 @@ class EventGateStyle : public BladeStyle {
       End(blade);
       return;
     }
-    if (active_) child_->runUpdate(blade);
+    if (active_) RunChild(blade);
   }
 
   BladeStyle* child_;
