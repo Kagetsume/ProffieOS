@@ -193,6 +193,9 @@ public:
     int wave = waveform_ == WAVE_TRI
         ? TriAtPhase(p, effective_period_)
         : SinAtPhaseInterpolated(p, effective_period_);
+    // sin_table peaks at ±16384. The mix below assumes ±32768, so an unscaled
+    // sine never reached min (0% stayed ~25% bright) or max.
+    if (waveform_ != WAVE_TRI) wave = clampi32(wave, -16384, 16384) * 2;
     return (uint32_t)clampi32(
         min_run_ + (int)((int64_t)(wave + 32768) * (max_run_ - min_run_) >> 16),
         0,
