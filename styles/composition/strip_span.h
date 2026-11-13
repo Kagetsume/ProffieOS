@@ -8,7 +8,8 @@
 // centers it on the clash location. That location is the same 0–32768 value
 // EffectPosition<> reads off the effect (0 = hilt, 32768 = tip). It is read
 // again every frame, so a location that moves during the event moves the window.
-// Blade angle is not computed here.
+// Blade angle is not computed here. A lockup picture that follows the blade
+// angle is angle_span.
 //
 //   strip_span <sd_path> <span_px> <fps>
 //   layer = event_blast -1 strip_span animations/clash-hit.tga 36 24
